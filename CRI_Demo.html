@@ -478,7 +478,8 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 .cev-event-card .cev-evt-del{font-size:12px;color:var(--muted);cursor:pointer;background:none;border:none;padding:0;}
 .cev-event-card h4{font-size:13px;font-weight:600;margin:2px 0 4px;}
 .cev-event-card p{font-size:12px;color:var(--muted);margin:0;}
-.log-event-fab{position:fixed;bottom:24px;right:24px;z-index:8000;background:#2563eb;color:#fff;border:none;border-radius:50px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(37,99,235,.4);display:flex;align-items:center;gap:6px;}
+.log-event-fab{position:fixed;bottom:24px;left:220px;z-index:8000;background:#2563eb;color:#fff;border:none;border-radius:50px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(37,99,235,.4);display:flex;align-items:center;gap:6px;}
+.panel-intake-active .log-event-fab{display:none!important;}
 .log-event-fab:hover{background:#1d4ed8;}
 /* ─── Export/Print ───────────────────────────── */
 .export-btn{padding:6px 14px;border-radius:7px;border:1px solid var(--border);background:var(--surf2);font-size:12px;font-weight:600;cursor:pointer;color:var(--text);display:inline-flex;align-items:center;gap:5px;}
@@ -2072,6 +2073,9 @@ function show(name) {
   if (btn) btn.classList.add('on');
   el('top-title').textContent = labels[name];
   cur = name;
+  // Hide Log Risk Event FAB during intake wizard, show on all other panels
+  var fab = document.getElementById('log-event-fab');
+  if (fab) fab.style.display = (name === 'intake') ? 'none' : 'flex';
   render(name);
 }
 
