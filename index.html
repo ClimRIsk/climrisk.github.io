@@ -1,0 +1,1713 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="ClimRisk — GPS-resolved climate financial risk modelling. TCFD, IFRS S2 and CSRD-ready disclosure reports for enterprises navigating the net-zero transition.">
+<title>ClimRisk — Climate Risk Intelligence</title>
+<style>
+/* ════════════════════════════════════════════════
+   THEME TOKENS — light default + dark override
+   ════════════════════════════════════════════════ */
+:root {
+  --bg:        #f7fdf9;
+  --bg2:       #edfaf2;
+  --surf:      #ffffff;
+  --surf2:     #f0fdf4;
+  --border:    #c6f0d8;
+  --border2:   #86efac;
+  --green:     #16a34a;
+  --green-lt:  #22c55e;
+  --green-dim: #dcfce7;
+  --red:       #dc2626;
+  --amber:     #d97706;
+  --blue:      #1d4ed8;
+  --text:      #0f1d14;
+  --muted:     #374151;
+  --subtle:    #6b7280;
+  --nav-bg:    rgba(247,253,249,0.92);
+  --shadow:    0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,.08), 0 16px 40px rgba(0,0,0,.06);
+}
+[data-theme="dark"] {
+  --bg:        #040d08;
+  --bg2:       #071209;
+  --surf:      #0c1a10;
+  --surf2:     #0f2016;
+  --border:    #1a3d26;
+  --border2:   #235231;
+  --green:     #22c55e;
+  --green-lt:  #4ade80;
+  --green-dim: #14532d22;
+  --red:       #ef4444;
+  --amber:     #f59e0b;
+  --blue:      #3b82f6;
+  --text:      #ecfdf5;
+  --muted:     #a7f3d0;
+  --subtle:    #6b7280;
+  --nav-bg:    rgba(4,13,8,0.92);
+  --shadow:    0 1px 3px rgba(0,0,0,.3);
+  --shadow-md: 0 4px 24px rgba(0,0,0,.4);
+}
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) {
+    --bg:#040d08;--bg2:#071209;--surf:#0c1a10;--surf2:#0f2016;
+    --border:#1a3d26;--border2:#235231;
+    --green:#22c55e;--green-lt:#4ade80;--green-dim:#14532d22;
+    --red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;
+    --text:#ecfdf5;--muted:#a7f3d0;--subtle:#6b7280;
+    --nav-bg:rgba(4,13,8,0.92);
+    --shadow:0 1px 3px rgba(0,0,0,.3);
+    --shadow-md:0 4px 24px rgba(0,0,0,.4);
+  }
+}
+
+/* ════════════════════════════════════════════════
+   RESET & BASE
+   ════════════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;font-size:16px}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Inter',sans-serif;
+  background:var(--bg);color:var(--text);line-height:1.6;
+  transition:background .25s,color .25s;
+  overflow-x:hidden;
+}
+a{color:inherit;text-decoration:none}
+img{display:block;max-width:100%}
+
+/* ════════════════════════════════════════════════
+   UTILITY
+   ════════════════════════════════════════════════ */
+.container{max-width:1160px;margin:0 auto;padding:0 24px}
+.section{padding:96px 0}
+.section-label{
+  font-size:11px;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--green);margin-bottom:14px;
+}
+h2{
+  font-size:clamp(34px,5vw,58px);font-weight:900;
+  letter-spacing:-.03em;line-height:1.07;margin-bottom:18px;
+}
+h2 em{font-style:normal;color:var(--green)}
+.section-sub{font-size:17px;color:var(--muted);max-width:580px;line-height:1.7}
+.tag{
+  display:inline-flex;align-items:center;gap:5px;
+  padding:4px 11px;border-radius:100px;
+  font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+}
+.tag-g{background:var(--green-dim);color:var(--green);border:1px solid var(--border)}
+.tag-a{background:#fef3c7;color:var(--amber);border:1px solid #fde68a}
+.tag-b{background:#dbeafe;color:var(--blue);border:1px solid #bfdbfe}
+.tag-r{background:#fee2e2;color:var(--red);border:1px solid #fecaca}
+[data-theme="dark"] .tag-a{background:#78350f22;border-color:#92400e44}
+[data-theme="dark"] .tag-b{background:#1e3a5f22;border-color:#1e40af44}
+[data-theme="dark"] .tag-r{background:#7f1d1d22;border-color:#991b1b44}
+
+/* ════════════════════════════════════════════════
+   NAVIGATION
+   ════════════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  background:var(--nav-bg);
+  backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  padding:0 24px;transition:background .25s,border-color .25s;
+}
+.nav-inner{
+  max-width:1160px;margin:0 auto;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.nav-logo{
+  display:flex;align-items:center;gap:9px;
+  font-size:19px;font-weight:900;letter-spacing:-.03em;
+  color:var(--text);
+}
+.nav-logo-mark{
+  width:32px;height:32px;border-radius:9px;
+  background:linear-gradient(135deg,var(--green),#0ea5e9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:15px;color:#fff;font-weight:900;
+}
+.nav-logo span{color:var(--green)}
+.nav-links{display:flex;align-items:center;gap:28px}
+.nav-links a{font-size:14px;color:var(--muted);transition:color .2s;font-weight:500}
+.nav-links a:hover{color:var(--green)}
+.nav-right{display:flex;align-items:center;gap:10px}
+.theme-toggle{
+  width:36px;height:36px;border-radius:8px;
+  background:var(--surf2);border:1px solid var(--border);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:all .2s;color:var(--text);
+}
+.theme-toggle:hover{background:var(--border);border-color:var(--green)}
+.nav-cta{
+  padding:9px 18px;border-radius:8px;
+  background:var(--green);color:#fff;
+  font-size:13px;font-weight:700;border:none;cursor:pointer;
+  transition:all .2s;letter-spacing:-.01em;
+}
+.nav-cta:hover{background:var(--green-lt);transform:translateY(-1px)}
+
+/* ════════════════════════════════════════════════
+   HERO
+   ════════════════════════════════════════════════ */
+.hero{
+  min-height:100vh;display:flex;align-items:center;
+  padding:100px 24px 80px;
+  background:
+    radial-gradient(ellipse 70% 60% at 20% 80%,rgba(22,163,74,.06),transparent),
+    radial-gradient(ellipse 60% 50% at 80% 20%,rgba(14,165,233,.05),transparent),
+    var(--bg);
+  position:relative;overflow:hidden;
+}
+.hero-pattern{
+  position:absolute;inset:0;opacity:.04;
+  background-image:
+    linear-gradient(var(--green) 1px,transparent 1px),
+    linear-gradient(90deg,var(--green) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black,transparent);
+}
+.hero-content{position:relative;max-width:1160px;margin:0 auto;width:100%}
+.hero-eyebrow{display:flex;align-items:center;gap:10px;margin-bottom:22px}
+.hero-line{width:36px;height:2px;background:var(--green);border-radius:2px}
+.hero-eyebrow span{font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--green)}
+.hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.hero-left{}
+h1{
+  font-size:clamp(48px,6.5vw,88px);font-weight:900;
+  letter-spacing:-.04em;line-height:1.0;margin-bottom:24px;
+}
+h1 em{font-style:normal;color:var(--green)}
+h1 .danger{color:var(--red)}
+.hero-sub{
+  font-size:clamp(15px,1.8vw,18px);color:var(--muted);
+  max-width:520px;line-height:1.75;margin-bottom:36px;
+}
+.hero-sub strong{color:var(--text)}
+.hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:28px}
+.btn-primary{
+  padding:15px 28px;border-radius:10px;
+  background:var(--green);color:#fff;
+  font-size:15px;font-weight:700;border:none;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 16px rgba(22,163,74,.25);
+}
+.btn-primary:hover{background:var(--green-lt);transform:translateY(-2px);box-shadow:0 8px 24px rgba(22,163,74,.3)}
+.btn-outline{
+  padding:14px 24px;border-radius:10px;
+  background:transparent;color:var(--text);
+  font-size:15px;font-weight:600;
+  border:1.5px solid var(--border2);cursor:pointer;transition:all .2s;
+}
+.btn-outline:hover{border-color:var(--green);color:var(--green)}
+.hero-trust{font-size:12px;color:var(--subtle)}
+.hero-trust strong{color:var(--muted)}
+
+/* Hero right — live output card */
+.hero-card{
+  background:var(--surf);border:1.5px solid var(--border);
+  border-radius:20px;padding:28px;box-shadow:var(--shadow-md);
+  position:relative;overflow:hidden;
+}
+.hero-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--green),#0ea5e9,var(--green));
+}
+.hc-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.hc-company{font-size:13px;font-weight:700;color:var(--text)}
+.hc-badge{
+  padding:5px 12px;border-radius:8px;font-size:13px;font-weight:900;
+  background:#fef3c7;color:var(--amber);border:1.5px solid #fde68a;
+  letter-spacing:-.01em;
+}
+[data-theme="dark"] .hc-badge{background:#78350f33;border-color:#92400e66}
+.hc-rating-row{
+  display:flex;align-items:center;gap:20px;padding:16px;
+  background:var(--surf2);border-radius:12px;margin-bottom:16px;
+}
+.hc-rating-letter{
+  width:56px;height:56px;border-radius:12px;
+  background:var(--amber);color:#fff;
+  font-size:28px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.hc-rating-label{font-size:14px;font-weight:700;margin-bottom:3px}
+.hc-rating-sub{font-size:12px;color:var(--muted)}
+.hc-metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.hc-metric{
+  padding:12px 14px;background:var(--surf2);
+  border-radius:10px;border:1px solid var(--border);
+}
+.hc-m-lbl{font-size:10px;font-weight:700;color:var(--subtle);letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}
+.hc-m-val{font-size:20px;font-weight:900;letter-spacing:-.03em}
+.hc-m-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.hc-hazards{display:flex;flex-wrap:wrap;gap:6px}
+.hc-hz{
+  padding:4px 9px;border-radius:6px;font-size:11px;font-weight:600;
+  background:var(--green-dim);color:var(--green);border:1px solid var(--border);
+}
+.live-indicator{
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:11px;color:var(--green);font-weight:600;
+}
+.live-dot{
+  width:7px;height:7px;border-radius:50%;background:var(--green);
+  animation:blink 2s ease infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* Hero stats bar */
+.hero-stats{
+  display:grid;grid-template-columns:repeat(4,1fr);
+  margin-top:64px;
+  background:var(--surf);border:1.5px solid var(--border);
+  border-radius:16px;overflow:hidden;box-shadow:var(--shadow);
+}
+.hero-stat{padding:24px 20px;border-right:1px solid var(--border)}
+.hero-stat:last-child{border-right:none}
+.hs-num{font-size:34px;font-weight:900;letter-spacing:-.04em;color:var(--text);line-height:1;margin-bottom:5px}
+.hs-num span{color:var(--green)}
+.hs-lbl{font-size:12px;color:var(--muted)}
+
+/* ════════════════════════════════════════════════
+   TAPE / MARQUEE
+   ════════════════════════════════════════════════ */
+.tape{
+  padding:16px 0;overflow:hidden;white-space:nowrap;
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  background:var(--surf2);
+}
+.tape-inner{display:inline-flex;gap:48px;animation:tape 30s linear infinite}
+.tape-inner:hover{animation-play-state:paused}
+.tape-item{
+  font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--subtle);display:inline-flex;align-items:center;gap:10px;
+}
+.tape-item span{color:var(--green);font-size:13px}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ════════════════════════════════════════════════
+   PROBLEM SECTION
+   ════════════════════════════════════════════════ */
+.problem{background:var(--surf)}
+.problem-grid{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start;margin-top:52px}
+.prob-list{display:flex;flex-direction:column;gap:24px}
+.prob-item{display:flex;gap:16px}
+.prob-icon{
+  width:40px;height:40px;border-radius:10px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:18px;
+  background:#fee2e2;border:1px solid #fecaca;
+}
+[data-theme="dark"] .prob-icon{background:#7f1d1d22;border-color:#991b1b44}
+.prob-title{font-size:15px;font-weight:700;margin-bottom:5px}
+.prob-desc{font-size:13px;color:var(--muted);line-height:1.65}
+
+.compare-card{
+  background:var(--surf2);border:1.5px solid var(--border);
+  border-radius:18px;overflow:hidden;box-shadow:var(--shadow);
+}
+.cc-tab-row{display:grid;grid-template-columns:1fr 1fr}
+.cc-tab{
+  padding:12px 16px;text-align:center;font-size:12px;font-weight:700;
+  border-bottom:2px solid var(--border);cursor:pointer;transition:all .2s;
+  background:var(--surf2);color:var(--muted);
+}
+.cc-tab.on{background:var(--surf);color:var(--green);border-bottom-color:var(--green)}
+.cc-body{padding:20px}
+.cc-row{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:10px 0;border-bottom:1px solid var(--border);
+}
+.cc-row:last-child{border-bottom:none}
+.cc-key{font-size:12px;color:var(--muted)}
+.cc-val{font-size:12px;font-weight:700}
+.cc-val.good{color:var(--green)}
+.cc-val.bad{color:var(--red)}
+.cc-val.na{color:var(--subtle);font-style:italic;font-weight:400}
+
+/* ════════════════════════════════════════════════
+   ENGINE FEATURES
+   ════════════════════════════════════════════════ */
+.feats-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:1px;background:var(--border);
+  border:1.5px solid var(--border);border-radius:18px;
+  overflow:hidden;margin-top:52px;
+}
+.feat{
+  background:var(--surf);padding:36px 28px;
+  transition:background .2s;position:relative;overflow:hidden;
+}
+.feat:hover{background:var(--surf2)}
+.feat::after{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--green);transform:scaleX(0);transform-origin:left;
+  transition:transform .3s;
+}
+.feat:hover::after{transform:scaleX(1)}
+.feat-icon{
+  width:48px;height:48px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:18px;
+  background:var(--green-dim);border:1px solid var(--border);
+}
+.feat-title{font-size:17px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+.feat-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:16px}
+.feat-tags{display:flex;flex-wrap:wrap;gap:6px}
+
+/* ════════════════════════════════════════════════
+   HOW IT WORKS
+   ════════════════════════════════════════════════ */
+.hiw{background:var(--bg2)}
+.hiw-steps{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:52px}
+.hiw-step{
+  background:var(--surf);border:1.5px solid var(--border);
+  border-radius:18px;padding:32px 24px;
+  box-shadow:var(--shadow);transition:all .25s;
+}
+.hiw-step:hover{border-color:var(--green);transform:translateY(-4px);box-shadow:var(--shadow-md)}
+.hiw-num{
+  width:44px;height:44px;border-radius:12px;
+  background:var(--green);color:#fff;
+  font-size:20px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;margin-bottom:18px;
+}
+.hiw-title{font-size:18px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
+.hiw-desc{font-size:13px;color:var(--muted);line-height:1.65}
+.hiw-note{font-size:11px;color:var(--subtle);margin-top:12px;font-style:italic}
+
+/* ════════════════════════════════════════════════
+   FREE DEMO PANEL
+   ════════════════════════════════════════════════ */
+.demo-section{background:var(--surf)}
+.demo-gate{
+  background:var(--surf2);border:1.5px solid var(--border);
+  border-radius:20px;padding:40px;margin-top:52px;
+  box-shadow:var(--shadow);
+}
+.demo-gate-top{
+  display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start;
+}
+.demo-form-title{font-size:20px;font-weight:800;letter-spacing:-.02em;margin-bottom:6px}
+.demo-form-sub{font-size:14px;color:var(--muted);margin-bottom:24px}
+.form-field{margin-bottom:14px}
+.form-field label{
+  display:block;font-size:11px;font-weight:700;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--subtle);margin-bottom:6px;
+}
+.form-field input,.form-field select{
+  width:100%;padding:11px 13px;border-radius:9px;
+  border:1.5px solid var(--border);background:var(--surf);
+  color:var(--text);font-size:14px;outline:none;
+  transition:border-color .2s,box-shadow .2s;
+}
+.form-field input:focus,.form-field select:focus{
+  border-color:var(--green);
+  box-shadow:0 0 0 3px rgba(22,163,74,.12);
+}
+.form-field select option{background:var(--surf);color:var(--text)}
+.demo-submit{
+  width:100%;padding:14px;border-radius:10px;
+  background:var(--green);color:#fff;
+  font-size:14px;font-weight:700;border:none;cursor:pointer;
+  transition:all .2s;box-shadow:0 4px 14px rgba(22,163,74,.25);
+  margin-top:4px;
+}
+.demo-submit:hover{background:var(--green-lt);transform:translateY(-1px)}
+.demo-submit:disabled{opacity:.6;cursor:wait;transform:none}
+.demo-what{padding:32px 28px;background:var(--surf);border-radius:14px;border:1px solid var(--border)}
+.demo-what-title{font-size:14px;font-weight:700;margin-bottom:16px;color:var(--text)}
+.demo-include{display:flex;flex-direction:column;gap:10px}
+.di-item{display:flex;align-items:flex-start;gap:9px;font-size:13px;color:var(--muted)}
+.di-check{color:var(--green);font-weight:700;flex-shrink:0;margin-top:1px}
+.di-lock{color:var(--subtle);flex-shrink:0;margin-top:1px}
+.demo-note{font-size:12px;color:var(--subtle);margin-top:16px;line-height:1.6;padding-top:12px;border-top:1px solid var(--border)}
+
+/* Demo output panel */
+.demo-output{
+  display:none;margin-top:32px;
+  border:1.5px solid var(--border);border-radius:18px;overflow:hidden;
+  box-shadow:var(--shadow-md);
+}
+.demo-output.visible{display:block}
+.do-header{
+  background:linear-gradient(135deg,var(--green),#059669);
+  padding:20px 28px;color:#fff;
+  display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;
+}
+.do-company{font-size:18px;font-weight:800;letter-spacing:-.02em}
+.do-meta{font-size:12px;opacity:.85;margin-top:3px}
+.do-badges{display:flex;gap:8px;flex-wrap:wrap}
+.do-badge{
+  padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;
+  background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.3);
+  color:#fff;
+}
+.do-body{display:grid;grid-template-columns:240px 1fr;gap:0;background:var(--surf)}
+.do-rating-col{
+  padding:28px 24px;
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;align-items:center;text-align:center;gap:16px;
+  background:var(--surf2);
+}
+.do-letter{
+  width:80px;height:80px;border-radius:18px;
+  font-size:42px;font-weight:900;
+  display:flex;align-items:center;justify-content:center;color:#fff;
+}
+.do-letter.C{background:var(--amber)}
+.do-letter.B{background:#16a34a}
+.do-letter.D{background:#dc2626}
+.do-letter.A{background:#0ea5e9}
+.do-r-label{font-size:15px;font-weight:800;letter-spacing:-.01em}
+.do-r-score{font-size:12px;color:var(--muted);margin-top:2px}
+.do-pillars{display:flex;flex-direction:column;gap:10px;width:100%}
+.do-pillar{text-align:left}
+.do-p-label{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:4px;display:flex;justify-content:space-between}
+.do-p-bar{height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+.do-p-fill{height:100%;border-radius:3px;transition:width 1s ease}
+.do-content-col{padding:28px;display:flex;flex-direction:column;gap:20px}
+.do-metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.do-m{
+  padding:14px;background:var(--surf2);
+  border-radius:10px;border:1px solid var(--border);
+}
+.do-m-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--subtle);margin-bottom:5px}
+.do-m-val{font-size:22px;font-weight:900;letter-spacing:-.03em}
+.do-m-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.do-scenarios{overflow:hidden;border-radius:10px;border:1px solid var(--border)}
+.do-sc-head{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:10px 14px;background:var(--surf2);font-size:11px;font-weight:700;color:var(--subtle);letter-spacing:.05em;text-transform:uppercase}
+.do-sc-row{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;padding:11px 14px;border-top:1px solid var(--border);font-size:13px;transition:background .15s}
+.do-sc-row:hover{background:var(--surf2)}
+.do-sc-name{font-weight:600}
+.do-sc-ev{font-weight:700}
+.do-hazards-row{display:flex;flex-wrap:wrap;gap:8px}
+.do-hz{
+  padding:5px 11px;border-radius:7px;font-size:12px;font-weight:600;
+  border:1px solid var(--border);background:var(--surf2);
+  display:flex;align-items:center;gap:6px;
+}
+.do-hz-sev{
+  width:8px;height:8px;border-radius:50%;flex-shrink:0;
+}
+.do-upgrade{
+  margin-top:24px;padding:18px 20px;
+  background:var(--green-dim);border:1px solid var(--border2);
+  border-radius:12px;display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px;
+}
+.do-upgrade-text{font-size:14px;color:var(--text);font-weight:600}
+.do-upgrade-text span{color:var(--muted);font-weight:400;font-size:13px;display:block;margin-top:2px}
+.do-upgrade-btn{
+  padding:10px 20px;border-radius:9px;
+  background:var(--green);color:#fff;
+  font-size:13px;font-weight:700;border:none;cursor:pointer;transition:all .2s;
+  white-space:nowrap;
+}
+.do-upgrade-btn:hover{background:var(--green-lt)}
+
+/* ════════════════════════════════════════════════
+   ABOUT US
+   ════════════════════════════════════════════════ */
+.about{background:var(--bg2)}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start;margin-top:52px}
+.about-text{}
+.about-body{font-size:15px;color:var(--muted);line-height:1.8;margin-bottom:20px}
+.about-values{display:flex;flex-direction:column;gap:16px;margin-top:28px}
+.av-item{display:flex;gap:14px;align-items:flex-start}
+.av-dot{
+  width:10px;height:10px;border-radius:50%;
+  background:var(--green);flex-shrink:0;margin-top:6px;
+}
+.av-label{font-size:14px;font-weight:700;margin-bottom:3px}
+.av-desc{font-size:13px;color:var(--muted)}
+.about-card{
+  background:var(--surf);border:1.5px solid var(--border);
+  border-radius:20px;padding:36px;box-shadow:var(--shadow);
+}
+.about-card-title{font-size:15px;font-weight:800;margin-bottom:20px;color:var(--text)}
+.team-member{display:flex;gap:14px;align-items:flex-start;margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid var(--border)}
+.team-member:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.tm-avatar{
+  width:46px;height:46px;border-radius:12px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--green),#0ea5e9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:900;color:#fff;
+}
+.tm-name{font-size:14px;font-weight:700;margin-bottom:2px}
+.tm-role{font-size:12px;color:var(--green);font-weight:600;margin-bottom:4px}
+.tm-bio{font-size:12px;color:var(--muted);line-height:1.55}
+.about-mission{
+  margin-top:28px;padding:20px;background:var(--surf2);
+  border-radius:12px;border:1px solid var(--border);
+}
+.am-label{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--green);margin-bottom:8px}
+.am-text{font-size:14px;color:var(--text);font-weight:600;line-height:1.6;font-style:italic}
+
+/* ════════════════════════════════════════════════
+   REGULATORY
+   ════════════════════════════════════════════════ */
+.reg{background:var(--surf)}
+.reg-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:1px;
+  background:var(--border);border:1.5px solid var(--border);
+  border-radius:18px;overflow:hidden;margin-top:52px;
+}
+.reg-item{background:var(--surf);padding:36px 28px;transition:background .2s}
+.reg-item:hover{background:var(--surf2)}
+.reg-logo{font-size:12px;font-weight:900;letter-spacing:.08em;color:var(--green);margin-bottom:10px}
+.reg-title{font-size:17px;font-weight:800;letter-spacing:-.02em;margin-bottom:8px}
+.reg-desc{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:14px}
+.reg-pills{display:flex;flex-wrap:wrap;gap:6px}
+.reg-pill{
+  padding:3px 9px;border-radius:5px;font-size:11px;
+  background:var(--surf2);border:1px solid var(--border);color:var(--muted);
+}
+
+/* ════════════════════════════════════════════════
+   PRICING — consulting-stage, not SaaS
+   ════════════════════════════════════════════════ */
+.pricing{background:var(--bg2)}
+.pricing-stage-banner{
+  display:flex;align-items:flex-start;gap:14px;
+  padding:18px 22px;background:var(--surf2);
+  border:1.5px solid var(--border2);border-radius:12px;
+  margin-top:52px;margin-bottom:28px;
+}
+.psb-icon{font-size:22px;flex-shrink:0;margin-top:1px}
+.psb-text{font-size:14px;color:var(--muted);line-height:1.6}
+.psb-text strong{color:var(--text)}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.price-card{
+  background:var(--surf);border:1.5px solid var(--border);
+  border-radius:18px;padding:28px 22px;
+  display:flex;flex-direction:column;position:relative;
+  box-shadow:var(--shadow);transition:all .25s;
+}
+.price-card:hover{border-color:var(--border2);transform:translateY(-3px);box-shadow:var(--shadow-md)}
+.price-card.featured{border-color:var(--green);box-shadow:0 4px 24px rgba(22,163,74,.15)}
+.price-badge{
+  position:absolute;top:-11px;left:50%;transform:translateX(-50%);
+  background:var(--green);color:#fff;
+  font-size:10px;font-weight:800;letter-spacing:.08em;
+  padding:4px 12px;border-radius:100px;text-transform:uppercase;white-space:nowrap;
+}
+.price-tier{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+.price-amount{font-size:32px;font-weight:900;letter-spacing:-.04em;margin-bottom:2px;color:var(--text)}
+.price-amount sup{font-size:16px;font-weight:700;vertical-align:super;margin-right:2px}
+.price-amount span{font-size:14px;font-weight:500;color:var(--muted)}
+.price-cadence{font-size:12px;color:var(--subtle);margin-bottom:16px}
+.price-type{
+  display:inline-block;padding:3px 9px;border-radius:5px;
+  font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;
+  background:var(--green-dim);color:var(--green);border:1px solid var(--border2);
+  margin-bottom:16px;
+}
+.price-divider{height:1px;background:var(--border);margin:16px 0}
+.price-features{display:flex;flex-direction:column;gap:9px;flex:1}
+.pf{display:flex;align-items:flex-start;gap:8px;font-size:13px;color:var(--muted);line-height:1.4}
+.pf::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.pf.dim{color:var(--subtle)}
+.pf.dim::before{content:'–';color:var(--subtle)}
+.price-cta{
+  margin-top:20px;padding:12px;border-radius:9px;
+  font-size:13px;font-weight:700;cursor:pointer;
+  border:1.5px solid var(--border2);background:transparent;color:var(--text);
+  transition:all .2s;width:100%;
+}
+.price-cta:hover{border-color:var(--green);color:var(--green)}
+.price-cta.primary{background:var(--green);color:#fff;border-color:var(--green)}
+.price-cta.primary:hover{background:var(--green-lt)}
+.pricing-footer{
+  margin-top:24px;text-align:center;
+  font-size:13px;color:var(--subtle);line-height:1.7;
+}
+
+/* ════════════════════════════════════════════════
+   CTA / LEAD CAPTURE
+   ════════════════════════════════════════════════ */
+.cta-section{
+  background:linear-gradient(135deg,var(--green) 0%,#059669 50%,#0ea5e9 100%);
+  padding:80px 24px;text-align:center;
+}
+.cta-inner{max-width:680px;margin:0 auto}
+.cta-section h2{color:#fff;margin-bottom:16px}
+.cta-section p{color:rgba(255,255,255,.85);font-size:17px;margin-bottom:36px;line-height:1.7}
+.cta-form{
+  display:flex;gap:10px;max-width:500px;margin:0 auto;
+  flex-wrap:wrap;
+}
+.cta-input{
+  flex:1;min-width:220px;padding:14px 16px;border-radius:10px;
+  border:none;font-size:15px;outline:none;background:#fff;color:#1a1a2a;
+}
+.cta-btn{
+  padding:14px 24px;border-radius:10px;
+  background:#fff;color:var(--green);
+  font-size:15px;font-weight:800;border:none;cursor:pointer;
+  transition:all .2s;white-space:nowrap;
+}
+.cta-btn:hover{background:#f0fdf4;transform:translateY(-1px)}
+.cta-note{font-size:12px;color:rgba(255,255,255,.7);margin-top:14px}
+
+/* ════════════════════════════════════════════════
+   FOOTER
+   ════════════════════════════════════════════════ */
+footer{
+  background:var(--surf);border-top:1px solid var(--border);
+  padding:56px 24px 32px;
+}
+.footer-grid{
+  max-width:1160px;margin:0 auto;
+  display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;
+  margin-bottom:40px;
+}
+.footer-brand-logo{
+  display:flex;align-items:center;gap:9px;
+  font-size:17px;font-weight:900;margin-bottom:12px;
+}
+.flm{
+  width:28px;height:28px;border-radius:7px;
+  background:linear-gradient(135deg,var(--green),#0ea5e9);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:#fff;font-weight:900;
+}
+.footer-tagline{font-size:13px;color:var(--muted);line-height:1.65;max-width:240px;margin-bottom:14px}
+.footer-contact{font-size:12px;color:var(--subtle)}
+.footer-contact a{color:var(--green)}
+.fc-head{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
+.footer-col a{display:block;font-size:13px;color:var(--subtle);margin-bottom:9px;transition:color .2s}
+.footer-col a:hover{color:var(--green)}
+.footer-bottom{
+  max-width:1160px;margin:0 auto;
+  display:flex;justify-content:space-between;align-items:center;
+  border-top:1px solid var(--border);padding-top:20px;flex-wrap:wrap;gap:10px;
+}
+.footer-copy{font-size:12px;color:var(--subtle)}
+.footer-links{display:flex;gap:20px}
+.footer-links a{font-size:12px;color:var(--subtle);transition:color .2s}
+.footer-links a:hover{color:var(--muted)}
+
+/* ════════════════════════════════════════════════
+   SCROLL ANIMATIONS
+   ════════════════════════════════════════════════ */
+.fade-up{opacity:0;transform:translateY(22px);transition:opacity .55s ease,transform .55s ease}
+.fade-up.in{opacity:1;transform:translateY(0)}
+.stagger-1{transition-delay:.08s}
+.stagger-2{transition-delay:.16s}
+.stagger-3{transition-delay:.24s}
+
+/* ════════════════════════════════════════════════
+   RESPONSIVE
+   ════════════════════════════════════════════════ */
+@media(max-width:960px){
+  .hero-grid{grid-template-columns:1fr}
+  .hero-stats{grid-template-columns:repeat(2,1fr)}
+  .hero-stat:nth-child(2){border-right:none}
+  .problem-grid{grid-template-columns:1fr}
+  .feats-grid{grid-template-columns:1fr}
+  .hiw-steps{grid-template-columns:1fr}
+  .demo-gate-top{grid-template-columns:1fr}
+  .about-grid{grid-template-columns:1fr}
+  .reg-grid{grid-template-columns:1fr}
+  .pricing-grid{grid-template-columns:1fr}
+  .footer-grid{grid-template-columns:1fr 1fr}
+  .do-body{grid-template-columns:1fr}
+  .do-metrics{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){
+  .nav-links{display:none}
+  .hero-stats{grid-template-columns:1fr 1fr}
+  .footer-grid{grid-template-columns:1fr}
+  .cta-form{flex-direction:column}
+  .do-metrics{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════ NAV ══════════════════════ -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-mark">CR</div>
+      Clim<span>Risk</span>
+    </a>
+    <div class="nav-links">
+      <a href="#engine">Engine</a>
+      <a href="#demo">Free Demo</a>
+      <a href="#about">About</a>
+      <a href="#regulatory">Regulatory</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="nav-right">
+      <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode" id="themeBtn">🌙</button>
+      <button class="nav-cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try Free Demo</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════ HERO ══════════════════════ -->
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div class="hero-eyebrow"><div class="hero-line"></div><span>CRI Engine v0.2 — Climate Risk Intelligence</span></div>
+    <div class="hero-grid">
+      <div class="hero-left fade-up">
+        <h1>Climate <em>risk</em>,<br>down to the<br><span class="danger">exact site.</span></h1>
+        <p class="hero-sub">The first climate risk engine that combines <strong>GPS site-specific hazard physics</strong>, NGFS transition scenarios, and enterprise DCF modelling — delivering TCFD, IFRS S2 and CSRD-ready reports.</p>
+        <div class="hero-ctas">
+          <button class="btn-primary" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">🔬 Try Free Demo</button>
+          <button class="btn-outline" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">About ClimRisk →</button>
+        </div>
+        <p class="hero-trust">Powered by <strong>WRI Aqueduct 4.0 · NGFS Phase 4 · IPCC AR6 · NASA NEX-GDDP</strong></p>
+      </div>
+
+      <!-- Live sample card -->
+      <div class="hero-card fade-up stagger-1">
+        <div class="hc-head">
+          <div>
+            <div class="hc-company">Meridian Chemicals AG</div>
+            <div class="live-indicator"><div class="live-dot"></div>Live CRI Output</div>
+          </div>
+          <div class="hc-badge">C — Elevated Risk</div>
+        </div>
+        <div class="hc-rating-row">
+          <div class="hc-rating-letter">C</div>
+          <div>
+            <div class="hc-rating-label">Elevated Climate Risk</div>
+            <div class="hc-rating-sub">Composite score 54 / 100 · Confidence: Medium</div>
+            <div style="margin-top:6px"><span class="tag tag-a">SSP3-7.0 · 2030</span></div>
+          </div>
+        </div>
+        <div class="hc-metrics">
+          <div class="hc-metric">
+            <div class="hc-m-lbl">EV at Risk</div>
+            <div class="hc-m-val" style="color:var(--red)">38.2%</div>
+            <div class="hc-m-sub">NZE vs Current Policies</div>
+          </div>
+          <div class="hc-metric">
+            <div class="hc-m-lbl">Physical CaR</div>
+            <div class="hc-m-val" style="color:var(--amber)">$312M</div>
+            <div class="hc-m-sub">Annual loss, 5 assets</div>
+          </div>
+          <div class="hc-metric">
+            <div class="hc-m-lbl">Carbon Cost 2030</div>
+            <div class="hc-m-val" style="color:var(--amber)">$148M</div>
+            <div class="hc-m-sub">8.4% of EBITDA (NZE)</div>
+          </div>
+          <div class="hc-metric">
+            <div class="hc-m-lbl">Top Hazard</div>
+            <div class="hc-m-val" style="font-size:14px;color:var(--red)">Coastal Flood</div>
+            <div class="hc-m-sub">Rotterdam — 11.4 km coast</div>
+          </div>
+        </div>
+        <div class="hc-hazards">
+          <span class="hc-hz">🌊 Coastal Flood</span>
+          <span class="hc-hz">🌡 Heat Stress</span>
+          <span class="hc-hz">💧 Water Stress</span>
+          <span class="hc-hz">🌀 Cyclone</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-stats fade-up stagger-2">
+      <div class="hero-stat">
+        <div class="hs-num">10<span>×</span></div>
+        <div class="hs-lbl">Hazard types per asset — Heat Stress to Saltwater Intrusion</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-num">4<span> SSP</span></div>
+        <div class="hs-lbl">Scenarios from Net Zero 2050 to Hot House World</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-num">25<span>yr</span></div>
+        <div class="hs-lbl">Annual EV, FCF, EBITDA trajectory 2026–2050</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hs-num">3<span> std</span></div>
+        <div class="hs-lbl">TCFD · IFRS S2 · CSRD E1 — one report</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ TAPE ══════════════════════ -->
+<div class="tape">
+  <div class="tape-inner">
+    <span class="tape-item"><span>●</span>WRI AQUEDUCT 4.0</span>
+    <span class="tape-item"><span>●</span>NGFS PHASE 4</span>
+    <span class="tape-item"><span>●</span>IPCC AR6 WG2</span>
+    <span class="tape-item"><span>●</span>NASA NEX-GDDP</span>
+    <span class="tape-item"><span>●</span>TCFD ALIGNED</span>
+    <span class="tape-item"><span>●</span>IFRS S2</span>
+    <span class="tape-item"><span>●</span>CSRD E1 / ESRS</span>
+    <span class="tape-item"><span>●</span>GPS SITE-SPECIFIC</span>
+    <span class="tape-item"><span>●</span>DUAL MATERIALITY</span>
+    <span class="tape-item"><span>●</span>DCF INTEGRATION</span>
+    <span class="tape-item"><span>●</span>WRI AQUEDUCT 4.0</span>
+    <span class="tape-item"><span>●</span>NGFS PHASE 4</span>
+    <span class="tape-item"><span>●</span>IPCC AR6 WG2</span>
+    <span class="tape-item"><span>●</span>NASA NEX-GDDP</span>
+    <span class="tape-item"><span>●</span>TCFD ALIGNED</span>
+    <span class="tape-item"><span>●</span>IFRS S2</span>
+    <span class="tape-item"><span>●</span>CSRD E1 / ESRS</span>
+    <span class="tape-item"><span>●</span>GPS SITE-SPECIFIC</span>
+    <span class="tape-item"><span>●</span>DUAL MATERIALITY</span>
+    <span class="tape-item"><span>●</span>DCF INTEGRATION</span>
+  </div>
+</div>
+
+<!-- ══════════════════ PROBLEM ══════════════════ -->
+<section class="section problem" id="why">
+  <div class="container">
+    <p class="section-label fade-up">The Problem</p>
+    <h2 class="fade-up">ESG scores tell you<br><em>nothing financial.</em></h2>
+    <p class="section-sub fade-up">Regulators now mandate quantified climate-related financial disclosure. A colour-coded ESG score can't answer your board, your auditor, or the FCA.</p>
+    <div class="problem-grid">
+      <div class="prob-list">
+        <div class="prob-item fade-up">
+          <div class="prob-icon">📊</div>
+          <div><div class="prob-title">ESG ratings aren't financial models</div><div class="prob-desc">MSCI, Sustainalytics, and S&P ESG scores measure disclosure quality. They cannot tell you EV at risk under a 2°C pathway — which is exactly what TCFD and IFRS S2 now require.</div></div>
+        </div>
+        <div class="prob-item fade-up stagger-1">
+          <div class="prob-icon">📍</div>
+          <div><div class="prob-title">Regional buckets miss asset reality</div><div class="prob-desc">Two facilities in the same country can have 10× different flood exposure based on elevation and coastal distance. Regional scores mask the differences that actually drive insurance pricing and capex decisions.</div></div>
+        </div>
+        <div class="prob-item fade-up stagger-2">
+          <div class="prob-icon">📋</div>
+          <div><div class="prob-title">TCFD, IFRS S2 and CSRD need numbers</div><div class="prob-desc">EU, UK and APAC regulators now require scenario analysis with quantified financial impact, transition risk metrics, and physical hazard data — not narrative statements.</div></div>
+        </div>
+      </div>
+      <div class="fade-up stagger-1">
+        <div class="compare-card">
+          <div class="cc-tab-row">
+            <div class="cc-tab" id="tab-legacy" onclick="showTab('legacy')" >Legacy ESG Tool</div>
+            <div class="cc-tab on" id="tab-cri" onclick="showTab('cri')">ClimRisk CRI</div>
+          </div>
+          <div class="cc-body" id="body-legacy" style="display:none">
+            <div class="cc-row"><span class="cc-key">Climate Risk Score</span><span class="cc-val bad">42.6 / 100</span></div>
+            <div class="cc-row"><span class="cc-key">Physical Risk Category</span><span class="cc-val" style="color:var(--amber)">Medium</span></div>
+            <div class="cc-row"><span class="cc-key">EV at Risk ($B)</span><span class="cc-val na">Not modelled</span></div>
+            <div class="cc-row"><span class="cc-key">Asset-level hazard breakdown</span><span class="cc-val na">Not available</span></div>
+            <div class="cc-row"><span class="cc-key">Scenario-adjusted FCF</span><span class="cc-val na">Not available</span></div>
+            <div class="cc-row"><span class="cc-key">TCFD disclosure output</span><span class="cc-val na">Not included</span></div>
+            <div class="cc-row"><span class="cc-key">Carbon cost in EBITDA</span><span class="cc-val na">Not quantified</span></div>
+            <div class="cc-row"><span class="cc-key">GPS site-specific</span><span class="cc-val na">No — regional only</span></div>
+            <div class="cc-row"><span class="cc-key">Typical annual cost</span><span class="cc-val bad">$18,000–$40,000</span></div>
+          </div>
+          <div class="cc-body" id="body-cri">
+            <div class="cc-row"><span class="cc-key">CRI Rating</span><span class="cc-val good">C — Elevated (54/100)</span></div>
+            <div class="cc-row"><span class="cc-key">Physical Risk</span><span class="cc-val good">Per-asset, GPS-resolved</span></div>
+            <div class="cc-row"><span class="cc-key">EV at Risk ($B)</span><span class="cc-val good">$4.1B (38.2% of EV)</span></div>
+            <div class="cc-row"><span class="cc-key">Asset-level hazard breakdown</span><span class="cc-val good">10 hazards × 4 SSPs</span></div>
+            <div class="cc-row"><span class="cc-key">Scenario-adjusted FCF</span><span class="cc-val good">Annual 2026–2050</span></div>
+            <div class="cc-row"><span class="cc-key">TCFD disclosure output</span><span class="cc-val good">PDF + CSRD + IFRS S2</span></div>
+            <div class="cc-row"><span class="cc-key">Carbon cost in EBITDA</span><span class="cc-val good">$148M = 8.4% (2030)</span></div>
+            <div class="cc-row"><span class="cc-key">GPS site-specific</span><span class="cc-val good">✓ 180+ coastal refs</span></div>
+            <div class="cc-row"><span class="cc-key">Starting from</span><span class="cc-val good">Free — then £2,500/report</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ ENGINE FEATURES ══════════ -->
+<section class="section" id="engine">
+  <div class="container">
+    <p class="section-label fade-up">The CRI Engine</p>
+    <h2 class="fade-up">Every layer of risk,<br><em>quantified.</em></h2>
+    <p class="section-sub fade-up">Six interconnected modules — from GPS coordinates to board-ready financial disclosure in a single pipeline.</p>
+    <div class="feats-grid">
+      <div class="feat fade-up">
+        <div class="feat-icon">🛰</div>
+        <div class="feat-title">GPS Site-Specific Hazard Engine</div>
+        <div class="feat-desc">Input a lat/lon. Get 10 hazard scores built from real elevation, coastal distance, river proximity, urban heat island, and slope physics — not regional averages.</div>
+        <div class="feat-tags">
+          <span class="tag tag-g">WRI Aqueduct</span><span class="tag tag-g">NASA NEX-GDDP</span><span class="tag tag-g">IPCC AR6</span>
+        </div>
+      </div>
+      <div class="feat fade-up stagger-1">
+        <div class="feat-icon">📈</div>
+        <div class="feat-title">NGFS Multi-Scenario DCF</div>
+        <div class="feat-desc">Three NGFS Phase 4 pathways × 25 annual years of EV, FCF, EBITDA, carbon cost — with WACC climate premium and scenario sensitivity table.</div>
+        <div class="feat-tags">
+          <span class="tag tag-b">NZE 2050</span><span class="tag tag-a">Delayed Transition</span><span class="tag tag-r">Current Policies</span>
+        </div>
+      </div>
+      <div class="feat fade-up stagger-2">
+        <div class="feat-icon">📋</div>
+        <div class="feat-title">Disclosure Report Generator</div>
+        <div class="feat-desc">One click to a fully-structured TCFD four-pillar + IFRS S2 metrics + CSRD E1 disclosure package with legal sign-off workflow and historical validation case studies.</div>
+        <div class="feat-tags">
+          <span class="tag tag-b">TCFD</span><span class="tag tag-b">IFRS S2</span><span class="tag tag-g">CSRD E1</span>
+        </div>
+      </div>
+      <div class="feat fade-up">
+        <div class="feat-icon">⚠</div>
+        <div class="feat-title">Physical Climate-at-Risk (CaR)</div>
+        <div class="feat-desc">Annual Loss % × Asset Carrying Value = dollar CaR per asset per scenario. Aggregated to portfolio level with EV impact (CaR ÷ WACC perpetuity).</div>
+        <div class="feat-tags">
+          <span class="tag tag-r">Per-asset</span><span class="tag tag-r">Portfolio roll-up</span>
+        </div>
+      </div>
+      <div class="feat fade-up stagger-1">
+        <div class="feat-icon">🔗</div>
+        <div class="feat-title">Supply Chain Risk Module</div>
+        <div class="feat-desc">Upload your Tier 1–2 supplier list with GPS coordinates. Each supplier gets a full hazard score, risk-adjusted spend, and concentration risk flag for Scope 3 mapping.</div>
+        <div class="feat-tags">
+          <span class="tag tag-a">Tier 1 &amp; 2</span><span class="tag tag-a">Spend-adjusted</span>
+        </div>
+      </div>
+      <div class="feat fade-up stagger-2">
+        <div class="feat-icon">📦</div>
+        <div class="feat-title">Data Export &amp; Integration</div>
+        <div class="feat-desc">Five-file export package (CSV + JSON) structured for Workiva, SAP, Power BI, or any BI stack. Manifest JSON included for automated pipeline ingestion and REST API access.</div>
+        <div class="feat-tags">
+          <span class="tag tag-g">CSV + JSON</span><span class="tag tag-g">REST API</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ HOW IT WORKS ═════════════ -->
+<section class="section hiw" id="how">
+  <div class="container">
+    <p class="section-label fade-up">How it works</p>
+    <h2 class="fade-up">From intake to<br><em>disclosure</em> in minutes.</h2>
+    <p class="section-sub fade-up">Three steps. One engine. Regulatory-grade output for any portfolio, anywhere in the world.</p>
+    <div class="hiw-steps">
+      <div class="hiw-step fade-up">
+        <div class="hiw-num">1</div>
+        <div class="hiw-title">Import your portfolio</div>
+        <div class="hiw-desc">Upload a CSV with GPS coordinates and carrying values — or use the guided intake wizard to enter company financials, emissions, and asset locations interactively. PDF financial reports can be ingested automatically via the Report Intelligence module.</div>
+        <div class="hiw-note">CSV · Manual entry · PDF ingestion via Report Intelligence</div>
+      </div>
+      <div class="hiw-step fade-up stagger-1">
+        <div class="hiw-num">2</div>
+        <div class="hiw-title">Engine runs</div>
+        <div class="hiw-desc">The CRI pipeline computes GPS hazard physics, applies NGFS carbon price paths to your emissions, builds three scenario DCFs, computes physical and transition CaR, and generates all disclosure metrics — in under 10 seconds.</div>
+        <div class="hiw-note">IPCC AR6 · WRI Aqueduct 4.0 · NASA NEX-GDDP · NGFS Phase 4</div>
+      </div>
+      <div class="hiw-step fade-up stagger-2">
+        <div class="hiw-num">3</div>
+        <div class="hiw-title">Download outputs</div>
+        <div class="hiw-desc">Full TCFD + IFRS S2 + CSRD E1 disclosure report, structured CSV/JSON data export package, A–E climate risk rating with pillar breakdown, and 25-year financial trajectory dashboard. All ready for your board, auditor, or regulator.</div>
+        <div class="hiw-note">PDF report · CSV/JSON · REST API (Analyst tier +)</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ FREE DEMO ═════════════════ -->
+<section class="section demo-section" id="demo">
+  <div class="container">
+    <p class="section-label fade-up">Free Demo</p>
+    <h2 class="fade-up">See the engine run<br>on <em>your inputs.</em></h2>
+    <p class="section-sub fade-up">Enter your company details below. The CRI engine will compute a live sample analysis — your rating, physical risk profile, and financial scenario summary. Free, instant, no card required.</p>
+
+    <div class="demo-gate fade-up">
+      <div class="demo-gate-top">
+        <!-- Form -->
+        <div>
+          <div class="demo-form-title">Run your free CRI analysis</div>
+          <div class="demo-form-sub">Takes 10 seconds. We'll generate a real risk profile using your inputs.</div>
+          <form id="demoForm" onsubmit="runDemo(event)">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-field">
+                <label>Company Name</label>
+                <input type="text" id="d-company" placeholder="Meridian Chemicals AG" required>
+              </div>
+              <div class="form-field">
+                <label>Sector</label>
+                <select id="d-sector" required>
+                  <option value="">Select…</option>
+                  <option value="Oil & Gas">Oil &amp; Gas</option>
+                  <option value="Mining">Mining</option>
+                  <option value="Chemicals">Chemicals</option>
+                  <option value="Utilities">Utilities</option>
+                  <option value="Steel & Metals">Steel &amp; Metals</option>
+                  <option value="Cement">Cement</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+              <div class="form-field">
+                <label>Annual Revenue (USD M)</label>
+                <input type="number" id="d-revenue" placeholder="4200" min="1">
+              </div>
+              <div class="form-field">
+                <label>Primary Asset Region</label>
+                <select id="d-region">
+                  <option value="EU-NL">Netherlands / North Sea</option>
+                  <option value="AU-WA">Western Australia</option>
+                  <option value="US-TX">Texas, USA</option>
+                  <option value="IN-MH">India — Maharashtra</option>
+                  <option value="CN-SD">China — East Coast</option>
+                  <option value="ZA-WC">South Africa</option>
+                  <option value="BR-SP">Brazil</option>
+                  <option value="global">Global / Multiple</option>
+                </select>
+              </div>
+            </div>
+            <div class="form-field">
+              <label>Your Email (to receive full demo link)</label>
+              <input type="email" id="d-email" placeholder="you@company.com" required>
+            </div>
+            <button type="submit" class="demo-submit" id="demoBtn">
+              🔬 Run free analysis →
+            </button>
+            <p style="font-size:11px;color:var(--subtle);margin-top:10px;text-align:center">Free tier — A–E rating, top hazards, scenario summary. Full platform by request.</p>
+          </form>
+        </div>
+
+        <!-- What's included -->
+        <div class="demo-what">
+          <div class="demo-what-title">What you'll see in your free analysis</div>
+          <div class="demo-include">
+            <div class="di-item"><span class="di-check">✓</span><div><strong>CRI Rating (A–E)</strong> — composite climate risk score with pillar breakdown (Physical / Transition / Financial)</div></div>
+            <div class="di-item"><span class="di-check">✓</span><div><strong>Top 3 physical hazards</strong> — site-specific hazard profile for your primary region</div></div>
+            <div class="di-item"><span class="di-check">✓</span><div><strong>Scenario EV table</strong> — enterprise value under NZE vs Current Policies (illustrative)</div></div>
+            <div class="di-item"><span class="di-check">✓</span><div><strong>Carbon cost exposure</strong> — indicative carbon cost as % of revenue</div></div>
+            <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">GPS-resolved asset-level breakdown <em>(Professional)</em></div></div>
+            <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">TCFD / IFRS S2 / CSRD disclosure report <em>(Professional)</em></div></div>
+            <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">25-year financial trajectory + export package <em>(Professional)</em></div></div>
+          </div>
+          <div class="demo-note">Full platform access is available as a bespoke engagement. We work directly with your risk or sustainability team to run the complete analysis and deliver board-ready reports.</div>
+        </div>
+      </div>
+
+      <!-- Demo output (revealed after submit) -->
+      <div class="demo-output" id="demoOutput">
+        <div class="do-header">
+          <div>
+            <div class="do-company" id="out-company">Meridian Chemicals AG</div>
+            <div class="do-meta" id="out-meta">Chemicals · SSP3-7.0 · 2030 · CRI Engine v0.2</div>
+          </div>
+          <div class="do-badges">
+            <span class="do-badge">GPS-resolved</span>
+            <span class="do-badge">Free Tier</span>
+            <span class="do-badge live-indicator"><div class="live-dot" style="background:#fff;border:1px solid rgba(255,255,255,.5)"></div>Live output</span>
+          </div>
+        </div>
+        <div class="do-body">
+          <!-- Rating column -->
+          <div class="do-rating-col">
+            <div class="do-letter C" id="out-letter">C</div>
+            <div>
+              <div class="do-r-label" id="out-rating-label">Elevated Climate Risk</div>
+              <div class="do-r-score" id="out-score">Composite: 54 / 100</div>
+            </div>
+            <div class="do-pillars">
+              <div class="do-pillar">
+                <div class="do-p-label"><span>Physical</span><span id="pp-physical">Moderate</span></div>
+                <div class="do-p-bar"><div class="do-p-fill" id="pf-physical" style="width:42%;background:var(--amber)"></div></div>
+              </div>
+              <div class="do-pillar">
+                <div class="do-p-label"><span>Transition</span><span id="pp-transition">Elevated</span></div>
+                <div class="do-p-bar"><div class="do-p-fill" id="pf-transition" style="width:62%;background:var(--amber)"></div></div>
+              </div>
+              <div class="do-pillar">
+                <div class="do-p-label"><span>Financial</span><span id="pp-financial">Elevated</span></div>
+                <div class="do-p-bar"><div class="do-p-fill" id="pf-financial" style="width:58%;background:var(--red)"></div></div>
+              </div>
+            </div>
+            <div style="font-size:11px;color:var(--subtle);line-height:1.5;text-align:left;width:100%">
+              <strong style="color:var(--muted)">Top hazards:</strong><br>
+              <span id="out-tophaz">Coastal Flood · Heat Stress · Water Stress</span>
+            </div>
+          </div>
+
+          <!-- Metrics + scenarios -->
+          <div class="do-content-col">
+            <div class="do-metrics">
+              <div class="do-m">
+                <div class="do-m-lbl">Enterprise Value (CP)</div>
+                <div class="do-m-val" id="out-ev" style="color:var(--text)">$10.7B</div>
+                <div class="do-m-sub">Current Policies baseline</div>
+              </div>
+              <div class="do-m">
+                <div class="do-m-lbl">EV at Risk</div>
+                <div class="do-m-val" id="out-evar" style="color:var(--red)">38.2%</div>
+                <div class="do-m-sub">NZE vs Current Policies</div>
+              </div>
+              <div class="do-m">
+                <div class="do-m-lbl">Carbon Cost 2030</div>
+                <div class="do-m-val" id="out-cc" style="color:var(--amber)">$148M</div>
+                <div class="do-m-sub" id="out-cc-pct">8.4% of EBITDA (NZE)</div>
+              </div>
+            </div>
+
+            <!-- Scenario table -->
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase">Scenario EV Summary (illustrative)</div>
+              <div class="do-scenarios">
+                <div class="do-sc-head"><span>Scenario</span><span>EV ($B)</span><span>WACC</span><span>Rating</span></div>
+                <div class="do-sc-row"><span class="do-sc-name" style="color:var(--green)">🟢 NZE 2050</span><span class="do-sc-ev" id="sc-nze">$6.6B</span><span style="color:var(--muted)">9.1%</span><span class="tag tag-g" style="font-size:10px">B</span></div>
+                <div class="do-sc-row"><span class="do-sc-name" style="color:var(--amber)">🟡 Delayed Trans.</span><span class="do-sc-ev" id="sc-dt">$9.2B</span><span style="color:var(--muted)">8.7%</span><span class="tag tag-a" style="font-size:10px">C</span></div>
+                <div class="do-sc-row"><span class="do-sc-name" style="color:var(--red)">🔴 Current Policies</span><span class="do-sc-ev" id="sc-cp">$10.7B</span><span style="color:var(--muted)">8.2%</span><span class="tag tag-r" style="font-size:10px">D</span></div>
+              </div>
+            </div>
+
+            <!-- Hazard chips -->
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase">Top physical hazards — <span id="out-region-lbl">Netherlands / North Sea</span></div>
+              <div class="do-hazards-row" id="out-hazards">
+                <span class="do-hz"><div class="do-hz-sev" style="background:var(--red)"></div>🌊 Coastal Flood — High</span>
+                <span class="do-hz"><div class="do-hz-sev" style="background:var(--amber)"></div>🌡 Heat Stress — Elevated</span>
+                <span class="do-hz"><div class="do-hz-sev" style="background:var(--amber)"></div>💧 Water Stress — Moderate</span>
+                <span class="do-hz"><div class="do-hz-sev" style="background:var(--green)"></div>🌿 Wildfire — Low</span>
+              </div>
+            </div>
+
+            <div class="do-upgrade">
+              <div class="do-upgrade-text">
+                Want the full analysis?
+                <span>GPS asset-level breakdown · 25yr trajectory · TCFD/CSRD disclosure report · Legal sign-off workflow</span>
+              </div>
+              <button class="do-upgrade-btn" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Request full report →</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ ABOUT US ══════════════════ -->
+<section class="section about" id="about">
+  <div class="container">
+    <p class="section-label fade-up">About ClimRisk</p>
+    <h2 class="fade-up">Built by practitioners,<br>for <em>decision-makers.</em></h2>
+    <div class="about-grid">
+      <div class="about-text fade-up">
+        <p class="about-body">ClimRisk was founded with a single conviction: <strong>climate risk is financial risk</strong>, and the tools to quantify it should be accessible to every enterprise — not just the handful of institutions that can afford a $40,000/year ESG licence.</p>
+        <p class="about-body">We built the CRI (Climate Risk Intelligence) engine from the ground up — combining open scientific datasets (WRI Aqueduct, NGFS, IPCC AR6, NASA NEX-GDDP) with institutional-grade financial modelling to produce the kind of analysis that previously required a team of analysts and months of work.</p>
+        <p class="about-body">We are currently in our <strong>pilot engagement phase</strong> — working directly with a small number of enterprise clients across mining, energy, chemicals, and financial services to refine the engine, build case studies, and validate the output against real regulatory submissions.</p>
+
+        <div class="about-values">
+          <div class="av-item fade-up">
+            <div class="av-dot"></div>
+            <div><div class="av-label">Rigour over narrative</div><div class="av-desc">Every number in a CRI report traces back to a peer-reviewed source. We cite IPCC AR6, WRI Aqueduct 4.0, and NGFS Phase 4 — not proprietary black-box models.</div></div>
+          </div>
+          <div class="av-item fade-up stagger-1">
+            <div class="av-dot"></div>
+            <div><div class="av-label">Site-specific, not regional</div><div class="av-desc">Two assets 40km apart in the same country can have radically different physical risk profiles. Our GPS hazard engine computes from coordinates, not administrative regions.</div></div>
+          </div>
+          <div class="av-item fade-up stagger-2">
+            <div class="av-dot"></div>
+            <div><div class="av-label">Transparent methodology</div><div class="av-desc">All model assumptions, data sources, and limitations are documented and included in every report. Our clients understand what they're signing off on.</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="fade-up stagger-1">
+        <div class="about-card">
+          <div class="about-card-title">Our team</div>
+          <div class="team-member">
+            <div class="tm-avatar">SK</div>
+            <div>
+              <div class="tm-name">Shrinivas Kannan</div>
+              <div class="tm-role">Founder &amp; Lead Analyst</div>
+              <div class="tm-bio">Climate financial risk modelling, enterprise DCF, and regulatory disclosure strategy. Built CRI from a conviction that institutional-quality climate analysis should be accessible to all enterprises navigating the net-zero transition.</div>
+            </div>
+          </div>
+          <div class="team-member">
+            <div class="tm-avatar" style="background:linear-gradient(135deg,#0ea5e9,#7c3aed)">CRI</div>
+            <div>
+              <div class="tm-name">CRI Engine v0.2</div>
+              <div class="tm-role">Climate Risk Intelligence Platform</div>
+              <div class="tm-bio">Built on WRI Aqueduct 4.0, NGFS Phase 4, IPCC AR6 WG2, and NASA NEX-GDDP. GPS site-specific physics layer · 10 physical hazards · 4 SSP scenarios · TCFD/IFRS S2/CSRD output.</div>
+            </div>
+          </div>
+
+          <div class="about-mission">
+            <div class="am-label">Our mission</div>
+            <div class="am-text">"To make institutional-grade climate risk modelling accessible to every enterprise that needs it — not just the ones that can afford a $40,000 ESG licence."</div>
+          </div>
+        </div>
+
+        <div style="margin-top:16px;padding:20px;background:var(--surf);border:1.5px solid var(--border);border-radius:14px;">
+          <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:12px;letter-spacing:.05em;text-transform:uppercase">Current status</div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+              <span style="color:var(--green);font-weight:700">✓</span><span>CRI Engine v0.2 — production ready</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+              <span style="color:var(--green);font-weight:700">✓</span><span>TCFD · IFRS S2 · CSRD disclosure output</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+              <span style="color:var(--green);font-weight:700">✓</span><span>GPS site-specific hazard physics layer</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+              <span style="color:var(--amber);font-weight:700">→</span><span>Accepting pilot engagement clients now</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+              <span style="color:var(--subtle)">○</span><span style="color:var(--subtle)">SaaS platform — roadmap 2026</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ REGULATORY ════════════════ -->
+<section class="section reg" id="regulatory">
+  <div class="container">
+    <p class="section-label fade-up">Regulatory Coverage</p>
+    <h2 class="fade-up">One engine.<br><em>Every framework.</em></h2>
+    <p class="section-sub fade-up">Climate disclosure regulation is converging across jurisdictions. CRI maps to every major framework so your team doesn't rebuild from scratch each cycle.</p>
+    <div class="reg-grid">
+      <div class="reg-item fade-up">
+        <div class="reg-logo">📘 TCFD</div>
+        <div class="reg-title">Task Force on Climate-related Financial Disclosures</div>
+        <div class="reg-desc">Full four-pillar disclosure — Governance, Strategy, Risk Management, and Metrics &amp; Targets. Scenario analysis with quantified EV sensitivity across three NGFS pathways.</div>
+        <div class="reg-pills"><span class="reg-pill">Governance</span><span class="reg-pill">Scenario analysis</span><span class="reg-pill">EV sensitivity</span><span class="reg-pill">Risk narrative</span></div>
+      </div>
+      <div class="reg-item fade-up stagger-1">
+        <div class="reg-logo">🟣 IFRS S2</div>
+        <div class="reg-title">ISSB Climate-related Disclosures</div>
+        <div class="reg-desc">IFRS S2 metrics table with Scope 1 &amp; 2 GHG in tCO₂e, capital deployment, carbon pricing exposure, and transition indicators — ready for annual financial statements.</div>
+        <div class="reg-pills"><span class="reg-pill">Scope 1 &amp; 2 GHG</span><span class="reg-pill">EV range</span><span class="reg-pill">Carbon exposure</span><span class="reg-pill">WACC premium</span></div>
+      </div>
+      <div class="reg-item fade-up">
+        <div class="reg-logo">🇪🇺 CSRD E1</div>
+        <div class="reg-title">EU Corporate Sustainability Reporting — ESRS E1</div>
+        <div class="reg-desc">ESRS E1-1 through E1-9 data points including gross Scope 1/2/3 GHG, reduction targets, dual materiality assessment, and financially-quantified physical climate risk.</div>
+        <div class="reg-pills"><span class="reg-pill">ESRS E1-1 to E1-9</span><span class="reg-pill">Dual materiality</span><span class="reg-pill">GHG Protocol</span><span class="reg-pill">Scope 3 confidence</span></div>
+      </div>
+      <div class="reg-item fade-up stagger-1">
+        <div class="reg-logo">📗 SBTi / SBRS</div>
+        <div class="reg-title">Science-Based Targets &amp; Reporting</div>
+        <div class="reg-desc">Near-term and net-zero targets, sector decarbonisation pathways, and portfolio alignment scoring against a 1.5°C trajectory — aligned with SBTi validation requirements.</div>
+        <div class="reg-pills"><span class="reg-pill">Near-term targets</span><span class="reg-pill">Net-zero pathway</span><span class="reg-pill">1.5°C alignment</span><span class="reg-pill">Sector pathway</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ PRICING ═══════════════════ -->
+<section class="section pricing" id="pricing">
+  <div class="container">
+    <p class="section-label fade-up">Pricing</p>
+    <h2 class="fade-up">Priced for<br><em>real engagement.</em></h2>
+    <p class="section-sub fade-up">We're in our pilot stage — meaning you get direct access to our team, not a self-serve portal. Each engagement is hands-on, and the output is board-ready.</p>
+
+    <div class="pricing-stage-banner fade-up">
+      <div class="psb-icon">🧪</div>
+      <div class="psb-text"><strong>Pilot engagement phase — Q2 2026.</strong> We are currently accepting a limited number of pilot clients. This means you get bespoke analysis delivered directly by our team, built specifically for your portfolio — with full transparency into methodology and assumptions. SaaS self-serve platform is on our roadmap for late 2026.</div>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- Free -->
+      <div class="price-card fade-up">
+        <div class="price-tier">Free</div>
+        <div class="price-amount">$0</div>
+        <div class="price-cadence">Always free · instant · no card</div>
+        <div class="price-type">Self-serve</div>
+        <div class="price-divider"></div>
+        <div class="price-features">
+          <div class="pf">A–E CRI climate risk rating</div>
+          <div class="pf">Pillar scores — Physical / Transition / Financial</div>
+          <div class="pf">Summary narrative + sector rank</div>
+          <div class="pf">Top 3 hazards + region profile</div>
+          <div class="pf dim">Asset-level GPS breakdown</div>
+          <div class="pf dim">Disclosure reports</div>
+          <div class="pf dim">Financial trajectory</div>
+        </div>
+        <button class="price-cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try free demo →</button>
+      </div>
+
+      <!-- Standard Report -->
+      <div class="price-card featured fade-up stagger-1">
+        <div class="price-badge">Most Requested</div>
+        <div class="price-tier">Standard Report</div>
+        <div class="price-amount"><sup>£</sup>2,500<span>–£5,000</span></div>
+        <div class="price-cadence">Per company · one-off engagement</div>
+        <div class="price-type">Bespoke delivery</div>
+        <div class="price-divider"></div>
+        <div class="price-features">
+          <div class="pf">Full CRI analysis — your company's data</div>
+          <div class="pf">GPS asset-level physical risk breakdown</div>
+          <div class="pf">3-scenario DCF (NZE / DT / CP)</div>
+          <div class="pf">Physical + transition CaR ($M)</div>
+          <div class="pf">TCFD four-pillar disclosure report (PDF)</div>
+          <div class="pf">IFRS S2 + CSRD E1 metrics tables</div>
+          <div class="pf">CSV/JSON data export package</div>
+          <div class="pf">1× walkthrough call with our team</div>
+        </div>
+        <button class="price-cta primary" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Request a report →</button>
+      </div>
+
+      <!-- Advisory Retainer -->
+      <div class="price-card fade-up stagger-2">
+        <div class="price-tier">Advisory Retainer</div>
+        <div class="price-amount"><sup>£</sup>3,000<span>–£8,000</span></div>
+        <div class="price-cadence">Per month · ongoing engagement</div>
+        <div class="price-type">Retained advisory</div>
+        <div class="price-divider"></div>
+        <div class="price-features">
+          <div class="pf">Everything in Standard Report</div>
+          <div class="pf">Monthly model update as data changes</div>
+          <div class="pf">Regulatory horizon scanning (TCFD/CSRD)</div>
+          <div class="pf">Board and audit committee briefing support</div>
+          <div class="pf">Portfolio aggregation across entities</div>
+          <div class="pf">Supply chain risk mapping (Tier 1–2)</div>
+          <div class="pf">Quarterly report refresh + commentary</div>
+          <div class="pf">Dedicated analyst contact</div>
+        </div>
+        <button class="price-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Talk to us →</button>
+      </div>
+    </div>
+
+    <div class="pricing-footer fade-up">
+      All engagements include a scoping call · Pricing in GBP or USD available · Volume discounts for 3+ entities<br>
+      <strong style="color:var(--text)">Enterprise API licensing and white-label deployment — contact us for commercial terms.</strong>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ CTA / CONTACT ════════════ -->
+<div class="cta-section" id="contact">
+  <div class="cta-inner">
+    <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:12px">Get in touch</p>
+    <h2 style="color:#fff">Ready to quantify<br>your climate exposure?</h2>
+    <p>Tell us your company name and what you need. We'll respond within one business day with a scoping outline and indicative quote.</p>
+    <form class="cta-form" onsubmit="ctaSubmit(event)">
+      <input class="cta-input" type="email" id="cta-email" placeholder="your@company.com" required>
+      <button type="submit" class="cta-btn">Get in touch →</button>
+    </form>
+    <p class="cta-note" id="cta-note">No spam · We respond within 1 business day</p>
+  </div>
+</div>
+
+<!-- ══════════════════ FOOTER ════════════════════ -->
+<footer>
+  <div class="footer-grid">
+    <div>
+      <div class="footer-brand-logo"><div class="flm">CR</div>ClimRisk</div>
+      <p class="footer-tagline">GPS-resolved climate financial risk intelligence for enterprises navigating the net-zero transition.</p>
+      <p class="footer-contact">shrinivashdkannan@gmail.com<br><a href="https://github.com/ClimRisk">github.com/ClimRisk</a></p>
+    </div>
+    <div class="footer-col">
+      <div class="fc-head">Product</div>
+      <a href="#engine">CRI Engine</a>
+      <a href="#demo">Free Demo</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#about">About</a>
+    </div>
+    <div class="footer-col">
+      <div class="fc-head">Frameworks</div>
+      <a href="#regulatory">TCFD</a>
+      <a href="#regulatory">IFRS S2</a>
+      <a href="#regulatory">CSRD E1</a>
+      <a href="#regulatory">SBTi</a>
+    </div>
+    <div class="footer-col">
+      <div class="fc-head">Data Sources</div>
+      <a href="https://www.wri.org/aqueduct" target="_blank" rel="noopener">WRI Aqueduct 4.0</a>
+      <a href="https://www.ngfs.net" target="_blank" rel="noopener">NGFS Phase 4</a>
+      <a href="https://www.ipcc.ch/ar6/wg2/" target="_blank" rel="noopener">IPCC AR6 WG2</a>
+      <a href="https://www.nccs.nasa.gov/services/data-collections/land-based-products/nex-gddp-cmip6" target="_blank" rel="noopener">NASA NEX-GDDP</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span class="footer-copy">© 2026 ClimRisk · CRI Engine v0.2 · All rights reserved</span>
+    <div class="footer-links">
+      <a href="#about">About</a>
+      <a href="#contact">Contact</a>
+      <a href="https://github.com/ClimRisk" target="_blank">GitHub</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+/* ── THEME TOGGLE ───────────────────────────────── */
+(function() {
+  // Read saved preference or default to system
+  var saved = localStorage.getItem('climrisk-theme');
+  var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  var theme = saved || (prefersDark ? 'dark' : 'light');
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('themeBtn').textContent = theme === 'dark' ? '☀️' : '🌙';
+})();
+
+function toggleTheme() {
+  var current = document.documentElement.getAttribute('data-theme');
+  var next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('climrisk-theme', next);
+  document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
+}
+
+/* ── COMPARE CARD TABS ──────────────────────────── */
+function showTab(tab) {
+  document.getElementById('body-legacy').style.display = tab==='legacy' ? 'block' : 'none';
+  document.getElementById('body-cri').style.display    = tab==='cri'    ? 'block' : 'none';
+  document.getElementById('tab-legacy').className = 'cc-tab' + (tab==='legacy'?' on':'');
+  document.getElementById('tab-cri').className    = 'cc-tab' + (tab==='cri'   ?' on':'');
+}
+
+/* ── DEMO ENGINE DATA ───────────────────────────── */
+var DEMO_DATA = {
+  'EU-NL': {
+    region:'Netherlands / North Sea',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'High',col:'var(--red)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Low',col:'var(--green)'},
+    ],
+    physLabel:'Moderate', physScore:44, physPct:'44%', physCol:'var(--amber)',
+    transLabel:'Elevated', transScore:62, transPct:'62%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:58, finPct:'58%', finCol:'var(--red)',
+    composite:54, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'38.2%', evarNote:'NZE vs Current Policies',
+    topHaz:'Coastal Flood · Sea Level Rise · Heat Stress',
+  },
+  'AU-WA': {
+    region:'Western Australia',
+    hazards:[
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌀',name:'Cyclone',sev:'Elevated',col:'var(--amber)'},
+      {icon:'☀',name:'Drought',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:72, physPct:'72%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:28, transPct:'28%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:52, finPct:'52%', finCol:'var(--amber)',
+    composite:52, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'31.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Heat Stress · Cyclone · Drought',
+  },
+  'US-TX': {
+    region:'Texas, USA',
+    hazards:[
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🔥',name:'Wildfire',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:58, physPct:'58%', physCol:'var(--amber)',
+    transLabel:'High', transScore:74, transPct:'74%', transCol:'var(--red)',
+    finLabel:'High', finScore:68, finPct:'68%', finCol:'var(--red)',
+    composite:66, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'51.2%', evarNote:'NZE vs Current Policies',
+    topHaz:'Heat Stress · Riverine Flood · Wildfire',
+  },
+  'IN-MH': {
+    region:'India — Maharashtra',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:76, physPct:'76%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:32, transPct:'32%', transCol:'var(--green)',
+    finLabel:'Elevated', finScore:55, finPct:'55%', finCol:'var(--amber)',
+    composite:57, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'33.8%', evarNote:'NZE vs Current Policies',
+    topHaz:'Riverine Flood · Heat Stress · Drought',
+  },
+  'CN-SD': {
+    region:'China — East Coast',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌀',name:'Cyclone',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:55, physPct:'55%', physCol:'var(--amber)',
+    transLabel:'Elevated', transScore:62, transPct:'62%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:58, finPct:'58%', finCol:'var(--amber)',
+    composite:58, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'42.1%', evarNote:'NZE vs Current Policies',
+    topHaz:'Coastal Flood · Cyclone · Heat Stress',
+  },
+  'ZA-WC': {
+    region:'South Africa',
+    hazards:[
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'High',col:'var(--red)'},
+      {icon:'🔥',name:'Wildfire',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:62, physPct:'62%', physCol:'var(--amber)',
+    transLabel:'Low', transScore:18, transPct:'18%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:38, finPct:'38%', finCol:'var(--amber)',
+    composite:42, rating:'B', ratingLabel:'Moderate Climate Risk',
+    evar:'22.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Drought · Water Stress · Wildfire',
+  },
+  'BR-SP': {
+    region:'Brazil',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:68, physPct:'68%', physCol:'var(--red)',
+    transLabel:'Low', transScore:22, transPct:'22%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:42, finPct:'42%', finCol:'var(--amber)',
+    composite:46, rating:'B', ratingLabel:'Moderate Climate Risk',
+    evar:'26.8%', evarNote:'NZE vs Current Policies',
+    topHaz:'Riverine Flood · Drought · Heat Stress',
+  },
+  'global': {
+    region:'Multiple Regions',
+    hazards:[
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌊',name:'Flood Risk',sev:'Moderate',col:'var(--amber)'},
+      {icon:'☀',name:'Drought',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Moderate', physScore:40, physPct:'40%', physCol:'var(--amber)',
+    transLabel:'Moderate', transScore:40, transPct:'40%', transCol:'var(--amber)',
+    finLabel:'Moderate', finScore:38, finPct:'38%', finCol:'var(--amber)',
+    composite:39, rating:'B', ratingLabel:'Moderate Climate Risk',
+    evar:'28.5%', evarNote:'NZE vs Current Policies',
+    topHaz:'Heat Stress · Water Stress · Flood Risk',
+  },
+};
+
+var SECTOR_MULT = {
+  'Oil & Gas':    {nze:0.22,dt:0.45,wacc:1.5},
+  'Mining':       {nze:0.62,dt:0.80,wacc:0.8},
+  'Chemicals':    {nze:0.55,dt:0.75,wacc:1.0},
+  'Utilities':    {nze:0.85,dt:0.90,wacc:0.6},
+  'Steel & Metals':{nze:0.50,dt:0.72,wacc:1.1},
+  'Cement':       {nze:0.48,dt:0.68,wacc:1.1},
+  'Other':        {nze:0.70,dt:0.82,wacc:0.9},
+};
+
+var RATING_LETTERS = {A:'#0ea5e9',B:'#16a34a',C:null,D:'#dc2626',E:'#7c3aed'};
+
+/* ── RUN DEMO ───────────────────────────────────── */
+function runDemo(e) {
+  e.preventDefault();
+  var btn = document.getElementById('demoBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Analysing…';
+
+  var company = document.getElementById('d-company').value || 'Your Company';
+  var sector  = document.getElementById('d-sector').value  || 'Other';
+  var revenue = parseFloat(document.getElementById('d-revenue').value) || 4200;
+  var region  = document.getElementById('d-region').value  || 'global';
+  var email   = document.getElementById('d-email').value;
+
+  // Email ourselves the lead
+  var mailBody = 'Free demo request\nCompany: '+company+'\nSector: '+sector+'\nRegion: '+region+'\nRevenue: $'+revenue+'M\nEmail: '+email;
+  var a = document.createElement('a');
+  a.href='mailto:shrinivashdkannan@gmail.com?subject='+encodeURIComponent('ClimRisk free demo — '+company)+'&body='+encodeURIComponent(mailBody);
+  a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+
+  // Simulate a brief engine run
+  setTimeout(function() {
+    renderDemoOutput(company, sector, revenue, region);
+    btn.disabled = false;
+    btn.textContent = '✓ Analysis complete — scroll down';
+  }, 1600);
+}
+
+function renderDemoOutput(company, sector, revenue, region) {
+  var d   = DEMO_DATA[region] || DEMO_DATA['global'];
+  var sm  = SECTOR_MULT[sector] || SECTOR_MULT['Other'];
+
+  // Compute simple EV from revenue
+  var ebitdaM  = revenue * 0.22;                   // ~22% EBITDA margin
+  var wacc     = 0.082 + sm.wacc * 0.01;
+  var baseEV   = (ebitdaM / 1000) / (wacc + 0.005) * 0.9;  // rough EV in $B
+  var cpEV     = +Math.max(baseEV, 0.5).toFixed(1);
+  var nzeEV    = +(cpEV * sm.nze).toFixed(1);
+  var dtEV     = +(cpEV * sm.dt).toFixed(1);
+  var evAtRisk = +(((cpEV - nzeEV) / cpEV) * 100).toFixed(1);
+  var ccM      = +(ebitdaM * 0.083).toFixed(0);
+  var ccPct    = +(ccM / ebitdaM * 100).toFixed(1);
+
+  // Adjust composite for sector
+  var compAdj = d.composite + (sm.wacc > 1 ? 8 : sm.wacc > 0.8 ? 3 : -2);
+  compAdj = Math.min(90, Math.max(15, Math.round(compAdj)));
+  var rating = compAdj>=75?'E':compAdj>=55?'D':compAdj>=35?'C':compAdj>=18?'B':'A';
+  var ratingLabels = {A:'Low Climate Risk',B:'Moderate Climate Risk',C:'Elevated Climate Risk',D:'High Climate Risk',E:'Very High Climate Risk'};
+  var ratingCols   = {A:'#0ea5e9',B:'var(--green)',C:'var(--amber)',D:'var(--red)',E:'#7c3aed'};
+
+  // Populate DOM
+  el('out-company').textContent    = company;
+  el('out-meta').textContent       = sector + ' · ' + d.region + ' · SSP3-7.0 · 2030 · CRI Engine v0.2';
+  el('out-letter').textContent     = rating;
+  el('out-letter').className       = 'do-letter';
+  el('out-letter').style.background= ratingCols[rating];
+  el('out-rating-label').textContent = ratingLabels[rating];
+  el('out-score').textContent      = 'Composite: ' + compAdj + ' / 100';
+  el('out-ev').textContent         = '$' + cpEV + 'B';
+  el('out-evar').textContent       = evAtRisk + '%';
+  el('out-cc').textContent         = '$' + ccM + 'M';
+  el('out-cc-pct').textContent     = ccPct + '% of EBITDA (NZE)';
+  el('sc-nze').textContent         = '$' + nzeEV + 'B';
+  el('sc-dt').textContent          = '$' + dtEV + 'B';
+  el('sc-cp').textContent          = '$' + cpEV + 'B';
+  el('out-region-lbl').textContent = d.region;
+  el('out-tophaz').textContent     = d.topHaz;
+
+  // Pillar bars
+  el('pp-physical').textContent    = d.physLabel;
+  el('pf-physical').style.width    = d.physPct;
+  el('pf-physical').style.background = d.physCol;
+  el('pp-transition').textContent  = d.transLabel;
+  el('pf-transition').style.width  = d.transPct;
+  el('pf-transition').style.background = d.transCol;
+  el('pp-financial').textContent   = d.finLabel;
+  el('pf-financial').style.width   = d.finPct;
+  el('pf-financial').style.background = d.finCol;
+
+  // Hazard chips
+  el('out-hazards').innerHTML = d.hazards.map(function(h) {
+    return '<span class="do-hz"><div class="do-hz-sev" style="background:'+h.col+'"></div>'+h.icon+' '+h.name+' — '+h.sev+'</span>';
+  }).join('');
+
+  // Show output panel
+  var out = document.getElementById('demoOutput');
+  out.classList.add('visible');
+  setTimeout(function(){ out.scrollIntoView({behavior:'smooth',block:'start'}); }, 100);
+}
+
+function el(id) { return document.getElementById(id); }
+
+/* ── CTA FORM ───────────────────────────────────── */
+function ctaSubmit(e) {
+  e.preventDefault();
+  var email = document.getElementById('cta-email').value;
+  var a = document.createElement('a');
+  a.href = 'mailto:shrinivashdkannan@gmail.com?subject='
+    + encodeURIComponent('ClimRisk enquiry from ' + email)
+    + '&body=' + encodeURIComponent('Hello ClimRisk,\n\nI would like to learn more about your climate risk analysis services.\n\nMy email: ' + email);
+  a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  document.getElementById('cta-note').innerHTML = '✅ <strong style="color:#fff">Thanks!</strong> We\'ll be in touch within 1 business day.';
+  document.getElementById('cta-email').value = '';
+}
+
+/* ── SCROLL FADE-IN ─────────────────────────────── */
+var io = new IntersectionObserver(function(entries) {
+  entries.forEach(function(e) {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(function(el) { io.observe(el); });
+
+/* ── NAV ACTIVE STATE ───────────────────────────── */
+window.addEventListener('scroll', function() {
+  var scrolled = window.scrollY > 60;
+  document.querySelector('nav').style.boxShadow = scrolled ? 'var(--shadow-md)' : 'none';
+});
+</script>
+</body>
+</html>
