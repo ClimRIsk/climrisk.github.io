@@ -5142,7 +5142,8 @@ function _gatherReportHTML() {
                top:topObjs.slice(0,5), loss:hz.annual_loss_pct||0,
                carM:+(cv*(hz.annual_loss_pct||0)).toFixed(1),
                warming:hz.warming||0, lulc:hz.lulc||'—',
-               top3:topObjs.slice(0,3) };
+               top3:topObjs.slice(0,3),
+               lat:a.lat||null, lon:a.lon||null, gps:hz.gps_resolved||false };
     });
     var totalPhysM = asmts.reduce(function(s,a){return s+a.carM;},0);
     var s12   = (yr.emissions_s1||0)+(yr.emissions_s2||0);
@@ -5484,6 +5485,22 @@ function _buildReportHTML(d) {
     '<text x="150" y="165" text-anchor="middle" font-size="12" fill="#6b7280">Risk Score / 100</text>'+
     '</svg>';
 
+  /* Hazard map geo-data: GPS lat/lon takes priority, fall back to _GEO centroid */
+  var _brdMapAssets = d.asmts.map(function(a){
+    var lat = a.lat, lon = a.lon;
+    if (!lat || !lon) {
+      var _rk = (a.region||'').toLowerCase();
+      var _g  = _GEO[_rk] || _GEO[(_rk.split(',')[0]||'').trim()] || null;
+      if (_g) { lat = _g.lat; lon = _g.lon; }
+    }
+    return { name:a.name, region:a.region, score:Math.round(a.score),
+      carM:+a.carM.toFixed(1), topHazard:(a.top&&a.top[0]?a.top[0].h:'—'),
+      topSev:(a.top&&a.top[0]?+a.top[0].sev.toFixed(1):0),
+      gps:!!a.gps, lat:(lat||null), lon:(lon||null) };
+  }).filter(function(a){ return a.lat && a.lon; });
+  var _brdMapJson = JSON.stringify(_brdMapAssets);
+  var _brdHasMap  = _brdMapAssets.length > 0;
+
   /* Chart.js data payload embedded in downloaded HTML */
   var chartPayload = JSON.stringify({
     tYears:d.tYears, tData:d.tData, topHz:d.topHz,
@@ -5504,6 +5521,8 @@ function _buildReportHTML(d) {
 
   return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>CRI Climate Risk Report — '+d.coName+' '+d.year+'</title>\n'+
 '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>\n'+
+'<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>\n'+
+'<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>\n'+
 '<style>\n'+
 ':root{--green:#16a34a;--red:#b91c1c;--amber:#b45309;--blue:#2563eb;--text:#111827;--muted:#6b7280;--bg:#f9fafb;--surf:#fff;--border:#e5e7eb}\n'+
 'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;color:var(--text);background:var(--bg);margin:0;padding:0}\n'+
@@ -5620,6 +5639,7 @@ function _buildReportHTML(d) {
 '<div class="toc"><div class="toc-title">Table of Contents</div><ul class="toc-list">'+
 '<li><a href="#s1">1. Executive Risk Summary</a></li>'+
 '<li><a href="#s2">2. Physical Risk Heatmap</a></li>'+
+(_brdHasMap ? '<li><a href="#s2b">2b. Asset Location Map</a></li>' : '')+
 '<li><a href="#s3">3. Hazard Projection Trends</a></li>'+
 '<li><a href="#s4">4. Asset-Level Damage Assessment</a></li>'+
 '<li><a href="#s5">5. Financial Exposure & CaR</a></li>'+
@@ -5659,6 +5679,48 @@ d.asmts.slice(0,4).map(function(a,i){
 '<span style="background:#ef4444;color:#fff;padding:2px 10px;border-radius:4px;font-weight:700">High 3–4</span>\n'+
 '<span style="background:#7f1d1d;color:#fff;padding:2px 10px;border-radius:4px;font-weight:700">Critical &gt;4</span>\n'+
 '</div>\n</div>\n'+
+/* S2b: Asset Location Map (only rendered when coordinates are available) */
+(_brdHasMap ?
+'<div class="sec" id="s2b">'+
+'<div class="sec-title"><span class="sec-num">2b</span>Asset Location Map</div>'+
+'<div class="sec-sub">Geographic distribution of asset climate risk — marker size ∝ annual CaR ($M/yr); colour indicates risk severity band; click any marker for details</div>\n'+
+'<div id="cri-board-map" style="width:100%;height:420px;border-radius:10px;border:1.5px solid var(--border);overflow:hidden;margin-bottom:12px;background:#f1f5f9"></div>\n'+
+'<div style="display:flex;flex-wrap:wrap;gap:14px;font-size:11px;align-items:center;margin-bottom:6px">'+
+'<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#b91c1c;flex-shrink:0"></span>CRITICAL (&gt;70)</span>'+
+'<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#b45309;flex-shrink:0"></span>HIGH (51–70)</span>'+
+'<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#2563eb;flex-shrink:0"></span>MODERATE (31–50)</span>'+
+'<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#16a34a;flex-shrink:0"></span>LOW (≤30)</span>'+
+'<span style="margin-left:auto;color:var(--muted);font-size:10px">Map © OpenStreetMap contributors</span></div>\n'+
+'<script>(function(){'+
+'function _initBrdMap(){'+
+'if(typeof L==="undefined"){setTimeout(_initBrdMap,300);return;}'+
+'var el=document.getElementById("cri-board-map");'+
+'if(!el||el._init)return;el._init=true;'+
+'var _ma='+_brdMapJson+';'+
+'var _m=L.map(el,{scrollWheelZoom:false});'+
+'L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{attribution:"© OpenStreetMap",maxZoom:18}).addTo(_m);'+
+'var _b=[];'+
+'_ma.forEach(function(a){'+
+'var _c=a.score>70?"#b91c1c":a.score>50?"#b45309":a.score>30?"#2563eb":"#16a34a";'+
+'var _r=Math.max(8,Math.min(28,Math.sqrt(a.carM)*2.2));'+
+'var _mk=L.circleMarker([a.lat,a.lon],{radius:_r,fillColor:_c,color:"#fff",weight:2.5,opacity:1,fillOpacity:0.82}).addTo(_m);'+
+'_mk.bindPopup("<div style=\'font-family:sans-serif;min-width:180px\'>"+'+
+'"<div style=\'font-weight:800;margin-bottom:3px\'>"+a.name+"</div>"+'+
+'"<div style=\'color:#6b7280;font-size:11px;margin-bottom:6px\'>"+a.region+"</div>"+'+
+'"<table style=\'font-size:11px;width:100%\'>"+'+
+'"<tr><td>Risk Score</td><td style=\'text-align:right;font-weight:700\'>"+a.score+"/100</td></tr>"+'+
+'"<tr><td>Annual CaR</td><td style=\'text-align:right;font-weight:700;color:#b91c1c\'>$"+a.carM+"M/yr</td></tr>"+'+
+'"<tr><td>Top Hazard</td><td style=\'text-align:right\'>"+a.topHazard+" ("+a.topSev+"/5)</td></tr>"+'+
+'"</table>"+'+
+'"<div style=\'font-size:10px;color:#9ca3af;margin-top:5px\'>"+(a.gps?"✓ GPS-resolved":"◎ Regional centroid")+"</div>"+'+
+'"</div>");'+
+'_b.push([a.lat,a.lon]);'+
+'});'+
+'if(_b.length)_m.fitBounds(_b,{padding:[40,40],maxZoom:7});'+
+'}'+
+'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",_initBrdMap);}'+
+'else{setTimeout(_initBrdMap,80);}'+
+'})();<\/script>\n</div>\n' : '')+
 /* S3: Trend charts */
 '<div class="sec" id="s3"><div class="sec-title"><span class="sec-num">3</span>Hazard Projection Trends (2026–2070)</div><div class="sec-sub">How the top hazard severity at your primary asset evolves under all 4 IPCC SSP scenarios — and how EBITDA responds to climate pressure</div>\n'+
 '<div class="chart-row">\n'+
@@ -8094,6 +8156,76 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     }
     _physNarr += 'All physical CaR values are annualised and represent expected annual financial exposure rather than single-event or cumulative losses. Full asset-level exposure data, hazard breakdowns by category, and confidence intervals are available to external auditors and regulators upon request.</p>';
     body += _physNarr;
+
+    /* ── HAZARD MAP PAGE ── compute lat/lon at generation time (GPS > _GEO centroid) */
+    (function(){
+      var _mapAssets = asmts.map(function(a){
+        var lat = a.lat, lon = a.lon;
+        if (!lat || !lon) {
+          var _rk = (a.region||'').toLowerCase();
+          var _g  = _GEO[_rk] || _GEO[(_rk.split(',')[0]||'').trim()] || null;
+          if (_g) { lat = _g.lat; lon = _g.lon; }
+        }
+        return { name:a.name, region:a.region, score:Math.round(a.score),
+          carM:+a.carM.toFixed(1), topHazard:(a.top&&a.top[0]?a.top[0].h:'—'),
+          topSev:(a.top&&a.top[0]?+a.top[0].sev.toFixed(1):0),
+          gps:!!a.gps, lat:(lat||null), lon:(lon||null) };
+      }).filter(function(a){ return a.lat && a.lon; });
+
+      if (_mapAssets.length === 0) return;   /* skip map page if no coords resolved */
+
+      var _mj = JSON.stringify(_mapAssets);
+      body += '<div class="cri-pr-page" style="padding:20mm;box-sizing:border-box">';
+      body += sectionHeader('1a','Physical Risk — Asset Location Map',
+        fw==='csrd'?'ESRS E1-4 / E1-9 §66(a)':fw==='tcfd'?'TCFD Strategy (S1)':'IFRS S2 §19');
+      body += '<p style="font-size:12px;color:#374151;line-height:1.7;margin-bottom:12px">Geographic distribution of asset climate risk exposure. Marker size is proportional to annual Climate-at-Risk (CaR); colour indicates risk severity band. Click any marker to view asset details. Assets assessed at regional resolution are plotted at the region centroid; GPS-verified assets are plotted at their exact coordinates.</p>';
+      body += '<div id="cri-haz-map" style="width:100%;height:440px;border-radius:8px;border:1.5px solid #e2e8f0;overflow:hidden;margin-bottom:12px;background:#f1f5f9"></div>';
+      body += '<div style="display:flex;flex-wrap:wrap;gap:16px;font-size:11px;color:#374151;align-items:center;margin-bottom:8px">';
+      body += '<strong style="color:#6b7280;font-size:10px;letter-spacing:.5px">RISK LEVEL:</strong>';
+      body += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#b91c1c;flex-shrink:0"></span>CRITICAL (&gt;70)</span>';
+      body += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#b45309;flex-shrink:0"></span>HIGH (51–70)</span>';
+      body += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#2563eb;flex-shrink:0"></span>MODERATE (31–50)</span>';
+      body += '<span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#16a34a;flex-shrink:0"></span>LOW (≤30)</span>';
+      body += '<span style="margin-left:auto;color:#9ca3af;font-size:10px">Marker size ∝ Annual CaR ($M/yr)</span>';
+      body += '</div>';
+      body += '<div style="font-size:10px;color:#9ca3af;border-top:1px solid #f1f5f9;padding-top:6px">Map tiles © OpenStreetMap contributors (ODbL). Asset coordinates are GPS-verified where available or derived from IPCC AR6 regional centroids and are not individually disclosed for asset security reasons.</div>';
+      body += '<script>(function(){'+
+        'function _criInitHazMap(){'+
+          'if(typeof L==="undefined"){setTimeout(_criInitHazMap,300);return;}'+
+          'var el=document.getElementById("cri-haz-map");'+
+          'if(!el||el._criMapInit)return; el._criMapInit=true;'+
+          'var _ma='+_mj+';'+
+          'var _m=L.map(el,{scrollWheelZoom:false,zoomControl:true});'+
+          'L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{'+
+            'attribution:"© <a href=\'https://www.openstreetmap.org/copyright\'>OpenStreetMap</a>",'+
+            'maxZoom:18}).addTo(_m);'+
+          'var _b=[];'+
+          '_ma.forEach(function(a){'+
+            'var _c=a.score>70?"#b91c1c":a.score>50?"#b45309":a.score>30?"#2563eb":"#16a34a";'+
+            'var _r=Math.max(8,Math.min(28,Math.sqrt(a.carM)*2.2));'+
+            'var _mk=L.circleMarker([a.lat,a.lon],{radius:_r,fillColor:_c,color:"#fff",weight:2.5,opacity:1,fillOpacity:0.82}).addTo(_m);'+
+            '_mk.bindPopup('+
+              '"<div style=\'font-family:sans-serif;min-width:190px\'>"'+
+              '+"<div style=\'font-weight:800;font-size:13px;margin-bottom:4px\'>"+a.name+"</div>"'+
+              '+"<div style=\'color:#6b7280;font-size:11px;margin-bottom:8px\'>"+a.region+"</div>"'+
+              '+"<table style=\'width:100%;font-size:11px;border-collapse:collapse\'>"'+
+              '+"<tr><td style=\'padding:2px 0\'>Risk Score</td><td style=\'text-align:right;font-weight:700\'>"+a.score+"/100</td></tr>"'+
+              '+"<tr><td style=\'padding:2px 0\'>Annual CaR</td><td style=\'text-align:right;font-weight:700;color:#b91c1c\'>$"+a.carM+"M/yr</td></tr>"'+
+              '+"<tr><td style=\'padding:2px 0\'>Top Hazard</td><td style=\'text-align:right\'>"+a.topHazard+" ("+a.topSev+"/5)</td></tr>"'+
+              '+"</table>"'+
+              '+"<div style=\'font-size:10px;color:#9ca3af;margin-top:6px;padding-top:4px;border-top:1px solid #f3f4f6\'>"+(a.gps?"✓ GPS-resolved":"◎ Regional centroid")+"</div>"'+
+              '+"</div>"'+
+            ');'+
+            '_b.push([a.lat,a.lon]);'+
+          '});'+
+          'if(_b.length)_m.fitBounds(_b,{padding:[40,40],maxZoom:7});'+
+        '}'+
+        'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",_criInitHazMap);}'+
+        'else{setTimeout(_criInitHazMap,80);}'+
+        '})();<\/script>';
+      body += '</div>';
+    })();
+
     body += '</div>';
   }
 
@@ -8356,6 +8488,8 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     '@media print{@page{size:A4 portrait;margin:12mm}.cri-pr-page{padding:10mm 12mm!important;min-height:0!important;max-height:none;page-break-after:always;page-break-inside:avoid}body{background:#fff}}' +
     '</style>' +
     '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>' +
+    '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>' +
+    '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>' +
     '</head><body>' + body + '</body></html>';
 }
 
@@ -9758,12 +9892,15 @@ function generatePilotPackage() {
     }
   });
 
+  /* resolvedClientName must be computed BEFORE finalCid block uses it */
+  var resolvedClientName = clientNameOverride || D.companies[cid].name;
+
   /* If a reference company was selected, create a client-branded copy under a clean ID */
   var finalCid = cid;
   if (refCos.indexOf(cid) >= 0) {
     finalCid = 'client_' + cid;
     var companyCopy = JSON.parse(JSON.stringify(D.companies[cid]));
-    companyCopy.name = resolvedClientName;
+    companyCopy.name = resolvedClientName;  /* brand the copy with the client name */
     allCompanyData[finalCid] = companyCopy;
     allHazardData[finalCid]  = D.hazards[cid] || [];
   } else {
@@ -9790,7 +9927,6 @@ function generatePilotPackage() {
   var expiryStr = expiry.toISOString().split('T')[0];
 
   /* Build PILOT_CONFIG — not locked to single company */
-  var resolvedClientName = clientNameOverride || D.companies[cid].name;
   var pilotCfg = {
     primaryClientId: finalCid,
     primaryClientName: resolvedClientName,
@@ -9823,16 +9959,22 @@ function generatePilotPackage() {
   /* Capture engine source — clone this page's HTML.
      First clear all dynamically-rendered panel content so the client sees a
      clean slate, not whatever Shri had open when generating the pilot. */
-  var _panelsToClear = ['overview-content','physical-content','transition-content',
-    'report-content','disclosure-content','supplychain-content','portfolio-content',
-    'genai-content','compare-content','costparams-content'];
+  /* Clear all dynamically-rendered panel content and any open modals/overlays
+     so the client opens a clean blank engine, not whatever Shri had open */
+  var _panelsToClear = ['p-overview','p-physical','p-transition','p-costs',
+    'p-report','p-disclosures','p-genai','p-reportintel','p-reghub',
+    'p-compare','p-stats','p-ratings','p-supplychain','p-portfolio','p-dataint'];
   _panelsToClear.forEach(function(pid) {
     var pel = document.getElementById(pid);
-    if (pel) pel.innerHTML = '';
+    if (pel) { pel.innerHTML = ''; pel.className = 'panel'; } /* strip 'on' class too */
   });
-  /* Also clear any open chart canvases and map tiles to reduce file size */
+  /* Remove any dynamically-inserted overlays (review modal, pay modal, etc.) */
+  document.querySelectorAll('[id$="-overlay"],[id$="-modal"],[id="ri-review-overlay"],[id="cri-pay-overlay"]').forEach(function(el) {
+    if (el.id !== 'pilot-overlay' && el.id !== 'rfm-overlay') el.remove();
+  });
+  /* Reset canvas elements to blank */
   document.querySelectorAll('canvas').forEach(function(c) { c.width = c.width; });
-  /* Hide pilot modal and any overlays */
+  /* Hide pilot modal */
   document.getElementById('pilot-overlay').style.display = 'none';
 
   var source = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
