@@ -949,9 +949,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <div class="sel-wrap">
       <span class="sel-lbl">Company</span>
       <select id="coSel">
-        <option value="bhp">BHP Group</option>
-        <option value="shell">Shell plc</option>
-        <option value="rio_tinto">Rio Tinto</option>
+        <option value="" disabled selected>— Connect Excel to begin —</option>
       </select>
     </div>
     <div class="sel-wrap">
@@ -2240,7 +2238,15 @@ function render(name) {
 
 /* ── OVERVIEW ───────────────────────────────────── */
 function renderOv() {
-  var cid=co(), sid=sc(), cd=COS[cid], run=cd.runs[sid], cp=cd.runs['current_policies'];
+  var cid=co();
+  if (!cid || !COS[cid]) {
+    var ov = document.getElementById('ov-cards');
+    if (ov) ov.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted)">' +
+      '<div style="font-size:40px;margin-bottom:12px">📂</div>' +
+      '<strong>No company loaded.</strong><br>Upload your Excel file via the Data Integration panel.</div>';
+    return;
+  }
+  var sid=sc(), cd=COS[cid], run=cd.runs[sid], cp=cd.runs['current_policies'];
   el('ov-h').textContent = cd.name + ' — ' + run.label;
   var evD=pct(run.ev,cp.ev), spD=pct(run.share_price,cp.share_price);
   el('ov-cards').innerHTML =
@@ -2272,7 +2278,17 @@ var SEV_COL = function(s){return s>=3.5?'#b91c1c':s>=2.5?'#b45309':s>=1.5?'#ca8a
 var SEV_LBL = function(s){return s>=3.5?'High':s>=2.5?'Elevated':s>=1.5?'Moderate':'Low';};
 
 function renderPh() {
-  var cid = co(), cd = COS[cid], assets = HAZ[cid];
+  var cid = co();
+  if (!cid || !COS[cid] || !HAZ[cid]) {
+    var ph = document.getElementById('phys-assets');
+    if (ph) ph.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted)">' +
+      '<div style="font-size:40px;margin-bottom:12px">📂</div>' +
+      '<strong>No company loaded.</strong><br>Upload your Excel file via the Data Integration panel.</div>';
+    var hd = document.getElementById('phys-head');
+    if (hd) hd.textContent = 'Physical Hazard Assessment';
+    return;
+  }
+  var cd = COS[cid], assets = HAZ[cid];
   var ssp = (el('phys-ssp') && el('phys-ssp').value) || 'ssp370';
   var yr  = parseInt((el('phys-yr') && el('phys-yr').value) || 2050);
   el('phys-head').textContent = cd.name + ' — Physical Hazard Assessment (' + ssp.toUpperCase() + ' · ' + yr + ')';
@@ -2386,6 +2402,7 @@ function showAssetDetailFromProf(ap) {
 /* ── TRANSITION ─────────────────────────────────── */
 function renderTr() {
   var cid=co();
+  if (!cid || !COS[cid]) return; // no company loaded — skip silently
   mk('cpC', { type:'line', data:{ labels:TRP['nze_2050'].carbon_prices.map(function(p){return p[0];}), datasets:Object.keys(TRP).map(function(s){return { label:TRP[s].label, data:TRP[s].carbon_prices.map(function(p){return p[1];}), borderColor:SC[s], tension:.4, fill:false, pointRadius:3, borderWidth:2 };}) }, options:mkOpts(function(v){return '$'+v;}) });
   var yrs=[2026,2030,2035,2040,2045,2050];
   mk('ciC', { type:'line', data:{ labels:yrs, datasets:Object.keys(SC).map(function(s){return { label:COS[cid].runs[s].label, data:yrs.map(function(yr){var y=COS[cid].runs[s].years.find(function(y){return y.year===yr;}); return y?+(y.carbon_cost/y.revenue*100).toFixed(1):0;}), borderColor:SC[s], tension:.4, fill:false, pointRadius:3, borderWidth:2 };}) }, options:mkOpts(function(v){return v+'%';}) });
@@ -2393,7 +2410,9 @@ function renderTr() {
 
 /* ── COSTS ──────────────────────────────────────── */
 function renderCo() {
-  var cid=co(), sid=sc(), run=COS[cid].runs[sid];
+  var cid=co();
+  if (!cid || !COS[cid]) return; // no company loaded — skip silently
+  var sid=sc(), run=COS[cid].runs[sid];
   var y30=run.years.find(function(y){return y.year===2030;}), y50=run.years.find(function(y){return y.year===2050;});
   el('cost-cards').innerHTML =
     cardHtml('Carbon Cost 2030', '$'+y30.carbon_cost.toFixed(2)+'B', (y30.carbon_cost/y30.revenue*100).toFixed(1)+'% of revenue', 'r') +
@@ -3706,6 +3725,16 @@ var RATINGS = {
   }
 };
 
+/* ── Remove pre-loaded demo companies so engine starts clean ─────────────── */
+(function _removedemoCos() {
+  ['bhp','shell','rio_tinto'].forEach(function(id) {
+    delete D.companies[id];
+    delete D.hazards[id];
+    delete RATINGS[id];
+  });
+  delete CO_REV26.shell; delete CO_REV26.bhp; delete CO_REV26.rio_tinto;
+})();
+
 var TIER_DATA = [
   { id:'free', name:'Free', price:'Free', cta:'Get your rating', ctaClass:'tier-cta-o', desc:'Instant A–E climate risk rating. No card required.', features:['A–E climate risk rating','Pillar risk labels (Physical/Transition/Financial)','Summary narrative','Sector ranking'] },
   { id:'analyst', name:'Analyst', price:'$500–$1,500/mo', cta:'Start free trial', ctaClass:'tier-cta-p', desc:'Full multi-scenario DCF, asset-level breakdown, and data export.', featured:true, badge:'Most Popular', features:['Everything in Free','Full numeric scores + drivers','25-year financial trajectory','Asset-level physical risk','CSV/JSON export','REST API access'] },
@@ -3725,7 +3754,17 @@ function ratingBgClass(r) {
 
 function renderRat() {
   var company = co();
-  var rat = RATINGS[company] || RATINGS.bhp;
+  if (!company || !COS[company] || !RATINGS[company]) {
+    var rEl = document.getElementById('rat-panel') || document.querySelector('.rat-wrap');
+    var emptyMsg = '<div style="text-align:center;padding:80px 20px;color:var(--muted);font-size:15px">' +
+      '<div style="font-size:48px;margin-bottom:16px">📂</div>' +
+      '<div style="font-size:20px;font-weight:600;margin-bottom:10px">No data loaded</div>' +
+      '<div>Connect your Excel file using the <strong>Data Integration</strong> panel to generate a CRI Rating.</div>' +
+      '</div>';
+    if (rEl) rEl.innerHTML = emptyMsg;
+    return;
+  }
+  var rat = RATINGS[company];
   var run = COS[company].runs;
   var nze = run.nze_2050, cp = run.current_policies;
 
@@ -3896,55 +3935,55 @@ function rptSetYear(yr) {
   renderReport();
 }
 
-/* Build full asset list across all companies */
+/* Build asset list for the currently selected company only */
 function _rptAllAssets(ssp, year) {
   var list = [];
-  Object.keys(HAZ).forEach(function(cid) {
-    var co = COS[cid];
-    var hasList = HAZ[cid];
-    var trRun = (co.runs['nze_2050'] && co.runs['current_policies']) ? co.runs : null;
-    // Carbon cost at year for SSP-proxied run
-    var sspRun = co.runs['current_policies']; // fallback
-    if (ssp === 'ssp126') sspRun = co.runs['nze_2050'];
-    else if (ssp === 'ssp245') sspRun = co.runs['delayed_transition'];
-    else if (ssp === 'ssp370') sspRun = co.runs['delayed_transition'];
-    else if (ssp === 'ssp585') sspRun = co.runs['current_policies'];
+  var cid = co();
+  var coObj = COS[cid];
+  var hasList = HAZ[cid];
+  if (!coObj || !hasList || !hasList.length) return list;
 
-    var yrData = sspRun && sspRun.years.find(function(y){ return y.year === year; });
-    if (!yrData && sspRun) yrData = sspRun.years[sspRun.years.length-1]; // use last if beyond 2050
-    var totalRev = yrData ? yrData.revenue : (CO_REV26[cid]||50);
-    var carbonCostPerAsset = (yrData ? yrData.carbon_cost : 0) / (hasList.length||1);
+  // Pick SSP-proxied transition run
+  var sspRun = coObj.runs['current_policies'];
+  if (ssp === 'ssp126') sspRun = coObj.runs['nze_2050'];
+  else if (ssp === 'ssp245' || ssp === 'ssp370') sspRun = coObj.runs['delayed_transition'];
 
-    hasList.forEach(function(a) {
-      var phys = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, year);
-      var cv   = ASSET_CV[a.asset] || 2000; // default $2B if unknown
-      var physLossM = phys.annual_loss_pct * cv;
-      var transCostM = carbonCostPerAsset * 1000; // $B → $M (per asset share)
-      var combinedM = physLossM + transCostM;
-      var transPct  = totalRev > 0 ? (carbonCostPerAsset / totalRev * 100) : 0;
+  var yrData = sspRun && sspRun.years.find(function(y){ return y.year === year; });
+  if (!yrData && sspRun) yrData = sspRun.years[sspRun.years.length-1];
+  var totalRev = yrData ? yrData.revenue : 50;
+  var carbonCostPerAsset = (yrData ? yrData.carbon_cost : 0) / (hasList.length || 1);
 
-      list.push({
-        assetName:  a.asset,
-        company:    co.name,
-        cid:        cid,
-        region:     a.region||'global',
-        lat:        a.lat||null,
-        lon:        a.lon||null,
-        commodity:  a.commodity,
-        physScore:  phys.score,
-        physLoss:   phys.annual_loss_pct,
-        physLossM:  physLossM,
-        topHazards: phys.top_hazards,
-        hazards:    phys.hazards,
-        cv:         cv,
-        transCostM: transCostM,
-        transPct:   transPct,
-        combinedM:  combinedM,
-        isCoastal:  phys.is_coastal,
-        warming:    phys.warming,
-      });
+  hasList.forEach(function(a) {
+    var phys = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, year);
+    // Use Excel-supplied carrying value (a.cv in $M), fall back to ASSET_CV lookup, then $2B default
+    var cv = +(a.cv || ASSET_CV[a.asset] || 2000);
+    var physLossM  = phys.annual_loss_pct * cv;
+    var transCostM = carbonCostPerAsset * 1000; // $B → $M per-asset share
+    var combinedM  = physLossM + transCostM;
+    var transPct   = totalRev > 0 ? (carbonCostPerAsset / totalRev * 100) : 0;
+
+    list.push({
+      assetName:  a.asset,
+      company:    coObj.name,
+      cid:        cid,
+      region:     a.region||'global',
+      lat:        a.lat||null,
+      lon:        a.lon||null,
+      commodity:  a.commodity,
+      physScore:  phys.score,
+      physLoss:   phys.annual_loss_pct,
+      physLossM:  physLossM,
+      topHazards: phys.top_hazards,
+      hazards:    phys.hazards,
+      cv:         cv,
+      transCostM: transCostM,
+      transPct:   transPct,
+      combinedM:  combinedM,
+      isCoastal:  phys.is_coastal,
+      warming:    phys.warming,
     });
   });
+
   // Sort descending by combined $M exposure
   list.sort(function(a,b){ return b.combinedM - a.combinedM; });
   return list;
@@ -3953,6 +3992,21 @@ function _rptAllAssets(ssp, year) {
 function renderReport() {
   var ssp  = _rpt.ssp;
   var year = _rpt.year;
+
+  // Guard — no company loaded yet
+  if (!co() || !COS[co()]) {
+    var empty = '<div style="text-align:center;padding:80px 20px;color:var(--muted);font-size:15px">' +
+      '<div style="font-size:48px;margin-bottom:16px">📂</div>' +
+      '<div style="font-size:20px;font-weight:600;margin-bottom:10px">No data loaded</div>' +
+      '<div>Connect your Excel file using the <strong>Data Integration</strong> panel,<br>then return here to generate the risk report.</div>' +
+      '</div>';
+    ['rpt-kpis','rpt-asset-table','rpt-exec-summary'].forEach(function(id){
+      var e = document.getElementById(id); if(e) e.innerHTML = id==='rpt-kpis'?empty:'';
+    });
+    kill('rptMatrixC'); kill('rptExposureC'); kill('rptWaterfallC');
+    return;
+  }
+
   var assets = _rptAllAssets(ssp, year);
 
   var c = gc();
@@ -5885,12 +5939,9 @@ var _DEMO_EMISS_XL = [
 ];
 
 function _xlGetData() {
-  return (_xlState.data.assets.length > 0) ? _xlState.data : {
-    company: {name:'BHP Group (Demo)', sector:'Mining', waccPct:8.84, revM:46900, ebitdaM:31860, mktCapM:208500, netDebtM:5300},
-    assets: _DEMO_ASSETS_XL,
-    suppliers: _DEMO_SUPP_XL,
-    emissions: _DEMO_EMISS_XL
-  };
+  if (_xlState.data.assets.length > 0) return _xlState.data;
+  // No Excel loaded — return empty structure (engine starts clean)
+  return { company: {}, assets: [], suppliers: [], emissions: [] };
 }
 
 /* ── Excel → Engine bridge ───────────────────────────────────────────────────
@@ -6034,6 +6085,12 @@ function _xlInjectToEngine() {
       financial:  { label:finLabel,   score:finScore,   drivers:['EV at risk (NZE vs Current Policies): '+evAtRisk.toFixed(1)+'%','NZE EV: $'+nzeRun.ev.toFixed(1)+'B  ·  CP EV: $'+cpRun.ev.toFixed(1)+'B  ·  WACC: '+nzeRun.wacc.toFixed(1)+'%'] }
     }
   };
+
+  // ── Populate ASSET_CV so report functions get real carrying values ──────
+  xd.assets.forEach(function(a) {
+    var key = a.assetName || a.name || '';
+    if (key) ASSET_CV[key] = +(a.cvM || 2000);
+  });
 
   // ── Update company dropdown ────────────────────────────────────────────
   var sel = document.getElementById('coSel');
