@@ -6483,10 +6483,15 @@ async function _xlProcessFile(file) {
   try {
     var buf = await file.arrayBuffer();
     var wb = XLSX.read(buf, {type:'array', cellDates:true});
+    _xlState._sheetNames = wb.SheetNames;
+    console.log('Excel sheets found:', wb.SheetNames);
 
-    // Parse Assets sheet
-    if (wb.SheetNames.indexOf('Assets') >= 0) {
-      var rows = XLSX.utils.sheet_to_json(wb.Sheets['Assets']);
+    // Parse Assets sheet — case-insensitive, also tries Sheet1/Data as fallback
+    var _assetSheetName = wb.SheetNames.find(function(n){ return n.toLowerCase() === 'assets'; }) ||
+                          wb.SheetNames.find(function(n){ return /asset|site|locat|plant|mine/i.test(n); }) ||
+                          (wb.SheetNames.length >= 2 ? wb.SheetNames[1] : null);
+    if (_assetSheetName) {
+      var rows = XLSX.utils.sheet_to_json(wb.Sheets[_assetSheetName]);
       _xlState.data.assets = rows.map(function(r) {
         return {
           assetName: r['Asset Name'] || r['assetName'] || '—',
@@ -6506,9 +6511,10 @@ async function _xlProcessFile(file) {
       });
     }
 
-    // Parse Suppliers sheet
-    if (wb.SheetNames.indexOf('Suppliers') >= 0) {
-      var srows = XLSX.utils.sheet_to_json(wb.Sheets['Suppliers']);
+    // Parse Suppliers sheet — case-insensitive
+    var _suppSheetName = wb.SheetNames.find(function(n){ return /supplier/i.test(n); });
+    if (_suppSheetName) {
+      var srows = XLSX.utils.sheet_to_json(wb.Sheets[_suppSheetName]);
       _xlState.data.suppliers = srows.map(function(r) {
         return {
           name:    r['Supplier Name']||r['name']||'—',
@@ -6524,9 +6530,10 @@ async function _xlProcessFile(file) {
       });
     }
 
-    // Parse Company sheet (key-value format) and normalise to short engine keys
-    if (wb.SheetNames.indexOf('Company') >= 0) {
-      var crow = XLSX.utils.sheet_to_json(wb.Sheets['Company'], {header:1});
+    // Parse Company sheet (key-value format) — case-insensitive
+    var _coSheetName = wb.SheetNames.find(function(n){ return /company|compan|org/i.test(n); }) || wb.SheetNames[0];
+    if (_coSheetName) {
+      var crow = XLSX.utils.sheet_to_json(wb.Sheets[_coSheetName], {header:1});
       var rawCo = {};
       crow.forEach(function(r){ if(r[0] && r[1]!==undefined) rawCo[String(r[0]).trim()] = r[1]; });
       _xlState.data.company = {
@@ -6541,13 +6548,21 @@ async function _xlProcessFile(file) {
       };
     }
 
-    // Parse Emissions sheet
-    if (wb.SheetNames.indexOf('Emissions') >= 0) {
-      _xlState.data.emissions = XLSX.utils.sheet_to_json(wb.Sheets['Emissions']);
+    // Parse Emissions sheet — case-insensitive
+    var _emSheetName = wb.SheetNames.find(function(n){ return /emiss|scope|ghg/i.test(n); });
+    if (_emSheetName) {
+      _xlState.data.emissions = XLSX.utils.sheet_to_json(wb.Sheets[_emSheetName]);
     }
 
     _xlState.lastSync = new Date();
     _xlState.connected = true;
+    var assetCount = _xlState.data.assets.length;
+    var coName = (_xlState.data.company && _xlState.data.company.name) || 'Unknown';
+    toast('✅ Excel loaded: ' + coName + ' · ' + assetCount + ' asset' + (assetCount !== 1 ? 's' : '') + ' found');
+    if (assetCount === 0) {
+      toast('⚠ No assets found. Check your Excel has an "Assets" sheet with data.');
+      console.warn('Sheets found:', _xlState._sheetNames);
+    }
   } catch(e) { console.error('Excel parse error:', e); toast('⚠ Parse error: ' + e.message); return; }
 
   // Supply chain and engine injection are separate so a supply-chain error never blocks the main analysis
@@ -10035,25 +10050,33 @@ function csvImportAssets(input) {
   var reader = new FileReader();
   reader.onload = function(e) {
     var text = e.target.result;
-    var lines = text.split('\n').map(function(l){return l.trim();}).filter(function(l){return l && !l.startsWith('#');});
-    // Skip header row if it contains non-numeric first field
-    var startRow = 0;
-    if (lines.length && isNaN(parseFloat(lines[0].split(',')[1]))) startRow = 1;
+    // Parse CSV — handle quoted fields, CRLF, skip all non-data rows
+    function _parseCsvRow(line) {
+      var result = [], cur = '', inQ = false;
+      for (var ci = 0; ci < line.length; ci++) {
+        var ch = line[ci];
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+        else { cur += ch; }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+    var lines = text.split(/\r?\n/).map(function(l){return l.trim();}).filter(function(l){return l && !l.startsWith('#');});
 
     var imported = 0, errors = [];
-    for (var i = startRow; i < lines.length; i++) {
-      var cols = lines[i].split(',').map(function(c){return c.trim().replace(/^"|"$/g,'');});
-      if (cols.length < 4) { errors.push('Row '+(i+1)+': too few columns'); continue; }
+    for (var i = 0; i < lines.length; i++) {
+      var cols = _parseCsvRow(lines[i]);
+      if (cols.length < 4) { continue; } // skip short rows (headers, blanks)
       var name    = cols[0];
       var lat     = parseFloat(cols[1]);
       var lon     = parseFloat(cols[2]);
       var cv      = parseFloat(cols[3]) || 0;
+      // Skip header/description rows — lat/lon must be numeric
+      if (!name || isNaN(lat) || isNaN(lon)) { continue; }
       var commodity = (cols[4] || 'crude_oil').toLowerCase().replace(/ /g,'_');
       var production= parseFloat(cols[5]) || 100000;
       var unit    = cols[6] || 't';
-
-      if (!name) { errors.push('Row '+(i+1)+': missing asset name'); continue; }
-      if (isNaN(lat) || isNaN(lon)) { errors.push('Row '+(i+1)+': invalid lat/lon'); continue; }
 
       var region = latLonToRegion(lat, lon);
       var asset = {
@@ -10078,21 +10101,23 @@ function csvImportAssets(input) {
     }
     renderAssetList();
     input.value = '';
-    var msg = '✅ Imported '+imported+' asset'+(imported!==1?'s':'')+' from CSV.';
-    if (errors.length) msg += ' '+errors.length+' row(s) skipped: '+errors.slice(0,3).join('; ');
-    toast(msg);
+    if (imported === 0) {
+      toast('⚠ No assets imported. Check: lat/lon columns must be numbers. Format: asset_name, lat, lon, carrying_value_usd_m, commodity, production, unit');
+    } else {
+      toast('✅ ' + imported + ' asset' + (imported !== 1 ? 's' : '') + ' imported — scroll up to see them');
+    }
   };
   reader.readAsText(file);
 }
 
 function downloadCsvTemplate() {
-  var csv = '# CRI Asset Import Template — delete this header line\n';
-  csv += 'asset_name,lat,lon,carrying_value_usd_m,commodity,production,unit\n';
-  csv += 'Asset Name,Latitude (decimal),Longitude (decimal),Carrying Value USD Millions,Commodity,Annual Production,Unit\n';
-  csv += '# Example rows below:\n';
+  // Single header row + example data — DO NOT add extra description rows
+  var csv = 'asset_name,lat,lon,carrying_value_usd_m,commodity,production,unit\n';
   csv += 'North Sea Platform A,57.8,-1.2,1850,crude_oil,12000000,bbl\n';
   csv += 'Rhine Valley Refinery,51.2,6.8,920,refined_products,8500000,t\n';
   csv += 'Western Australia Mine,-22.5,118.2,3400,iron_ore,65000000,t\n';
+  csv += 'Texas Shale Plant,31.9,-102.4,2200,crude_oil,8500000,bbl\n';
+  csv += 'Rotterdam Chemical Hub,51.9,4.5,1100,chemicals,3200000,t\n';
   _triggerDownload(csv, 'CRI_Asset_Import_Template.csv', 'text/csv');
 }
 
