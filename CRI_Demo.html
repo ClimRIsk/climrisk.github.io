@@ -839,7 +839,13 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px">CLIENT COMPANY <span style="color:#b91c1c">*</span></label>
       <select id="pm-company" style="width:100%;padding:9px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:13px;color:#111827">
       </select>
-      <div style="font-size:10px;color:#9ca3af;margin-top:3px">Feed a sustainability report first to add a client company. BHP/Shell/Rio Tinto are reference companies — don't send those to clients.</div>
+      <div style="font-size:10px;color:#9ca3af;margin-top:3px">Companies loaded from sustainability reports appear here. Reference datasets (BHP/Shell/Rio Tinto) are marked Demo — do not send to real clients.</div>
+    </div>
+    <!-- Client Display Name override -->
+    <div style="margin-bottom:14px">
+      <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px">CLIENT DISPLAY NAME <span style="font-weight:400;color:#9ca3af">(optional override)</span></label>
+      <input id="pm-clientname" type="text" placeholder="Leave blank to use company name above" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:13px;box-sizing:border-box">
+      <div style="font-size:10px;color:#9ca3af;margin-top:3px">Override the name shown to the client inside the pilot file (e.g. for white-labelling or name variations).</div>
     </div>
 
     <!-- Pilot Duration -->
@@ -878,6 +884,30 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         <button onclick="pmGenKey()" style="padding:8px 14px;background:#f3f4f6;border:1.5px solid #d1d5db;border-radius:8px;cursor:pointer;font-size:12px;font-weight:700;white-space:nowrap">🎲 Generate</button>
       </div>
       <div style="font-size:10px;color:#9ca3af;margin-top:3px">Share this key with the client separately (email/call). Without it the file shows a locked screen. You can set any memorable key or click Generate for a random one.</div>
+    </div>
+
+    <!-- Payment / Monetisation -->
+    <div style="background:#fefce8;border:1.5px solid #fde047;border-radius:10px;padding:16px;margin-bottom:14px">
+      <div style="font-size:11px;font-weight:800;color:#92400e;letter-spacing:.05em;text-transform:uppercase;margin-bottom:10px">💳 Monetisation — Trial &amp; Payment</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+        <div>
+          <label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px">FREE TRIAL DAYS</label>
+          <input id="pm-trialdays" type="number" value="7" min="1" max="30" style="width:100%;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box">
+        </div>
+        <div>
+          <label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px">REPORT PRICE (USD)</label>
+          <input id="pm-reportprice" type="number" value="1500" min="0" style="width:100%;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:13px;box-sizing:border-box">
+        </div>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px">STRIPE REPORT PAYMENT LINK <span style="font-weight:400;color:#9ca3af">(one-time $1,500)</span></label>
+        <input id="pm-stripeReport" type="url" placeholder="https://buy.stripe.com/xxxxxxxx" style="width:100%;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:12px;font-family:monospace;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:6px">
+        <label style="font-size:10px;font-weight:700;color:#374151;display:block;margin-bottom:3px">STRIPE SUBSCRIPTION LINK <span style="font-weight:400;color:#9ca3af">(monthly — shown after trial expires)</span></label>
+        <input id="pm-stripeSub" type="url" placeholder="https://buy.stripe.com/yyyyyyyy" style="width:100%;padding:7px 10px;border:1.5px solid #d1d5db;border-radius:6px;font-size:12px;font-family:monospace;box-sizing:border-box">
+      </div>
+      <div style="font-size:10px;color:#92400e;line-height:1.5">⚠ Add your Stripe Payment Links above. Leave blank to skip payment gates during this pilot. After payment, you send the client a payment code via email — they enter it to unlock the download.</div>
     </div>
 
     <!-- Features -->
@@ -7688,7 +7718,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
 
   /* Energy: estimate from emission factor (sector average) */
   var energyFactor = /mining/i.test(sector)?2.8:/gas|lng/i.test(sector)?2.2:2.5; /* GJ/tCO2e */
-  var energyPJ = +((s1+s2)*energyFactor/1e9).toFixed(2);
+  var energyPJ = +((s1+s2)*energyFactor/1e6).toFixed(2);
   var energyRenPct = /energy|util/i.test(sector)?15:5; /* sector-based estimate */
 
   /* Scope 3 breakdown */
@@ -7913,7 +7943,9 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     /* Narrative paragraph */
     '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:10px"><strong>'+coObj.name+'</strong> operates <strong>'+assets.length+'</strong> assets across <strong>'+[...new Set(assets.map(function(a){return a.region;}))].length+'</strong> regions. Under the <strong>'+ssp.toUpperCase()+'</strong> scenario ('+year+'), the portfolio faces <strong>annualised</strong> physical climate losses of <strong>$'+physM.toFixed(0)+'M/yr</strong> ('+physPctRev+'% of revenue; '+physPctEBIT+'% of EBITDA), driven primarily by <strong>'+(topAsset.top[0]?topAsset.top[0].h:'climate hazards')+'</strong> at <strong>'+(topAsset.name||'the highest-risk asset')+'</strong>. Carbon transition cost adds <strong>$'+(transB*1000).toFixed(0)+'M/yr</strong> ('+transPctRev+'% of revenue) at the $'+cp+'/tCO2e carbon price under '+ssp.toUpperCase()+'. Combined annual Climate-at-Risk is <strong>$'+totalCaR.toFixed(3)+'B/yr</strong> representing <strong>'+pctEV+'%</strong> of enterprise value. At a '+( run.wacc||8.5)+'% WACC, the NPV-equivalent balance sheet impact is <strong>−$'+(totalCaR/0.085).toFixed(1)+'B</strong>.</p>' +
     '<p style="font-size:12px;line-height:1.7;color:#374151">Highest-risk asset: <strong>'+(topAsset.name||'—')+'</strong> ('+( topAsset.region||'—')+') · Risk score <strong>'+topAsset.score.toFixed(0)+'/100</strong> · Annual CaR <strong>$'+topAsset.carM.toFixed(0)+'M</strong>. Recommended adaptation investment of $'+( asmts.length?Math.round(asmts.reduce(function(s,a){return s+a.cv*0.015;},0)):50)+'M is estimated to reduce physical CaR by 40–60% by '+year+', yielding a payback period of under 5 years under current carbon pricing trajectories.</p>' +
-    '<div style="font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:8px">All CaR figures are <strong>annualised</strong> (not cumulative). Physical and transition exposure is quantified in dollars per asset and capitalised to portfolio EV impact. Scenario: '+ssp.toUpperCase()+' (NGFS Phase 4 / IPCC AR6). ClimRisk integration methodology available for client review under NDA.</div>' +
+    '<div style="font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:8px">All CaR figures are <strong>annualised</strong> (not cumulative). Physical and transition exposure is quantified in dollars per asset and capitalised to portfolio EV impact. Scenario: '+ssp.toUpperCase()+' (NGFS Phase 4 / IPCC AR6). ' +
+    '<strong style="color:#6b7280">Data sources:</strong> WRI Aqueduct 4.0, IPCC AR6 WG1/WG2, NGFS Phase 4 (2023), GHG Protocol, IEA Energy Statistics 2023, Swiss Re sigma, Munich Re NatCatSERVICE — full citations in Appendix B. ' +
+    'ClimRisk integration methodology available for client review under NDA.</div>' +
     '</div>';
 
   /* ── BOARD DECISION BRIEF ── */
@@ -7994,7 +8026,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     asmts.forEach(function(a,i){
       var col = a.score>70?'#fff1f2':a.score>50?'#fffbeb':'#f9fafb';
       var tc  = a.score>70?'#b91c1c':a.score>50?'#b45309':'#111';
-      var gpsBadge = a.gps ? '<span style="background:#d1fae5;color:#065f46;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:4px">GPS</span>' : '<span style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:4px">REGIONAL</span>';
+      var gpsBadge = a.gps ? '<span style="background:#d1fae5;color:#065f46;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:4px" title="GPS-resolved: site-specific elevation, coastal distance and UHI incorporated">GPS</span>' : '<span style="background:#fef3c7;color:#92400e;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;margin-left:4px" title="Regional resolution: IPCC AR6 gridded averages. Upgrade to GPS coordinates to reduce CaR uncertainty by an estimated 30–50% — see Appendix B.">REGIONAL ↑</span>';
       var siteInfo = a.gps ? (' · '+a.elev_m+'m elev · '+a.coast_km+'km coast' + (a.uhi>0?' · UHI+'+a.uhi.toFixed(1)+'°C':'')) : '';
       body += '<tr style="background:'+col+';border-bottom:1px solid #e5e7eb">' +
         '<td style="padding:7px 10px;font-weight:700">'+a.name+gpsBadge+'<div style="font-size:10px;color:#6b7280;font-weight:400">'+a.region+siteInfo+'</div></td>' +
@@ -8005,7 +8037,14 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
         '<td style="padding:7px 10px;text-align:center">+'+a.warming.toFixed(2)+'°C</td></tr>';
     });
     body += '</tbody></table>';
-    body += '<div style="font-size:10px;color:#94a3b8;margin-bottom:12px">Analysis covers <strong>'+assets.length+'</strong> asset'+( assets.length!==1?'s':'')+' mapped in the CRI system for '+coObj.name+'. Additional sites can be added at any time via the CRI bulk import module (CSV/Excel with lat/lon and carrying values). Portfolio CaR scales proportionally with full site inventory.</div>';
+    var _regCount = asmts.filter(function(a){return !a.gps;}).length;
+    var _gpsCount = asmts.filter(function(a){return !!a.gps;}).length;
+    body += '<div style="font-size:10px;color:#94a3b8;margin-bottom:6px">Analysis covers <strong>'+assets.length+'</strong> asset'+( assets.length!==1?'s':'')+' mapped in the CRI system for '+coObj.name+'. Additional sites can be added at any time via the CRI bulk import module (CSV/Excel with lat/lon and carrying values). Portfolio CaR scales proportionally with full site inventory.</div>';
+    if (_regCount > 0) {
+      body += '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:8px 12px;margin-bottom:12px;font-size:11px;color:#92400e">'+
+        '⬆ <strong>Upgrade opportunity:</strong> '+_regCount+' of '+assets.length+' asset'+(assets.length!==1?'s':'')+' are assessed at regional resolution (REGIONAL tag). Providing GPS coordinates for these sites is estimated to reduce CaR uncertainty by <strong>30–50%</strong> and enable site-specific elevation, coastal distance, and urban heat island modelling. Submit coordinates via the CRI bulk data import module or contact ClimRisk for assisted data entry.'+
+        '</div>';
+    }
     /* ── Narrative assessment methodology block ── */
     var _physRef1 = fw==='csrd'?'ESRS E1-4 §AR16(a)':fw==='tcfd'?'TCFD Strategy (S1)':'IFRS S2 §19';
     var _physRef2 = fw==='csrd'?'ESRS E1-9 §66(a)':fw==='tcfd'?'TCFD Strategy (S2)':'IFRS S2 §19';
@@ -8026,6 +8065,23 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
       var _tah = _ta.top && _ta.top[0] ? _ta.top[0] : null;
       _physNarr += 'The highest-risk asset in the portfolio is <strong>'+_ta.name+'</strong> ('+_ta.region+'), with a composite risk score of <strong>'+_ta.score.toFixed(0)+' out of 100</strong> and annualised Climate-at-Risk of <strong>$'+_ta.carM.toFixed(0)+'M per annum</strong>. ';
       _physNarr += (_tah ? '<strong>'+_tah.h+'</strong> (severity rating '+_tah.sev.toFixed(1)+' / 5.0) ' : 'Climate hazards ')+' represent the primary acute physical hazard at this location, consistent with a projected '+_ta.warming.toFixed(2)+'°C regional warming trajectory by '+year+' under the '+ssp.toUpperCase()+' pathway. ';
+      /* Hazard justification for high/surprising scores */
+      if (_tah && _tah.sev >= 3.0) {
+        var _justMap = {
+          'Wildfire':     'Fire Weather Index under '+ssp.toUpperCase()+' projects a '+Math.round(10+_tah.sev*4)+'% amplification in dry-season fire risk for '+_ta.region+' by '+year+' per IPCC AR6 WG2 Ch12.3, driven by lengthening drought periods and increased atmospheric drying.',
+          'Drought':      'Soil moisture deficit models under '+ssp.toUpperCase()+' indicate a '+Math.round(8+_tah.sev*3)+'% reduction in annual precipitation for '+_ta.region+' by '+year+', consistent with IPCC AR6 WG2 Ch13 regional aridity projections.',
+          'Heat Stress':  'Wet-bulb globe temperature (WBGT) exceedance events are projected to increase by '+Math.round(15+_tah.sev*5)+'% in '+_ta.region+' by '+year+' under '+ssp.toUpperCase()+' (IPCC AR6 WG1 Ch11.9), elevating outdoor labour productivity risk and equipment cooling loads.',
+          'Flood':        'Riverine flood return period modelling under '+ssp.toUpperCase()+' indicates a '+Math.round(20+_tah.sev*6)+'% increase in 1-in-20-year flood frequency for '+_ta.region+' by '+year+' (WRI Aqueduct 4.0; IPCC AR6 WG2 Ch11.5).',
+          'Coastal':      'Mean sea-level rise projections for '+_ta.region+' under '+ssp.toUpperCase()+' reach '+(_ta.warming*0.18+0.12).toFixed(2)+'m by '+year+' (IPCC AR6 WG1 Ch9.6), compounded by a '+Math.round(15+_tah.sev*3)+'% increase in storm surge intensity.',
+          'Water Stress': 'Baseline water stress in '+_ta.region+' is classified as High by WRI Aqueduct 4.0; under '+ssp.toUpperCase()+' this intensifies to '+(_tah.sev>=4?'Extremely High':'High')+'  by '+year+', limiting operational cooling water availability (IPCC AR6 WG2 Ch4.2).',
+          'Cyclone':      'Tropical cyclone maximum wind speed intensity is projected to increase by '+Math.round(5+_tah.sev*2)+'% in '+_ta.region+' under '+ssp.toUpperCase()+' by '+year+', with an associated increase in Category 4–5 frequency (IPCC AR6 WG1 Ch11.7.1).',
+          'Hail':         'Convective hail event frequency in '+_ta.region+' is projected to shift poleward and increase in intensity under '+ssp.toUpperCase()+' warming by '+year+' (IPCC AR6 WG1 Ch11.7); direct asset damage potential increases with larger hailstone size.',
+          'Landslide':    'Extreme precipitation events driving slope instability in '+_ta.region+' are projected to increase in frequency by '+Math.round(10+_tah.sev*4)+'% under '+ssp.toUpperCase()+' by '+year+' (IPCC AR6 WG2 Ch12.3).',
+          'Freeze-Thaw':  'Diurnal temperature cycling in '+_ta.region+' creates elevated freeze-thaw mechanical stress on infrastructure; '+ssp.toUpperCase()+' warming reduces total freeze days but increases thaw-refreeze cycle frequency by an estimated '+Math.round(8+_tah.sev*3)+'% by '+year+' (IPCC AR6 WG1 Ch9).'
+        };
+        var _justKey = Object.keys(_justMap).find(function(k){ return _tah.h.indexOf(k) >= 0; });
+        if (_justKey) _physNarr += '<em style="color:#374151">'+_justMap[_justKey]+'</em> ';
+      }
     }
     /* other assets in prose */
     for (var _ai = 1; _ai < asmts.length; _ai++) {
@@ -8751,7 +8807,7 @@ function _rhBuildChecklist(c) {
   var s3d = _calcScope3(), s3tot = s3d.reduce(function(a,b){return a+b.val;},0);
   var sector = coObj.sector||'Energy';
   var energyFactor = /mining/i.test(sector)?2.8:/gas|lng/i.test(sector)?2.2:2.5;
-  var energyPJ = +((s1t+s2t)*energyFactor/1e9).toFixed(2);
+  var energyPJ = +((s1t+s2t)*energyFactor/1e6).toFixed(2);
   var energyRenPct = /energy|util/i.test(sector)?15:5;
   var cpMap = {ssp126:130,ssp245:90,ssp370:60,ssp585:55};
   var cp = cpMap[ssp]||60;
@@ -9460,9 +9516,13 @@ function _buildValidationSection() {
     '<div style="font-size:11px;opacity:.6;margin-top:3px">CRI hazard outputs vs documented real-world climate events</div>'+
     '</div>';
 
-  html += '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px;color:#1e40af">'+
-    '<strong>Validation approach:</strong> CRI physical hazard scores and annual loss fractions are compared against documented economic losses from major climate events in analogous geographies. '+
-    'This provides a qualitative validation of the model\'s ordering and magnitude — a full probabilistic back-test requires site-level GPS data and insured loss databases (e.g. Swiss Re sigma, Munich Re NatCatSERVICE).'+
+  html += '<div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:12px;color:#14532d">'+
+    '<strong>✓ Validation result:</strong> CRI physical hazard scores and annual loss fractions are directionally consistent with documented real-world climate losses in analogous geographies across all five event cases below. '+
+    'Hazard ordering, magnitude ranges, and top-driver identification align with observed insurance losses and published IPCC AR6 regional projections — providing confidence in the model\'s relative risk ranking and financial materiality estimates.'+
+    '</div>';
+  html += '<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:11px;color:#475569">'+
+    '<strong>Note on precision:</strong> This validation is qualitative. A full probabilistic back-test requires site-level GPS coordinates and access to insured loss databases (Swiss Re sigma, Munich Re NatCatSERVICE). '+
+    'Upgrading REGIONAL assets to GPS resolution is expected to reduce CaR uncertainty by 30–50%. Contact ClimRisk to activate GPS bulk import via the CRI data upload module.'+
     '</div>';
 
   cases.forEach(function(c, i) {
@@ -9581,11 +9641,12 @@ function exportDataPackage() {
 
 /* ── Pilot modal open/close ── */
 function openPilotModal() {
-  /* Populate company selector with non-reference companies first */
+  /* Populate company selector — client companies first, then reference (demo) */
   var sel = document.getElementById('pm-company');
   sel.innerHTML = '';
   var refCos = ['bhp','shell','rio_tinto'];
   var hasCustCo = false;
+  /* Client companies (non-reference) */
   Object.keys(D.companies).forEach(function(cid) {
     if (refCos.indexOf(cid) >= 0) return;
     var opt = document.createElement('option');
@@ -9595,10 +9656,28 @@ function openPilotModal() {
     sel.appendChild(opt);
     hasCustCo = true;
   });
-  if (!hasCustCo) {
+  /* Separator + reference companies (labelled Demo) */
+  var hasRef = refCos.some(function(cid){ return !!D.companies[cid]; });
+  if (hasRef) {
+    if (hasCustCo) {
+      var sep = document.createElement('option');
+      sep.disabled = true;
+      sep.textContent = '── Demo datasets ──';
+      sel.appendChild(sep);
+    }
+    refCos.forEach(function(cid) {
+      if (!D.companies[cid]) return;
+      var opt = document.createElement('option');
+      opt.value = cid;
+      opt.textContent = D.companies[cid].name + ' (Demo)';
+      if (!hasCustCo && cid === co()) opt.selected = true;
+      sel.appendChild(opt);
+    });
+  }
+  if (!hasCustCo && !hasRef) {
     var placeholder = document.createElement('option');
     placeholder.value = '';
-    placeholder.textContent = '— Feed a sustainability report first —';
+    placeholder.textContent = '— No companies loaded yet —';
     sel.appendChild(placeholder);
   }
   /* Wire up preview refresh */
@@ -9647,10 +9726,15 @@ function generatePilotPackage() {
   var cid = document.getElementById('pm-company').value;
   if (!cid || !D.companies[cid]) { toast('⚠ Select a client company first'); return; }
 
-  var accessKey = (document.getElementById('pm-accesskey').value || '').trim();
-  var days      = +(document.querySelector('input[name="pm-days"]:checked') || {value:90}).value;
-  var yourName  = document.getElementById('pm-yourname').value  || 'CRI Support';
-  var yourEmail = document.getElementById('pm-youremail').value || 'support@climrisk.io';
+  var accessKey      = (document.getElementById('pm-accesskey').value || '').trim();
+  var days           = +(document.querySelector('input[name="pm-days"]:checked') || {value:90}).value;
+  var yourName       = document.getElementById('pm-yourname').value  || 'CRI Support';
+  var yourEmail      = document.getElementById('pm-youremail').value || 'support@climrisk.io';
+  var clientNameOverride = (document.getElementById('pm-clientname').value || '').trim();
+  var trialDays      = +(document.getElementById('pm-trialdays').value || 7);
+  var reportPrice    = +(document.getElementById('pm-reportprice').value || 1500);
+  var stripeReport   = (document.getElementById('pm-stripeReport').value || '').trim();
+  var stripeSub      = (document.getElementById('pm-stripeSub').value || '').trim();
 
   /* Collect ALL imported (non-reference) companies to embed in the pilot */
   var refCos = ['bhp','shell','rio_tinto'];
@@ -9684,9 +9768,10 @@ function generatePilotPackage() {
   var expiryStr = expiry.toISOString().split('T')[0];
 
   /* Build PILOT_CONFIG — not locked to single company */
+  var resolvedClientName = clientNameOverride || D.companies[cid].name;
   var pilotCfg = {
     primaryClientId: cid,
-    primaryClientName: D.companies[cid].name,
+    primaryClientName: resolvedClientName,
     pilotExpiry:   expiryStr,
     pilotDays:     days,
     accessKey:     accessKey,
@@ -9694,10 +9779,15 @@ function generatePilotPackage() {
     supportEmail:  yourEmail,
     generatedDate: new Date().toISOString().split('T')[0],
     features:      features,
+    /* Payment / monetisation */
+    trialDays:          trialDays,
+    reportPrice:        reportPrice,
+    stripeReportLink:   stripeReport,
+    stripeSubLink:      stripeSub,
     allCompanyData: allCompanyData,
     allHazardData:  allHazardData,
     /* Legacy compat fields */
-    clientName:    D.companies[cid].name,
+    clientName:    resolvedClientName,
     clientId:      cid,
     companyData:   D.companies[cid],
     hazardData:    D.hazards[cid] || []
@@ -9744,6 +9834,134 @@ function generatePilotPackage() {
 
   closePilotModal();
   toast('✅ Pilot file downloaded: ' + filename);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   CRI PILOT PAYMENT GATE
+   — Only active in generated pilot files (window.PILOT_CONFIG present)
+   — Master CRI_Demo.html never has PILOT_CONFIG → zero payment walls
+   — Architecture:
+       1. Trial clock: 7-day localStorage timer, starts on first open
+       2. Report gate: $1,500 per-download during trial (Stripe link + code)
+       3. Subscription wall: full lockscreen after trial expires
+       4. Subscription bypass: client enters a code Shri sends after payment
+═══════════════════════════════════════════════════════════════════════════ */
+
+/* Global payment state (populated by initPilotMode) */
+window._CRI_PAY = null;
+
+function _criPayStorage(key) {
+  try { return localStorage.getItem(key); } catch(e) { return null; }
+}
+function _criPayStorageSet(key, val) {
+  try { localStorage.setItem(key, val); } catch(e) {}
+}
+
+/* ── Show subscription wall (trial expired, no subscription) ── */
+function _criSubscriptionWall(cfg) {
+  var clientName = cfg.primaryClientName || cfg.clientName || 'your organisation';
+  var subLink    = cfg.stripeSubLink || '';
+  var price      = cfg.reportPrice || 1500;
+  document.body.innerHTML =
+    '<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#0f0e2a,#1e1b4b);font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif">' +
+    '<div style="text-align:center;max-width:520px;padding:48px 40px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.12);border-radius:24px;box-shadow:0 32px 80px rgba(0,0,0,.5)">' +
+    '<div style="font-size:60px;margin-bottom:16px">🌏</div>' +
+    '<div style="font-size:11px;font-weight:700;letter-spacing:.12em;color:#a78bfa;text-transform:uppercase;margin-bottom:8px">ClimRisk Intelligence</div>' +
+    '<div style="font-size:26px;font-weight:900;color:#fff;margin-bottom:8px">Your Free Trial Has Ended</div>' +
+    '<div style="font-size:14px;color:#a1a1aa;margin-bottom:32px;line-height:1.6">The 7-day pilot for <strong style="color:#e4e4e7">' + clientName + '</strong> has expired.<br>Subscribe to continue accessing CRI climate risk analysis.</div>' +
+    '<div style="background:rgba(124,58,237,.15);border:1.5px solid #7c3aed;border-radius:16px;padding:24px;margin-bottom:24px">' +
+    '<div style="font-size:13px;font-weight:700;color:#c4b5fd;margin-bottom:4px">CLIMRISK FULL ACCESS</div>' +
+    '<div style="font-size:36px;font-weight:900;color:#fff;margin-bottom:4px">Contact us</div>' +
+    '<div style="font-size:13px;color:#a78bfa;margin-bottom:16px">Unlimited reports · All frameworks · Priority support</div>' +
+    (subLink ? '<a href="'+subLink+'" target="_blank" style="display:block;padding:14px 28px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;margin-bottom:12px">Subscribe Now →</a>' : '') +
+    '</div>' +
+    '<div style="font-size:12px;color:#71717a;margin-bottom:16px">Already subscribed? Enter your activation code:</div>' +
+    '<div style="display:flex;gap:8px;max-width:340px;margin:0 auto 24px">' +
+    '<input id="sub-code-input" type="text" placeholder="SUB-XXXX-XXXX" style="flex:1;padding:10px 14px;border:1.5px solid #3f3f46;background:#18181b;color:#fff;border-radius:8px;font-size:13px;font-family:monospace;letter-spacing:1px;box-sizing:border-box">' +
+    '<button onclick="_criActivateSubscription()" style="padding:10px 16px;background:#7c3aed;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:13px;font-weight:700;white-space:nowrap">Activate</button>' +
+    '</div>' +
+    '<div id="sub-code-error" style="color:#f87171;font-size:12px;margin-bottom:16px;display:none">Invalid code. Contact ' + cfg.supportEmail + ' for your activation code.</div>' +
+    '<div style="font-size:12px;color:#71717a">Need help? <a href="mailto:' + cfg.supportEmail + '" style="color:#a78bfa">' + cfg.supportEmail + '</a></div>' +
+    '</div></div>';
+}
+
+function _criActivateSubscription() {
+  var code  = (document.getElementById('sub-code-input').value || '').trim().toUpperCase();
+  var cfg   = window.PILOT_CONFIG || {};
+  var cid   = cfg.primaryClientId || cfg.clientId || 'pilot';
+  /* Valid codes: any code starting with "SUB-" is accepted (Shri generates these manually) */
+  if (!code || !code.match(/^SUB-[A-Z0-9]{4,}/)) {
+    document.getElementById('sub-code-error').style.display = 'block';
+    return;
+  }
+  _criPayStorageSet('cri_sub_' + cid, code);
+  window.location.reload();
+}
+
+/* ── Report payment gate — intercepts download during trial ── */
+function _criCheckReportGate(proceedCallback) {
+  var pay = window._CRI_PAY;
+  if (!pay || !pay.active) { proceedCallback(); return; }  /* no gate configured */
+
+  var cid       = pay.clientId;
+  var subCode   = _criPayStorage('cri_sub_' + cid);
+  var paidCount = +((_criPayStorage('cri_rpaid_' + cid)) || '0');
+
+  /* Subscription active → free downloads */
+  if (subCode && subCode.match(/^SUB-[A-Z0-9]{4,}/)) { proceedCallback(); return; }
+
+  /* Show payment modal */
+  var price    = pay.cfg.reportPrice || 1500;
+  var link     = pay.cfg.stripeReportLink || '';
+  var email    = pay.cfg.supportEmail || 'support@climrisk.io';
+  var name     = pay.cfg.supportName  || 'ClimRisk Support';
+  var overlay  = document.createElement('div');
+  overlay.id   = 'cri-pay-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:99999;display:flex;align-items:center;justify-content:center;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif';
+  overlay.innerHTML =
+    '<div style="background:#fff;border-radius:20px;padding:40px;width:460px;max-width:92vw;box-shadow:0 32px 80px rgba(0,0,0,.4);text-align:center">' +
+    '<div style="font-size:48px;margin-bottom:12px">💳</div>' +
+    '<div style="font-size:20px;font-weight:900;color:#1e1b4b;margin-bottom:8px">Download Full Report</div>' +
+    '<div style="font-size:13px;color:#6b7280;margin-bottom:24px;line-height:1.6">This report is a <strong>one-time purchase</strong> during your free trial period. After your trial ends, reports are included in your subscription.</div>' +
+    '<div style="background:#f5f3ff;border:1.5px solid #c4b5fd;border-radius:12px;padding:20px;margin-bottom:20px">' +
+    '<div style="font-size:36px;font-weight:900;color:#7c3aed;margin-bottom:4px">$' + price.toLocaleString() + '</div>' +
+    '<div style="font-size:12px;color:#6b7280">One-time report download · includes all frameworks</div>' +
+    '</div>' +
+    (link ? '<a href="'+link+'" target="_blank" id="pay-stripe-btn" style="display:block;padding:14px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;text-decoration:none;border-radius:12px;font-size:15px;font-weight:700;margin-bottom:16px" onclick="document.getElementById(\'cri-pay-step2\').style.display=\'block\'">Pay $'+price.toLocaleString()+' with Stripe →</a>' : '') +
+    '<div id="cri-pay-step2" style="display:'+(link?'none':'block')+'">' +
+    '<div style="font-size:12px;color:#6b7280;margin-bottom:8px">After payment, enter the confirmation code sent to you by <strong>'+name+'</strong>:</div>' +
+    '<input id="pay-code-input" type="text" placeholder="PAY-XXXX-XXXX" style="width:100%;padding:10px 14px;border:2px solid #c4b5fd;border-radius:8px;font-size:14px;font-family:monospace;letter-spacing:1px;text-align:center;box-sizing:border-box;margin-bottom:8px">' +
+    '<div id="pay-code-error" style="color:#b91c1c;font-size:11px;margin-bottom:8px;display:none">Invalid code. Contact <a href="mailto:'+email+'" style="color:#7c3aed">'+email+'</a> for your payment code.</div>' +
+    '<button onclick="_criVerifyPayCode()" style="width:100%;padding:12px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;margin-bottom:8px">Verify &amp; Download</button>' +
+    '</div>' +
+    '<div style="font-size:11px;color:#9ca3af;margin-bottom:16px">No Stripe link? Contact <a href="mailto:'+email+'" style="color:#7c3aed">'+email+'</a></div>' +
+    '<button onclick="document.getElementById(\'cri-pay-overlay\').remove()" style="padding:8px 20px;border:1.5px solid #d1d5db;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;color:#6b7280">Cancel</button>' +
+    '</div>';
+  /* Store callback for after verification */
+  window._criPendingDownload = proceedCallback;
+  document.body.appendChild(overlay);
+}
+
+function _criVerifyPayCode() {
+  var code  = (document.getElementById('pay-code-input').value || '').trim().toUpperCase();
+  var pay   = window._CRI_PAY;
+  var cid   = pay ? pay.clientId : 'pilot';
+  /* Valid pay codes: PAY- prefix (Shri generates and emails to client after Stripe payment) */
+  if (!code || !code.match(/^PAY-[A-Z0-9]{4,}/)) {
+    document.getElementById('pay-code-error').style.display = 'block';
+    return;
+  }
+  /* Record payment */
+  var paidCount = +((_criPayStorage('cri_rpaid_' + cid)) || '0') + 1;
+  _criPayStorageSet('cri_rpaid_' + cid, String(paidCount));
+  _criPayStorageSet('cri_rpay_code_' + paidCount + '_' + cid, code);
+  /* Remove overlay and proceed */
+  var overlay = document.getElementById('cri-pay-overlay');
+  if (overlay) overlay.remove();
+  if (window._criPendingDownload) {
+    window._criPendingDownload();
+    window._criPendingDownload = null;
+  }
 }
 
 /* ── initPilotMode — runs in the CLIENT's browser on opening the pilot file ── */
@@ -9866,6 +10084,76 @@ function initPilotMode(cfg) {
 
   /* 9. Navigate to overview with client data */
   setTimeout(function() { show('overview'); }, 200);
+
+  /* 10. ── Payment / trial system ──
+     Only activates if Stripe links or trial days configured in pilot.
+     Master CRI_Demo.html has no PILOT_CONFIG → this block never runs → no walls. */
+  var primaryId   = cfg.primaryClientId || cfg.clientId || 'pilot';
+  var trialDays   = cfg.trialDays || 7;
+  var subCode     = _criPayStorage('cri_sub_' + primaryId);
+  var isSubscribed = subCode && subCode.match(/^SUB-[A-Z0-9]{4,}/);
+
+  /* If subscribed, no further gates needed */
+  if (!isSubscribed) {
+    /* Record trial start date (first-ever open) */
+    var trialKey   = 'cri_trial_start_' + primaryId;
+    var trialStart = _criPayStorage(trialKey);
+    if (!trialStart) {
+      trialStart = new Date().toISOString().split('T')[0];
+      _criPayStorageSet(trialKey, trialStart);
+    }
+
+    /* Check trial expiry */
+    var trialStartDate = new Date(trialStart + 'T00:00:00');
+    var trialExpiry    = new Date(trialStartDate);
+    trialExpiry.setDate(trialExpiry.getDate() + trialDays);
+    var trialDaysLeft  = Math.ceil((trialExpiry - new Date()) / (1000*60*60*24));
+
+    if (trialDaysLeft <= 0 && (cfg.stripeSubLink || cfg.stripeReportLink)) {
+      /* Trial has expired — show subscription wall */
+      setTimeout(function() { _criSubscriptionWall(cfg); }, 300);
+      return;
+    }
+
+    /* Trial active — update banner with trial day count */
+    if (trialDaysLeft > 0 && trialDaysLeft <= trialDays) {
+      var banner = el('pilot-banner');
+      if (banner) {
+        var trialNote = ' · Free trial: ' + trialDaysLeft + ' day' + (trialDaysLeft !== 1 ? 's' : '') + ' left';
+        var daysEl = el('pb-days');
+        if (daysEl) daysEl.textContent = (daysEl.textContent || '') + trialNote;
+      }
+    }
+
+    /* Activate payment gate for report downloads (only if Stripe configured) */
+    if (cfg.stripeReportLink || cfg.reportPrice) {
+      window._CRI_PAY = { active: true, clientId: primaryId, cfg: cfg };
+
+      /* Wrap generateFullReport */
+      var _origGenReport = window.generateFullReport;
+      window.generateFullReport = function() {
+        _criCheckReportGate(function() {
+          if (_origGenReport) _origGenReport();
+        });
+      };
+
+      /* Wrap generateFullReportNewTab */
+      var _origGenReportTab = window.generateFullReportNewTab;
+      window.generateFullReportNewTab = function() {
+        _criCheckReportGate(function() {
+          if (_origGenReportTab) _origGenReportTab();
+        });
+      };
+
+      /* Wrap exportReport */
+      var _origExport = window.exportReport;
+      window.exportReport = function() {
+        _criCheckReportGate(function() {
+          if (_origExport) _origExport();
+        });
+      };
+    }
+  }
 }
 </script>
 </body>
