@@ -5893,6 +5893,172 @@ function _xlGetData() {
   };
 }
 
+/* ── Excel → Engine bridge ───────────────────────────────────────────────────
+   Runs full assessHazards() on every imported Excel asset, generates scenario
+   financial runs from the Excel company financials, registers a proper entry
+   in D.companies / D.hazards / RATINGS, and switches the company dropdown so
+   all analysis panels (Physical Risk, Transition Risk, Overview, Rating)
+   immediately show the imported data instead of the demo companies.
+   ─────────────────────────────────────────────────────────────────────────── */
+function _xlInjectToEngine() {
+  var xd = _xlGetData();
+  if (!xd.assets || !xd.assets.length) return;
+
+  var xCo   = xd.company || {};
+  var name   = xCo.name   || 'Imported Company';
+  var sector = xCo.sector || 'Other';
+  var rev    = ((+xCo.revM)    || 1000) / 1e3;   // $M → $B
+  var ebitda = ((+xCo.ebitdaM) || rev * 400) / 1e3;
+  var debt   = ((+xCo.netDebtM)|| 0)    / 1e3;
+  var wacc   = ((+xCo.waccPct) || 9)    / 100;
+  var shares = ((+xCo.mktCapM) || 0)    / 20;    // rough shares proxy
+
+  function round1(x) { return Math.round(x * 10) / 10; }
+
+  // EV under each scenario (replicates wizard logic)
+  var baseEV = ebitda / (wacc + 0.005) - debt;
+  var _mult  = /oil|gas|petro|lng/i.test(sector) ? {nze:0.65,dt:0.90,cp:1.20}
+             : /mining|metal|coal|iron|copper|lithium|nickel|platinum/i.test(sector) ? {nze:0.82,dt:1.05,cp:1.28}
+             : {nze:1.05, dt:1.22, cp:1.38};
+  var nzeEV = Math.max(0.1, baseEV * _mult.nze);
+  var dtEV  = Math.max(0.1, baseEV * _mult.dt);
+  var cpEV  = Math.max(0.1, baseEV * _mult.cp);
+  var spNze = shares > 0 ? Math.max(0, nzeEV - debt) * 1e3 / shares : 0;
+  var spCp  = shares > 0 ? Math.max(0, cpEV  - debt) * 1e3 / shares : 0;
+
+  // Emissions from Excel (sum across assets)
+  var totS1 = 0, totS2 = 0;
+  (xd.emissions || []).forEach(function(e) {
+    totS1 += +(e.s1 || e['Scope 1 (tCO2e)'] || 0);
+    totS2 += +(e.s2 || e['Scope 2 (tCO2e)'] || 0);
+  });
+  var wizS1mt = totS1 / 1e6 || Math.max(0.1, rev * 1.8);
+  var wizS2mt = totS2 / 1e6 || Math.max(0.05, wizS1mt * 0.3);
+
+  function buildYears(scenario) {
+    var years = [];
+    var rAdj  = scenario==='cp' ? 1.020 : scenario==='dt' ? 0.995 : 0.975;
+    var eAdj  = scenario==='cp' ? 1.010 : scenario==='dt' ? 0.990 : 0.970;
+    for (var yr = 2026; yr <= 2050; yr++) {
+      var t  = yr - 2026;
+      var r  = rev    * Math.pow(rAdj, t);
+      var e  = ebitda * Math.pow(eAdj, t);
+      var cc = scenario==='nze' ? 0.03*ebitda*(1+t*0.08)
+             : scenario==='dt'  ? 0.01*ebitda*(1+t*0.12)
+             :                    0.005*ebitda*(1+t*0.05);
+      years.push({ year:yr, revenue:round1(r), ebitda:round1(e-cc*0.3),
+        fcf:round1((e-cc)*0.55), carbon_cost:round1(cc),
+        opex:round1(r-e), emissions_s1:round1(wizS1mt*(1-t*0.01)),
+        emissions_s2:round1(wizS2mt*(1-t*0.008)) });
+    }
+    return years;
+  }
+
+  var co_id = '_xl_import';
+
+  // ── Register company ────────────────────────────────────────────────────
+  D.companies[co_id] = {
+    name:   name,
+    sector: sector,
+    runs: {
+      nze_2050:           { label:'NZE 2050',           color:'#16a34a', ev:round1(nzeEV), equity:round1(Math.max(0,nzeEV-debt)), share_price:round1(spNze),        wacc:round1((wacc+0.010)*100), years:buildYears('nze') },
+      delayed_transition: { label:'Delayed Transition', color:'#b45309', ev:round1(dtEV),  equity:round1(Math.max(0,dtEV-debt)),  share_price:round1(spNze*1.15),    wacc:round1((wacc+0.020)*100), years:buildYears('dt')  },
+      current_policies:   { label:'Current Policies',   color:'#b91c1c', ev:round1(cpEV),  equity:round1(Math.max(0,cpEV-debt)),  share_price:round1(spCp),          wacc:round1((wacc+0.015)*100), years:buildYears('cp')  },
+    }
+  };
+
+  // ── Run full hazard assessment on every imported asset ──────────────────
+  D.hazards[co_id] = xd.assets.map(function(a) {
+    var region  = a.state || a.region || 'global';
+    var lat     = a.lat   || null;
+    var lon     = a.lon   || null;
+    var p30 = assessHazards(region, lat, lon, 'ssp370', 2030);
+    var p50 = assessHazards(region, lat, lon, 'ssp370', 2050);
+    var hzBk = {};
+    p30.hazards.forEach(function(h){ if(h.applicable) hzBk[h.h] = round1(h.loss*100); });
+    return {
+      asset:            a.assetName || a.name || '—',
+      region:           region,
+      commodity:        a.sector || a.commodity || sector,
+      lat:              lat,
+      lon:              lon,
+      cv:               +(a.cvM || 0),
+      loss_2030_pct:    round1(p30.annual_loss_pct * 100),
+      loss_2050_pct:    round1(p50.annual_loss_pct * 100),
+      score:            p30.score,
+      annual_loss_pct:  p30.annual_loss_pct,
+      top_hazards:      p30.top_hazards,
+      top:              p30.hazards.filter(function(h){return h.applicable;}).sort(function(a,b){return b.sev-a.sev;}).slice(0,5).map(function(h){return {h:h.h,sev:h.sev,loss:h.loss};}),
+      is_coastal:       p30.is_coastal,
+      elevation_m:      p30.elevation_m,
+      coastal_dist_km:  p30.coastal_dist_km,
+      river_prox_score: p30.river_prox_score,
+      uhi_bonus_c:      p30.uhi_bonus_c,
+      slope_factor:     p30.slope_factor,
+      gps_resolved:     p30.gps_resolved,
+      lulc:             p30.lulc,
+      warming:          p30.warming,
+      warming_2030:     round1(p30.warming),
+      hazard_breakdown: hzBk,
+      _prof2030:        p30,
+      _prof2050:        p50,
+    };
+  });
+
+  // ── Build CRI Rating ────────────────────────────────────────────────────
+  var hList    = D.hazards[co_id];
+  var avgLoss  = hList.length ? hList.reduce(function(s,a){ return s+(a.loss_2030_pct||0); },0) / hList.length : 0;
+  var physScore = Math.min(100, avgLoss * 200);
+  var physLabel = physScore>=70?'High':physScore>=45?'Elevated':physScore>=20?'Moderate':'Low';
+  var nzeRun   = D.companies[co_id].runs.nze_2050;
+  var cpRun    = D.companies[co_id].runs.current_policies;
+  var nzeY30   = nzeRun.years.find(function(y){return y.year===2030;}) || nzeRun.years[0];
+  var ccPct    = (nzeY30 && nzeY30.ebitda > 0) ? (nzeY30.carbon_cost / nzeY30.ebitda * 100) : 10;
+  var transScore= Math.min(100, ccPct * 3);
+  var transLabel= transScore>=70?'Critical':transScore>=50?'High':transScore>=30?'Elevated':transScore>=15?'Moderate':'Low';
+  var evAtRisk = cpRun.ev > 0 ? (cpRun.ev - nzeRun.ev) / cpRun.ev * 100 : 0;
+  var finScore = Math.min(100, evAtRisk * 1.3);
+  var finLabel = finScore>=70?'High':finScore>=45?'Elevated':finScore>=20?'Moderate':'Low';
+  var composite= Math.round(physScore*0.35 + transScore*0.35 + finScore*0.30);
+  var rating   = composite>=75?'E':composite>=55?'D':composite>=35?'C':composite>=18?'B':'A';
+  var rLabels  = {A:'Low Climate Risk',B:'Moderate Climate Risk',C:'Elevated Climate Risk',D:'High Climate Risk',E:'Very High Climate Risk'};
+  var topPhys  = hList.length ? hList.slice().sort(function(a,b){return (b.loss_2030_pct||0)-(a.loss_2030_pct||0);})[0] : null;
+  RATINGS[co_id] = {
+    rating:composite>=75?'E':composite>=55?'D':composite>=35?'C':composite>=18?'B':'A',
+    label: rLabels[rating], composite:composite, confidence:'Medium',
+    sector_rank: hList.length + ' asset(s) · ' + sector + ' · Excel import',
+    summary: name + ' receives a CRI Rating of ' + rating + ' (' + rLabels[rating] + '), computed from site-specific physical hazard assessment across ' + hList.length + ' asset location(s), NGFS Phase 4 transition scenario modelling, and enterprise value sensitivity analysis under NZE 2050 vs Current Policies.',
+    pillars: {
+      physical:   { label:physLabel,  score:physScore,  drivers:['Average annual physical loss 2030: '+avgLoss.toFixed(2)+'% of asset value', topPhys?'Highest-risk asset: '+topPhys.asset+' ('+topPhys.loss_2030_pct.toFixed(2)+'% loss/yr)':'Multi-asset portfolio'] },
+      transition: { label:transLabel, score:transScore, drivers:['Carbon cost 2030 (NZE 2050): '+ccPct.toFixed(1)+'% of EBITDA','NGFS Phase 4 NZE 2050 carbon price path'] },
+      financial:  { label:finLabel,   score:finScore,   drivers:['EV at risk (NZE vs Current Policies): '+evAtRisk.toFixed(1)+'%','NZE EV: $'+nzeRun.ev.toFixed(1)+'B  ·  CP EV: $'+cpRun.ev.toFixed(1)+'B  ·  WACC: '+nzeRun.wacc.toFixed(1)+'%'] }
+    }
+  };
+
+  // ── Update company dropdown ────────────────────────────────────────────
+  var sel = document.getElementById('coSel');
+  if (sel) {
+    var prev = sel.querySelector('option[value="_xl_import"]');
+    if (prev) prev.remove();
+    var opt  = document.createElement('option');
+    opt.value = '_xl_import';
+    opt.textContent = '★ ' + name + ' (Excel)';
+    opt.style.fontWeight = 'bold';
+    sel.insertBefore(opt, sel.firstChild);
+    sel.value = '_xl_import';
+  }
+
+  // ── Refresh all analysis panels ────────────────────────────────────────
+  try { if (typeof renderOv==='function') renderOv(); } catch(e){}
+  try { if (typeof renderPh==='function') renderPh(); } catch(e){}
+  try { if (typeof renderTr==='function') renderTr(); } catch(e){}
+  try { if (typeof renderCo==='function') renderCo(); } catch(e){}
+  try { if (typeof renderCr==='function') renderCr(); } catch(e){}
+  try { if (typeof renderPortfolio==='function') renderPortfolio(); } catch(e){}
+
+  toast('✅ ' + name + ' loaded — ' + hList.length + ' assets analysed. CRI Rating: ' + rating);
+}
+
 async function connectExcelFile() {
   if (!window.showOpenFilePicker) {
     toast('⚠ File System Access API not available — use one-time import instead');
@@ -6023,6 +6189,7 @@ async function _xlProcessFile(file) {
     _xlState.lastSync = new Date();
     _xlState.connected = true;
     _assessSupplyChainFromData(_xlGetData().suppliers, el('sc-ssp') ? el('sc-ssp').value : 'ssp370', parseInt(el('sc-yr') ? el('sc-yr').value : 2030));
+    _xlInjectToEngine();   // Run full hazard assessment + register in D.companies/D.hazards
   } catch(e) { console.error('Excel parse error:', e); toast('⚠ Parse error: ' + e.message); }
 }
 
