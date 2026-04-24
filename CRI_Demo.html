@@ -769,37 +769,27 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <div class="logo-name"><span class="logo-gem">◈</span>CRI</div>
     <div class="logo-sub">Climate Risk Intelligence</div>
   </div>
+
   <div class="nav-grp">
-    <div class="nav-grp-label">Start Here</div>
-    <button class="nav-btn" data-p="intake"><span class="nav-icon">⊕</span>Company Setup</button>
+    <div class="nav-grp-label" style="letter-spacing:.05em;opacity:.5;font-size:9px">STEP 1 — UPLOAD DATA</div>
+    <button class="nav-btn on" data-p="dataint"><span class="nav-icon">📂</span>Excel Integration</button>
   </div>
+
   <div class="nav-grp">
-    <div class="nav-grp-label">Analysis</div>
-    <button class="nav-btn on" data-p="overview"><span class="nav-icon">◉</span>Overview</button>
+    <div class="nav-grp-label" style="letter-spacing:.05em;opacity:.5;font-size:9px">STEP 2 — ANALYSIS</div>
     <button class="nav-btn" data-p="physical"><span class="nav-icon">🌡</span>Physical Risk</button>
     <button class="nav-btn" data-p="transition"><span class="nav-icon">⚡</span>Transition Risk</button>
-    <button class="nav-btn" data-p="costs"><span class="nav-icon">◎</span>Cost Parameters</button>
-  </div>
-  <div class="nav-grp">
-    <div class="nav-grp-label">Data Hub</div>
-    <button class="nav-btn" data-p="dataint"><span class="nav-icon">📊</span>Excel Integration</button>
     <button class="nav-btn" data-p="supplychain"><span class="nav-icon">🔗</span>Supply Chain</button>
-    <button class="nav-btn" data-p="portfolio"><span class="nav-icon">⬡</span>Portfolio Roll-up</button>
   </div>
+
   <div class="nav-grp">
-    <div class="nav-grp-label">Portfolio</div>
-    <button class="nav-btn" data-p="compare"><span class="nav-icon">⊞</span>Compare</button>
-    <button class="nav-btn" data-p="stats"><span class="nav-icon">∿</span>Statistical View</button>
-  </div>
-  <div class="nav-grp">
-    <div class="nav-grp-label">Outcomes</div>
+    <div class="nav-grp-label" style="letter-spacing:.05em;opacity:.5;font-size:9px">STEP 3 — REPORTS</div>
     <button class="nav-btn" data-p="ratings"><span class="nav-icon">◈</span>Climate Rating</button>
-    <button class="nav-btn" data-p="disclosures"><span class="nav-icon">📋</span>Disclosures</button>
     <button class="nav-btn" data-p="report"><span class="nav-icon">📊</span>Risk Report</button>
     <button class="nav-btn" data-p="genai"><span class="nav-icon">✦</span>GenAI Report</button>
-    <button class="nav-btn" data-p="reportintel"><span class="nav-icon">🔍</span>Report Intelligence</button>
     <button class="nav-btn" data-p="reghub"><span class="nav-icon">🏛</span>Regulatory Hub</button>
   </div>
+
   <div class="nav-grp" style="margin-top:auto;padding-top:12px;border-top:1px solid var(--border)">
     <div class="nav-grp-label">Session</div>
     <button class="nav-btn" onclick="saveProject()" style="font-size:11px"><span class="nav-icon">💾</span>Save Project</button>
@@ -2193,7 +2183,7 @@ function toast(msg) {
 }
 
 /* ── Navigation ─────────────────────────────────── */
-var cur = 'overview';
+var cur = 'dataint';
 var panels = ['intake','overview','physical','transition','costs','dataint','supplychain','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub'];
 var labels = {intake:'Company Setup',overview:'Overview',physical:'Physical Risk',transition:'Transition Risk',costs:'Cost Parameters',dataint:'Excel Integration',supplychain:'Supply Chain Risk',portfolio:'Portfolio Roll-up',compare:'Compare',stats:'Statistical View',ratings:'Climate Rating',disclosures:'Disclosures',report:'Risk Report',genai:'GenAI Report',reportintel:'Report Intelligence',reghub:'Regulatory Hub'};
 
@@ -3940,8 +3930,12 @@ function rptSetYear(yr) {
 function _rptAllAssets(ssp, year) {
   var list = [];
   var cid = co();
-  var coObj = COS[cid];
-  var hasList = HAZ[cid];
+  // Use window.D directly as the authoritative source — COS/HAZ are aliases set at page load
+  // and may not reflect dynamically injected companies in all browser contexts
+  var _cos = (window.D && window.D.companies) || COS;
+  var _haz = (window.D && window.D.hazards)   || HAZ;
+  var coObj = _cos[cid];
+  var hasList = _haz[cid];
   if (!coObj || !hasList || !hasList.length) return list;
 
   // Pick SSP-proxied transition run
@@ -3995,8 +3989,9 @@ function renderReport() {
   var ssp  = _rpt.ssp;
   var year = _rpt.year;
 
-  // Guard — no company loaded yet
-  if (!co() || !COS[co()]) {
+  // Guard — no company loaded yet (check window.D directly to bypass stale COS alias)
+  var _coCheck = (window.D && window.D.companies) || COS;
+  if (!co() || !_coCheck[co()]) {
     var empty = '<div style="text-align:center;padding:80px 20px;color:var(--muted);font-size:15px">' +
       '<div style="font-size:48px;margin-bottom:16px">📂</div>' +
       '<div style="font-size:20px;font-weight:600;margin-bottom:10px">No data loaded</div>' +
@@ -4393,7 +4388,8 @@ function _rptKpi(lbl, val, sub, color, pct) {
 }
 
 /* ── Boot ───────────────────────────────────────── */
-renderOv();
+// Default to Excel Integration panel on load
+showTab('dataint');
 </script>
 
 <!-- ═══════════════════════════════════════════════════
@@ -6116,6 +6112,7 @@ function _xlInjectToEngine() {
   try { if (typeof renderCo==='function') renderCo(); } catch(e){}
   try { if (typeof renderCr==='function') renderCr(); } catch(e){}
   try { if (typeof renderPortfolio==='function') renderPortfolio(); } catch(e){}
+  try { if (typeof renderReport==='function') renderReport(); } catch(e){}
 
   toast('✅ ' + name + ' loaded — ' + hList.length + ' assets analysed. CRI Rating: ' + rating);
 }
