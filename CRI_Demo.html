@@ -8274,6 +8274,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
       body += sectionHeader('1a','Physical Risk — Asset Location Map',
         fw==='csrd'?'ESRS E1-4 / E1-9 §66(a)':fw==='tcfd'?'TCFD Strategy (S1)':'IFRS S2 §19');
       body += '<p style="font-size:12px;color:#374151;line-height:1.7;margin-bottom:12px">Geographic distribution of asset climate risk exposure. Marker size is proportional to annual Climate-at-Risk (CaR); colour indicates risk severity band. Click any marker to view asset details. Assets assessed at regional resolution are plotted at the region centroid; GPS-verified assets are plotted at their exact coordinates.</p>';
+      body += '<div class="cri-map-wrap" style="break-inside:avoid;page-break-inside:avoid">';
       body += '<div id="cri-haz-map" style="width:100%;height:440px;border-radius:8px;border:1.5px solid #e2e8f0;overflow:hidden;margin-bottom:12px;background:#f1f5f9"></div>';
       body += '<div style="display:flex;flex-wrap:wrap;gap:16px;font-size:11px;color:#374151;align-items:center;margin-bottom:8px">';
       body += '<strong style="color:#6b7280;font-size:10px;letter-spacing:.5px">RISK LEVEL:</strong>';
@@ -8284,17 +8285,18 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
       body += '<span style="margin-left:auto;color:#9ca3af;font-size:10px">Marker size ∝ Annual CaR ($M/yr)</span>';
       body += '</div>';
       body += '<div style="font-size:10px;color:#9ca3af;border-top:1px solid #f1f5f9;padding-top:6px">Map tiles © OpenStreetMap contributors (ODbL). Asset coordinates are GPS-verified where available or derived from IPCC AR6 regional centroids and are not individually disclosed for asset security reasons.</div>';
+      body += '</div>';
       body += '<script>(function(){'+
+        'var _m=null,_b=[];'+
         'function _criInitHazMap(){'+
           'if(typeof L==="undefined"){setTimeout(_criInitHazMap,300);return;}'+
           'var el=document.getElementById("cri-haz-map");'+
           'if(!el||el._criMapInit)return; el._criMapInit=true;'+
           'var _ma='+_mj+';'+
-          'var _m=L.map(el,{scrollWheelZoom:false,zoomControl:true});'+
+          '_m=L.map(el,{scrollWheelZoom:false,zoomControl:true});'+
           'L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{'+
             'attribution:"© <a href=\'https://www.openstreetmap.org/copyright\'>OpenStreetMap</a>",'+
             'maxZoom:18}).addTo(_m);'+
-          'var _b=[];'+
           '_ma.forEach(function(a){'+
             'var _c=a.score>70?"#b91c1c":a.score>50?"#b45309":a.score>30?"#2563eb":"#16a34a";'+
             'var _r=Math.max(8,Math.min(28,Math.sqrt(a.carM)*2.2));'+
@@ -8314,6 +8316,9 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
             '_b.push([a.lat,a.lon]);'+
           '});'+
           'if(_b.length)_m.fitBounds(_b,{padding:[40,40],maxZoom:7});'+
+          'window.addEventListener("beforeprint",function(){'+
+            'if(_m){_m.invalidateSize();if(_b.length)_m.fitBounds(_b,{padding:[40,40],maxZoom:6});}'+
+          '});'+
         '}'+
         'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",_criInitHazMap);}'+
         'else{setTimeout(_criInitHazMap,80);}'+
@@ -8581,20 +8586,26 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     '<style>*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;color:#111;margin:0;padding:0;background:#fff}' +
     '.cri-pr-page{page-break-after:always;page-break-inside:avoid;min-height:220mm}.val-calc{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:5px}.val-est{background:#fffbeb;color:#b45309;border:1px solid #fde68a;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:5px}.val-pre{background:#f8fafc;color:#64748b;border:1px solid #cbd5e1;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:5px}' +
     '@media print{'+
-    '@page{size:A4 portrait;margin:10mm 12mm}'+
+    '@page{size:A4 portrait;margin:12mm 14mm}'+
     'body{background:#fff}'+
-    /* Cover: always fill one full A4 page */
-    '.cri-pr-cover{min-height:277mm!important;page-break-after:always!important;page-break-inside:avoid!important}'+
-    /* All other cri-pr-page sections: remove the forced page-break-after so content flows naturally.
-       page-break-inside:auto allows sections taller than one page to span naturally. */
-    '.cri-pr-page{max-height:none;page-break-after:auto!important;page-break-inside:auto!important}'+
-    /* Major numbered section headers (1,2,3…) always start on a fresh page */
-    '.cri-sec-hdr{break-before:page!important;page-break-before:always!important;margin-top:0!important}'+
-    /* Sub-section headers (1a, 2b…) stay with their content, no forced break */
-    '.cri-sub-hdr{break-inside:avoid;page-break-inside:avoid}'+
-    /* Tables: allow natural page breaks between rows (not mid-cell) */
+    /* Cover: always fill one full A4 page — keep its padding for visual design */
+    '.cri-pr-cover{min-height:273mm!important;page-break-after:always!important;page-break-inside:avoid!important}'+
+    /* All other sections: remove the inline 20mm padding — @page margins handle spacing.
+       Without this, sections flowing across pages create 20+20=40mm blank gaps at boundaries. */
+    '.cri-pr-page:not(.cri-pr-cover){padding:0!important;margin:0!important;'+
+      'max-height:none;page-break-after:auto!important;page-break-inside:auto!important}'+
+    /* Major numbered section headers (1,2,3,A,B…) always start on a fresh page */
+    '.cri-sec-hdr{break-before:page!important;page-break-before:always!important;'+
+      'margin-top:0!important;border-radius:0!important}'+
+    /* Sub-section headers (1a, 2b…): keep with next element, no forced break */
+    '.cri-sub-hdr{break-after:avoid;page-break-after:avoid;margin-top:16px!important;border-radius:0!important}'+
+    /* Map container: never split across pages; moves whole to next page if needed */
+    '.cri-map-wrap{break-inside:avoid!important;page-break-inside:avoid!important}'+
+    /* Tables: allow natural breaks between rows */
     'table{page-break-inside:auto}tr{page-break-inside:avoid;page-break-after:auto}'+
-    /* Prevent orphaned single lines at top/bottom of pages */
+    /* Section separators */
+    '.cri-sec-divider{border-top:1px solid #e2e8f0;margin:8mm 0}'+
+    /* Prevent orphaned lines */
     'p{orphans:3;widows:3}'+
     '}' +
     '</style>' +
