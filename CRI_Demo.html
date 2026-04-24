@@ -9825,7 +9825,7 @@ function generatePilotPackage() {
   source = source.replace('</body>', autoInit + '</body>');
 
   /* Download */
-  var filename = coData.name.replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.2.html';
+  var filename = resolvedClientName.replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.2.html';
   var blob = new Blob([source], {type:'text/html;charset=utf-8'});
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
