@@ -841,11 +841,14 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       </select>
       <div style="font-size:10px;color:#9ca3af;margin-top:3px">Companies loaded from sustainability reports appear here. Reference datasets (BHP/Shell/Rio Tinto) are marked Demo — do not send to real clients.</div>
     </div>
-    <!-- Client Display Name override -->
+    <!-- Client Display Name — required when using a reference/demo dataset -->
     <div style="margin-bottom:14px">
-      <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px">CLIENT DISPLAY NAME <span style="font-weight:400;color:#9ca3af">(optional override)</span></label>
-      <input id="pm-clientname" type="text" placeholder="Leave blank to use company name above" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:13px;box-sizing:border-box">
-      <div style="font-size:10px;color:#9ca3af;margin-top:3px">Override the name shown to the client inside the pilot file (e.g. for white-labelling or name variations).</div>
+      <label style="font-size:11px;font-weight:700;color:#374151;display:block;margin-bottom:4px">CLIENT NAME <span style="font-weight:400;color:#9ca3af">(shown inside the pilot file)</span></label>
+      <input id="pm-clientname" type="text" placeholder="e.g. Acme Mining Group" style="width:100%;padding:8px 12px;border:1.5px solid #d1d5db;border-radius:8px;font-size:13px;box-sizing:border-box">
+      <div style="font-size:10px;color:#9ca3af;margin-top:3px">
+        <strong>Required when using a Demo dataset</strong> — this is the name the client sees. Leave blank to use the loaded company name.
+        If your client hasn't sent a sustainability report yet, select any Demo dataset above and enter their company name here.
+      </div>
     </div>
 
     <!-- Pilot Duration -->
@@ -9724,7 +9727,16 @@ function pmRefreshPreview() {
 /* ── Main generator ── */
 function generatePilotPackage() {
   var cid = document.getElementById('pm-company').value;
-  if (!cid || !D.companies[cid]) { toast('⚠ Select a client company first'); return; }
+  if (!cid || !D.companies[cid]) { toast('⚠ Select a dataset to base the pilot on'); return; }
+  var _refCosCheck = ['bhp','shell','rio_tinto'];
+  var _clientNameCheck = (document.getElementById('pm-clientname').value || '').trim();
+  if (_refCosCheck.indexOf(cid) >= 0 && !_clientNameCheck) {
+    toast('⚠ Enter a Client Name above — the client should not see "BHP" or "Shell" in their pilot');
+    document.getElementById('pm-clientname').focus();
+    document.getElementById('pm-clientname').style.borderColor = '#b91c1c';
+    return;
+  }
+  document.getElementById('pm-clientname').style.borderColor = '';
 
   var accessKey      = (document.getElementById('pm-accesskey').value || '').trim();
   var days           = +(document.querySelector('input[name="pm-days"]:checked') || {value:90}).value;
@@ -9736,7 +9748,7 @@ function generatePilotPackage() {
   var stripeReport   = (document.getElementById('pm-stripeReport').value || '').trim();
   var stripeSub      = (document.getElementById('pm-stripeSub').value || '').trim();
 
-  /* Collect ALL imported (non-reference) companies to embed in the pilot */
+  /* Collect client companies — NEVER include raw reference companies in the pilot */
   var refCos = ['bhp','shell','rio_tinto'];
   var allCompanyData = {}, allHazardData = {};
   Object.keys(D.companies).forEach(function(id) {
@@ -9745,9 +9757,19 @@ function generatePilotPackage() {
       allHazardData[id]  = D.hazards[id] || [];
     }
   });
-  /* Ensure at least the selected company is included */
-  allCompanyData[cid] = D.companies[cid];
-  allHazardData[cid]  = D.hazards[cid] || [];
+
+  /* If a reference company was selected, create a client-branded copy under a clean ID */
+  var finalCid = cid;
+  if (refCos.indexOf(cid) >= 0) {
+    finalCid = 'client_' + cid;
+    var companyCopy = JSON.parse(JSON.stringify(D.companies[cid]));
+    companyCopy.name = resolvedClientName;
+    allCompanyData[finalCid] = companyCopy;
+    allHazardData[finalCid]  = D.hazards[cid] || [];
+  } else {
+    allCompanyData[cid] = D.companies[cid];
+    allHazardData[cid]  = D.hazards[cid] || [];
+  }
 
   /* Features unlocked */
   var features = {
@@ -9770,7 +9792,7 @@ function generatePilotPackage() {
   /* Build PILOT_CONFIG — not locked to single company */
   var resolvedClientName = clientNameOverride || D.companies[cid].name;
   var pilotCfg = {
-    primaryClientId: cid,
+    primaryClientId: finalCid,
     primaryClientName: resolvedClientName,
     pilotExpiry:   expiryStr,
     pilotDays:     days,
@@ -9788,9 +9810,9 @@ function generatePilotPackage() {
     allHazardData:  allHazardData,
     /* Legacy compat fields */
     clientName:    resolvedClientName,
-    clientId:      cid,
-    companyData:   D.companies[cid],
-    hazardData:    D.hazards[cid] || []
+    clientId:      finalCid,
+    companyData:   allCompanyData[finalCid],
+    hazardData:    allHazardData[finalCid] || []
   };
 
   var configScript =
@@ -9798,7 +9820,21 @@ function generatePilotPackage() {
     'window.PILOT_CONFIG = ' + JSON.stringify(pilotCfg, null, 2) + ';\n' +
     '<\/script>\n';
 
-  /* Capture engine source — clone this page's HTML */
+  /* Capture engine source — clone this page's HTML.
+     First clear all dynamically-rendered panel content so the client sees a
+     clean slate, not whatever Shri had open when generating the pilot. */
+  var _panelsToClear = ['overview-content','physical-content','transition-content',
+    'report-content','disclosure-content','supplychain-content','portfolio-content',
+    'genai-content','compare-content','costparams-content'];
+  _panelsToClear.forEach(function(pid) {
+    var pel = document.getElementById(pid);
+    if (pel) pel.innerHTML = '';
+  });
+  /* Also clear any open chart canvases and map tiles to reduce file size */
+  document.querySelectorAll('canvas').forEach(function(c) { c.width = c.width; });
+  /* Hide pilot modal and any overlays */
+  document.getElementById('pilot-overlay').style.display = 'none';
+
   var source = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
 
   /* Strip any live pilot banner state (will be reinitialised from PILOT_CONFIG) */
@@ -10034,13 +10070,13 @@ function initPilotMode(cfg) {
     D.hazards[id]   = allHaz[id] || [];
   });
 
-  /* 4. Clean dropdown — remove reference companies, add client companies */
+  /* 4. Clean dropdown — wipe it entirely, add only client companies */
   var sel = el('coSel');
-  ['bhp','shell','rio_tinto'].forEach(function(ref) {
-    var opt = sel.querySelector('option[value="'+ref+'"]');
-    if (opt) opt.remove();
-  });
+  /* Remove all existing options (reference companies are baked into HTML) */
+  sel.innerHTML = '';
+  var _refSet = ['bhp','shell','rio_tinto'];
   Object.keys(allCos).forEach(function(id) {
+    if (_refSet.indexOf(id) >= 0) return; /* never expose raw reference data to client */
     if (!sel.querySelector('option[value="'+id+'"]')) {
       var opt = document.createElement('option');
       opt.value = id;
