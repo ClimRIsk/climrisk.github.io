@@ -2018,6 +2018,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         <button class="xl-btn xl-btn-secondary" onclick="downloadTemplate()">📋 Download Template (.xlsx)</button>
         <button class="xl-btn xl-btn-export" onclick="exportAnalysis()">⬇ Export Analysis to Excel</button>
         <button class="xl-btn xl-btn-secondary" id="xl-stop-btn" onclick="stopExcelWatch()" style="display:none;background:#fee2e2;color:#b91c1c;border-color:#fecaca">⏹ Disconnect</button>
+        <button class="xl-btn xl-btn-primary" id="xl-run-btn" onclick="_xlRunAnalysis()" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none">▶ Run Analysis</button>
       </div>
 
       <!-- Data preview tabs -->
@@ -6180,6 +6181,7 @@ async function importOneTime() {
     _xlState.filename = file.name;
     await _xlProcessFile(file);
     _xlSetStatus(false, file.name + ' (imported — not watching)');
+    var runBtn = el('xl-run-btn'); if (runBtn) runBtn.style.display = 'inline-block';
     toast('📥 Imported ' + file.name);
     renderDataInt(); renderSupplyChain(); renderPortfolio();
   };
@@ -6255,22 +6257,47 @@ async function _xlProcessFile(file) {
 
     _xlState.lastSync = new Date();
     _xlState.connected = true;
+  } catch(e) { console.error('Excel parse error:', e); toast('⚠ Parse error: ' + e.message); return; }
+
+  // Supply chain and engine injection are separate so a supply-chain error never blocks the main analysis
+  try {
     _assessSupplyChainFromData(_xlGetData().suppliers, el('sc-ssp') ? el('sc-ssp').value : 'ssp370', parseInt(el('sc-yr') ? el('sc-yr').value : 2030));
-    _xlInjectToEngine();   // Run full hazard assessment + register in D.companies/D.hazards
-  } catch(e) { console.error('Excel parse error:', e); toast('⚠ Parse error: ' + e.message); }
+  } catch(e) { console.warn('Supply chain assessment skipped:', e); }
+
+  try {
+    _xlInjectToEngine();
+  } catch(e) {
+    console.error('Engine injection error:', e);
+    toast('⚠ Engine error: ' + e.message + ' — check console for details');
+  }
+}
+
+function _xlRunAnalysis() {
+  if (!_xlState.data.assets.length) { toast('⚠ No data loaded — connect your Excel file first.'); return; }
+  try {
+    _assessSupplyChainFromData(_xlGetData().suppliers, el('sc-ssp') ? el('sc-ssp').value : 'ssp370', parseInt(el('sc-yr') ? el('sc-yr').value : 2030));
+  } catch(e) { console.warn('Supply chain skipped:', e); }
+  try {
+    _xlInjectToEngine();
+  } catch(e) {
+    console.error('Engine error:', e);
+    toast('⚠ Engine error: ' + e.message);
+  }
 }
 
 function _xlSetStatus(connected, label) {
-  var bar = el('xl-status'), txt = el('xl-status-text'), stopBtn = el('xl-stop-btn');
+  var bar = el('xl-status'), txt = el('xl-status-text'), stopBtn = el('xl-stop-btn'), runBtn = el('xl-run-btn');
   if (!bar) return;
   if (connected) {
     bar.className = 'xl-status-bar';
     txt.innerHTML = '✅ <strong>Live sync active</strong> — watching <em>' + _xlState.filename + '</em> &ensp;<span class="xl-live-badge">LIVE</span>';
     if (stopBtn) stopBtn.style.display = 'inline-block';
+    if (runBtn)  runBtn.style.display  = 'inline-block';
   } else {
     bar.className = 'xl-status-bar disconnected';
     txt.textContent = label || 'No Excel file connected';
     if (stopBtn) stopBtn.style.display = 'none';
+    if (runBtn)  runBtn.style.display  = 'none';
   }
 }
 
