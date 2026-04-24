@@ -771,6 +771,11 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
   </div>
 
   <div class="nav-grp">
+    <div class="nav-grp-label">Start Here</div>
+    <button class="nav-btn" data-p="intake"><span class="nav-icon">⊕</span>Company Setup</button>
+  </div>
+
+  <div class="nav-grp">
     <div class="nav-grp-label" style="letter-spacing:.05em;opacity:.5;font-size:9px">STEP 1 — UPLOAD DATA</div>
     <button class="nav-btn on" data-p="dataint"><span class="nav-icon">📂</span>Excel Integration</button>
   </div>
@@ -780,6 +785,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <button class="nav-btn" data-p="physical"><span class="nav-icon">🌡</span>Physical Risk</button>
     <button class="nav-btn" data-p="transition"><span class="nav-icon">⚡</span>Transition Risk</button>
     <button class="nav-btn" data-p="supplychain"><span class="nav-icon">🔗</span>Supply Chain</button>
+    <button class="nav-btn" data-p="loanbook"><span class="nav-icon">🏦</span>Loan Portfolio</button>
   </div>
 
   <div class="nav-grp">
@@ -995,12 +1001,17 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
               <option value="Transport">Transport &amp; Logistics</option>
               <option value="Chemicals">Chemicals &amp; Petrochemicals</option>
               <option value="Real Estate">Real Estate &amp; Infrastructure</option>
-              <option value="Financial Services">Financial Services</option>
+              <option value="Banking">Banking &amp; Financial Services</option>
+              <option value="Insurance">Insurance &amp; Asset Management</option>
+              <option value="Financial Services">Financial Services (Other)</option>
               <option value="Other">Other</option>
             </select>
             <div id="sector-other-wrap" style="display:none;margin-top:6px">
               <input class="finp" id="i-sector-other" type="text" placeholder="Please specify your sector…">
               <div class="finp-hint">We'll apply generic sector defaults for your industry</div>
+            </div>
+            <div id="banking-hint" style="display:none;margin-top:8px;background:#1e3a5f;border:1px solid #2563eb44;border-radius:6px;padding:10px 12px;font-size:11px;color:#93c5fd;line-height:1.5">
+              🏦 <strong>Banking sector detected.</strong> Use the <strong>Loan Portfolio</strong> panel (Step 2 → Analysis) for ECB/EBA-aligned climate risk assessment of your loan book — including ECL adjustment, Green Asset Ratio, and SFDR compliance tracking.
             </div>
           </div>
         </div>
@@ -2082,6 +2093,75 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <div class="cc"><div class="cc-title">Risk-Adjusted Spend by Supplier (USD M)</div><div class="ch h280"><canvas id="scC"></canvas></div></div>
     </div><!-- p-supplychain -->
 
+    <!-- ═══════════════════ LOAN PORTFOLIO (Banking Sector) ════════════════════════ -->
+    <div id="p-loanbook" class="panel">
+      <div class="ph">
+        <h1>🏦 Loan Portfolio Climate Risk</h1>
+        <p>ECB/EBA aligned climate risk assessment for loan books · Physical &amp; transition risk by borrower · ECL adjustment · Green Asset Ratio (GAR)</p>
+      </div>
+
+      <!-- Import controls -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+        <button class="btn-primary" onclick="document.getElementById('lb-file-inp').click()">📂 Import Loan Book (Excel)</button>
+        <input type="file" id="lb-file-inp" accept=".xlsx,.xls" style="display:none" onchange="_lbProcessFile(this)">
+        <button class="btn-secondary" onclick="downloadLoanTemplate()">⬇ Download Template</button>
+        <select class="finp" id="lb-ssp" onchange="renderLoanBook()" style="width:auto;padding:5px 10px;font-size:12px">
+          <option value="ssp126">SSP1-2.6 NZE</option>
+          <option value="ssp245">SSP2-4.5</option>
+          <option value="ssp370" selected>SSP3-7.0</option>
+          <option value="ssp585">SSP5-8.5</option>
+        </select>
+        <select class="finp" id="lb-yr" onchange="renderLoanBook()" style="width:auto;padding:5px 10px;font-size:12px">
+          <option value="2030" selected>2030</option>
+          <option value="2040">2040</option>
+          <option value="2050">2050</option>
+        </select>
+        <span id="lb-status" style="font-size:11px;color:var(--muted)">No loan book loaded</span>
+      </div>
+
+      <!-- KPI cards -->
+      <div id="lb-kpis" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px"></div>
+
+      <!-- Charts row -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+        <div class="cc"><div class="cc-title">Climate ECL by Sector (USD M)</div><div class="ch h220"><canvas id="lbEclC"></canvas></div></div>
+        <div class="cc"><div class="cc-title">Borrower Climate Rating Distribution</div><div class="ch h220"><canvas id="lbRatC"></canvas></div></div>
+      </div>
+
+      <!-- Borrower table -->
+      <div class="cc">
+        <div class="cc-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Borrower Risk Assessment</span>
+          <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="_lbExportCsv()">⬇ Export CSV</button>
+        </div>
+        <div style="overflow-x:auto">
+          <table style="width:100%;border-collapse:collapse;font-size:11px" id="lb-table">
+            <thead><tr style="background:var(--bg2);color:var(--muted)">
+              <th style="padding:7px 10px;text-align:left">Borrower</th>
+              <th style="padding:7px 10px;text-align:left">Sector</th>
+              <th style="padding:7px 10px;text-align:left">Region</th>
+              <th style="padding:7px 6px;text-align:right">Loan (M)</th>
+              <th style="padding:7px 6px;text-align:right">LTV</th>
+              <th style="padding:7px 6px;text-align:right">Phys. Score</th>
+              <th style="padding:7px 6px;text-align:right">Top Hazard</th>
+              <th style="padding:7px 6px;text-align:right">PD Uplift</th>
+              <th style="padding:7px 6px;text-align:right">ECL Adj (M)</th>
+              <th style="padding:7px 6px;text-align:center">Climate Rating</th>
+            </tr></thead>
+            <tbody id="lb-tbody">
+              <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">Import a loan book Excel file to begin assessment</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Regulatory summary -->
+      <div class="cc" style="margin-top:14px">
+        <div class="cc-title">Regulatory Framework Summary</div>
+        <div id="lb-reg" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 0"></div>
+      </div>
+    </div><!-- p-loanbook -->
+
     <!-- ═══════════════════ PORTFOLIO ROLL-UP ════════════════════════ -->
     <div id="p-portfolio" class="panel">
       <div class="ph"><h1>Portfolio Climate Risk Roll-up</h1><p>Cross-asset aggregation · portfolio CaR · Scope 3 value chain emissions</p></div>
@@ -2182,10 +2262,218 @@ function toast(msg) {
   setTimeout(function(){ t.style.display='none'; }, 2000);
 }
 
+/* ── LOAN PORTFOLIO ENGINE ─────────────────────── */
+var _lbState = { data: [], assessed: [], fileName: '' };
+
+function _lbProcessFile(input) {
+  var file = input.files[0];
+  if (!file) return;
+  _lbState.fileName = file.name;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(new Uint8Array(e.target.result), {type:'array'});
+      var ws = wb.Sheets[wb.SheetNames[0]];
+      var rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      _lbState.data = rows.map(function(r) {
+        return {
+          borrower: r['Borrower Name'] || r['borrower'] || '',
+          sector:   r['Sector']        || r['sector']   || 'Other',
+          region:   r['Region']        || r['region']   || 'global',
+          country:  r['Country']       || r['country']  || '',
+          loanM:    +(r['Loan (USD M)']|| r['loanM']    || 0),
+          ltv:      +(r['LTV']         || r['ltv']      || 0.45),
+          lat:      r['Latitude']  != null ? +r['Latitude']  : null,
+          lon:      r['Longitude'] != null ? +r['Longitude'] : null,
+        };
+      }).filter(function(r){ return r.borrower && r.loanM > 0; });
+      var s = document.getElementById('lb-status');
+      if (s) s.textContent = _lbState.data.length + ' borrowers loaded from ' + file.name;
+      renderLoanBook();
+    } catch(e) {
+      console.error('Loan book parse error:', e);
+      var s = document.getElementById('lb-status');
+      if (s) s.textContent = '⚠ Parse error: ' + e.message;
+    }
+  };
+  reader.readAsArrayBuffer(file);
+  input.value = '';
+}
+
+function _lbAssessPortfolio() {
+  var ssp = (document.getElementById('lb-ssp') || {}).value || 'ssp370';
+  var year = +((document.getElementById('lb-yr') || {}).value || 2030);
+  var HIGH_CARBON = ['Oil & Gas','Coal','Steel','Cement','Chemicals','Mining','Utilities'];
+  _lbState.assessed = _lbState.data.map(function(r) {
+    var hz = { score: 25, top_hazards: ['—'] };
+    try { hz = assessHazards(r.region, r.lat, r.lon, ssp, year); } catch(e) {}
+    var physPd = hz.score >= 50 ? 0.030 : hz.score >= 30 ? 0.015 : 0.005;
+    var isHighCarbon = HIGH_CARBON.some(function(s){ return (r.sector||'').indexOf(s) >= 0; });
+    var transPd = isHighCarbon ? 0.020 : 0.005;
+    var totalPd = Math.min(physPd + transPd, 0.10);
+    var lgd = r.ltv > 0 ? Math.max(0.1, Math.min(0.9, r.ltv)) : 0.45;
+    var eclAdj = +(r.loanM * totalPd * lgd).toFixed(3);
+    var rating = hz.score >= 50 ? 'D/E' : hz.score >= 35 ? 'C' : hz.score >= 20 ? 'B' : 'A';
+    var ratingCol = rating === 'D/E' ? '#e74c3c' : rating === 'C' ? '#e67e22' : rating === 'B' ? '#f1c40f' : '#27ae60';
+    return Object.assign({}, r, {
+      physScore: Math.round(hz.score),
+      topHazard: (hz.top_hazards && hz.top_hazards[0]) || '—',
+      physPdUplift: physPd, transPdUplift: transPd, totalPdUplift: totalPd,
+      lgd: lgd, eclAdjM: eclAdj, climateRating: rating, ratingCol: ratingCol,
+      isHighCarbon: isHighCarbon
+    });
+  });
+}
+
+function renderLoanBook() {
+  if (!_lbState.data.length) return;
+  _lbAssessPortfolio();
+  var ass = _lbState.assessed;
+
+  // KPI calcs
+  var totalLoan   = ass.reduce(function(s,r){ return s + r.loanM; }, 0);
+  var totalEcl    = ass.reduce(function(s,r){ return s + r.eclAdjM; }, 0);
+  var highRisk    = ass.filter(function(r){ return r.physScore >= 35; });
+  var highRiskExp = highRisk.reduce(function(s,r){ return s + r.loanM; }, 0);
+  var brownAssets = ass.filter(function(r){ return r.isHighCarbon; });
+  var brownRatio  = totalLoan > 0 ? (brownAssets.reduce(function(s,r){ return s + r.loanM; },0) / totalLoan * 100) : 0;
+  var greenRatio  = 100 - brownRatio; // simplified GAR approximation
+  var avgPd       = ass.length ? (ass.reduce(function(s,r){ return s + r.totalPdUplift; },0) / ass.length * 100) : 0;
+
+  // KPI cards
+  var ratingBadge = function(col, label) {
+    return '<span style="background:' + col + '22;color:' + col + ';border:1px solid ' + col + '44;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700">' + label + '</span>';
+  };
+  var kpiEl = document.getElementById('lb-kpis');
+  if (kpiEl) kpiEl.innerHTML =
+    cardHtml('Total Climate ECL', '$' + totalEcl.toFixed(1) + 'M', (totalLoan > 0 ? (totalEcl/totalLoan*100).toFixed(2) : '0') + '% of loan book', 'r') +
+    cardHtml('Brown Asset Ratio', brownRatio.toFixed(1) + '%', 'Green Asset Ratio: ' + greenRatio.toFixed(1) + '%', brownRatio > 30 ? 'r' : 'g') +
+    cardHtml('High-Risk Exposure', '$' + highRiskExp.toFixed(1) + 'M', highRisk.length + ' borrowers with phys. score ≥35', highRisk.length > 0 ? 'q' : 'g') +
+    cardHtml('Avg PD Uplift', avgPd.toFixed(2) + '%', 'Climate-adjusted probability of default', avgPd > 2 ? 'r' : 'q');
+
+  // Sector ECL chart
+  var sectorEcl = {};
+  ass.forEach(function(r) {
+    sectorEcl[r.sector] = (sectorEcl[r.sector] || 0) + r.eclAdjM;
+  });
+  var sLabels = Object.keys(sectorEcl).sort(function(a,b){ return sectorEcl[b]-sectorEcl[a]; });
+  var eclColors = ['#e74c3c','#e67e22','#f39c12','#3498db','#9b59b6','#1abc9c','#2ecc71','#95a5a6'];
+  mk('lbEclC', { type:'bar', data:{ labels: sLabels,
+    datasets:[{ label:'ECL Adjustment (USD M)', data: sLabels.map(function(s){ return +sectorEcl[s].toFixed(2); }),
+    backgroundColor: sLabels.map(function(_,i){ return eclColors[i % eclColors.length]; }), borderRadius:4 }]
+  }, options: mkOpts(function(v){ return '$'+v+'M'; }) });
+
+  // Rating distribution chart
+  var ratCounts = {A:0, B:0, C:0, 'D/E':0};
+  ass.forEach(function(r){ if (ratCounts[r.climateRating] !== undefined) ratCounts[r.climateRating]++; });
+  mk('lbRatC', { type:'doughnut', data:{
+    labels: ['A – Low','B – Medium','C – High','D/E – Very High'],
+    datasets:[{ data:[ratCounts['A'],ratCounts['B'],ratCounts['C'],ratCounts['D/E']],
+      backgroundColor:['#27ae60','#f1c40f','#e67e22','#e74c3c'], borderWidth:0 }]
+  }, options:{ responsive:true, maintainAspectRatio:false, plugins:{legend:{position:'right',labels:{font:{size:11},color:'var(--fg)'}}} } });
+
+  // Borrower table
+  var tbody = document.getElementById('lb-tbody');
+  if (tbody) {
+    var sorted = ass.slice().sort(function(a,b){ return b.eclAdjM - a.eclAdjM; });
+    tbody.innerHTML = sorted.map(function(r) {
+      var pdPct = (r.totalPdUplift * 100).toFixed(1) + '%';
+      return '<tr style="border-bottom:1px solid var(--bd)">' +
+        '<td style="padding:6px 10px;font-weight:600">' + (r.borrower||'—') + '</td>' +
+        '<td style="padding:6px 10px;color:var(--muted)">' + r.sector + '</td>' +
+        '<td style="padding:6px 10px;color:var(--muted)">' + (r.country || r.region) + '</td>' +
+        '<td style="padding:6px;text-align:right">$' + r.loanM.toFixed(1) + 'M</td>' +
+        '<td style="padding:6px;text-align:right">' + (r.ltv > 0 ? (r.ltv*100).toFixed(0)+'%' : '45%') + '</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:600;color:' + (r.physScore>=50?'#e74c3c':r.physScore>=30?'#e67e22':'#27ae60') + '">' + r.physScore + '</td>' +
+        '<td style="padding:6px;text-align:right;color:var(--muted);font-size:10px">' + r.topHazard + '</td>' +
+        '<td style="padding:6px;text-align:right">' + pdPct + '</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:600;color:#e74c3c">$' + r.eclAdjM.toFixed(2) + 'M</td>' +
+        '<td style="padding:6px;text-align:center"><span style="background:' + r.ratingCol + '22;color:' + r.ratingCol + ';border:1px solid ' + r.ratingCol + '44;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700">' + r.climateRating + '</span></td>' +
+      '</tr>';
+    }).join('');
+  }
+
+  // Regulatory summary
+  var regEl = document.getElementById('lb-reg');
+  if (regEl) regEl.innerHTML = [
+    {title:'ECB Climate Risk Guide', value: highRisk.length + ' high-risk borrowers', note:'Require enhanced due diligence under ECB 2020 climate risk guidance', col:'#3498db'},
+    {title:'EBA Pillar 3 Disclosure', value: '$' + totalEcl.toFixed(1) + 'M ECL uplift', note:'Disclose climate risk ECL adjustment in annual Pillar 3 report (EBA GL 2022/03)', col:'#9b59b6'},
+    {title:'Green Asset Ratio (GAR)', value: greenRatio.toFixed(1) + '% green', note:'Simplified GAR — taxonomy-aligned lending vs total; target ≥20% under EU Taxonomy', col:'#27ae60'},
+    {title:'SFDR Article 8/9', value: brownRatio.toFixed(1) + '% brown assets', note:'Classify ESG funds by Article 8 (promotes) or Article 9 (sustainable objective)', col:'#e67e22'},
+    {title:'Basel IV Climate Risk', value: avgPd.toFixed(2) + '% avg PD uplift', note:'Forward-looking PD uplift embedded in credit risk framework per BCBS 559', col:'#e74c3c'},
+    {title:'CSRD / ESRS E1', value: ass.length + ' borrowers assessed', note:'Value chain GHG & physical risk disclosure required for in-scope entities', col:'#1abc9c'},
+  ].map(function(f) {
+    return '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:12px 14px">' +
+      '<div style="font-size:10px;font-weight:700;color:' + f.col + ';margin-bottom:4px">' + f.title + '</div>' +
+      '<div style="font-size:18px;font-weight:700;margin-bottom:4px">' + f.value + '</div>' +
+      '<div style="font-size:10px;color:var(--muted);line-height:1.4">' + f.note + '</div>' +
+    '</div>';
+  }).join('');
+
+  // Update status
+  var s = document.getElementById('lb-status');
+  if (s) s.textContent = ass.length + ' borrowers assessed · SSP scenario applied';
+}
+
+function _lbExportCsv() {
+  if (!_lbState.assessed.length) return;
+  var headers = ['Borrower','Sector','Region','Country','Loan (USD M)','LTV','Phys Score','Top Hazard','PD Uplift %','ECL Adj (USD M)','Climate Rating'];
+  var rows = _lbState.assessed.map(function(r) {
+    return [r.borrower, r.sector, r.region, r.country||'', r.loanM, r.ltv||0.45, r.physScore, r.topHazard, (r.totalPdUplift*100).toFixed(2), r.eclAdjM, r.climateRating];
+  });
+  var csv = [headers].concat(rows).map(function(r){ return r.map(function(v){ return '"'+String(v).replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'loan_climate_risk_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+function downloadLoanTemplate() {
+  var wb = XLSX.utils.book_new();
+  var data = [
+    ['Borrower Name','Sector','Region','Country','Loan (USD M)','LTV','Latitude','Longitude'],
+    ['Deutsche Bank AG','Banking','europe','Germany',250,0.55,52.52,13.40],
+    ['Volkswagen Finance','Automotive','europe','Germany',180,0.60,52.42,10.79],
+    ['Total Energies SE','Oil & Gas','europe','France',320,0.50,48.85,2.35],
+    ['Iberdrola SA','Utilities','europe','Spain',210,0.48,40.41,-3.70],
+    ['ArcelorMittal','Steel','europe','Luxembourg',95,0.65,49.60,6.13],
+    ['Nestlé SA','Food & Beverage','europe','Switzerland',145,0.40,46.83,6.87],
+    ['BASF SE','Chemicals','europe','Germany',175,0.55,49.48,8.46],
+    ['Unilever PLC','Consumer Goods','europe','UK',130,0.42,51.50,-0.12],
+  ];
+  var ws = XLSX.utils.aoa_to_sheet(data);
+  ws['!cols'] = [{wch:22},{wch:18},{wch:12},{wch:14},{wch:14},{wch:8},{wch:10},{wch:10}];
+  XLSX.utils.book_append_sheet(wb, ws, 'Loan Book');
+  // Instructions sheet
+  var ins = XLSX.utils.aoa_to_sheet([
+    ['CRI Engine — Loan Portfolio Template'],
+    [''],
+    ['REQUIRED COLUMNS:'],
+    ['Borrower Name','Full legal name of the borrower'],
+    ['Sector','Industry sector (e.g. Oil & Gas, Banking, Utilities, Chemicals, etc.)'],
+    ['Region','Climate region: europe, north_america, asia_pacific, middle_east, africa, latin_america'],
+    ['Loan (USD M)','Outstanding loan balance in USD millions'],
+    [''],
+    ['OPTIONAL COLUMNS:'],
+    ['Country','Country for display purposes'],
+    ['LTV','Loan-to-Value ratio (0.0–1.0, default 0.45 if omitted)'],
+    ['Latitude','Precise latitude for hazard assessment (overrides region)'],
+    ['Longitude','Precise longitude for hazard assessment (overrides region)'],
+    [''],
+    ['NOTES:'],
+    ['- High-carbon sectors (Oil & Gas, Coal, Steel, Cement, Chemicals) receive additional transition PD uplift'],
+    ['- ECL = Loan × PD_uplift × LGD (where LGD = LTV if provided, else 45%)'],
+    ['- Climate ratings: A (score<20), B (20-35), C (35-50), D/E (≥50)'],
+    ['- ECB/EBA/SFDR regulatory summaries auto-populate in the Regulatory Framework Summary panel'],
+  ]);
+  XLSX.utils.book_append_sheet(wb, ins, 'Instructions');
+  XLSX.writeFile(wb, 'CRI_LoanBook_Template.xlsx');
+}
+
 /* ── Navigation ─────────────────────────────────── */
 var cur = 'dataint';
-var panels = ['intake','overview','physical','transition','costs','dataint','supplychain','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub'];
-var labels = {intake:'Company Setup',overview:'Overview',physical:'Physical Risk',transition:'Transition Risk',costs:'Cost Parameters',dataint:'Excel Integration',supplychain:'Supply Chain Risk',portfolio:'Portfolio Roll-up',compare:'Compare',stats:'Statistical View',ratings:'Climate Rating',disclosures:'Disclosures',report:'Risk Report',genai:'GenAI Report',reportintel:'Report Intelligence',reghub:'Regulatory Hub'};
+var panels = ['intake','overview','physical','transition','costs','dataint','supplychain','loanbook','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub'];
+var labels = {intake:'Company Setup',overview:'Overview',physical:'Physical Risk',transition:'Transition Risk',costs:'Cost Parameters',dataint:'Excel Integration',supplychain:'Supply Chain Risk',loanbook:'Loan Portfolio',portfolio:'Portfolio Roll-up',compare:'Compare',stats:'Statistical View',ratings:'Climate Rating',disclosures:'Disclosures',report:'Risk Report',genai:'GenAI Report',reportintel:'Report Intelligence',reghub:'Regulatory Hub'};
 
 function show(name) {
   panels.forEach(function(p) {
@@ -2222,6 +2510,7 @@ function render(name) {
   if (name==='report')      renderReport();
   if (name==='dataint')     renderDataInt();
   if (name==='supplychain') renderSupplyChain();
+  if (name==='loanbook')    renderLoanBook();
   if (name==='portfolio')   renderPortfolio();
   if (name==='reportintel') renderReportIntel();
   if (name==='reghub')     renderRegHub();
@@ -2530,6 +2819,8 @@ function toggleOtherSector() {
   var v = el('i-sector').value;
   el('sector-other-wrap').style.display = (v === 'Other') ? 'block' : 'none';
   if (v !== 'Other') el('i-sector-other').value = '';
+  var bHint = document.getElementById('banking-hint');
+  if (bHint) bHint.style.display = (v === 'Banking' || v === 'Insurance') ? 'block' : 'none';
 }
 
 function onCountryChange() {
@@ -10353,7 +10644,7 @@ function generatePilotPackage() {
      so the client opens a clean blank engine, not whatever Shri had open */
   var _panelsToClear = ['p-overview','p-physical','p-transition','p-costs',
     'p-report','p-disclosures','p-genai','p-reportintel','p-reghub',
-    'p-compare','p-stats','p-ratings','p-supplychain','p-portfolio','p-dataint'];
+    'p-compare','p-stats','p-ratings','p-supplychain','p-loanbook','p-portfolio','p-dataint'];
   _panelsToClear.forEach(function(pid) {
     var pel = document.getElementById(pid);
     if (pel) { pel.innerHTML = ''; pel.className = 'panel'; } /* strip 'on' class too */
