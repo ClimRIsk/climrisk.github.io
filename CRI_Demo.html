@@ -6231,11 +6231,21 @@ async function _xlProcessFile(file) {
       });
     }
 
-    // Parse Company sheet (key-value format)
+    // Parse Company sheet (key-value format) and normalise to short engine keys
     if (wb.SheetNames.indexOf('Company') >= 0) {
       var crow = XLSX.utils.sheet_to_json(wb.Sheets['Company'], {header:1});
-      _xlState.data.company = {};
-      crow.forEach(function(r){ if(r[0]&&r[1]!==undefined) _xlState.data.company[r[0]] = r[1]; });
+      var rawCo = {};
+      crow.forEach(function(r){ if(r[0] && r[1]!==undefined) rawCo[String(r[0]).trim()] = r[1]; });
+      _xlState.data.company = {
+        name:     rawCo['Company Name']    || rawCo['name']    || '',
+        sector:   rawCo['Sector']          || rawCo['sector']  || 'Other',
+        revM:     +(rawCo['Annual Revenue (USD M)'] || rawCo['revM']    || 0),
+        ebitdaM:  +(rawCo['EBITDA (USD M)']         || rawCo['ebitdaM'] || 0),
+        mktCapM:  +(rawCo['Market Cap (USD M)']      || rawCo['mktCapM'] || 0),
+        netDebtM: +(rawCo['Net Debt (USD M)']        || rawCo['netDebtM']|| 0),
+        waccPct:  +(rawCo['WACC (%)']                || rawCo['waccPct'] || 9),
+        employees:+(rawCo['Employees']               || rawCo['employees']||0),
+      };
     }
 
     // Parse Emissions sheet
@@ -6308,8 +6318,10 @@ function downloadTemplate() {
 
 function exportAnalysis() {
   if (typeof XLSX === 'undefined') { toast('SheetJS not loaded yet'); return; }
+  var cid = co();
+  if (!cid || !COS[cid]) { toast('⚠ No company loaded — connect your Excel file first.'); return; }
   var wb = XLSX.utils.book_new();
-  var cid = co(), ssp = 'ssp370', year = 2030;
+  var ssp = 'ssp370', year = 2030;
 
   // Physical Risk sheet
   var physRows = [['Asset','Region','Risk Score','Top Hazard','Severity','Joint Loss %','Carrying Value $M','Physical CaR $M','Warming °C']];
@@ -6387,14 +6399,19 @@ function renderDataInt() {
     if(el('xl-suppliers-body')) el('xl-suppliers-body').outerHTML='<div id="xl-suppliers-body">'+hs+'</div>';
   }
 
-  // Financials table (from D object — actual model)
-  var cid = co(), run = COS[cid].runs['current_policies']||Object.values(COS[cid].runs)[0];
-  var hf='<table class="xl-table"><thead><tr><th>Year</th><th>Revenue $B</th><th>EBITDA $B</th><th>FCF $B</th><th>Carbon Cost $B</th><th>Scope 1 Mt</th><th>Scope 2 Mt</th></tr></thead><tbody>';
-  run.years.filter(function(y){return y.year%5===0||y.year===2026;}).forEach(function(y){
-    hf+='<tr><td>'+y.year+'</td><td>$'+y.revenue.toFixed(1)+'</td><td>$'+y.ebitda.toFixed(1)+'</td><td>$'+y.fcf.toFixed(1)+'</td><td>$'+y.carbon_cost.toFixed(2)+'</td><td>'+y.emissions_s1.toFixed(1)+'</td><td>'+y.emissions_s2.toFixed(1)+'</td></tr>';
-  });
-  hf+='</tbody></table>';
-  if(el('xl-financials-body')) el('xl-financials-body').outerHTML='<div id="xl-financials-body">'+hf+'</div>';
+  // Financials table (from D object — actual model, only when a company is loaded)
+  var cid = co();
+  if (cid && COS[cid]) {
+    var run = COS[cid].runs['current_policies'] || Object.values(COS[cid].runs)[0];
+    var hf='<table class="xl-table"><thead><tr><th>Year</th><th>Revenue $B</th><th>EBITDA $B</th><th>FCF $B</th><th>Carbon Cost $B</th><th>Scope 1 Mt</th><th>Scope 2 Mt</th></tr></thead><tbody>';
+    run.years.filter(function(y){return y.year%5===0||y.year===2026;}).forEach(function(y){
+      hf+='<tr><td>'+y.year+'</td><td>$'+y.revenue.toFixed(1)+'</td><td>$'+y.ebitda.toFixed(1)+'</td><td>$'+y.fcf.toFixed(1)+'</td><td>$'+y.carbon_cost.toFixed(2)+'</td><td>'+y.emissions_s1.toFixed(1)+'</td><td>'+y.emissions_s2.toFixed(1)+'</td></tr>';
+    });
+    hf+='</tbody></table>';
+    if(el('xl-financials-body')) el('xl-financials-body').outerHTML='<div id="xl-financials-body">'+hf+'</div>';
+  } else {
+    if(el('xl-financials-body')) el('xl-financials-body').innerHTML='<div style="padding:20px;color:var(--muted)">Upload your Excel file to populate the financial model.</div>';
+  }
 
   // Emissions table
   var em = d.emissions;
