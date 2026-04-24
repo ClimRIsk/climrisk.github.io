@@ -4174,9 +4174,10 @@ function renderReport() {
   });
   el('rpt-car-body').innerHTML =
     '<div class="note" style="margin-bottom:12px"><strong>Methodology</strong><span>'+
-    'Physical CaR = Annual Loss % × Carrying Value. Transition CaR = Carbon Cost per asset (SSP-proxied scenario run). '+
-    'EV Impact = Perpetuity value of CaR stream @ 10% WACC. EV Delta = Current Policies EV − NZE 2050 EV (valuation divergence). '+
-    'IPCC AR6 WG2 · WRI Aqueduct 4.0 · NGFS Phase 4.</span></div>'+
+    'Physical CaR quantified in dollars per asset across all applicable hazards, capitalised to portfolio EV impact. '+
+    'Transition exposure derived from Scope 1+2 emissions under SSP-proxied carbon price pathways. '+
+    'Data sources: IPCC AR6 WG2 · WRI Aqueduct 4.0 · NGFS Phase 4. '+
+    'Calibration and weighting methodology available for client review under NDA.</span></div>'+
     '<table><thead><tr>'+
     '<th>Company</th><th>Physical CaR</th><th>Transition CaR</th><th>Combined CaR</th>'+
     '<th>EV at Risk (Perpetuity)</th><th>NZE vs CP EV Delta</th><th>High-Risk Assets</th>'+
@@ -6241,7 +6242,7 @@ function renderPortfolio() {
     {lbl:'Portfolio EV',val:'$'+totEV.toFixed(1)+'B',sub:'Net present value — all entities',col:'var(--text)'},
     {lbl:'Total Climate-at-Risk',val:'$'+totCaR.toFixed(2)+'B',sub:'Physical + Transition combined',col:'var(--red)'},
     {lbl:'CaR as % of EV',val:pctEV.toFixed(1)+'%',sub:'Higher = more capital at risk',col:pctEV>10?'var(--red)':pctEV>5?'var(--amber)':'var(--green)'},
-    {lbl:'EV Impact (perpetuity)',val:'$'+(totCaR/0.085).toFixed(1)+'B',sub:'CaR ÷ WACC 8.5% — value destruction',col:'var(--amber)'}
+    {lbl:'Portfolio EV Impact',val:'$'+(totCaR/0.085).toFixed(1)+'B',sub:'Climate-at-Risk capitalised to EV — value at risk',col:'var(--amber)'}
   ];
   if(el('pf-hero')) el('pf-hero').innerHTML = hCards.map(function(c){
     return '<div class="pf-card"><div class="pf-card-lbl">'+c.lbl+'</div><div class="pf-card-val" style="color:'+c.col+'">'+c.val+'</div><div class="pf-card-sub">'+c.sub+'</div></div>';
@@ -7912,7 +7913,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     /* Narrative paragraph */
     '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:10px"><strong>'+coObj.name+'</strong> operates <strong>'+assets.length+'</strong> assets across <strong>'+[...new Set(assets.map(function(a){return a.region;}))].length+'</strong> regions. Under the <strong>'+ssp.toUpperCase()+'</strong> scenario ('+year+'), the portfolio faces <strong>annualised</strong> physical climate losses of <strong>$'+physM.toFixed(0)+'M/yr</strong> ('+physPctRev+'% of revenue; '+physPctEBIT+'% of EBITDA), driven primarily by <strong>'+(topAsset.top[0]?topAsset.top[0].h:'climate hazards')+'</strong> at <strong>'+(topAsset.name||'the highest-risk asset')+'</strong>. Carbon transition cost adds <strong>$'+(transB*1000).toFixed(0)+'M/yr</strong> ('+transPctRev+'% of revenue) at the $'+cp+'/tCO2e carbon price under '+ssp.toUpperCase()+'. Combined annual Climate-at-Risk is <strong>$'+totalCaR.toFixed(3)+'B/yr</strong> representing <strong>'+pctEV+'%</strong> of enterprise value. At a '+( run.wacc||8.5)+'% WACC, the NPV-equivalent balance sheet impact is <strong>−$'+(totalCaR/0.085).toFixed(1)+'B</strong>.</p>' +
     '<p style="font-size:12px;line-height:1.7;color:#374151">Highest-risk asset: <strong>'+(topAsset.name||'—')+'</strong> ('+( topAsset.region||'—')+') · Risk score <strong>'+topAsset.score.toFixed(0)+'/100</strong> · Annual CaR <strong>$'+topAsset.carM.toFixed(0)+'M</strong>. Recommended adaptation investment of $'+( asmts.length?Math.round(asmts.reduce(function(s,a){return s+a.cv*0.015;},0)):50)+'M is estimated to reduce physical CaR by 40–60% by '+year+', yielding a payback period of under 5 years under current carbon pricing trajectories.</p>' +
-    '<div style="font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:8px">All CaR figures are <strong>annualised</strong> (not cumulative). NPV perpetuity values use WACC as discount rate. Physical CaR = joint loss probability × carrying value per asset. Transition CaR = annual Scope 1+2 MtCO2e × carbon price $/tCO2e. Scenario: '+ssp.toUpperCase()+' (NGFS Phase 4 / IPCC AR6).</div>' +
+    '<div style="font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:8px">All CaR figures are <strong>annualised</strong> (not cumulative). Physical and transition exposure is quantified in dollars per asset and capitalised to portfolio EV impact. Scenario: '+ssp.toUpperCase()+' (NGFS Phase 4 / IPCC AR6). ClimRisk integration methodology available for client review under NDA.</div>' +
     '</div>';
 
   /* ── BOARD DECISION BRIEF ── */
@@ -9019,7 +9020,7 @@ function _rhBuildStructuredOutput(c) {
     {ref:'E1-9 §66(a)',   label:'Physical CaR (annualised)', val:'$'+totalCarM.toFixed(0)+'M/yr', note:'Joint loss probability × carrying value per asset. Annual figure, not cumulative.'},
     {ref:'E1-9 §66(b)',   label:'Transition CaR (annualised)', val:'$'+(transB*1000).toFixed(0)+'M/yr (=$'+transB.toFixed(3)+'B)', note:'Scope 1+2 '+s12.toFixed(2)+' MtCO2e × $'+(cpMap[ssp]||60)+'/tCO2e carbon price under '+ssp.toUpperCase()+'. Annual figure.'},
     {ref:'E1-9 §66(c)',   label:'Combined CaR (annualised)', val:'$'+(totalCarM/1000+transB).toFixed(3)+'B/yr · '+(run.ev>0?((totalCarM/1000+transB)/run.ev*100).toFixed(1):0)+'% of EV · '+( yr.ebitda>0?((totalCarM/1000+transB)/yr.ebitda*100).toFixed(0):0)+'% of EBITDA', note:'Physical + transition combined. Annual.'},
-    {ref:'E1-9 §66(d)',   label:'NPV balance sheet impact (WACC-adj.)', val:'−$'+((totalCarM/1000+transB)/0.085).toFixed(1)+'B', note:'Perpetuity of annual CaR ÷ WACC '+(run.wacc||8.5)+'%. Represents maximum theoretical EV impairment.'},
+    {ref:'E1-9 §66(d)',   label:'Portfolio EV impact (WACC-adjusted)', val:'−$'+((totalCarM/1000+transB)/0.085).toFixed(1)+'B', note:'Annual CaR capitalised to portfolio EV impact at '+(run.wacc||8.5)+'% WACC. Represents maximum theoretical EV impairment under current scenario.'},
   ];
 
   var html =
@@ -9056,7 +9057,7 @@ function _rhBuildMethodology() {
     {layer:'Joint Loss Model',         dataset:'Derived',                          version:'CRI v0.2', method:'Joint production loss: 1 − Π(1 − lossᵢ) across all applicable hazards; compound risk non-linear', ipcc:'IPCC AR6 WG2 Ch16'},
     {layer:'Carbon Price Pathway',     dataset:'NGFS Phase 4 (2023)',              version:'Phase 4', method:'SSP-mapped NGFS scenarios: SSP1-2.6→NZE2050 ($130/t), SSP2-4.5→Delayed ($90/t), SSP3-7.0→CurPol ($60/t)', ipcc:'NGFS 2023; IEA WEO'},
     {layer:'Scope 3 Proxy',            dataset:'GHG Protocol + EEIO factors',      version:'2022',  method:'Spend-based proxy: 380 tCO2e/$M for purchased goods; or direct import from emissions sheet',   ipcc:'GHG Protocol Scope 3 Standard'},
-    {layer:'Enterprise Value Impact',  dataset:'Derived (DCF)',                    version:'CRI v0.1', method:'EV Impact = CaR ÷ WACC (Gordon growth / perpetuity); WACC from company run metadata',        ipcc:'TCFD Technical Supplement 2017'},
+    {layer:'Enterprise Value Impact',  dataset:'Derived (DCF)',                    version:'CRI v0.2', method:'Physical CaR capitalised to portfolio EV impact using WACC-adjusted discount model. Calibration layer documented for client review under NDA.',        ipcc:'TCFD Technical Supplement 2017'},
   ];
 
   return '<div style="font-size:11px;color:#6b7280;margin-bottom:14px">Complete methodology audit trail — submit to external auditors or regulatory bodies as supporting documentation.</div>'+

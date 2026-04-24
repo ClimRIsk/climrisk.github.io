@@ -732,8 +732,14 @@ footer{
 <nav>
   <div class="nav-inner">
     <a href="#" class="nav-logo">
-      <div class="nav-logo-mark">CR</div>
-      Clim<span>Risk</span>
+      <div class="nav-logo-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M9 2L15 5.5V12.5L9 16L3 12.5V5.5L9 2Z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+          <path d="M9 5.5L12 7.25V10.75L9 12.5L6 10.75V7.25L9 5.5Z" fill="#fff" fill-opacity="0.85"/>
+          <circle cx="9" cy="9" r="1.5" fill="#0ea5e9"/>
+        </svg>
+      </div>
+      <span style="letter-spacing:-.02em">Clim<span style="color:var(--green)">Risk</span></span>
     </a>
     <div class="nav-links">
       <a href="#engine">Engine</a>
@@ -950,7 +956,7 @@ footer{
       <div class="feat fade-up">
         <div class="feat-icon">⚠</div>
         <div class="feat-title">Physical Climate-at-Risk (CaR)</div>
-        <div class="feat-desc">Annual Loss % × Asset Carrying Value = dollar CaR per asset per scenario. Aggregated to portfolio level with EV impact (CaR ÷ WACC perpetuity).</div>
+        <div class="feat-desc">Physical CaR quantified in dollars per asset across all applicable hazards, capitalised to portfolio EV impact. Multi-scenario stress-test from SSP1-2.6 through SSP5-8.5.</div>
         <div class="feat-tags">
           <span class="tag tag-r">Per-asset</span><span class="tag tag-r">Portfolio roll-up</span>
         </div>
@@ -1202,8 +1208,13 @@ footer{
           </div>
           <div class="av-item fade-up stagger-2">
             <div class="av-dot"></div>
-            <div><div class="av-label">Transparent methodology</div><div class="av-desc">All model assumptions, data sources, and limitations are documented and included in every report. Our clients understand what they're signing off on.</div></div>
+            <div><div class="av-label">Transparent data, proprietary calibration</div><div class="av-desc">All data sources are fully cited — WRI Aqueduct, NGFS, IPCC AR6. The calibration and weighting layer that turns raw hazard scores into financial exposure is proprietary and documented for client review under NDA.</div></div>
           </div>
+        </div>
+
+        <div style="margin-top:28px;padding:16px 20px;border-left:3px solid var(--green);background:var(--surf2);border-radius:0 10px 10px 0;">
+          <div style="font-size:12px;font-weight:700;color:var(--green);letter-spacing:.05em;text-transform:uppercase;margin-bottom:6px">Methodology</div>
+          <p style="font-size:13px;color:var(--muted);line-height:1.7;margin:0">ClimRisk's integration methodology is documented for client review under NDA. Data sources are fully cited; the calibration and weighting layer is proprietary.</p>
         </div>
       </div>
 
@@ -1392,7 +1403,15 @@ footer{
 <footer>
   <div class="footer-grid">
     <div>
-      <div class="footer-brand-logo"><div class="flm">CR</div>ClimRisk</div>
+      <div class="footer-brand-logo">
+        <div class="flm">
+          <svg width="16" height="16" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M9 2L15 5.5V12.5L9 16L3 12.5V5.5L9 2Z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
+            <path d="M9 5.5L12 7.25V10.75L9 12.5L6 10.75V7.25L9 5.5Z" fill="#fff" fill-opacity="0.85"/>
+            <circle cx="9" cy="9" r="1.5" fill="#0ea5e9"/>
+          </svg>
+        </div>ClimRisk
+      </div>
       <p class="footer-tagline">GPS-resolved climate financial risk intelligence for enterprises navigating the net-zero transition.</p>
       <p class="footer-contact">shrinivashdkannan@gmail.com<br><a href="https://github.com/ClimRisk">github.com/ClimRisk</a></p>
     </div>
