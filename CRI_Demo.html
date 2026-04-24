@@ -5486,11 +5486,27 @@ function _buildReportHTML(d) {
     '</svg>';
 
   /* Hazard map geo-data: GPS lat/lon takes priority, fall back to _GEO centroid */
+  function _brdResolveGeo(region) {
+    if (!region) return null;
+    var rk = region.toLowerCase().trim();
+    if (_GEO[rk]) return _GEO[rk];
+    var seg0 = rk.split(',')[0].trim();
+    if (_GEO[seg0]) return _GEO[seg0];
+    var _pfxMap = {'au':'australia','za':'south africa','us':'usa','ca':'canada',
+      'gb':'united kingdom','de':'germany','fr':'france','nl':'netherlands',
+      'br':'brazil','cl':'chile','cn':'china','in':'india','id':'indonesia','ae':'uae'};
+    var pfx = seg0.split('-')[0];
+    if (_pfxMap[pfx] && _GEO[_pfxMap[pfx]]) return _GEO[_pfxMap[pfx]];
+    var keys = Object.keys(_GEO);
+    for (var ki=0;ki<keys.length;ki++){
+      if (rk.indexOf(keys[ki])>=0||keys[ki].indexOf(rk)>=0) return _GEO[keys[ki]];
+    }
+    return null;
+  }
   var _brdMapAssets = d.asmts.map(function(a){
     var lat = a.lat, lon = a.lon;
     if (!lat || !lon) {
-      var _rk = (a.region||'').toLowerCase();
-      var _g  = _GEO[_rk] || _GEO[(_rk.split(',')[0]||'').trim()] || null;
+      var _g = _brdResolveGeo(a.region);
       if (_g) { lat = _g.lat; lon = _g.lon; }
     }
     return { name:a.name, region:a.region, score:Math.round(a.score),
@@ -7256,6 +7272,51 @@ var _GEO = {
   'amsterdam':      {lat:52.37, lon:4.90,    region:'Netherlands'},
   'paris':          {lat:48.86, lon:2.35,    region:'France'},
   'dubai':          {lat:25.20, lon:55.27,   region:'UAE'},
+  /* Australian states / territories (ISO 3166-2:AU) */
+  'au-wa':  {lat:-25.33, lon:122.03, region:'Western Australia'},
+  'au-sa':  {lat:-30.00, lon:136.21, region:'South Australia'},
+  'au-qld': {lat:-20.92, lon:142.70, region:'Queensland'},
+  'au-nsw': {lat:-32.16, lon:147.02, region:'New South Wales'},
+  'au-vic': {lat:-37.02, lon:144.47, region:'Victoria'},
+  'au-nt':  {lat:-19.49, lon:132.55, region:'Northern Territory'},
+  'au-tas': {lat:-42.02, lon:146.59, region:'Tasmania'},
+  'au-act': {lat:-35.47, lon:149.01, region:'Australian Capital Territory'},
+  /* Named Australian regions */
+  'pilbara region':         {lat:-22.00, lon:117.00, region:'Western Australia'},
+  'western australia':      {lat:-25.33, lon:122.03, region:'Western Australia'},
+  'south australia':        {lat:-30.00, lon:136.21, region:'South Australia'},
+  'queensland':             {lat:-20.92, lon:142.70, region:'Queensland'},
+  'new south wales':        {lat:-32.16, lon:147.02, region:'New South Wales'},
+  'victoria':               {lat:-37.02, lon:144.47, region:'Victoria'},
+  'northern territory':     {lat:-19.49, lon:132.55, region:'Northern Territory'},
+  /* South African provinces */
+  'za-gp': {lat:-26.27, lon:28.11, region:'Gauteng'},
+  'za-lp': {lat:-23.40, lon:29.47, region:'Limpopo'},
+  'za-mp': {lat:-25.57, lon:31.46, region:'Mpumalanga'},
+  'za-nc': {lat:-29.05, lon:21.87, region:'Northern Cape'},
+  'za-wc': {lat:-33.23, lon:19.02, region:'Western Cape'},
+  'za-kzn':{lat:-28.53, lon:30.89, region:'KwaZulu-Natal'},
+  /* US states */
+  'us-tx': {lat:31.97, lon:-99.90,  region:'Texas'},
+  'us-ca': {lat:36.78, lon:-119.42, region:'California'},
+  'us-wy': {lat:43.07, lon:-107.29, region:'Wyoming'},
+  'us-nd': {lat:47.53, lon:-101.00, region:'North Dakota'},
+  'us-ak': {lat:64.20, lon:-153.37, region:'Alaska'},
+  /* Canadian provinces */
+  'ca-ab': {lat:53.93, lon:-116.58, region:'Alberta'},
+  'ca-bc': {lat:53.73, lon:-127.65, region:'British Columbia'},
+  'ca-on': {lat:51.25, lon:-85.32,  region:'Ontario'},
+  'ca-qc': {lat:52.94, lon:-73.55,  region:'Quebec'},
+  'ca-sk': {lat:52.94, lon:-106.45, region:'Saskatchewan'},
+  /* Brazilian states */
+  'br-pa': {lat:-3.78, lon:-52.48, region:'Pará'},
+  'br-mg': {lat:-18.51, lon:-44.56, region:'Minas Gerais'},
+  /* Chilean regions */
+  'cl-at': {lat:-27.57, lon:-70.05, region:'Atacama'},
+  'cl-an': {lat:-23.65, lon:-68.34, region:'Antofagasta'},
+  /* Indonesia */
+  'id-ki': {lat:0.53, lon:116.42, region:'East Kalimantan'},
+  'id-su': {lat:2.11, lon:99.54,  region:'North Sumatra'},
 };
 
 function _geoResolve(text) {
@@ -7801,8 +7862,12 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
   var fm = fwMeta[fw]||fwMeta.tcfd;
 
   /* ── Section builders ── */
-  function sectionHeader(n, title, sub) {
-    return '<div style="background:#0f172a;color:#fff;border-radius:8px;padding:14px 18px;margin:24px 0 12px">' +
+  function sectionHeader(n, title, sub, noPageBreak) {
+    /* Major sections (integer n like "1","2","3") get break-before in print.
+       Sub-sections (like "1a","2b") use cri-sub-hdr — no forced page break. */
+    var isMajor = !noPageBreak && /^(\d+|[A-Z])$/.test(String(n));
+    var cls = isMajor ? 'cri-sec-hdr' : 'cri-sub-hdr';
+    return '<div class="'+cls+'" style="background:#0f172a;color:#fff;border-radius:8px;padding:14px 18px;margin:24px 0 12px">' +
       '<span style="font-size:12px;opacity:.6;margin-right:10px">Section '+n+'</span>' +
       '<span style="font-size:15px;font-weight:800">'+title+'</span>' +
       (sub?'<div style="font-size:11px;opacity:.6;margin-top:3px">'+sub+'</div>':'')+
@@ -7904,7 +7969,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
 
   /* ── COVER PAGE ── */
   var body =
-    '<div class="cri-pr-page" style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 65%,#16a34a15 100%);color:#fff;min-height:240mm;page-break-after:always;padding:35mm 30mm 20mm;box-sizing:border-box;display:flex;flex-direction:column">' +
+    '<div class="cri-pr-page cri-pr-cover" style="background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 65%,#16a34a15 100%);color:#fff;min-height:277mm;page-break-after:always;padding:35mm 30mm 20mm;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between">' +
     '<div style="font-size:12px;font-weight:700;letter-spacing:3px;opacity:.6;margin-bottom:30px">CRI · CLIMATE RISK INTELLIGENCE</div>' +
     '<div style="font-size:36px;font-weight:900;line-height:1.15;margin-bottom:12px">'+fm.title+'</div>' +
     '<div style="font-size:18px;font-weight:700;opacity:.85;margin-bottom:8px">'+coObj.name+'</div>' +
@@ -8159,11 +8224,41 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
 
     /* ── HAZARD MAP PAGE ── compute lat/lon at generation time (GPS > _GEO centroid) */
     (function(){
+      /* Robust geo resolver — tries multiple key patterns for a region string */
+      function _resolveGeo(region) {
+        if (!region) return null;
+        var rk = region.toLowerCase().trim();
+        /* 1. Exact match */
+        if (_GEO[rk]) return _GEO[rk];
+        /* 2. First segment before comma (e.g. "AU-WA, Pilbara" → "au-wa") */
+        var seg0 = rk.split(',')[0].trim();
+        if (_GEO[seg0]) return _GEO[seg0];
+        /* 3. Replace hyphen with space ("au-wa" → "au wa" — unlikely but safe) */
+        var seg1 = seg0.replace(/-/g,' ');
+        if (_GEO[seg1]) return _GEO[seg1];
+        /* 4. Country prefix map: AU → australia, ZA → south africa, etc. */
+        var _pfxMap = {
+          'au':'australia','za':'south africa','us':'usa','ca':'canada',
+          'gb':'united kingdom','de':'germany','fr':'france','nl':'netherlands',
+          'br':'brazil','cl':'chile','pe':'peru','co':'colombia','ar':'argentina',
+          'cn':'china','jp':'japan','kr':'south korea','in':'india','id':'indonesia',
+          'my':'malaysia','ph':'philippines','th':'thailand','vn':'vietnam',
+          'ng':'nigeria','gh':'ghana','eg':'egypt','ke':'kenya',
+          'ch':'switzerland','ae':'uae','mx':'mexico'
+        };
+        var pfx = seg0.split('-')[0];
+        if (_pfxMap[pfx] && _GEO[_pfxMap[pfx]]) return _GEO[_pfxMap[pfx]];
+        /* 5. Substring search in _GEO keys */
+        var keys = Object.keys(_GEO);
+        for (var ki=0;ki<keys.length;ki++){
+          if (rk.indexOf(keys[ki])>=0||keys[ki].indexOf(rk)>=0) return _GEO[keys[ki]];
+        }
+        return null;
+      }
       var _mapAssets = asmts.map(function(a){
         var lat = a.lat, lon = a.lon;
         if (!lat || !lon) {
-          var _rk = (a.region||'').toLowerCase();
-          var _g  = _GEO[_rk] || _GEO[(_rk.split(',')[0]||'').trim()] || null;
+          var _g = _resolveGeo(a.region);
           if (_g) { lat = _g.lat; lon = _g.lon; }
         }
         return { name:a.name, region:a.region, score:Math.round(a.score),
@@ -8286,7 +8381,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
   }
 
   /* ── SECTION: STRATEGY & TRANSITION PLAN (always shown) ── */
-  body += '<div class="cri-pr-page" style="padding:20mm;box-sizing:border-box">';
+  body += '<div class="cri-pr-page" style="padding:20mm;box-sizing:border-box;break-before:page;page-break-before:always">';
   body += sectionHeader('2b','Strategy &amp; Climate Transition Plan',
     fw==='csrd'?'ESRS E1-1 / ESRS 2-SBM-3 / ESRS 2-GOV-1':
     fw==='tcfd'?'TCFD Strategy (S1–S3) — Business Model Resilience':
@@ -8485,7 +8580,23 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     '<title>'+fm.title+' — '+coObj.name+'</title>' +
     '<style>*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-size:13px;color:#111;margin:0;padding:0;background:#fff}' +
     '.cri-pr-page{page-break-after:always;page-break-inside:avoid;min-height:220mm}.val-calc{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:5px}.val-est{background:#fffbeb;color:#b45309;border:1px solid #fde68a;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:5px}.val-pre{background:#f8fafc;color:#64748b;border:1px solid #cbd5e1;font-size:9px;font-weight:700;padding:1px 5px;border-radius:4px;margin-left:5px}' +
-    '@media print{@page{size:A4 portrait;margin:12mm}.cri-pr-page{padding:10mm 12mm!important;min-height:0!important;max-height:none;page-break-after:always;page-break-inside:avoid}body{background:#fff}}' +
+    '@media print{'+
+    '@page{size:A4 portrait;margin:10mm 12mm}'+
+    'body{background:#fff}'+
+    /* Cover: always fill one full A4 page */
+    '.cri-pr-cover{min-height:277mm!important;page-break-after:always!important;page-break-inside:avoid!important}'+
+    /* All other cri-pr-page sections: remove the forced page-break-after so content flows naturally.
+       page-break-inside:auto allows sections taller than one page to span naturally. */
+    '.cri-pr-page{max-height:none;page-break-after:auto!important;page-break-inside:auto!important}'+
+    /* Major numbered section headers (1,2,3…) always start on a fresh page */
+    '.cri-sec-hdr{break-before:page!important;page-break-before:always!important;margin-top:0!important}'+
+    /* Sub-section headers (1a, 2b…) stay with their content, no forced break */
+    '.cri-sub-hdr{break-inside:avoid;page-break-inside:avoid}'+
+    /* Tables: allow natural page breaks between rows (not mid-cell) */
+    'table{page-break-inside:auto}tr{page-break-inside:avoid;page-break-after:auto}'+
+    /* Prevent orphaned single lines at top/bottom of pages */
+    'p{orphans:3;widows:3}'+
+    '}' +
     '</style>' +
     '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>' +
     '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>' +
