@@ -698,51 +698,6 @@ footer{
 .stagger-1{transition-delay:.08s}
 .stagger-2{transition-delay:.16s}
 .stagger-3{transition-delay:.24s}
-/* ════════════════════════════════════════════════
-   PAGE ROUTER — multi-page SPA
-   ════════════════════════════════════════════════ */
-.page-section { display: none !important }
-.page-section.page-active { display: block !important }
-/* Hero above-fold elements always animate in via CSS (not observer) */
-.hero-left { animation: fadeSlideUp .65s ease .1s both }
-.hero-card  { animation: fadeSlideUp .65s ease .25s both }
-.hero-stats { animation: fadeSlideUp .65s ease .4s both }
-@keyframes fadeSlideUp {
-  from { opacity:0; transform:translateY(22px) }
-  to   { opacity:1; transform:translateY(0) }
-}
-.nav-links a.nav-current { color: var(--green); font-weight: 700 }
-.score-reveal { animation: scoreIn .5s ease forwards }
-@keyframes scoreIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
-.method-note {
-  margin-top: 14px; padding: 12px 16px;
-  background: var(--surf2); border: 1px solid var(--border);
-  border-radius: 10px; font-size: 12px; color: var(--subtle); line-height: 1.6;
-}
-.method-note strong { color: var(--muted) }
-.email-capture-bar {
-  display: none; margin-top: 20px; padding: 18px 22px;
-  background: linear-gradient(135deg, var(--green-dim), var(--surf2));
-  border: 1.5px solid var(--border2); border-radius: 12px;
-}
-.email-capture-bar.visible { display: flex; align-items: center; gap: 12px; flex-wrap: wrap }
-.ecb-label { font-size: 14px; font-weight: 600; flex: 1; min-width: 200px }
-.ecb-label span { font-size: 12px; color: var(--muted); font-weight: 400; display: block }
-.ecb-row { display: flex; gap: 8px; flex-wrap: wrap }
-.ecb-input {
-  padding: 9px 13px; border-radius: 8px;
-  border: 1.5px solid var(--border2); background: var(--surf);
-  color: var(--text); font-size: 13px; outline: none; min-width: 220px;
-}
-.ecb-input:focus { border-color: var(--green) }
-.ecb-btn {
-  padding: 9px 18px; border-radius: 8px;
-  background: var(--green); color: #fff;
-  font-size: 13px; font-weight: 700; border: none; cursor: pointer;
-  white-space: nowrap;
-}
-.ecb-btn:hover { background: var(--green-lt) }
-
 
 /* ════════════════════════════════════════════════
    RESPONSIVE
@@ -776,7 +731,7 @@ footer{
 <!-- ══════════════════ NAV ══════════════════════ -->
 <nav>
   <div class="nav-inner">
-    <a href="#" onclick="showPage('home');return false" class="nav-logo">
+    <a href="#" class="nav-logo">
       <div class="nav-logo-mark">
         <svg width="18" height="18" viewBox="0 0 18 18" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M9 2L15 5.5V12.5L9 16L3 12.5V5.5L9 2Z" fill="none" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/>
@@ -787,22 +742,19 @@ footer{
       <span style="letter-spacing:-.02em">Clim<span style="color:var(--green)">Risk</span></span>
     </a>
     <div class="nav-links">
-      <a href="#" onclick="showSection('engine');return false" id="nav-engine">Engine</a>
-      <a href="#" href="CRI_Demo.html" id="nav-demo">Free Demo</a>
-      <a href="#" onclick="showPage('about');return false" id="nav-about">About</a>
-      <a href="#" onclick="showPage('regulatory');return false" id="nav-regulatory">Regulatory</a>
-      <a href="#" onclick="showPage('pricing');return false" id="nav-pricing">Pricing</a>
-      <a href="#" onclick="showPage('contact');return false" id="nav-contact">Contact</a>
+      <a href="#engine">Engine</a>
+      <a href="#demo">Free Demo</a>
+      <a href="#about">About</a>
+      <a href="#regulatory">Regulatory</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#contact">Contact</a>
     </div>
     <div class="nav-right">
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode" id="themeBtn">🌙</button>
-      <a href="CRI_Demo.html" class="nav-cta" style="text-decoration:none;display:inline-flex;align-items:center">Client Login →</a>
+      <button class="nav-cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try Free Demo</button>
     </div>
   </div>
 </nav>
-
-<!-- PAGE: HOME ══════════════════════════════════ -->
-<div class="page-section page-active" id="page-home">
 
 <!-- ══════════════════ HERO ══════════════════════ -->
 <section class="hero">
@@ -814,8 +766,8 @@ footer{
         <h1>Climate <em>risk</em>,<br>down to the<br><span class="danger">exact site.</span></h1>
         <p class="hero-sub">The first climate risk engine that combines <strong>GPS site-specific hazard physics</strong>, NGFS transition scenarios, and enterprise DCF modelling — delivering TCFD, IFRS S2 and CSRD-ready reports.</p>
         <div class="hero-ctas">
-          <button class="btn-primary" onclick="showSection('demo')">🔬 Request Engine Access →</button>
-          <button class="btn-outline" onclick="showPage('about')">About ClimRisk →</button>
+          <button class="btn-primary" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">🔬 Try Free Demo</button>
+          <button class="btn-outline" onclick="document.getElementById('about').scrollIntoView({behavior:'smooth'})">About ClimRisk →</button>
         </div>
         <p class="hero-trust">Powered by <strong>WRI Aqueduct 4.0 · NGFS Phase 4 · IPCC AR6 · NASA NEX-GDDP</strong></p>
       </div>
@@ -890,7 +842,7 @@ footer{
 </section>
 
 <!-- ══════════════════ TAPE ══════════════════════ -->
-<div class="tape" data-page="home">
+<div class="tape">
   <div class="tape-inner">
     <span class="tape-item"><span>●</span>WRI AQUEDUCT 4.0</span>
     <span class="tape-item"><span>●</span>NGFS PHASE 4</span>
@@ -962,7 +914,7 @@ footer{
             <div class="cc-row"><span class="cc-key">TCFD disclosure output</span><span class="cc-val good">PDF + CSRD + IFRS S2</span></div>
             <div class="cc-row"><span class="cc-key">Carbon cost in EBITDA</span><span class="cc-val good">$148M = 8.4% (2030)</span></div>
             <div class="cc-row"><span class="cc-key">GPS site-specific</span><span class="cc-val good">✓ 180+ coastal refs</span></div>
-            <div class="cc-row"><span class="cc-key">Starting from</span><span class="cc-val good">Free preview — then $3,500/report</span></div>
+            <div class="cc-row"><span class="cc-key">Starting from</span><span class="cc-val good">Free — then $3,500/report</span></div>
           </div>
         </div>
       </div>
@@ -1113,16 +1065,17 @@ footer{
             <button type="submit" class="demo-submit" id="demoBtn">
               🔬 Run free analysis — instant, no card required
             </button>
-            <div class="method-note">
-              <strong>How scores are computed:</strong> Hazard baseline values are calibrated from
-              <strong>WRI Aqueduct 4.0</strong> regional statistics per your selected region.
-              Transition exposure is derived from <strong>NGFS Phase 4</strong> carbon price paths applied
-              to your sector's emissions intensity. Enterprise value sensitivity uses sector-specific
-              WACC premiums from <strong>IPCC AR6 WG2</strong> sectoral risk tables.
-              This is a parameterised screening model — not a live API query.
-              The full CRI Engine (GPS coordinates + your own data) produces asset-level output.
-            </div>
+            <p style="font-size:11px;color:var(--subtle);margin-top:10px;text-align:center">Free tier — A–E rating, top hazards, scenario summary. Full platform by request.</p>
           </form>
+        </div>
+
+        <!-- Email capture — shown after score renders -->
+        <div id="emailCapture" style="display:none;margin-top:16px;padding:16px 20px;background:var(--green-dim);border:1.5px solid var(--border2);border-radius:12px;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px;font-size:14px;font-weight:600">Want the full engine link sent to you?<br><span style="font-size:12px;color:var(--muted);font-weight:400">We'll send direct access within 1 business day.</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <input id="demo-email-input" type="email" placeholder="your@company.com" style="padding:9px 13px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surf);color:var(--text);font-size:13px;outline:none;min-width:200px">
+            <button onclick="sendDemoEmail()" style="padding:9px 18px;border-radius:8px;background:var(--green);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;white-space:nowrap">Send me the link →</button>
+          </div>
         </div>
 
         <!-- What's included -->
@@ -1138,18 +1091,6 @@ footer{
             <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">25-year financial trajectory + export package <em>(Professional)</em></div></div>
           </div>
           <div class="demo-note">Full platform access is available as a bespoke engagement. We work directly with your risk or sustainability team to run the complete analysis and deliver board-ready reports.</div>
-        </div>
-      </div>
-
-      <!-- Email capture bar — shown after score renders -->
-      <div class="email-capture-bar" id="emailCaptureBar">
-        <div class="ecb-label">
-          Want the full engine link + a personalised data sheet?
-          <span>We'll send you a direct link to run the full analysis with your own asset data.</span>
-        </div>
-        <div class="ecb-row">
-          <input type="email" class="ecb-input" id="ecb-email" placeholder="your@company.com">
-          <button class="ecb-btn" onclick="sendEmailCapture()">Send me the link →</button>
         </div>
       </div>
 
@@ -1241,7 +1182,7 @@ footer{
                 Want the full analysis?
                 <span>GPS asset-level breakdown · 25yr trajectory · TCFD/CSRD disclosure report · Legal sign-off workflow</span>
               </div>
-              <button class="do-upgrade-btn" style="text-decoration:none;display:inline-block;padding:10px 20px;border-radius:9px;background:var(--green);color:#fff;font-size:13px;font-weight:700;" href='CRI_Demo.html'>Run full analysis in the engine →</button>
+              <button class="do-upgrade-btn" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Request full report →</button>
             </div>
           </div>
         </div>
@@ -1249,11 +1190,6 @@ footer{
     </div>
   </div>
 </section>
-
-</div><!-- /page-home -->
-
-<!-- PAGE: ABOUT ══════════════════════════════════ -->
-<div class="page-section" id="page-about">
 
 <!-- ══════════════════ ABOUT US ══════════════════ -->
 <section class="section about" id="about">
@@ -1338,11 +1274,6 @@ footer{
   </div>
 </section>
 
-</div><!-- /page-about -->
-
-<!-- PAGE: REGULATORY ════════════════════════════ -->
-<div class="page-section" id="page-regulatory">
-
 <!-- ══════════════════ REGULATORY ════════════════ -->
 <section class="section reg" id="regulatory">
   <div class="container">
@@ -1378,11 +1309,6 @@ footer{
   </div>
 </section>
 
-</div><!-- /page-regulatory -->
-
-<!-- PAGE: PRICING ════════════════════════════════ -->
-<div class="page-section" id="page-pricing">
-
 <!-- ══════════════════ PRICING ═══════════════════ -->
 <section class="section pricing" id="pricing">
   <div class="container">
@@ -1412,63 +1338,57 @@ footer{
           <div class="pf dim">Disclosure reports</div>
           <div class="pf dim">Financial trajectory</div>
         </div>
-        <a href="CRI_Demo.html" class="price-cta" style="text-decoration:none;display:block;text-align:center">Try the engine free →</a>
+        <button class="price-cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try free demo →</button>
       </div>
 
       <!-- Standard Report -->
       <div class="price-card featured fade-up stagger-1">
-        <div class="price-badge">Most Popular</div>
+        <div class="price-badge">Most Requested</div>
         <div class="price-tier">Standard Report</div>
         <div class="price-amount"><sup>$</sup>3,500</div>
         <div class="price-cadence">Per company · one-off engagement</div>
-        <div class="price-type">Bespoke delivery · 5 business days</div>
+        <div class="price-type">Bespoke delivery</div>
         <div class="price-divider"></div>
         <div class="price-features">
           <div class="pf">Full CRI analysis — your company's data</div>
           <div class="pf">GPS asset-level physical risk breakdown</div>
-          <div class="pf">3-scenario DCF (NZE / DT / CP) · 25yr</div>
+          <div class="pf">3-scenario DCF (NZE / DT / CP)</div>
           <div class="pf">Physical + transition CaR ($M)</div>
           <div class="pf">TCFD four-pillar disclosure report (PDF)</div>
           <div class="pf">IFRS S2 + CSRD E1 metrics tables</div>
-          <div class="pf">Audit trail Excel (methodology + sources)</div>
+          <div class="pf">CSV/JSON data export package</div>
           <div class="pf">1× walkthrough call with our team</div>
         </div>
-        <a href="CRI_Demo.html" class="price-cta primary" style="text-decoration:none;display:block;text-align:center">Start with the engine →</a>
+        <button class="price-cta primary" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Request a report →</button>
       </div>
 
-      <!-- CSRD Complete -->
+      <!-- Advisory Retainer -->
       <div class="price-card fade-up stagger-2">
-        <div class="price-tier">CSRD Complete</div>
-        <div class="price-amount"><sup>$</sup>5,500</div>
-        <div class="price-cadence">Per company · full ESRS E1 package</div>
-        <div class="price-type">Regulatory-grade delivery · 10 days</div>
+        <div class="price-tier">Advisory Retainer</div>
+        <div class="price-amount"><sup>$</sup>2,500</div>
+        <div class="price-cadence">Per month · ongoing engagement</div>
+        <div class="price-type">Retained advisory</div>
         <div class="price-divider"></div>
         <div class="price-features">
           <div class="pf">Everything in Standard Report</div>
-          <div class="pf">Full ESRS E1-1 through E1-9 data points</div>
-          <div class="pf">Dual materiality assessment (financial + impact)</div>
-          <div class="pf">Scope 1 / 2 / 3 GHG in tCO₂e (GHG Protocol)</div>
-          <div class="pf">SBTi near-term + net-zero target analysis</div>
-          <div class="pf">DPA (GDPR Article 28) included</div>
-          <div class="pf">Board sign-off narrative + legal ready</div>
-          <div class="pf">2× review calls with analyst</div>
+          <div class="pf">Monthly model update as data changes</div>
+          <div class="pf">Regulatory horizon scanning (TCFD/CSRD)</div>
+          <div class="pf">Board and audit committee briefing support</div>
+          <div class="pf">Portfolio aggregation across entities</div>
+          <div class="pf">Supply chain risk mapping (Tier 1–2)</div>
+          <div class="pf">Quarterly report refresh + commentary</div>
+          <div class="pf">Dedicated analyst contact</div>
         </div>
-        <button class="price-cta" onclick="showPage('contact')">Request CSRD package →</button>
+        <button class="price-cta" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Talk to us →</button>
       </div>
     </div>
 
     <div class="pricing-footer fade-up">
       All engagements include a scoping call · All prices in USD · Volume discounts for 3+ entities<br>
-      Annual refresh pricing: <strong style="color:var(--text)">$2,000/entity</strong> · Banking SaaS API: <strong style="color:var(--text)">$2,500–$15,000/month</strong> — contact for details.<br>
       <strong style="color:var(--text)">Up to 90% less than legacy ESG platform pricing — without compromising on methodology or regulatory coverage.</strong>
     </div>
   </div>
 </section>
-
-</div><!-- /page-pricing -->
-
-<!-- PAGE: CONTACT (also shown at bottom of all pages) ═══ -->
-<div class="page-section" id="page-contact">
 
 <!-- ══════════════════ CTA / CONTACT ════════════ -->
 <div class="cta-section" id="contact">
@@ -1483,8 +1403,6 @@ footer{
     <p class="cta-note" id="cta-note">No spam · We respond within 1 business day</p>
   </div>
 </div>
-
-</div><!-- /page-contact -->
 
 <!-- ══════════════════ FOOTER ════════════════════ -->
 <footer>
@@ -1504,17 +1422,17 @@ footer{
     </div>
     <div class="footer-col">
       <div class="fc-head">Product</div>
-      <a href="CRI_Demo.html">CRI Engine</a>
-      <a href="CRI_Demo.html">Free Demo</a>
-      <a href="#" onclick="showPage('pricing');return false">Pricing</a>
-      <a href="#" onclick="showPage('about');return false">About</a>
+      <a href="#engine">CRI Engine</a>
+      <a href="#demo">Free Demo</a>
+      <a href="#pricing">Pricing</a>
+      <a href="#about">About</a>
     </div>
     <div class="footer-col">
       <div class="fc-head">Frameworks</div>
-      <a href="#" onclick="showPage('regulatory');return false">TCFD</a>
-      <a href="#" onclick="showPage('regulatory');return false">IFRS S2</a>
-      <a href="#" onclick="showPage('regulatory');return false">CSRD E1</a>
-      <a href="#" onclick="showPage('regulatory');return false">SBTi</a>
+      <a href="#regulatory">TCFD</a>
+      <a href="#regulatory">IFRS S2</a>
+      <a href="#regulatory">CSRD E1</a>
+      <a href="#regulatory">SBTi</a>
     </div>
     <div class="footer-col">
       <div class="fc-head">Data Sources</div>
@@ -1527,7 +1445,7 @@ footer{
   <div class="footer-bottom">
     <span class="footer-copy">© 2026 ClimRisk · CRI Engine v0.2 · All rights reserved</span>
     <div class="footer-links">
-      <a href="#" onclick="showPage('about');return false">About</a>
+      <a href="#about">About</a>
       <a href="#contact">Contact</a>
       <a href="https://github.com/ClimRisk" target="_blank">GitHub</a>
     </div>
@@ -1698,51 +1616,44 @@ var SECTOR_MULT = {
 var RATING_LETTERS = {A:'#0ea5e9',B:'#16a34a',C:null,D:'#dc2626',E:'#7c3aed'};
 
 /* ── RUN DEMO ───────────────────────────────────── */
-var _lastDemo = {};
+var _lastDemoData = {};
 
 function runDemo(e) {
   e.preventDefault();
   var btn = document.getElementById('demoBtn');
   btn.disabled = true;
-  btn.textContent = '⏳ Computing hazard profile…';
+  btn.textContent = '⦿ Analysing…';
 
   var company = document.getElementById('d-company').value || 'Your Company';
   var sector  = document.getElementById('d-sector').value  || 'Other';
   var revenue = parseFloat(document.getElementById('d-revenue').value) || 4200;
   var region  = document.getElementById('d-region').value  || 'global';
+  _lastDemoData = {company:company,sector:sector,region:region,revenue:revenue};
 
-  _lastDemo = {company:company, sector:sector, region:region, revenue:revenue};
-
-  // Show score FIRST — email capture appears after
+  // Show score FIRST — no email popup, email capture appears after score
   setTimeout(function() {
     renderDemoOutput(company, sector, revenue, region);
     btn.disabled = false;
     btn.textContent = '✓ Analysis complete — see results below';
-    setTimeout(function() {
-      var bar = document.getElementById('emailCaptureBar');
-      if (bar) bar.classList.add('visible');
-    }, 800);
+    var ecb = document.getElementById('emailCapture');
+    if (ecb) setTimeout(function(){ ecb.style.display='flex'; }, 900);
   }, 1600);
 }
 
-function sendEmailCapture() {
-  var email = document.getElementById('ecb-email').value;
-  if (!email) { document.getElementById('ecb-email').focus(); return; }
-  var d = _lastDemo;
-  var mailBody = 'Free demo lead
+function sendDemoEmail() {
+  var email = (document.getElementById('demo-email-input').value || '').trim();
+  if (!email || !email.includes('@')) { document.getElementById('demo-email-input').focus(); return; }
+  var d = _lastDemoData;
+  var body = 'Demo lead
 Company: '+d.company+'
-Sector: '+d.sector
-    +'
+Sector: '+d.sector+'
 Region: '+d.region+'
 Revenue: $'+d.revenue+'M
 Email: '+email;
   var a = document.createElement('a');
-  a.href = 'mailto:shrinivashdkannan@gmail.com?subject='
-    + encodeURIComponent('ClimRisk demo lead — '+d.company)
-    + '&body='+encodeURIComponent(mailBody);
+  a.href = 'mailto:shrinivashdkannan@gmail.com?subject='+encodeURIComponent('ClimRisk demo lead — '+d.company)+'&body='+encodeURIComponent(body);
   a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  var bar = document.getElementById('emailCaptureBar');
-  bar.innerHTML = '<div style="font-size:14px;font-weight:600;color:var(--green)">✓ Done — we'll send the engine link to <strong>'+email+'</strong> within 1 business day.</div>';
+  document.getElementById('emailCapture').innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--green)">✓ Got it — we'll send your engine link to <strong>'+email+'</strong> within 1 business day.</div>';
 }
 
 function renderDemoOutput(company, sector, revenue, region) {
@@ -1817,90 +1728,10 @@ function ctaSubmit(e) {
   a.href = 'mailto:shrinivashdkannan@gmail.com?subject='
     + encodeURIComponent('ClimRisk enquiry from ' + email)
     + '&body=' + encodeURIComponent('Hello ClimRisk,\n\nI would like to learn more about your climate risk analysis services.\n\nMy email: ' + email);
-  // Note: replace shrinivashdkannan@gmail.com with contact alias if available
   a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
   document.getElementById('cta-note').innerHTML = '✅ <strong style="color:#fff">Thanks!</strong> We\'ll be in touch within 1 business day.';
   document.getElementById('cta-email').value = '';
 }
-
-/* ── PAGE ROUTER ────────────────────────────────── */
-function showSection(sectionId) {
-  showPage('home');
-  setTimeout(function() {
-    var el = document.getElementById(sectionId);
-    if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
-  }, 120);
-}
-
-function triggerFadeUps(pageEl) {
-  if (!pageEl) return;
-  // Trigger fade-up for all elements in the now-visible page
-  setTimeout(function() {
-    pageEl.querySelectorAll('.fade-up').forEach(function(el) {
-      var rect = el.getBoundingClientRect();
-      if (rect.top < window.innerHeight + 60) {
-        el.classList.add('in');
-      }
-    });
-  }, 50);
-}
-
-function showPage(pageId) {
-  // Guard: if no page-X div exists, go home
-  if (!document.getElementById('page-' + pageId)) { pageId = 'home'; }
-
-  // Hide all pages
-  document.querySelectorAll('.page-section').forEach(function(p) {
-    p.classList.remove('page-active');
-  });
-
-  // Show requested page
-  var page = document.getElementById('page-' + pageId);
-  if (page) {
-    page.classList.add('page-active');
-    // Also always show contact CTA at bottom of sub-pages
-    if (pageId !== 'home' && pageId !== 'contact') {
-      var contact = document.getElementById('page-contact');
-      if (contact) contact.classList.add('page-active');
-    }
-    triggerFadeUps(page);
-  }
-
-  // Scroll to top
-  window.scrollTo(0, 0);
-
-  // Update nav active state
-  document.querySelectorAll('.nav-links a[id^="nav-"]').forEach(function(a) {
-    a.classList.remove('nav-current');
-  });
-  var navEl = document.getElementById('nav-' + pageId);
-  if (navEl) navEl.classList.add('nav-current');
-
-  // Update URL hash
-  try {
-    window.history.pushState({page: pageId}, '',
-      pageId === 'home' ? window.location.pathname : '#' + pageId);
-  } catch(e) {}
-}
-
-// On load — check hash to restore page state
-(function() {
-  var hash = window.location.hash.replace('#','');
-  var validPages = ['home','about','regulatory','pricing','contact'];
-  if (hash && validPages.indexOf(hash) > -1) {
-    showPage(hash);
-  } else {
-    // Default: home page visible
-    var home = document.getElementById('page-home');
-    if (home) {
-      home.classList.add('page-active');
-      triggerFadeUps(home);
-    }
-    // Always show contact CTA on home too
-    var contact = document.getElementById('page-contact');
-    if (contact) contact.classList.add('page-active');
-  }
-})();
 
 /* ── SCROLL FADE-IN ─────────────────────────────── */
 var io = new IntersectionObserver(function(entries) {
@@ -1910,21 +1741,10 @@ var io = new IntersectionObserver(function(entries) {
 }, { threshold: 0.1 });
 document.querySelectorAll('.fade-up').forEach(function(el) { io.observe(el); });
 
-/* ── BACK BUTTON ────────────────────────────────── */
-window.addEventListener('popstate', function(e) {
-  var pageId = (e.state && e.state.page) || 'home';
-  showPage(pageId);
-});
-
 /* ── NAV ACTIVE STATE ───────────────────────────── */
 window.addEventListener('scroll', function() {
   var scrolled = window.scrollY > 60;
   document.querySelector('nav').style.boxShadow = scrolled ? 'var(--shadow-md)' : 'none';
-  // Trigger visible fade-ups on scroll
-  document.querySelectorAll('.page-section.page-active .fade-up:not(.in)').forEach(function(el) {
-    var rect = el.getBoundingClientRect();
-    if (rect.top < window.innerHeight - 40) el.classList.add('in');
-  });
 });
 </script>
 </body>
