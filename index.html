@@ -1651,7 +1651,7 @@ Region: '+d.region+'
 Revenue: $'+d.revenue+'M
 Email: '+email;
   var a = document.createElement('a');
-  a.href = 'mailto:shrinivashdkannan@gmail.com?subject='+encodeURIComponent('ClimRisk demo lead — '+d.company)+'&body='+encodeURIComponent(body);
+  a.href = 'mailto:contact@climrisk.io?subject='+encodeURIComponent('ClimRisk demo lead — '+d.company)+'&body='+encodeURIComponent(body);
   a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
   document.getElementById('emailCapture').innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--green)">✓ Got it — we'll send your engine link to <strong>'+email+'</strong> within 1 business day.</div>';
 }
@@ -1725,7 +1725,7 @@ function ctaSubmit(e) {
   e.preventDefault();
   var email = document.getElementById('cta-email').value;
   var a = document.createElement('a');
-  a.href = 'mailto:shrinivashdkannan@gmail.com?subject='
+  a.href = 'mailto:contact@climrisk.io?subject='
     + encodeURIComponent('ClimRisk enquiry from ' + email)
     + '&body=' + encodeURIComponent('Hello ClimRisk,\n\nI would like to learn more about your climate risk analysis services.\n\nMy email: ' + email);
   a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
@@ -1734,12 +1734,18 @@ function ctaSubmit(e) {
 }
 
 /* ── SCROLL FADE-IN ─────────────────────────────── */
+function _triggerFadeUps() {
+  document.querySelectorAll('.fade-up').forEach(function(el) { el.classList.add('in'); });
+}
 var io = new IntersectionObserver(function(entries) {
   entries.forEach(function(e) {
     if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
   });
-}, { threshold: 0.1 });
+}, { threshold: 0, rootMargin: '0px 0px -10px 0px' });
 document.querySelectorAll('.fade-up').forEach(function(el) { io.observe(el); });
+// Fallback: guarantee all elements become visible even if observer misfires on load
+setTimeout(_triggerFadeUps, 200);
+window.addEventListener('load', _triggerFadeUps);
 
 /* ── NAV ACTIVE STATE ───────────────────────────── */
 window.addEventListener('scroll', function() {
