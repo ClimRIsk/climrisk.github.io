@@ -2877,14 +2877,8 @@ async function _gateSignup() {
 
     // Also notify via mailto (silent, background)
     try {
-      var notifyBody = 'New engine access request
-Name: '+name+'
-Email: '+email+'
-Company: '+company+'
-Token: '+token+'
-
-Approve: update status to trial, set expires_at';
-      fetch('mailto:shrinivashdkannan@gmail.com'); // Won't work in fetch but kept for reference
+      var notifyBody = 'New engine access request\nName: '+name+'\nEmail: '+email+'\nCompany: '+company+'\nToken: '+token+'\n\nApprove: update status to trial, set expires_at';
+      void notifyBody; // kept for reference
     } catch(_) {}
 
   } catch(e) {
