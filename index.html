@@ -787,7 +787,7 @@ footer{
       <span style="letter-spacing:-.02em">Clim<span style="color:var(--green)">Risk</span></span>
     </a>
     <div class="nav-links">
-      <a href="CRI_Demo.html" id="nav-engine">Engine</a>
+      <a href="#" onclick="showSection('engine');return false" id="nav-engine">Engine</a>
       <a href="#" href="CRI_Demo.html" id="nav-demo">Free Demo</a>
       <a href="#" onclick="showPage('about');return false" id="nav-about">About</a>
       <a href="#" onclick="showPage('regulatory');return false" id="nav-regulatory">Regulatory</a>
@@ -796,7 +796,7 @@ footer{
     </div>
     <div class="nav-right">
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode" id="themeBtn">🌙</button>
-      <a href="CRI_Demo.html" class="nav-cta" style="text-decoration:none;display:inline-flex;align-items:center">Try the Engine →</a>
+      <a href="CRI_Demo.html" class="nav-cta" style="text-decoration:none;display:inline-flex;align-items:center">Client Login →</a>
     </div>
   </div>
 </nav>
@@ -814,7 +814,7 @@ footer{
         <h1>Climate <em>risk</em>,<br>down to the<br><span class="danger">exact site.</span></h1>
         <p class="hero-sub">The first climate risk engine that combines <strong>GPS site-specific hazard physics</strong>, NGFS transition scenarios, and enterprise DCF modelling — delivering TCFD, IFRS S2 and CSRD-ready reports.</p>
         <div class="hero-ctas">
-          <a href="CRI_Demo.html" class="btn-primary" style="text-decoration:none">🔬 Try the Engine →</a>
+          <button class="btn-primary" onclick="showSection('demo')">🔬 Request Engine Access →</button>
           <button class="btn-outline" onclick="showPage('about')">About ClimRisk →</button>
         </div>
         <p class="hero-trust">Powered by <strong>WRI Aqueduct 4.0 · NGFS Phase 4 · IPCC AR6 · NASA NEX-GDDP</strong></p>
@@ -1824,6 +1824,14 @@ function ctaSubmit(e) {
 }
 
 /* ── PAGE ROUTER ────────────────────────────────── */
+function showSection(sectionId) {
+  showPage('home');
+  setTimeout(function() {
+    var el = document.getElementById(sectionId);
+    if (el) el.scrollIntoView({behavior:'smooth', block:'start'});
+  }, 120);
+}
+
 function triggerFadeUps(pageEl) {
   if (!pageEl) return;
   // Trigger fade-up for all elements in the now-visible page
