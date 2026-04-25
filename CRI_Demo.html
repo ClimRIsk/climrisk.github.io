@@ -699,6 +699,58 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 </style>
 </head>
 <body>
+
+<!-- ═══════════════ LICENSE GATE ════════════════ -->
+<div id="cri-gate" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(8,10,16,0.97);backdrop-filter:blur(12px)">
+
+  <!-- Trial Signup Modal -->
+  <div id="gate-signup" style="background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:440px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
+    <div style="font-size:36px;margin-bottom:10px">🌍</div>
+    <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK · CRI ENGINE v0.2</div>
+    <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 8px">Start Your Free Trial</h2>
+    <p style="font-size:13px;color:#64748b;margin:0 0 28px;line-height:1.7">7 days full access &nbsp;·&nbsp; No credit card required<br>TCFD · IFRS S2 · CSRD-ready reports</p>
+    <div style="text-align:left;margin-bottom:14px">
+      <label style="font-size:10px;font-weight:700;color:#475569;letter-spacing:1px;display:block;margin-bottom:5px">FULL NAME</label>
+      <input id="gate-name" type="text" placeholder="Jane Smith" style="width:100%;padding:11px 14px;background:#0a0e1a;border:1px solid #1e2d4a;border-radius:8px;color:#f0f4f8;font-size:13px;box-sizing:border-box;outline:none">
+    </div>
+    <div style="text-align:left;margin-bottom:14px">
+      <label style="font-size:10px;font-weight:700;color:#475569;letter-spacing:1px;display:block;margin-bottom:5px">WORK EMAIL</label>
+      <input id="gate-email" type="email" placeholder="jane@yourcompany.com" style="width:100%;padding:11px 14px;background:#0a0e1a;border:1px solid #1e2d4a;border-radius:8px;color:#f0f4f8;font-size:13px;box-sizing:border-box;outline:none">
+    </div>
+    <div style="text-align:left;margin-bottom:26px">
+      <label style="font-size:10px;font-weight:700;color:#475569;letter-spacing:1px;display:block;margin-bottom:5px">COMPANY</label>
+      <input id="gate-company" type="text" placeholder="Deutsche Bank AG" style="width:100%;padding:11px 14px;background:#0a0e1a;border:1px solid #1e2d4a;border-radius:8px;color:#f0f4f8;font-size:13px;box-sizing:border-box;outline:none">
+    </div>
+    <button id="gate-submit" onclick="_gateSignup()" style="width:100%;padding:14px;background:#22c55e;border:none;border-radius:10px;color:#0a0e1a;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:0.3px;transition:opacity 0.2s">Start 7-Day Free Trial &rarr;</button>
+    <div id="gate-error" style="margin-top:12px;font-size:12px;color:#ef4444;min-height:18px"></div>
+    <p style="font-size:11px;color:#334155;margin-top:14px;line-height:1.6">By continuing you agree to our <a href="mailto:hello@climrisk.io" style="color:#475569">Terms of Service</a>. One trial per organisation.</p>
+  </div>
+
+  <!-- Paywall Modal -->
+  <div id="gate-paywall" style="display:none;background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:440px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
+    <div style="font-size:36px;margin-bottom:10px">⏱</div>
+    <div style="font-size:10px;font-weight:700;color:#ef4444;letter-spacing:3px;margin-bottom:14px">TRIAL EXPIRED</div>
+    <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 10px">Your 7-Day Trial Has Ended</h2>
+    <p style="font-size:13px;color:#64748b;margin:0 0 24px;line-height:1.7">Subscribe to continue accessing GPS-precise climate risk,<br>TCFD reports, and regulatory compliance tools.</p>
+    <div style="background:#0a0e1a;border:1px solid #1e2d4a;border-radius:12px;padding:22px;margin-bottom:24px">
+      <div style="font-size:10px;font-weight:700;color:#475569;letter-spacing:2px;margin-bottom:6px">PROFESSIONAL PLAN</div>
+      <div style="font-size:40px;font-weight:800;color:#f0f4f8;line-height:1">$499<span style="font-size:16px;color:#64748b;font-weight:400">/month</span></div>
+      <div style="font-size:12px;color:#64748b;margin-top:10px">Full engine · Unlimited reports · Priority support</div>
+    </div>
+    <button id="gate-pay-btn" onclick="window.open('https://buy.stripe.com/placeholder','_blank')" style="width:100%;padding:14px;background:#22c55e;border:none;border-radius:10px;color:#0a0e1a;font-size:15px;font-weight:800;cursor:pointer;margin-bottom:10px">Subscribe Now &rarr;</button>
+    <button onclick="_gateShowSignup()" style="width:100%;padding:12px;background:transparent;border:1px solid #1e2d4a;border-radius:10px;color:#64748b;font-size:13px;cursor:pointer">Use a different email</button>
+    <p style="font-size:11px;color:#334155;margin-top:16px">Questions? <a href="mailto:hello@climrisk.io" style="color:#22c55e">hello@climrisk.io</a></p>
+  </div>
+
+  <!-- Loading state -->
+  <div id="gate-loading" style="display:none;text-align:center;color:#475569">
+    <div style="font-size:28px;margin-bottom:12px;animation:spin 1s linear infinite">⟳</div>
+    <div style="font-size:13px">Validating licence&hellip;</div>
+  </div>
+
+</div>
+<!-- ═══════════════ /LICENSE GATE ════════════════ -->
+
 <!-- Print root (populated at print time) -->
 <div id="cri-print-root"></div>
 
@@ -2469,6 +2521,107 @@ function downloadLoanTemplate() {
   XLSX.utils.book_append_sheet(wb, ins, 'Instructions');
   XLSX.writeFile(wb, 'CRI_LoanBook_Template.xlsx');
 }
+
+/* ── LICENSE GATE (Supabase-backed 7-day trial) ─── */
+var _GATE_URL = 'https://qbxsriyxgzusdavwvghs.supabase.co';
+var _GATE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFieHNyaXl4Z3p1c2Rhdnd2Z2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDUwNTYsImV4cCI6MjA5MjY4MTA1Nn0.VpPHM1hKrZ9Lklm5HWTTqA0JSvuPoXeO5TPC3A8vnkA';
+var _GATE_STORAGE_KEY = 'cri_license_token_v1';
+
+function _gateHeaders() {
+  return { 'Content-Type':'application/json', 'apikey':_GATE_KEY, 'Authorization':'Bearer '+_GATE_KEY };
+}
+function _gateHide() {
+  var g = document.getElementById('cri-gate');
+  if (g) { g.style.opacity='0'; g.style.transition='opacity 0.4s'; setTimeout(function(){ g.style.display='none'; }, 400); }
+}
+function _gateShowSignup() {
+  document.getElementById('gate-signup').style.display = 'block';
+  document.getElementById('gate-paywall').style.display = 'none';
+  document.getElementById('gate-loading').style.display = 'none';
+}
+function _gateShowPaywall() {
+  document.getElementById('gate-signup').style.display = 'none';
+  document.getElementById('gate-paywall').style.display = 'block';
+  document.getElementById('gate-loading').style.display = 'none';
+}
+function _gateShowLoading() {
+  document.getElementById('gate-signup').style.display = 'none';
+  document.getElementById('gate-paywall').style.display = 'none';
+  document.getElementById('gate-loading').style.display = 'block';
+}
+
+async function _gateValidate(token) {
+  try {
+    _gateShowLoading();
+    var res = await fetch(_GATE_URL + '/rest/v1/trials?token=eq.' + encodeURIComponent(token) + '&select=status,expires_at', { headers: _gateHeaders() });
+    var data = await res.json();
+    if (!data || !data.length) { localStorage.removeItem(_GATE_STORAGE_KEY); _gateShowSignup(); return; }
+    var trial = data[0];
+    if (trial.status === 'paid') { _gateHide(); return; }
+    if (trial.status === 'trial' && new Date() < new Date(trial.expires_at)) { _gateHide(); return; }
+    _gateShowPaywall();
+  } catch(e) {
+    // Network error — allow access so legitimate paying users aren't blocked offline
+    console.warn('CRI licence check failed (offline?), granting access:', e);
+    _gateHide();
+  }
+}
+
+async function _gateSignup() {
+  var name    = (document.getElementById('gate-name').value    || '').trim();
+  var email   = (document.getElementById('gate-email').value   || '').trim().toLowerCase();
+  var company = (document.getElementById('gate-company').value || '').trim();
+  var errEl   = document.getElementById('gate-error');
+  errEl.textContent = '';
+
+  if (!name)                          { errEl.textContent = 'Please enter your full name.'; return; }
+  if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid work email.'; return; }
+
+  var btn = document.getElementById('gate-submit');
+  btn.textContent = 'Creating your trial…';
+  btn.disabled = true;
+
+  var token = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('tk_'+Math.random().toString(36).slice(2)+Date.now().toString(36));
+
+  try {
+    var res = await fetch(_GATE_URL + '/rest/v1/trials', {
+      method: 'POST',
+      headers: Object.assign({}, _gateHeaders(), {'Prefer': 'return=minimal'}),
+      body: JSON.stringify({ name:name, email:email, company:company, token:token })
+    });
+
+    if (res.status === 409 || res.status === 422) {
+      // Email already registered — retrieve existing record
+      var lookup = await fetch(_GATE_URL + '/rest/v1/trials?email=eq.' + encodeURIComponent(email) + '&select=token,status,expires_at', { headers: _gateHeaders() });
+      var rows = await lookup.json();
+      if (rows && rows.length) {
+        var r = rows[0];
+        if (r.status === 'paid' || (r.status === 'trial' && new Date() < new Date(r.expires_at))) {
+          localStorage.setItem(_GATE_STORAGE_KEY, r.token);
+          _gateHide(); return;
+        }
+        _gateShowPaywall(); return;
+      }
+    }
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    localStorage.setItem(_GATE_STORAGE_KEY, token);
+    _gateHide();
+
+  } catch(e) {
+    btn.textContent = 'Start 7-Day Free Trial →';
+    btn.disabled = false;
+    errEl.textContent = 'Something went wrong — please try again or email hello@climrisk.io';
+    console.error('Gate signup error:', e);
+  }
+}
+
+// Boot — runs immediately
+(function _gateInit() {
+  var token = localStorage.getItem(_GATE_STORAGE_KEY);
+  if (token) { _gateValidate(token); } else { _gateShowSignup(); }
+})();
 
 /* ── Navigation ─────────────────────────────────── */
 var cur = 'dataint';
