@@ -2785,6 +2785,10 @@ function _gateHeaders() {
 function _gateHide() {
   var g = document.getElementById('cri-gate');
   if (g) { g.style.opacity='0'; g.style.transition='opacity 0.4s'; setTimeout(function(){ g.style.display='none'; }, 400); }
+  // Mark full access — hides Free Tier note and subscription plan wall in Rating panel
+  window._CRI_FULL_ACCESS = true;
+  var rn = document.getElementById('rat-note'); if (rn) rn.style.display='none';
+  var rt = document.getElementById('rat-tiers'); if (rt) rt.closest('.cc') && (rt.closest('.cc').style.display='none');
 }
 function _gateShowSignup() {
   var gp = document.getElementById('gate-pending'); if (gp) gp.style.display = 'none';
@@ -4903,6 +4907,11 @@ function renderRat() {
     th += '</div>';
   });
   el('rat-tiers').innerHTML = th;
+  // Hide Free Tier paywall if owner/paid access
+  if (window._CRI_FULL_ACCESS) {
+    var rn = el('rat-note'); if (rn) rn.style.display = 'none';
+    var cc = el('rat-tiers'); if (cc && cc.closest('.cc')) cc.closest('.cc').style.display = 'none';
+  }
 }
 
 function colorForLabel(label) {
