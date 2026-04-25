@@ -1644,16 +1644,11 @@ function sendDemoEmail() {
   var email = (document.getElementById('demo-email-input').value || '').trim();
   if (!email || !email.includes('@')) { document.getElementById('demo-email-input').focus(); return; }
   var d = _lastDemoData;
-  var body = 'Demo lead
-Company: '+d.company+'
-Sector: '+d.sector+'
-Region: '+d.region+'
-Revenue: $'+d.revenue+'M
-Email: '+email;
+  var body = 'Demo lead\nCompany: '+d.company+'\nSector: '+d.sector+'\nRegion: '+d.region+'\nRevenue: $'+d.revenue+'M\nEmail: '+email;
   var a = document.createElement('a');
   a.href = 'mailto:contact@climrisk.io?subject='+encodeURIComponent('ClimRisk demo lead — '+d.company)+'&body='+encodeURIComponent(body);
   a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  document.getElementById('emailCapture').innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--green)">✓ Got it — we'll send your engine link to <strong>'+email+'</strong> within 1 business day.</div>';
+  document.getElementById('emailCapture').innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--green)">✓ Got it — we\'ll send your engine link to <strong>'+email+'</strong> within 1 business day.</div>';
 }
 
 function renderDemoOutput(company, sector, revenue, region) {
