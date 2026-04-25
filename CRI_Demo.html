@@ -7035,12 +7035,20 @@ function _xlInjectToEngine() {
   var spNze = shares > 0 ? Math.max(0, nzeEV - debt) * 1e3 / shares : 0;
   var spCp  = shares > 0 ? Math.max(0, cpEV  - debt) * 1e3 / shares : 0;
 
-  // Emissions from Excel (sum across assets)
+  // Emissions from Excel — handles both row-based and key-value sheet formats
   var totS1 = 0, totS2 = 0;
-  (xd.emissions || []).forEach(function(e) {
-    totS1 += +(e.s1 || e['Scope 1 (tCO2e)'] || 0);
-    totS2 += +(e.s2 || e['Scope 2 (tCO2e)'] || 0);
-  });
+  if (xd.emissionsKV && (xd.emissionsKV.s1 || xd.emissionsKV.s2)) {
+    // Key-value format (e.g. "Scope 1 Total": 597976)
+    totS1 = xd.emissionsKV.s1 || 0;
+    totS2 = xd.emissionsKV.s2 || 0;
+  } else {
+    (xd.emissions || []).forEach(function(e) {
+      totS1 += +(e.s1 || e['Scope 1 (tCO2e)'] || e['Scope 1'] || e['scope1'] || 0);
+      totS2 += +(e.s2 || e['Scope 2 (tCO2e)'] || e['Scope 2'] || e['scope2'] || 0);
+    });
+    // Also sum from asset-level if available
+    if (!totS1) xd.assets.forEach(function(a){ totS1 += (a.s1||0); totS2 += (a.s2||0); });
+  }
   var wizS1mt = totS1 / 1e6 || Math.max(0.1, rev * 1.8);
   var wizS2mt = totS2 / 1e6 || Math.max(0.05, wizS1mt * 0.3);
 
@@ -7078,9 +7086,32 @@ function _xlInjectToEngine() {
 
   // ── Run full hazard assessment on every imported asset ──────────────────
   D.hazards[co_id] = xd.assets.map(function(a) {
-    var region  = a.state || a.region || 'global';
-    var lat     = a.lat   || null;
-    var lon     = a.lon   || null;
+    var lat = a.lat || null;
+    var lon = a.lon || null;
+    // Derive region from lat/lon when not explicitly provided
+    var region = a.state || a.region || 'global';
+    if (region === 'global' && lat !== null && lon !== null) {
+      // Simple bounding-box geocoder for major regions
+      if (lat > 35 && lat < 72 && lon > -10 && lon < 40)  region = lat < 45 ? (lon < 15 ? 'IT' : lon < 25 ? 'GR' : 'TR') : (lon < 0 ? 'GB-ENG' : lon < 8 ? 'FR' : lon < 15 ? 'DE' : lon < 25 ? 'PL' : 'RO');
+      else if (lat > 50 && lat < 72 && lon > 4 && lon < 9) region = 'NL';
+      else if (lat > 49 && lat < 52 && lon > 3 && lon < 7) region = 'BE';
+      else if (lat > 24 && lat < 50 && lon > -125 && lon < -60) region = lat > 40 ? 'US-NY' : (lon < -100 ? 'US-TX' : 'US-FL');
+      else if (lat > 24 && lat < 50 && lon > -100 && lon < -85) region = lat < 36 ? 'US-TX' : (lon < -88 ? 'US-OK' : 'US-NY');
+      else if (lat > -55 && lat < 13 && lon > -82 && lon < -34) region = lat < -15 ? 'AR' : (lat < 0 ? 'BR-PA' : 'CO');
+      else if (lat > -10 && lat < 36 && lon > 25 && lon < 60) region = lat < 15 ? 'YE' : (lat < 25 ? 'SA' : (lon > 50 ? 'AE' : 'EG'));
+      else if (lat > -35 && lat < 37 && lon > -20 && lon < 55) region = lat < 0 ? 'ZA' : (lat < 15 ? 'NG' : (lat < 25 ? 'ET' : 'EG'));
+      else if (lat > 5 && lat < 55 && lon > 60 && lon < 135) {
+        if (lat > 30 && lat < 45 && lon > 100 && lon < 122) region = 'CN';
+        else if (lat > 20 && lat < 35 && lon > 65 && lon < 90) region = 'IN-MH';
+        else if (lat > 35 && lat < 46 && lon > 128 && lon < 146) region = 'JP';
+        else if (lat > 30 && lat < 38 && lon > 126 && lon < 130) region = 'KR';
+        else if (lat > -10 && lat < 30 && lon > 95 && lon < 135) region = lat < 5 ? 'SG' : (lon > 115 ? 'ID-KI' : 'TH');
+        else if (lat > 8 && lat < 25 && lon > 100 && lon < 110) region = 'VN';
+        else if (lat > 10 && lat < 25 && lon > 115 && lon < 130) region = 'PH';
+        else region = 'asia_pacific';
+      }
+      else if (lat > -45 && lat < -10 && lon > 110 && lon < 155) region = lat > -25 ? 'AU-QLD' : (lon < 135 ? 'AU-SA' : 'AU-NSW');
+    }
     var p30 = assessHazards(region, lat, lon, 'ssp370', 2030);
     var p50 = assessHazards(region, lat, lon, 'ssp370', 2050);
     var hzBk = {};
@@ -7257,26 +7288,40 @@ async function _xlProcessFile(file) {
 
     // Parse Assets sheet — case-insensitive, also tries Sheet1/Data as fallback
     var _assetSheetName = wb.SheetNames.find(function(n){ return n.toLowerCase() === 'assets'; }) ||
-                          wb.SheetNames.find(function(n){ return /asset|site|locat|plant|mine/i.test(n); }) ||
+                          wb.SheetNames.find(function(n){ return /asset|site|locat|plant|mine|facilit|manufactur/i.test(n); }) ||
                           (wb.SheetNames.length >= 2 ? wb.SheetNames[1] : null);
     if (_assetSheetName) {
       var rows = XLSX.utils.sheet_to_json(wb.Sheets[_assetSheetName]);
+      // Commodity → sector mapping for common industrial Excel formats
+      var _commToSector = { refined_products:'Chemicals', chemicals:'Chemicals', petrochemicals:'Chemicals',
+        specialty_chemicals:'Chemicals', oil:'Oil & Gas', gas:'Oil & Gas', lng:'Oil & Gas',
+        coal:'Coal', iron_ore:'Mining', copper:'Mining', gold:'Mining', nickel:'Mining',
+        steel:'Steel & Metals', aluminium:'Steel & Metals', cement:'Cement', agriculture:'Agriculture',
+        pulp:'Agriculture', timber:'Agriculture', power:'Utilities', electricity:'Utilities' };
       _xlState.data.assets = rows.map(function(r) {
+        var rawSector = r['Sector'] || r['sector'] || r['Commodity'] || r['commodity'] || r['Industry'] || '';
+        var mappedSector = _commToSector[String(rawSector).toLowerCase().replace(/\s+/g,'_')] || rawSector || '';
+        var lat = parseFloat(r['Latitude']||r['lat']||r['LAT']||'');
+        var lon = parseFloat(r['Longitude']||r['lon']||r['LON']||r['Long']||'');
         return {
-          assetName: r['Asset Name'] || r['assetName'] || '—',
-          country:   r['Country'] || '',
-          state:     r['State/Region'] || r['state'] || '',
-          lat:       parseFloat(r['Latitude']||r['lat'])||null,
-          lon:       parseFloat(r['Longitude']||r['lon'])||null,
-          sector:    r['Sector'] || '',
-          cvM:       parseFloat(r['Carrying Value (USD M)']||r['cvM'])||0,
-          revenueM:  parseFloat(r['Annual Revenue (USD M)']||r['revenueM'])||0,
-          ebitdaM:   parseFloat(r['EBITDA (USD M)']||r['ebitdaM'])||0,
-          s1:        parseFloat(r['Scope 1 (tCO2e)']||r['s1'])||0,
-          s2:        parseFloat(r['Scope 2 (tCO2e)']||r['s2'])||0,
-          production:parseFloat(r['Production Volume']||r['production'])||0,
+          assetName: r['Asset Name'] || r['Name'] || r['assetName'] || r['Site'] || r['Facility'] || '—',
+          country:   r['Country'] || r['country'] || '',
+          state:     r['State/Region'] || r['Region'] || r['state'] || r['region'] || '',
+          lat:       isNaN(lat) ? null : lat,
+          lon:       isNaN(lon) ? null : lon,
+          sector:    mappedSector,
+          cvM:       parseFloat(r['Carrying Value (USD M)']||r['Carrying Value']||r['CV (USD M)']||r['cvM']||r['Asset Value (USD M)']||0)||0,
+          revenueM:  parseFloat(r['Annual Revenue (USD M)']||r['Revenue (USD M)']||r['revenueM']||0)||0,
+          ebitdaM:   parseFloat(r['EBITDA (USD M)']||r['EBITDA']||r['ebitdaM']||0)||0,
+          s1:        parseFloat(r['Scope 1 (tCO2e)']||r['Scope 1']||r['s1']||0)||0,
+          s2:        parseFloat(r['Scope 2 (tCO2e)']||r['Scope 2']||r['s2']||0)||0,
+          production:parseFloat(r['Production Volume']||r['Production']||r['production']||0)||0,
           unit:      r['Unit']||r['unit']||''
         };
+      // Filter out Total/subtotal rows and rows with no name or invalid coordinates
+      }).filter(function(r){
+        var nm = String(r.assetName).toLowerCase();
+        return nm && nm !== '—' && !/^total|^subtotal|^sum/i.test(nm);
       });
     }
 
@@ -7299,38 +7344,77 @@ async function _xlProcessFile(file) {
       });
     }
 
-    // Parse Company sheet (key-value format) — case-insensitive
-    var _coSheetName = wb.SheetNames.find(function(n){ return /company|compan|org/i.test(n); }) || wb.SheetNames[0];
+    // Parse Company / Financial sheet (key-value format) — handles many naming conventions
+    var _coSheetName = wb.SheetNames.find(function(n){ return /company|compan|org/i.test(n); }) ||
+                       wb.SheetNames.find(function(n){ return /financial|finance|overview|summary/i.test(n); }) ||
+                       wb.SheetNames[0];
     if (_coSheetName) {
       var crow = XLSX.utils.sheet_to_json(wb.Sheets[_coSheetName], {header:1});
       var rawCo = {};
-      crow.forEach(function(r){ if(r[0] && r[1]!==undefined) rawCo[String(r[0]).trim()] = r[1]; });
+      crow.forEach(function(r){
+        if (r[0] && r[1] !== undefined && r[1] !== null && r[1] !== '') {
+          rawCo[String(r[0]).trim()] = r[1];
+        }
+      });
+      // Flexible WACC parser: handles both 0.085 (decimal) and 8.5 (percent)
+      var _rawWacc = +(rawCo['WACC (%)'] || rawCo['WACC'] || rawCo['wacc'] || rawCo['waccPct'] || 0);
+      var _waccPct = _rawWacc > 0 && _rawWacc < 1 ? _rawWacc * 100 : (_rawWacc || 9);
       _xlState.data.company = {
-        name:     rawCo['Company Name']    || rawCo['name']    || '',
-        sector:   rawCo['Sector']          || rawCo['sector']  || 'Other',
-        revM:     +(rawCo['Annual Revenue (USD M)'] || rawCo['revM']    || 0),
-        ebitdaM:  +(rawCo['EBITDA (USD M)']         || rawCo['ebitdaM'] || 0),
-        mktCapM:  +(rawCo['Market Cap (USD M)']      || rawCo['mktCapM'] || 0),
-        netDebtM: +(rawCo['Net Debt (USD M)']        || rawCo['netDebtM']|| 0),
-        waccPct:  +(rawCo['WACC (%)']                || rawCo['waccPct'] || 9),
-        employees:+(rawCo['Employees']               || rawCo['employees']||0),
+        name:     rawCo['Company Name'] || rawCo['name'] || rawCo['Company'] || rawCo['Organisation'] || '',
+        sector:   rawCo['Sector'] || rawCo['sector'] || rawCo['Industry'] || rawCo['industry'] || 'Chemicals',
+        revM:     +(rawCo['Annual Revenue (USD M)'] || rawCo['Revenue (USD M)'] || rawCo['Revenue'] || rawCo['revM'] || rawCo['Revenues'] || 0),
+        ebitdaM:  +(rawCo['EBITDA (USD M)'] || rawCo['EBITDA'] || rawCo['ebitdaM'] || rawCo['Adjusted EBITDA'] || 0),
+        mktCapM:  +(rawCo['Market Cap (USD M)'] || rawCo['Market Cap'] || rawCo['Market Capitalisation'] || rawCo['mktCapM'] || 0),
+        netDebtM: +(rawCo['Net Debt (USD M)'] || rawCo['Net Debt'] || rawCo['Net debt'] || rawCo['netDebtM'] || rawCo['Total Debt'] || 0),
+        waccPct:  _waccPct,
+        employees:+(rawCo['Employees'] || rawCo['employees'] || rawCo['Headcount'] || rawCo['FTEs'] || 0),
       };
     }
 
-    // Parse Emissions sheet — case-insensitive
-    var _emSheetName = wb.SheetNames.find(function(n){ return /emiss|scope|ghg/i.test(n); });
+    // Parse Emissions sheet — handles both row-based and key-value formats
+    var _emSheetName = wb.SheetNames.find(function(n){ return /emiss|scope|ghg|carbon|climat/i.test(n); });
     if (_emSheetName) {
-      _xlState.data.emissions = XLSX.utils.sheet_to_json(wb.Sheets[_emSheetName]);
+      var _emRaw = XLSX.utils.sheet_to_json(wb.Sheets[_emSheetName]);
+      // Detect key-value format (first column is "Metric"/"Parameter", second is "Value")
+      var _isKV = _emRaw.length > 0 && _emRaw[0] && (Object.keys(_emRaw[0])[0] || '').match(/metric|parameter|indicator|item/i);
+      if (_isKV) {
+        // Convert key-value rows into a single emissions summary object
+        var _emKV = {};
+        _emRaw.forEach(function(r) {
+          var keys = Object.keys(r);
+          var metric = String(r[keys[0]] || '').trim();
+          var val = r[keys[1]];
+          if (metric) _emKV[metric.toLowerCase()] = val;
+        });
+        // Store as structured object for injection
+        _xlState.data.emissionsKV = {
+          s1: +(_emKV['scope 1 total'] || _emKV['scope 1'] || _emKV['scope1'] || 0),
+          s2: +(_emKV['scope 2 total'] || _emKV['scope 2'] || _emKV['scope2'] || 0),
+          s3: +(_emKV['scope 3 total'] || _emKV['scope 3'] || _emKV['scope3'] || 0),
+          carbonPrice: +(_emKV['internal carbon price'] || _emKV['carbon price'] || 0),
+          freeAlloc:   +(_emKV['free allowance share'] || _emKV['free allocation'] || 0),
+        };
+        _xlState.data.emissions = [];
+      } else {
+        _xlState.data.emissions = _emRaw;
+        _xlState.data.emissionsKV = null;
+      }
     }
 
     _xlState.lastSync = new Date();
     _xlState.connected = true;
     var assetCount = _xlState.data.assets.length;
-    var coName = (_xlState.data.company && _xlState.data.company.name) || 'Unknown';
-    toast('✅ Excel loaded: ' + coName + ' · ' + assetCount + ' asset' + (assetCount !== 1 ? 's' : '') + ' found');
+    var co = _xlState.data.company || {};
+    var coName = co.name || 'Imported Company';
+    var revStr = co.revM ? ' · $' + (co.revM >= 1000 ? (co.revM/1000).toFixed(1)+'B' : co.revM+'M') + ' revenue' : '';
+    var emKV = _xlState.data.emissionsKV;
+    var emStr = (emKV && emKV.s1) ? ' · ' + Math.round(emKV.s1/1000) + 'kt Scope 1' : '';
+    toast('✅ ' + coName + revStr + ' · ' + assetCount + ' asset' + (assetCount !== 1 ? 's' : '') + emStr);
     if (assetCount === 0) {
-      toast('⚠ No assets found. Check your Excel has an "Assets" sheet with data.');
-      console.warn('Sheets found:', _xlState._sheetNames);
+      toast('⚠ No assets found in sheet "' + _assetSheetName + '". Expected columns: Asset Name, Latitude, Longitude, Carrying Value (USD M)');
+      console.warn('Sheets found:', _xlState._sheetNames, '| Asset sheet tried:', _assetSheetName);
+    } else if (!co.revM) {
+      toast('ℹ Revenue not detected — check Financial sheet has a "Revenue" row. Using sector defaults for valuation.');
     }
   } catch(e) { console.error('Excel parse error:', e); toast('⚠ Parse error: ' + e.message); return; }
 
