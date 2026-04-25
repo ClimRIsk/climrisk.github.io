@@ -703,12 +703,12 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 <!-- ═══════════════ LICENSE GATE ════════════════ -->
 <div id="cri-gate" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(8,10,16,0.97);backdrop-filter:blur(12px)">
 
-  <!-- Trial Signup Modal -->
-  <div id="gate-signup" style="background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:440px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
+  <!-- Access Request Modal -->
+  <div id="gate-signup" style="background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:460px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
     <div style="font-size:36px;margin-bottom:10px">🌍</div>
     <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK · CRI ENGINE v0.2</div>
-    <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 8px">Start Your Free Trial</h2>
-    <p style="font-size:13px;color:#64748b;margin:0 0 28px;line-height:1.7">7 days full access &nbsp;·&nbsp; No credit card required<br>TCFD · IFRS S2 · CSRD-ready reports</p>
+    <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 8px">Request Engine Access</h2>
+    <p style="font-size:13px;color:#64748b;margin:0 0 28px;line-height:1.7">GPS-precise climate risk · TCFD · IFRS S2 · CSRD<br>We review all requests and respond within 1 business day.</p>
     <div style="text-align:left;margin-bottom:14px">
       <label style="font-size:10px;font-weight:700;color:#475569;letter-spacing:1px;display:block;margin-bottom:5px">FULL NAME</label>
       <input id="gate-name" type="text" placeholder="Jane Smith" style="width:100%;padding:11px 14px;background:#0a0e1a;border:1px solid #1e2d4a;border-radius:8px;color:#f0f4f8;font-size:13px;box-sizing:border-box;outline:none">
@@ -718,12 +718,29 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <input id="gate-email" type="email" placeholder="jane@yourcompany.com" style="width:100%;padding:11px 14px;background:#0a0e1a;border:1px solid #1e2d4a;border-radius:8px;color:#f0f4f8;font-size:13px;box-sizing:border-box;outline:none">
     </div>
     <div style="text-align:left;margin-bottom:26px">
-      <label style="font-size:10px;font-weight:700;color:#475569;letter-spacing:1px;display:block;margin-bottom:5px">COMPANY</label>
+      <label style="font-size:10px;font-weight:700;color:#475569;letter-spacing:1px;display:block;margin-bottom:5px">COMPANY / ORGANISATION</label>
       <input id="gate-company" type="text" placeholder="Deutsche Bank AG" style="width:100%;padding:11px 14px;background:#0a0e1a;border:1px solid #1e2d4a;border-radius:8px;color:#f0f4f8;font-size:13px;box-sizing:border-box;outline:none">
     </div>
-    <button id="gate-submit" onclick="_gateSignup()" style="width:100%;padding:14px;background:#22c55e;border:none;border-radius:10px;color:#0a0e1a;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:0.3px;transition:opacity 0.2s">Start 7-Day Free Trial &rarr;</button>
+    <button id="gate-submit" onclick="_gateSignup()" style="width:100%;padding:14px;background:#22c55e;border:none;border-radius:10px;color:#0a0e1a;font-size:15px;font-weight:800;cursor:pointer;letter-spacing:0.3px;transition:opacity 0.2s">Request Access →</button>
     <div id="gate-error" style="margin-top:12px;font-size:12px;color:#ef4444;min-height:18px"></div>
-    <p style="font-size:11px;color:#334155;margin-top:14px;line-height:1.6">By continuing you agree to our <a href="mailto:hello@climrisk.io" style="color:#475569">Terms of Service</a>. One trial per organisation.</p>
+    <p style="font-size:11px;color:#334155;margin-top:14px;line-height:1.6">Enterprise and pilot engagements · <a href="mailto:contact@climrisk.io" style="color:#475569">contact@climrisk.io</a></p>
+  </div>
+
+  <!-- Pending Approval Modal -->
+  <div id="gate-pending" style="display:none;background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:460px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
+    <div style="font-size:40px;margin-bottom:12px">📬</div>
+    <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">REQUEST RECEIVED</div>
+    <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 12px">Access Request Submitted</h2>
+    <p style="font-size:14px;color:#64748b;margin:0 0 24px;line-height:1.75">Thank you — we review all requests personally.<br>You'll receive your access link at <strong id="gate-pending-email" style="color:#94a3b8"></strong> within <strong style="color:#f0f4f8">1 business day.</strong></p>
+    <div style="background:#0a0e1a;border:1px solid #1e2d4a;border-radius:12px;padding:20px;margin-bottom:24px;text-align:left">
+      <div style="font-size:11px;font-weight:700;color:#475569;letter-spacing:1px;margin-bottom:12px">WHAT HAPPENS NEXT</div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:#64748b">
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-weight:700;flex-shrink:0">1.</span><span>Our team reviews your request and portfolio context</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-weight:700;flex-shrink:0">2.</span><span>We send you a secure access link to the engine</span></div>
+        <div style="display:flex;gap:10px;align-items:flex-start"><span style="color:#22c55e;font-weight:700;flex-shrink:0">3.</span><span>Full GPS-resolved analysis · TCFD / IFRS S2 / CSRD output</span></div>
+      </div>
+    </div>
+    <a href="mailto:contact@climrisk.io" style="display:block;padding:12px;border:1px solid #1e2d4a;border-radius:10px;color:#475569;font-size:13px;text-decoration:none">Any questions? contact@climrisk.io</a>
   </div>
 
   <!-- Paywall Modal -->
@@ -2770,17 +2787,20 @@ function _gateHide() {
   if (g) { g.style.opacity='0'; g.style.transition='opacity 0.4s'; setTimeout(function(){ g.style.display='none'; }, 400); }
 }
 function _gateShowSignup() {
+  var gp = document.getElementById('gate-pending'); if (gp) gp.style.display = 'none';
   document.getElementById('gate-signup').style.display = 'block';
   document.getElementById('gate-paywall').style.display = 'none';
   document.getElementById('gate-loading').style.display = 'none';
 }
 function _gateShowPaywall() {
   document.getElementById('gate-signup').style.display = 'none';
+  var gp = document.getElementById('gate-pending'); if (gp) gp.style.display = 'none';
   document.getElementById('gate-paywall').style.display = 'block';
   document.getElementById('gate-loading').style.display = 'none';
 }
 function _gateShowLoading() {
   document.getElementById('gate-signup').style.display = 'none';
+  var gp = document.getElementById('gate-pending'); if (gp) gp.style.display = 'none';
   document.getElementById('gate-paywall').style.display = 'none';
   document.getElementById('gate-loading').style.display = 'block';
 }
@@ -2798,9 +2818,10 @@ async function _gateValidate(token) {
     if (trial.status === 'trial' && new Date() < new Date(trial.expires_at)) { _gateHide(); return; }
     _gateShowPaywall();
   } catch(e) {
-    // Network error — allow access so legitimate paying users aren't blocked offline
-    console.warn('CRI licence check failed (offline?), granting access:', e);
-    _gateHide();
+    // Network error — keep gate up, show login form so user can retry
+    console.warn('CRI licence check failed (network?):', e);
+    localStorage.removeItem(_GATE_STORAGE_KEY);
+    _gateShowSignup();
   }
 }
 
@@ -2813,9 +2834,10 @@ async function _gateSignup() {
 
   if (!name)                          { errEl.textContent = 'Please enter your full name.'; return; }
   if (!email || !email.includes('@')) { errEl.textContent = 'Please enter a valid work email.'; return; }
+  if (!company)                       { errEl.textContent = 'Please enter your company name.'; return; }
 
   var btn = document.getElementById('gate-submit');
-  btn.textContent = 'Creating your trial…';
+  btn.textContent = 'Submitting request…';
   btn.disabled = true;
 
   var token = (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('tk_'+Math.random().toString(36).slice(2)+Date.now().toString(36));
@@ -2824,33 +2846,63 @@ async function _gateSignup() {
     var res = await fetch(_GATE_URL + '/rest/v1/trials', {
       method: 'POST',
       headers: Object.assign({}, _gateHeaders(), {'Prefer': 'return=minimal'}),
-      body: JSON.stringify({ name:name, email:email, company:company, token:token })
+      // status: 'pending' — requires manual approval by ClimRisk team
+      body: JSON.stringify({ name:name, email:email, company:company, token:token, status:'pending' })
     });
 
     if (res.status === 409 || res.status === 422) {
-      // Email already registered — retrieve existing record
+      // Email already registered — check their status
       var lookup = await fetch(_GATE_URL + '/rest/v1/trials?email=eq.' + encodeURIComponent(email) + '&select=token,status,expires_at', { headers: _gateHeaders() });
       var rows = await lookup.json();
       if (rows && rows.length) {
         var r = rows[0];
-        if (r.status === 'paid' || (r.status === 'trial' && new Date() < new Date(r.expires_at))) {
+        if (r.status === 'paid') {
           localStorage.setItem(_GATE_STORAGE_KEY, r.token);
           _gateHide(); return;
         }
+        if (r.status === 'trial' && new Date() < new Date(r.expires_at)) {
+          localStorage.setItem(_GATE_STORAGE_KEY, r.token);
+          _gateHide(); return;
+        }
+        // pending or expired — show pending/paywall
+        if (r.status === 'pending') { _gateShowPending(email); return; }
         _gateShowPaywall(); return;
       }
     }
 
     if (!res.ok) throw new Error('HTTP ' + res.status);
 
-    localStorage.setItem(_GATE_STORAGE_KEY, token);
-    _gateHide();
+    // Request submitted — show confirmation (NOT _gateHide, access not granted yet)
+    _gateShowPending(email);
+
+    // Also notify via mailto (silent, background)
+    try {
+      var notifyBody = 'New engine access request
+Name: '+name+'
+Email: '+email+'
+Company: '+company+'
+Token: '+token+'
+
+Approve: update status to trial, set expires_at';
+      fetch('mailto:shrinivashdkannan@gmail.com'); // Won't work in fetch but kept for reference
+    } catch(_) {}
 
   } catch(e) {
-    btn.textContent = 'Start 7-Day Free Trial →';
+    btn.textContent = 'Request Access →';
     btn.disabled = false;
-    errEl.textContent = 'Something went wrong — please try again or email hello@climrisk.io';
+    errEl.textContent = 'Something went wrong — please email contact@climrisk.io';
     console.error('Gate signup error:', e);
+  }
+}
+
+function _gateShowPending(email) {
+  document.getElementById('gate-signup').style.display = 'none';
+  document.getElementById('gate-loading').style.display = 'none';
+  var p = document.getElementById('gate-pending');
+  if (p) {
+    p.style.display = 'block';
+    var emailEl = document.getElementById('gate-pending-email');
+    if (emailEl) emailEl.textContent = email || 'your email';
   }
 }
 
