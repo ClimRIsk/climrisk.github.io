@@ -1634,6 +1634,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <div class="tc"><div class="tc-head" id="phys-head">Asset Hazard Profile</div><div id="phys-tbl"></div></div>
       <div id="phys-detail"></div>
       <div class="cc"><div class="cc-title">Production Loss by Asset (%) — Joint Probability</div><div class="ch h220"><canvas id="hazC"></canvas></div></div>
+      <div class="cc" id="phys-trend-box" style="display:none"><div class="cc-title" id="phys-trend-title">Hazard Severity Trend 2026–2050 · Primary Asset · All SSP Scenarios</div><div class="ch h260"><canvas id="hazTrendC"></canvas></div></div>
     </div>
 
     <!-- TRANSITION RISK -->
@@ -3052,6 +3053,38 @@ function renderPh() {
       ] },
     options:mkOpts(function(v){return v+'%/pts';}) });
 
+  // ── Trend line chart for primary asset ────────────────────────────────
+  var pa = assetProfiles[0];
+  if (pa) {
+    var trendYears = [2026,2030,2035,2040,2045,2050,2060,2070];
+    var ssps = ['ssp126','ssp245','ssp370','ssp585'];
+    var sspColors = {'ssp126':'#16a34a','ssp245':'#d97706','ssp370':'#b91c1c','ssp585':'#7c3aed'};
+    var sspLabels = {'ssp126':'SSP1-2.6','ssp245':'SSP2-4.5','ssp370':'SSP3-7.0','ssp585':'SSP5-8.5'};
+    // Use top hazard of primary asset
+    var topHzName = (pa.prof.top_hazards && pa.prof.top_hazards[0]) || 'Heat Stress';
+    var datasets = ssps.map(function(s) {
+      return {
+        label: sspLabels[s],
+        data: trendYears.map(function(yr) {
+          var p = assessHazards(pa.meta.region||'global', pa.meta.lat||null, pa.meta.lon||null, s, yr);
+          var hz = p.hazards.find(function(h){return h.h===topHzName;});
+          return hz ? +hz.sev.toFixed(2) : 0;
+        }),
+        borderColor: sspColors[s], backgroundColor: sspColors[s]+'22',
+        tension: 0.4, fill: false, pointRadius: 3, borderWidth: 2
+      };
+    });
+    var tBox = document.getElementById('phys-trend-box');
+    var tTitle = document.getElementById('phys-trend-title');
+    if (tBox) { tBox.style.display='block'; }
+    if (tTitle) tTitle.textContent = (HZ_ICONS[topHzName]||'') + ' ' + topHzName + ' Severity Trend 2026–2070 · ' + (pa.meta.asset||'Primary Asset') + ' · All SSP Scenarios';
+    mk('hazTrendC', {
+      type:'line',
+      data:{ labels: trendYears, datasets: datasets },
+      options: mkOpts(function(v){return v+'/5';})
+    });
+  }
+
   // Show detail for first asset by default
   if (assetProfiles.length) showAssetDetailFromProf(assetProfiles[0]);
 }
@@ -3766,6 +3799,32 @@ function _hz_fire(r,ssp,yr){var prone=WILDFIRE_SET.has(r),base=prone?2.8:1.0,w=r
 function _hz_cyc(r,ssp,yr,isc){if(!CYCLONE_SET.has(r)||!isc)return{h:'Cyclone',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'Outside cyclone belt',applicable:false};var bP={'AU-QLD':0.12,'AU-WA':0.08,'AU-NT':0.10,'IN-MH':0.06,'ID-KI':0.04,'BR-PA':0.03,'US-TX':0.10,'ZA':0.04}[r]||0.05,w=regW(ssp,yr,r),ic=1+CYC_INT*w/100,p=Math.min(0.40,bP*(1-0.03*w)),sev=Math.min(5,3*ic),ls=Math.min(0.50,sev*0.06*bP*10),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),i3=1+CYC_INT*w3/100,i5=1+CYC_INT*w5/100;return{h:'Cyclone',sev:sev,prob:p,loss:ls,t30:Math.min(5,3*i3),t50:Math.min(5,3*i5),src:'IBTRACS v4 + IPCC AR6 Ch11.7',note:'Cat3+ p '+bP.toFixed(2)+'; int +'+((ic-1)*100).toFixed(1)+'%',applicable:true};}
 function _hz_drt(r,ssp,yr){var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).dr,w=regW(ssp,yr,r),dm=1+w*0.22+w*w*0.04,sev=Math.min(5,bl*dm),p=Math.min(0.80,sev/5*0.30),ls=Math.min(0.25,Math.max(0,(sev-2)*0.030)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),d3=1+w3*0.22+w3*w3*0.04,d5=1+w5*0.22+w5*w5*0.04;return{h:'Drought',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*d3),t50:Math.min(5,bl*d5),src:'WRI Aqueduct 4.0 + IPCC AR6 Ch11.6',note:'Drought mult '+dm.toFixed(2)+'× at '+w.toFixed(2)+'°C',applicable:true};}
 function _hz_wat(r,ssp,yr){var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).ws,w=regW(ssp,yr,r),sm=1+w*0.15,sev=Math.min(5,bl*sm),p=Math.min(0.95,sev/5*0.55),ls=Math.min(0.20,Math.max(0,(sev-2.5)*0.025)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);return{h:'Water Stress',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*(1+w3*0.15)),t50:Math.min(5,bl*(1+w5*0.15)),src:'WRI Aqueduct 4.0 + IPCC AR6 WG2 Ch4',note:'Baseline '+bl.toFixed(1)+'/5; mult '+sm.toFixed(2)+'×',applicable:true};}
+/* Seismic hazard — static (not climate-driven); based on USGS/GEM Global Seismic Hazard Atlas
+   Severity is a fixed baseline by seismic zone; t30/t50 unchanged (not climate-sensitive) */
+var _SEISMIC_ZONE = {
+  'JP':4.5,'PH':4.3,'TR':4.2,'ID-KI':4.0,'NZ':4.2,'CL':4.4,'PE':3.8,'MX':3.5,
+  'IT':3.2,'GR':3.5,'RO':2.8,'CN':3.0,'IN-MH':2.5,'TH':2.0,'VN':1.8,'KR':1.8,
+  'US-CA':3.8,'US-NW':3.2,'US-TX':1.5,'US-NY':1.2,'US-FL':0.8,
+  'IR':3.5,'PK':3.2,'AF':3.8,'NP':3.5,'TW':4.0,'AR':3.0,'CO':2.8,'EC':3.5,
+  'AU-QLD':1.2,'AU-NSW':1.0,'AU-SA':0.8,'ZA':1.2,'NG':0.8,'ET':1.5,'EG':1.8,
+  'SA':1.5,'AE':0.8,'YE':2.0,'DE':0.9,'FR':1.0,'ES':1.5,'PT':2.0,
+  'NL':0.5,'BE':0.6,'GB-ENG':0.5,'PL':0.5,'SG':0.4,'BR-PA':0.8,'global':1.0
+};
+function _hz_seismic(r,lat,lon){
+  var sev=_SEISMIC_ZONE[r]||_SEISMIC_ZONE.global;
+  /* GPS-based refinement: boost near known fault zones */
+  if(lat!=null&&lon!=null){
+    /* Circum-Pacific ring of fire proximity boost */
+    if((lon>100&&lon<180&&lat>-50&&lat<60)||(lon<-60&&lon>-80&&lat<15)) sev=Math.min(5,sev*1.15);
+    /* Alpine-Himalayan belt */
+    if(lat>20&&lat<50&&lon>-10&&lon<130&&sev>1) sev=Math.min(5,sev*1.10);
+  }
+  var prob=Math.min(0.80,0.02+sev*0.04);
+  var loss=Math.min(0.30,Math.max(0,(sev-1.5)*0.04));
+  return{h:'Seismic / Earthquake',sev:sev,prob:prob,loss:loss,t30:sev,t50:sev,
+    src:'USGS/GEM Global Seismic Hazard Atlas 2023',
+    note:'Seismic zone '+sev.toFixed(1)+'/5 (not climate-sensitive)',applicable:sev>0.3};
+}
 
 // Main engine: assess all 10 hazards for an asset location
 // GPS path (lat/lon provided): full site-specific physics applied
@@ -3807,6 +3866,7 @@ function assessHazards(region, lat, lon, ssp, year) {
     _hz_cyc(region,ssp,year,siteIsc),
     _hz_drt(region,ssp,year),
     _hz_wat(region,ssp,year),
+    _hz_seismic(region,lat,lon),
   ];
 
   /* ── GPS modifier pipeline ── */
@@ -7245,7 +7305,7 @@ function _xlInjectToEngine() {
     if (prev) prev.remove();
     var opt  = document.createElement('option');
     opt.value = '_xl_import';
-    opt.textContent = '★ ' + name + ' (Excel)';
+    opt.textContent = '★ ' + name;
     opt.style.fontWeight = 'bold';
     sel.insertBefore(opt, sel.firstChild);
     sel.value = '_xl_import';
