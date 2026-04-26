@@ -2994,7 +2994,7 @@ function renderOv() {
 }
 
 /* ── PHYSICAL ───────────────────────────────────── */
-var HZ_ICONS = {'Heat Stress':'🌡','Riverine Flood':'🌊','Coastal Flood':'🏖','Sea Level Rise':'📈','Saltwater Intrusion':'🧂','Landslide':'⛰','Wildfire':'🔥','Cyclone':'🌀','Drought':'☀','Water Stress':'💧'};
+var HZ_ICONS = {'Heat Stress':'🌡','Riverine Flood':'🌊','Coastal Flood':'🏖','Sea Level Rise':'📈','Saltwater Intrusion':'🧂','Landslide':'⛰','Wildfire':'🔥','Cyclone':'🌀','Drought':'☀','Water Stress':'💧','Seismic / Earthquake':'⚠️'};
 var SEV_COL = function(s){return s>=3.5?'#b91c1c':s>=2.5?'#b45309':s>=1.5?'#ca8a04':'#16a34a';};
 var SEV_LBL = function(s){return s>=3.5?'High':s>=2.5?'Elevated':s>=1.5?'Moderate':'Low';};
 
@@ -5690,6 +5690,7 @@ var HZ_ACCENT = {
   'Cyclone':            '#8b5cf6',
   'Drought':            '#f59e0b',
   'Water Stress':       '#14b8a6',
+  'Seismic / Earthquake': '#78716c',
 };
 
 /* Dispatch single hazard computation */
@@ -5707,6 +5708,7 @@ function computeHzScore(region, hzType, ssp, year) {
     case 'Cyclone':             return _hz_cyc(region,ssp,year,isc);
     case 'Drought':             return _hz_drt(region,ssp,year);
     case 'Water Stress':        return _hz_wat(region,ssp,year);
+    case 'Seismic / Earthquake': return _hz_seismic(region, (typeof _hpm!=='undefined'?_hpm.lat:null), (typeof _hpm!=='undefined'?_hpm.lon:null));
     default: return {applicable:false,sev:0,prob:0,loss:0,src:'N/A',note:'Unknown hazard'};
   }
 }
@@ -6541,6 +6543,7 @@ var _REC_DB = {
   'Cyclone':       {icon:'🌀',actions:['Structural engineering audit and upgrade to current wind code (Category 5)','Install storm shutters / impact-resistant glazing on all structures','Develop and test emergency shutdown procedure (<2h pre-landfall)','Backup power generation with 7-day fuel supply','Review business interruption and property damage insurance limits','Anchor or remove all unsecured equipment before cyclone season']},
   'Drought':       {icon:'☀',actions:['Install closed-loop water recycling systems (target: 60–80% recycle rate)','Identify alternative water sources (groundwater licence, treated wastewater)','Conduct water efficiency audit — identify top 5 consumption points','Modify process chemistry to reduce water intensity by 20–40%','Negotiate priority water allocation with local authority']},
   'Water Stress':  {icon:'💧',actions:['Deploy IoT water metering across all process streams','Invest in zero-liquid discharge (ZLD) technology for key operations','Establish water balance model and monthly monitoring KPIs','Source dual water supply from different catchments','Include water risk clauses in long-term supply contracts']},
+  'Seismic / Earthquake': {icon:'⚠️',actions:['Commission site-specific seismic hazard assessment (PSHA) for all high-value assets','Retrofit critical structures to local seismic design codes (Eurocode 8 / ASCE 7)','Install early-warning sensors and automatic process shutdown systems','Maintain earthquake emergency response plan and conduct annual drills','Review and update business interruption insurance for seismic exposure']},
   'Landslide':     {icon:'⛰',actions:['Commission slope stability assessment for all assets on terrain >15°','Install inclinometers and pore pressure sensors on high-risk slopes','Construct debris barriers and retaining walls at critical locations','Establish slope monitoring schedule with automatic movement alerts','Review road/rail access routes for landslide exposure']},
   'Sea Level Rise':{icon:'📈',actions:['Commission coastal elevation survey and 2050/2070 inundation modelling','Design infrastructure setback of ≥50m from current coastline','Plan asset elevation or relocation for long-life infrastructure','Install saltwater intrusion monitoring in groundwater bores','Engage long-term asset retirement planning for sub-1m elevation assets']},
   'Saltwater Intrusion':{icon:'🧂',actions:['Install groundwater monitoring network with salinity sensors','Seal or decommission compromised bores; source alternative potable water','Apply cathodic protection to below-ground metallic infrastructure','Treat process water with reverse osmosis or ion exchange systems','Modify concrete mix specifications to sulfate-resistant type']},
