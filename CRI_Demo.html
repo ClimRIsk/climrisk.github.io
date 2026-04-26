@@ -5370,29 +5370,30 @@ function renderReport() {
 
   // ── Transition Timeline ───────────────────────
   var trYears = [2026,2028,2030,2032,2034,2036,2038,2040,2042,2044,2046,2048,2050];
-  var trCompanies = Object.keys(COS);
+  var _trCos = (window.D && window.D.companies) ? window.D.companies : COS;
+  var _trCo  = _trCos[co()];
   var trDatasets = [];
-  trCompanies.forEach(function(cid) {
-    var co = COS[cid];
-    ['nze_2050','current_policies'].forEach(function(runKey) {
-      var run = co.runs[runKey];
+  if (_trCo && _trCo.runs) {
+    var _trScColors = { nze_2050:'#16a34a', delayed_transition:'#b45309', current_policies:'#b91c1c' };
+    ['nze_2050','delayed_transition','current_policies'].forEach(function(runKey) {
+      var run = _trCo.runs[runKey];
       if (!run) return;
       var data = trYears.map(function(yr) {
         var yd = run.years.find(function(y){return y.year===yr;});
         return yd && yd.ebitda > 0 ? Math.round(yd.carbon_cost/yd.ebitda*100*10)/10 : null;
       });
       trDatasets.push({
-        label: co.name.split(' ')[0]+' '+run.label,
+        label: run.label,
         data: data,
-        borderColor: runKey==='nze_2050' ? CC[cid] : CC[cid]+'88',
-        backgroundColor: 'transparent',
+        borderColor: _trScColors[runKey]||'#555',
+        backgroundColor: (_trScColors[runKey]||'#555')+'22',
         tension: 0.4, fill: false,
-        borderDash: runKey==='nze_2050' ? [] : [5,4],
-        borderWidth: runKey==='nze_2050' ? 2 : 1.5,
+        borderDash: runKey==='current_policies' ? [5,4] : [],
+        borderWidth: runKey==='nze_2050' ? 2.5 : 1.5,
         pointRadius: 2,
       });
     });
-  });
+  }
   kill('rptTransC');
   charts['rptTransC'] = new Chart(el('rptTransC'), {
     type: 'line',
@@ -5409,28 +5410,28 @@ function renderReport() {
   });
 
   // ── Climate-at-Risk (CaR) Panel ───────────────
-  var carRows = Object.keys(COS).map(function(cid) {
-    var co = COS[cid];
-    var coAssets = assets.filter(function(a){return a.cid===cid;});
-    var physM = coAssets.reduce(function(s,a){return s+a.physLossM;},0);
+  var _carCos = (window.D && window.D.companies) ? window.D.companies : COS;
+  var _carCo  = _carCos[co()];
+  var carRows = _carCo ? (function() {
+    var coAssets = assets; // _rptAllAssets already filtered to current company
+    var physM  = coAssets.reduce(function(s,a){return s+a.physLossM;},0);
     var transM = coAssets.reduce(function(s,a){return s+a.transCostM;},0);
-    var totalCarM = physM + transM;
-    // EV impact proxy: discount CaR over remaining 25yr @ 10%  ~  CaR / 0.10 / 1B
-    var evImpactB = (totalCarM / 1000 / 0.10);
-    var evNze = co.runs['nze_2050'] ? co.runs['nze_2050'].ev : 0;
-    var evCp  = co.runs['current_policies'] ? co.runs['current_policies'].ev : 0;
+    var totalCarMRow = physM + transM;
+    var evImpactB = totalCarMRow / 1000 / 0.10;
+    var evNze = _carCo.runs['nze_2050'] ? _carCo.runs['nze_2050'].ev : 0;
+    var evCp  = _carCo.runs['current_policies'] ? _carCo.runs['current_policies'].ev : 0;
     var evDelta = evCp - evNze;
-    return '<tr>'+
-      '<td><strong>'+co.name+'</strong></td>'+
+    return ['<tr>'+
+      '<td><strong>'+_carCo.name+'</strong></td>'+
       '<td class="r">$'+physM.toFixed(0)+'M/yr</td>'+
       '<td class="a">$'+transM.toFixed(0)+'M/yr</td>'+
-      '<td style="font-weight:700">$'+totalCarM.toFixed(0)+'M/yr</td>'+
+      '<td style="font-weight:700">$'+totalCarMRow.toFixed(0)+'M/yr</td>'+
       '<td style="color:#b91c1c;font-weight:700">$'+evImpactB.toFixed(1)+'B</td>'+
       '<td class="r">$'+evDelta.toFixed(1)+'B</td>'+
       '<td style="font-size:11px;color:var(--muted)">'+
         (coAssets.filter(function(a){return a.physScore>=35;}).length)+'/'+coAssets.length+' elevated+</td>'+
-    '</tr>';
-  });
+    '</tr>'];
+  })() : [];
   el('rpt-car-body').innerHTML =
     '<div class="note" style="margin-bottom:12px"><strong>Methodology</strong><span>'+
     'Physical CaR quantified in dollars per asset across all applicable hazards, capitalised to portfolio EV impact. '+
@@ -7132,7 +7133,16 @@ function _xlInjectToEngine() {
   if (!xd.assets || !xd.assets.length) return;
 
   var xCo   = xd.company || {};
-  var name   = xCo.name   || 'Imported Company';
+  // Resolve company name: try parsed fields, then filename-based fallback, then default
+  var _rawName = xCo.name;
+  if (!_rawName && _xlState && _xlState.filename) {
+    _rawName = _xlState.filename
+      .replace(/\.[^.]+$/, '')           // strip extension
+      .replace(/[_\-\.]+/g, ' ')         // underscores/dashes → spaces
+      .replace(/\s+/g, ' ').trim()
+      .split(' ').slice(0, 3).join(' '); // take first 3 words
+  }
+  var name   = _rawName || 'Imported Company';
   var sector = xCo.sector || 'Other';
   var rev    = ((+xCo.revM)    || 1000) / 1e3;   // $M → $B
   var ebitda = ((+xCo.ebitdaM) || rev * 400) / 1e3;
@@ -7478,7 +7488,9 @@ async function _xlProcessFile(file) {
       var _rawWacc = +(rawCo['WACC (%)'] || rawCo['WACC'] || rawCo['wacc'] || rawCo['waccPct'] || 0);
       var _waccPct = _rawWacc > 0 && _rawWacc < 1 ? _rawWacc * 100 : (_rawWacc || 9);
       _xlState.data.company = {
-        name:     rawCo['Company Name'] || rawCo['name'] || rawCo['Company'] || rawCo['Organisation'] || '',
+        name:     rawCo['Company Name'] || rawCo['name'] || rawCo['Company'] || rawCo['Organisation'] ||
+                  rawCo['Organisation Name'] || rawCo['Legal Name'] || rawCo['Entity'] || rawCo['Entity Name'] ||
+                  rawCo['Corporate Name'] || rawCo['Client'] || rawCo['Client Name'] || rawCo['Issuer'] || rawCo['Issuer Name'] || '',
         sector:   rawCo['Sector'] || rawCo['sector'] || rawCo['Industry'] || rawCo['industry'] || 'Chemicals',
         revM:     +(rawCo['Annual Revenue (USD M)'] || rawCo['Revenue (USD M)'] || rawCo['Revenue'] || rawCo['revM'] || rawCo['Revenues'] || 0),
         ebitdaM:  +(rawCo['EBITDA (USD M)'] || rawCo['EBITDA'] || rawCo['ebitdaM'] || rawCo['Adjusted EBITDA'] || 0),
