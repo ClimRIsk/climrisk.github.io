@@ -5745,7 +5745,19 @@ function renderReport() {
     return;
   }
 
-  var assets = _rptAllAssets(ssp, year);
+  // Clear any previous error banner
+  var _errBanner = document.getElementById('rpt-error-banner');
+  if (_errBanner) _errBanner.remove();
+
+  var assets;
+  try {
+    assets = _rptAllAssets(ssp, year);
+  } catch(e) {
+    console.error('[renderReport] _rptAllAssets threw:', e);
+    assets = [];
+  }
+  // Defensive: ensure assets is always an array
+  if (!Array.isArray(assets)) assets = [];
 
   var c = gc();
 
@@ -5771,209 +5783,244 @@ function renderReport() {
       highRisk>2?'#b91c1c':'#b45309', Math.min(totalCaR/8000*100, 100));
 
   // ── Scatter Matrix ───────────────────────────
-  var scatterData = assets.map(function(a) {
-    return {
-      x: a.physScore,
-      y: +a.transPct.toFixed(2),
-      r: Math.max(5, Math.sqrt(a.cv/1000)*3.5),
-      label: a.assetName,
-    };
-  });
-  var scatterColors = assets.map(function(a){
-    return a.physScore >= 50 ? '#b91c1c' : a.physScore >= 35 ? '#b45309' : a.physScore >= 20 ? '#ca8a04' : '#16a34a';
-  });
-  kill('rptMatrixC');
-  charts['rptMatrixC'] = new Chart(el('rptMatrixC'), {
-    type: 'bubble',
-    data: { datasets: [{
-      label: 'Assets',
-      data: scatterData,
-      backgroundColor: scatterColors.map(function(c){ return c+'88'; }),
-      borderColor: scatterColors,
-      borderWidth: 2,
-    }]},
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: function(ctx) {
-              var d = ctx.raw;
-              return d.label + ' | Phys: '+d.x.toFixed(1)+' | Trans: '+d.y.toFixed(2)+'%';
+  try {
+    var scatterData = assets.map(function(a) {
+      var tp = (typeof a.transPct === 'number' && isFinite(a.transPct)) ? a.transPct : 0;
+      var ps = (typeof a.physScore === 'number' && isFinite(a.physScore)) ? a.physScore : 0;
+      var cv = (typeof a.cv === 'number' && isFinite(a.cv) && a.cv > 0) ? a.cv : 0;
+      return {
+        x: ps,
+        y: +tp.toFixed(2),
+        r: Math.max(5, Math.sqrt(cv/1000)*3.5),
+        label: a.assetName || '—',
+      };
+    });
+    var scatterColors = assets.map(function(a){
+      var ps = (typeof a.physScore === 'number') ? a.physScore : 0;
+      return ps >= 50 ? '#b91c1c' : ps >= 35 ? '#b45309' : ps >= 20 ? '#ca8a04' : '#16a34a';
+    });
+    kill('rptMatrixC');
+    var _scCanvas = el('rptMatrixC');
+    if (_scCanvas) {
+      charts['rptMatrixC'] = new Chart(_scCanvas, {
+        type: 'bubble',
+        data: { datasets: [{
+          label: 'Assets',
+          data: scatterData,
+          backgroundColor: scatterColors.map(function(c){ return c+'88'; }),
+          borderColor: scatterColors,
+          borderWidth: 2,
+        }]},
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(ctx) {
+                  var d = ctx.raw;
+                  return (d.label||'') + ' | Phys: '+d.x.toFixed(1)+' | Trans: '+d.y.toFixed(2)+'%';
+                }
+              }
+            }
+          },
+          scales: {
+            x: {
+              min: 0, max: 100,
+              title: { display: true, text: 'Physical Risk Score (0–100)', color: c.tick, font:{size:11} },
+              ticks: { color: c.tick, font:{size:10} }, grid: { color: c.grid }
+            },
+            y: {
+              min: 0,
+              title: { display: true, text: 'Transition Risk (Carbon Cost % of Revenue)', color: c.tick, font:{size:11} },
+              ticks: { color: c.tick, font:{size:10}, callback: function(v){ return v+'%'; } },
+              grid: { color: c.grid }
             }
           }
         }
-      },
-      scales: {
-        x: {
-          min: 0, max: 100,
-          title: { display: true, text: 'Physical Risk Score (0–100)', color: c.tick, font:{size:11} },
-          ticks: { color: c.tick, font:{size:10} }, grid: { color: c.grid }
-        },
-        y: {
-          min: 0,
-          title: { display: true, text: 'Transition Risk (Carbon Cost % of Revenue)', color: c.tick, font:{size:11} },
-          ticks: { color: c.tick, font:{size:10}, callback: function(v){ return v+'%'; } },
-          grid: { color: c.grid }
-        }
-      }
+      });
     }
-  });
+  } catch(e) { console.error('[renderReport] Scatter Matrix failed:', e); }
 
   // ── Financial Exposure Bars ──────────────────
-  var maxCombined = Math.max.apply(null, assets.map(function(a){return a.combinedM;})) || 1;
-  var finHtml = assets.map(function(a) {
-    var pw = (a.physLossM / maxCombined * 100).toFixed(1);
-    var tw = (a.transCostM / maxCombined * 100).toFixed(1);
-    var shortName = a.assetName.replace(/\(.*?\)/,'').trim().substring(0,26);
-    return '<div class="fin-bar-row">'+
-      '<div class="fb-label" title="'+a.assetName+'">'+shortName+'</div>'+
-      '<div class="fb-track">'+
-        '<div class="fb-phys" style="width:'+pw+'%" title="Physical: $'+a.physLossM.toFixed(0)+'M"></div>'+
-        '<div class="fb-trans" style="width:'+tw+'%" title="Carbon: $'+a.transCostM.toFixed(0)+'M"></div>'+
-      '</div>'+
-      '<div class="fb-val">$'+a.combinedM.toFixed(0)+'M</div>'+
-    '</div>';
-  }).join('');
-  el('rpt-finbars').innerHTML = finHtml;
+  try {
+    var maxCombined = (assets.length > 0 ? Math.max.apply(null, assets.map(function(a){return a.combinedM||0;})) : 0) || 1;
+    var finHtml = assets.map(function(a) {
+      var pw = ((a.physLossM||0) / maxCombined * 100).toFixed(1);
+      var tw = ((a.transCostM||0) / maxCombined * 100).toFixed(1);
+      var aName = a.assetName || '—';
+      var shortName = aName.replace(/\(.*?\)/,'').trim().substring(0,26);
+      return '<div class="fin-bar-row">'+
+        '<div class="fb-label" title="'+aName+'">'+shortName+'</div>'+
+        '<div class="fb-track">'+
+          '<div class="fb-phys" style="width:'+pw+'%" title="Physical: $'+(a.physLossM||0).toFixed(0)+'M"></div>'+
+          '<div class="fb-trans" style="width:'+tw+'%" title="Carbon: $'+(a.transCostM||0).toFixed(0)+'M"></div>'+
+        '</div>'+
+        '<div class="fb-val">$'+(a.combinedM||0).toFixed(0)+'M</div>'+
+      '</div>';
+    }).join('');
+    if (el('rpt-finbars')) el('rpt-finbars').innerHTML = finHtml || '<div style="color:var(--muted);padding:8px">No asset exposure data available.</div>';
+  } catch(e) { console.error('[renderReport] Financial bars failed:', e); }
 
   // ── Assets at Risk Table ─────────────────────
-  el('rpt-tbl-lbl').textContent = ssp.toUpperCase() + ' · ' + year;
+  try { if(el('rpt-tbl-lbl')) el('rpt-tbl-lbl').textContent = ssp.toUpperCase() + ' · ' + year; } catch(e){}
+  try {
   var rows = assets.map(function(a, i) {
-    var riskCls = a.physScore>=50?'at-risk-high':a.physScore>=35?'at-risk-elev':a.physScore>=20?'at-risk-mod':'at-risk-low';
-    var riskLbl = a.physScore>=50?'High':a.physScore>=35?'Elevated':a.physScore>=20?'Moderate':'Low';
-    var topHzTags = a.topHazards.slice(0,2).map(function(h){return (HZ_ICONS[h]||'')+h;}).join(', ');
-    var cvAtRisk = (a.physLossM + a.transCostM).toFixed(0);
-    var carPct   = a.cv > 0 ? ((a.physLossM+a.transCostM)/a.cv*100).toFixed(2) : '0.00';
+    var ps = a.physScore||0;
+    var riskCls = ps>=50?'at-risk-high':ps>=35?'at-risk-elev':ps>=20?'at-risk-mod':'at-risk-low';
+    var riskLbl = ps>=50?'High':ps>=35?'Elevated':ps>=20?'Moderate':'Low';
+    var topHazards = Array.isArray(a.topHazards) ? a.topHazards : [];
+    var topHzTags = topHazards.slice(0,2).map(function(h){return (HZ_ICONS[h]||'')+h;}).join(', ');
+    var cvAtRisk = ((a.physLossM||0) + (a.transCostM||0)).toFixed(0);
+    var cv = a.cv || 0;
+    var carPct = cv > 0 ? (((a.physLossM||0)+(a.transCostM||0))/cv*100).toFixed(2) : '0.00';
+    var warming = (typeof a.warming === 'number') ? a.warming.toFixed(2) : '—';
     return '<tr>'+
       '<td><span class="risk-rank '+riskCls+'">'+( i+1)+'</span></td>'+
-      '<td><strong>'+a.assetName+'</strong><br><span style="font-size:10px;color:var(--muted)">'+a.company+'</span></td>'+
-      '<td style="font-size:11px">'+a.region+'<br><span style="color:var(--subtle)">'+a.commodity+'</span></td>'+
-      '<td><span style="font-weight:700;color:'+(a.physScore>=50?'#b91c1c':a.physScore>=35?'#b45309':a.physScore>=20?'#ca8a04':'#16a34a')+'">'+riskLbl+'</span><br><span style="font-size:11px;color:var(--muted)">'+a.physScore.toFixed(0)+'/100</span></td>'+
-      '<td style="font-size:11px">'+(a.physLoss*100).toFixed(2)+'%/yr</td>'+
-      '<td style="font-size:11px">$'+a.cv.toLocaleString()+'M</td>'+
-      '<td class="r" style="font-weight:600">$'+a.physLossM.toFixed(0)+'M</td>'+
-      '<td class="a" style="font-weight:600">$'+a.transCostM.toFixed(0)+'M</td>'+
+      '<td><strong>'+(a.assetName||'—')+'</strong><br><span style="font-size:10px;color:var(--muted)">'+(a.company||'')+'</span></td>'+
+      '<td style="font-size:11px">'+(a.region||'—')+'<br><span style="color:var(--subtle)">'+(a.commodity||'')+'</span></td>'+
+      '<td><span style="font-weight:700;color:'+(ps>=50?'#b91c1c':ps>=35?'#b45309':ps>=20?'#ca8a04':'#16a34a')+'">'+riskLbl+'</span><br><span style="font-size:11px;color:var(--muted)">'+ps.toFixed(0)+'/100</span></td>'+
+      '<td style="font-size:11px">'+((a.physLoss||0)*100).toFixed(2)+'%/yr</td>'+
+      '<td style="font-size:11px">$'+cv.toLocaleString()+'M</td>'+
+      '<td class="r" style="font-weight:600">$'+(a.physLossM||0).toFixed(0)+'M</td>'+
+      '<td class="a" style="font-weight:600">$'+(a.transCostM||0).toFixed(0)+'M</td>'+
       '<td style="font-weight:700;color:'+(+carPct>1.5?'#b91c1c':+carPct>0.5?'#b45309':'#16a34a')+'">$'+cvAtRisk+'M<br><span style="font-size:10px;font-weight:400;color:var(--muted)">'+carPct+'% of CV</span></td>'+
       '<td style="font-size:10px;color:var(--subtle)">'+topHzTags+'</td>'+
-      '<td style="font-size:11px;color:var(--muted)">'+a.warming.toFixed(2)+'°C</td>'+
+      '<td style="font-size:11px;color:var(--muted)">'+warming+'°C</td>'+
     '</tr>';
   }).join('');
-  el('rpt-table').innerHTML =
+  if (el('rpt-table')) el('rpt-table').innerHTML =
     '<table><thead><tr>'+
     '<th>#</th><th>Asset</th><th>Region</th><th>Risk Level</th>'+
     '<th>Ann. Loss</th><th>Carrying Value</th>'+
     '<th>Physical at Risk</th><th>Carbon Cost</th>'+
     '<th>Combined CaR</th><th>Top Hazards</th><th>Warming</th>'+
     '</tr></thead><tbody>'+rows+'</tbody></table>';
+  } catch(e) { console.error('[renderReport] Asset table failed:', e); }
 
   // ── Trajectory Chart 2026→2070 ───────────────
-  var trajYears = [2026,2030,2035,2040,2045,2050,2060,2070];
-  // Show top 5 by combined risk
-  var topAssets = assets.slice(0, 5);
-  var trajColors = ['#b91c1c','#2563eb','#b45309','#16a34a','#7c3aed'];
-  var trajDatasets = topAssets.map(function(a, i) {
-    var data = trajYears.map(function(yr) {
-      var p = assessHazards(a.region, a.lat||null, a.lon||null, ssp, yr);
-      return Math.round(p.annual_loss_pct * 10000) / 100;
+  try {
+    var trajYears = [2026,2030,2035,2040,2045,2050,2060,2070];
+    var topAssets = assets.slice(0, 5);
+    var trajColors = ['#b91c1c','#2563eb','#b45309','#16a34a','#7c3aed'];
+    var trajDatasets = topAssets.map(function(a, i) {
+      var data = trajYears.map(function(yr) {
+        try {
+          var p = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, yr);
+          return Math.round((p.annual_loss_pct||0) * 10000) / 100;
+        } catch(e2) { return 0; }
+      });
+      return {
+        label: (a.assetName||'Asset').split(' ').slice(0,3).join(' '),
+        data: data,
+        borderColor: trajColors[i], backgroundColor: trajColors[i]+'22',
+        tension: 0.4, fill: false, pointRadius: 3, borderWidth: 2,
+      };
     });
-    return {
-      label: a.assetName.split(' ').slice(0,3).join(' '),
-      data: data,
-      borderColor: trajColors[i], backgroundColor: trajColors[i]+'22',
-      tension: 0.4, fill: false, pointRadius: 3, borderWidth: 2,
-    };
-  });
-  kill('rptTrajC');
-  charts['rptTrajC'] = new Chart(el('rptTrajC'), {
-    type: 'line',
-    data: { labels: trajYears, datasets: trajDatasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position:'bottom', labels:{ color:c.tick, font:{size:10}, boxWidth:12, padding:8 }} },
-      scales: {
-        x: { ticks:{color:c.tick,font:{size:10}}, grid:{color:c.grid} },
-        y: { title:{display:true,text:'Annual Production Loss %',color:c.tick,font:{size:10}},
-             ticks:{color:c.tick,font:{size:10},callback:function(v){return v+'%';}}, grid:{color:c.grid} }
-      }
+    kill('rptTrajC');
+    var _trajCanvas = el('rptTrajC');
+    if (_trajCanvas) {
+      charts['rptTrajC'] = new Chart(_trajCanvas, {
+        type: 'line',
+        data: { labels: trajYears, datasets: trajDatasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position:'bottom', labels:{ color:c.tick, font:{size:10}, boxWidth:12, padding:8 }} },
+          scales: {
+            x: { ticks:{color:c.tick,font:{size:10}}, grid:{color:c.grid} },
+            y: { title:{display:true,text:'Annual Production Loss %',color:c.tick,font:{size:10}},
+                 ticks:{color:c.tick,font:{size:10},callback:function(v){return v+'%';}}, grid:{color:c.grid} }
+          }
+        }
+      });
     }
-  });
+  } catch(e) { console.error('[renderReport] Trajectory chart failed:', e); }
 
   // ── Hazard Breakdown Stacked Bar ─────────────
-  var HZ_NAMES = ['Heat Stress','Riverine Flood','Coastal Flood','Sea Level Rise','Saltwater Intrusion',
-                  'Landslide','Wildfire','Cyclone','Drought','Water Stress'];
-  var HZ_COLS  = ['#ef4444','#3b82f6','#06b6d4','#0ea5e9','#6366f1',
-                  '#78716c','#f97316','#8b5cf6','#f59e0b','#14b8a6'];
-  var hazLabels = assets.slice(0,8).map(function(a){ return a.assetName.split(' ').slice(0,2).join(' '); });
-  var hazDatasets = HZ_NAMES.map(function(hzName, hi) {
-    return {
-      label: (HZ_ICONS[hzName]||'')+' '+hzName,
-      data: assets.slice(0,8).map(function(a) {
-        var h = a.hazards.find(function(x){ return x.h === hzName; });
-        return h && h.applicable ? Math.round(h.sev*100)/100 : 0;
-      }),
-      backgroundColor: HZ_COLS[hi]+'99',
-      borderColor: HZ_COLS[hi],
-      borderWidth: 1,
-    };
-  });
-  kill('rptHazC');
-  charts['rptHazC'] = new Chart(el('rptHazC'), {
-    type: 'bar',
-    data: { labels: hazLabels, datasets: hazDatasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend: { position:'bottom', labels:{color:c.tick,font:{size:9},boxWidth:10,padding:6}} },
-      scales: {
-        x: { stacked:true, ticks:{color:c.tick,font:{size:9}}, grid:{color:c.grid} },
-        y: { stacked:true, max:20,
-             title:{display:true,text:'Cumulative Severity',color:c.tick,font:{size:10}},
-             ticks:{color:c.tick,font:{size:10}}, grid:{color:c.grid} }
-      }
+  try {
+    var HZ_NAMES = ['Heat Stress','Riverine Flood','Coastal Flood','Sea Level Rise','Saltwater Intrusion',
+                    'Landslide','Wildfire','Cyclone','Drought','Water Stress'];
+    var HZ_COLS  = ['#ef4444','#3b82f6','#06b6d4','#0ea5e9','#6366f1',
+                    '#78716c','#f97316','#8b5cf6','#f59e0b','#14b8a6'];
+    var hazLabels = assets.slice(0,8).map(function(a){ return (a.assetName||'Asset').split(' ').slice(0,2).join(' '); });
+    var hazDatasets = HZ_NAMES.map(function(hzName, hi) {
+      return {
+        label: (HZ_ICONS[hzName]||'')+' '+hzName,
+        data: assets.slice(0,8).map(function(a) {
+          var hazards = Array.isArray(a.hazards) ? a.hazards : [];
+          var h = hazards.find(function(x){ return x.h === hzName; });
+          return h && h.applicable ? Math.round((h.sev||0)*100)/100 : 0;
+        }),
+        backgroundColor: HZ_COLS[hi]+'99',
+        borderColor: HZ_COLS[hi],
+        borderWidth: 1,
+      };
+    });
+    kill('rptHazC');
+    var _hazCanvas = el('rptHazC');
+    if (_hazCanvas) {
+      charts['rptHazC'] = new Chart(_hazCanvas, {
+        type: 'bar',
+        data: { labels: hazLabels, datasets: hazDatasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position:'bottom', labels:{color:c.tick,font:{size:9},boxWidth:10,padding:6}} },
+          scales: {
+            x: { stacked:true, ticks:{color:c.tick,font:{size:9}}, grid:{color:c.grid} },
+            y: { stacked:true, max:20,
+                 title:{display:true,text:'Cumulative Severity',color:c.tick,font:{size:10}},
+                 ticks:{color:c.tick,font:{size:10}}, grid:{color:c.grid} }
+          }
+        }
+      });
     }
-  });
+  } catch(e) { console.error('[renderReport] Hazard chart failed:', e); }
 
   // ── Transition Timeline ───────────────────────
-  var trYears = [2026,2028,2030,2032,2034,2036,2038,2040,2042,2044,2046,2048,2050];
-  var _trCos = (window.D && window.D.companies) ? window.D.companies : COS;
-  var _trCo  = _trCos[co()];
-  var trDatasets = [];
-  if (_trCo && _trCo.runs) {
-    var _trScColors = { nze_2050:'#16a34a', delayed_transition:'#b45309', current_policies:'#b91c1c' };
-    ['nze_2050','delayed_transition','current_policies'].forEach(function(runKey) {
-      var run = _trCo.runs[runKey];
-      if (!run) return;
-      var data = trYears.map(function(yr) {
-        var yd = run.years.find(function(y){return y.year===yr;});
-        return yd && yd.ebitda > 0 ? Math.round(yd.carbon_cost/yd.ebitda*100*10)/10 : null;
+  try {
+    var trYears = [2026,2028,2030,2032,2034,2036,2038,2040,2042,2044,2046,2048,2050];
+    var _trCos = (window.D && window.D.companies) ? window.D.companies : COS;
+    var _trCo  = _trCos[co()];
+    var trDatasets = [];
+    if (_trCo && _trCo.runs) {
+      var _trScColors = { nze_2050:'#16a34a', delayed_transition:'#b45309', current_policies:'#b91c1c' };
+      ['nze_2050','delayed_transition','current_policies'].forEach(function(runKey) {
+        var run = _trCo.runs[runKey];
+        if (!run) return;
+        var data = trYears.map(function(yr) {
+          var yd = run.years && run.years.find(function(y){return y.year===yr;});
+          return yd && yd.ebitda > 0 ? Math.round(yd.carbon_cost/yd.ebitda*100*10)/10 : null;
+        });
+        trDatasets.push({
+          label: run.label,
+          data: data,
+          borderColor: _trScColors[runKey]||'#555',
+          backgroundColor: (_trScColors[runKey]||'#555')+'22',
+          tension: 0.4, fill: false,
+          borderDash: runKey==='current_policies' ? [5,4] : [],
+          borderWidth: runKey==='nze_2050' ? 2.5 : 1.5,
+          pointRadius: 2,
+        });
       });
-      trDatasets.push({
-        label: run.label,
-        data: data,
-        borderColor: _trScColors[runKey]||'#555',
-        backgroundColor: (_trScColors[runKey]||'#555')+'22',
-        tension: 0.4, fill: false,
-        borderDash: runKey==='current_policies' ? [5,4] : [],
-        borderWidth: runKey==='nze_2050' ? 2.5 : 1.5,
-        pointRadius: 2,
-      });
-    });
-  }
-  kill('rptTransC');
-  charts['rptTransC'] = new Chart(el('rptTransC'), {
-    type: 'line',
-    data: { labels: trYears, datasets: trDatasets },
-    options: {
-      responsive: true, maintainAspectRatio: false,
-      plugins: { legend:{ position:'bottom', labels:{color:c.tick,font:{size:10},boxWidth:12,padding:8} } },
-      scales: {
-        x: { ticks:{color:c.tick,font:{size:10}}, grid:{color:c.grid} },
-        y: { title:{display:true,text:'Carbon Cost / EBITDA (%)',color:c.tick,font:{size:10}},
-             ticks:{color:c.tick,font:{size:10},callback:function(v){return v+'%';}}, grid:{color:c.grid} }
-      }
     }
-  });
+    kill('rptTransC');
+    var _transCanvas = el('rptTransC');
+    if (_transCanvas) {
+      charts['rptTransC'] = new Chart(_transCanvas, {
+        type: 'line',
+        data: { labels: trYears, datasets: trDatasets },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend:{ position:'bottom', labels:{color:c.tick,font:{size:10},boxWidth:12,padding:8} } },
+          scales: {
+            x: { ticks:{color:c.tick,font:{size:10}}, grid:{color:c.grid} },
+            y: { title:{display:true,text:'Carbon Cost / EBITDA (%)',color:c.tick,font:{size:10}},
+                 ticks:{color:c.tick,font:{size:10},callback:function(v){return v+'%';}}, grid:{color:c.grid} }
+          }
+        }
+      });
+    }
+  } catch(e) { console.error('[renderReport] Transition chart failed:', e); }
 
   // ── Climate-at-Risk (CaR) Panel ───────────────
   var _carCos = (window.D && window.D.companies) ? window.D.companies : COS;
@@ -6047,6 +6094,16 @@ function renderReport() {
 
   // ── Custom events section ─────────────────────
   renderCustomEventsSection(assets);
+
+  // Force all report charts to resize in case they were initially rendered
+  // while the panel was hidden (display:none → zero-dimension canvas issue)
+  setTimeout(function() {
+    ['rptMatrixC','rptTrajC','rptHazC','rptTransC'].forEach(function(id) {
+      if (charts[id] && typeof charts[id].resize === 'function') {
+        try { charts[id].resize(); } catch(e){}
+      }
+    });
+  }, 50);
 }
 
 function renderAssetDamageSection() {
@@ -7009,7 +7066,7 @@ function _gatherReportHTML() {
       pctEV:pctEV, evImpact:evImpact,
       riskLevel:riskLevel, riskCol:riskCol, avgScore:+avgScore.toFixed(1),
       asmts:asmts, heatRows:heatRows, hzNames:hzNames,
-      scmpRows:scmpRows, sspKeys:sspKeys, sspLabel:sspLabel, sspColor:sspColor,
+      scmpRows:scmpRows, sspKeys:sspKeys, sspLabelMap:sspLabel, sspColor:sspColor,
       tYears:tYears, tData:tData, topHz:topHz,
       finLbls:finLbls, finEBIT:finEBIT, finCarb:finCarb,
       dmgDatasets:dmgDatasets, assetLabels:asmts.map(function(a){return a.name.substring(0,25);}),
@@ -7315,22 +7372,30 @@ function _buildReportHTML(d) {
   var _brdHasMap  = _brdMapAssets.length > 0;
 
   /* Chart.js data payload embedded in downloaded HTML */
-  var chartPayload = JSON.stringify({
-    tYears:d.tYears, tData:d.tData, topHz:d.topHz,
-    sspKeys:d.sspKeys, sspLabel:d.sspLabel, sspColor:d.sspColor,
-    finLbls:d.finLbls, finEBIT:d.finEBIT, finCarb:d.finCarb,
-    assetLabels:d.assetLabels, dmgDatasets:d.dmgDatasets,
-    scLabels:d.sc.map(function(s){return s.name.substring(0,22);}),
-    scBase:d.sc.map(function(s){return +(+s.spendM||0).toFixed(0)*1;}),
-    scUplift:d.sc.map(function(s){return +((+(s.riskAdjSpend||0))-(+(s.spendM||0))).toFixed(0);}),
-    recLabels:d.recs.map(function(r){return (r.icon+' '+r.category).substring(0,30);}),
-    recSaving:d.recs.map(function(r){return r.savingM;}),
-    recCols:d.recs.map(function(r){return r.col;}),
-    scmpLabels:d.scmpRows.map(function(r){return r.label;}),
-    scmpPhys:d.scmpRows.map(function(r){return r.physM;}),
-    scmpTrans:d.scmpRows.map(function(r){return +(r.transB*1000).toFixed(0);}),
-    scmpCols:d.scmpRows.map(function(r){return r.color;})
-  });
+  // Use sspLabelMap (the full {ssp126:'SSP1-2.6',...} map) for chart legend lookups
+  // Use d.sspLabel (single string for current SSP) for headings
+  var chartPayload;
+  try {
+    chartPayload = JSON.stringify({
+      tYears:d.tYears, tData:d.tData, topHz:d.topHz,
+      sspKeys:d.sspKeys, sspLabel:d.sspLabelMap||d.sspLabel, sspColor:d.sspColor,
+      finLbls:d.finLbls, finEBIT:d.finEBIT, finCarb:d.finCarb,
+      assetLabels:d.assetLabels, dmgDatasets:d.dmgDatasets,
+      scLabels:(d.sc||[]).map(function(s){return (s.name||'').substring(0,22);}),
+      scBase:(d.sc||[]).map(function(s){return +(+s.spendM||0).toFixed(0)*1;}),
+      scUplift:(d.sc||[]).map(function(s){return +((+(s.riskAdjSpend||0))-(+(s.spendM||0))).toFixed(0);}),
+      recLabels:(d.recs||[]).map(function(r){return ((r.icon||'')+' '+(r.category||'')).substring(0,30);}),
+      recSaving:(d.recs||[]).map(function(r){return r.savingM||0;}),
+      recCols:(d.recs||[]).map(function(r){return r.col||'#888';}),
+      scmpLabels:(d.scmpRows||[]).map(function(r){return r.label||'';}),
+      scmpPhys:(d.scmpRows||[]).map(function(r){return r.physM||0;}),
+      scmpTrans:(d.scmpRows||[]).map(function(r){return +(( r.transB||0)*1000).toFixed(0);}),
+      scmpCols:(d.scmpRows||[]).map(function(r){return r.color||'#888';})
+    });
+  } catch(jsonErr) {
+    console.warn('[_buildReportHTML] chartPayload JSON.stringify failed:', jsonErr);
+    chartPayload = 'null';
+  }
 
   return '<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>CRI Climate Risk Report — '+d.coName+' '+d.year+'</title>\n'+
 '<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"><\/script>\n'+
@@ -7585,6 +7650,7 @@ roadmapHtml+
 /* Inline Chart.js initialisation */
 '<script>\nvar _cd = '+chartPayload+';\n'+
 'document.addEventListener("DOMContentLoaded",function(){\n'+
+'  if(!_cd){console.warn("CRI: chart payload missing — charts will not render");return;}\n'+
 '  var gc = {grid:"#e5e7eb",tick:"#6b7280"};\n'+
 '  var mkOpts = function(yFmt,stacked){\n'+
 '    var o={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:gc.tick,font:{size:10}}}},scales:{x:{ticks:{color:gc.tick,font:{size:10}},grid:{color:gc.grid}},y:{ticks:{color:gc.tick,font:{size:10},callback:yFmt},grid:{color:gc.grid}}}};\n'+
