@@ -717,12 +717,38 @@ footer{
   .do-body{grid-template-columns:1fr}
   .do-metrics{grid-template-columns:1fr 1fr}
 }
+/* Mobile hamburger */
+.nav-mobile-toggle{
+  display:none;width:36px;height:36px;border-radius:8px;
+  background:var(--surf2);border:1px solid var(--border);
+  cursor:pointer;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+}
+.nav-mobile-toggle span{width:16px;height:1.5px;background:var(--text);border-radius:2px;transition:all .2s}
+.nav-mobile-menu{
+  position:fixed;top:60px;left:0;right:0;z-index:199;
+  background:var(--nav-bg);backdrop-filter:blur(20px) saturate(180%);
+  border-bottom:1px solid var(--border);
+  padding:8px 24px 16px;
+  display:none;flex-direction:column;gap:0;
+  transform:translateY(-8px);opacity:0;
+  transition:opacity .2s,transform .2s;
+}
+.nav-mobile-menu.open{display:flex;transform:translateY(0);opacity:1}
+.nav-mobile-menu a{
+  padding:13px 4px;font-size:15px;color:var(--muted);font-weight:600;
+  border-bottom:1px solid var(--border);transition:color .15s;
+}
+.nav-mobile-menu a:last-child{border-bottom:none}
+.nav-mobile-menu a:hover{color:var(--green)}
+
 @media(max-width:600px){
   .nav-links{display:none}
+  .nav-mobile-toggle{display:flex}
   .hero-stats{grid-template-columns:1fr 1fr}
   .footer-grid{grid-template-columns:1fr}
   .cta-form{flex-direction:column}
   .do-metrics{grid-template-columns:1fr}
+  .price-card.featured{order:-1}
 }
 </style>
 </head>
@@ -752,9 +778,20 @@ footer{
     <div class="nav-right">
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode" id="themeBtn">🌙</button>
       <button class="nav-cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try Free Demo</button>
+      <button class="nav-mobile-toggle" onclick="toggleMobileNav()" id="mobileToggle" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
 </nav>
+<div class="nav-mobile-menu" id="mobileMenu">
+  <a href="#engine"     onclick="closeMobileNav()">Engine</a>
+  <a href="#demo"       onclick="closeMobileNav()">Free Demo</a>
+  <a href="#about"      onclick="closeMobileNav()">About</a>
+  <a href="#regulatory" onclick="closeMobileNav()">Regulatory</a>
+  <a href="#pricing"    onclick="closeMobileNav()">Pricing</a>
+  <a href="#contact"    onclick="closeMobileNav()">Contact</a>
+</div>
 
 <!-- ══════════════════ HERO ══════════════════════ -->
 <section class="hero">
@@ -1232,6 +1269,10 @@ footer{
               <div class="tm-name">Shrinivash Dhamodhara Kannan</div>
               <div class="tm-role">Founder &amp; Lead Analyst</div>
               <div class="tm-bio">Climate financial risk modelling, enterprise DCF, and regulatory disclosure strategy. Built CRI from a conviction that institutional-quality climate analysis should be accessible to all enterprises navigating the net-zero transition.</div>
+              <a href="https://www.linkedin.com/in/shrinivash-dhamodhara-kannan" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:5px;margin-top:7px;font-size:11px;font-weight:700;color:var(--blue);text-decoration:none;letter-spacing:.03em">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                Connect on LinkedIn
+              </a>
             </div>
           </div>
           <div class="team-member">
@@ -1318,7 +1359,14 @@ footer{
 
     <div class="pricing-stage-banner fade-up">
       <div class="psb-icon">🧪</div>
-      <div class="psb-text"><strong>Pilot engagement phase — Q2 2026.</strong> We are currently accepting a limited number of pilot clients. This means you get bespoke analysis delivered directly by our team, built specifically for your portfolio — with full transparency into methodology and assumptions. SaaS self-serve platform is on our roadmap for late 2026.</div>
+      <div class="psb-text"><strong>Pilot engagement phase — Q2/Q3 2026.</strong> We are currently accepting a limited number of pilot clients. This means you get bespoke analysis delivered directly by our team, built specifically for your portfolio — with full transparency into methodology and assumptions. SaaS self-serve platform is on our roadmap for late 2026.</div>
+    </div>
+    <div class="fade-up" style="display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:28px;flex-wrap:wrap">
+      <div style="display:inline-flex;align-items:center;gap:7px;padding:8px 16px;background:#fef3c7;border:1.5px solid #fde68a;border-radius:100px;font-size:12px;font-weight:800;color:var(--amber);letter-spacing:.04em">
+        <span style="width:8px;height:8px;border-radius:50%;background:var(--amber);animation:blink 1.5s ease infinite;display:inline-block"></span>
+        ⚡ PILOT PRICING — Limited spots at these rates
+      </div>
+      <div style="font-size:12px;color:var(--subtle)">Standard SaaS pricing will be higher at general release</div>
     </div>
 
     <div class="pricing-grid">
@@ -1343,10 +1391,11 @@ footer{
 
       <!-- Standard Report -->
       <div class="price-card featured fade-up stagger-1">
-        <div class="price-badge">Most Requested</div>
+        <div class="price-badge">⭐ Most Requested</div>
         <div class="price-tier">Standard Report</div>
         <div class="price-amount"><sup>$</sup>3,500</div>
         <div class="price-cadence">Per company · one-off engagement</div>
+        <div style="font-size:11px;color:var(--subtle);margin-bottom:2px;text-decoration:line-through">Comparable legacy platforms: $15,000–40,000</div>
         <div class="price-type">Bespoke delivery</div>
         <div class="price-divider"></div>
         <div class="price-features">
@@ -1392,15 +1441,25 @@ footer{
 
 <!-- ══════════════════ CTA / CONTACT ════════════ -->
 <div class="cta-section" id="contact">
-  <div class="cta-inner">
+  <div class="cta-inner" style="max-width:720px">
     <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:12px">Get in touch</p>
     <h2 style="color:#fff">Ready to quantify<br>your climate exposure?</h2>
-    <p>Tell us your company name and what you need. We'll respond within one business day with a scoping outline and indicative quote.</p>
-    <form class="cta-form" onsubmit="ctaSubmit(event)">
-      <input class="cta-input" type="email" id="cta-email" placeholder="your@company.com" required>
-      <button type="submit" class="cta-btn">Get in touch →</button>
+    <p>Tell us about your organisation. We respond within one business day with a scoping outline and indicative quote.</p>
+    <form class="cta-form-expanded" onsubmit="ctaSubmit(event)" style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:680px;margin:0 auto 12px;text-align:left">
+      <input class="cta-input" type="text" id="cta-name" placeholder="Your name" required style="border-radius:10px;padding:14px 16px;border:none;font-size:14px;outline:none;background:#fff;color:#1a1a2a;grid-column:1/2">
+      <input class="cta-input" type="text" id="cta-company" placeholder="Company / organisation" required style="border-radius:10px;padding:14px 16px;border:none;font-size:14px;outline:none;background:#fff;color:#1a1a2a;grid-column:2/3">
+      <input class="cta-input" type="email" id="cta-email" placeholder="your@company.com" required style="border-radius:10px;padding:14px 16px;border:none;font-size:14px;outline:none;background:#fff;color:#1a1a2a;grid-column:1/3">
+      <select id="cta-interest" style="border-radius:10px;padding:14px 16px;border:none;font-size:14px;outline:none;background:#fff;color:#6b7280;grid-column:1/2;cursor:pointer">
+        <option value="">I'm interested in…</option>
+        <option value="Standard Report ($3,500)">Standard Report ($3,500)</option>
+        <option value="Advisory Retainer ($2,500/mo)">Advisory Retainer ($2,500/mo)</option>
+        <option value="Partnership / Collaboration">Partnership / Collaboration</option>
+        <option value="Just exploring">Just exploring</option>
+      </select>
+      <textarea id="cta-message" placeholder="Brief context (sector, number of assets, regulatory driver…)" rows="2" style="border-radius:10px;padding:14px 16px;border:none;font-size:14px;outline:none;background:#fff;color:#1a1a2a;resize:none;grid-column:2/3;font-family:inherit"></textarea>
+      <button type="submit" class="cta-btn" style="grid-column:1/3;padding:15px;font-size:15px">Request a Scoping Call →</button>
     </form>
-    <p class="cta-note" id="cta-note">No spam · We respond within 1 business day</p>
+    <p class="cta-note" id="cta-note">No spam · We respond within 1 business day · Or reach us directly at <strong style="color:rgba(255,255,255,.9)">contact@climrisk.io</strong></p>
   </div>
 </div>
 
@@ -1470,6 +1529,23 @@ function toggleTheme() {
   localStorage.setItem('climrisk-theme', next);
   document.getElementById('themeBtn').textContent = next === 'dark' ? '☀️' : '🌙';
 }
+
+/* ── MOBILE NAV ─────────────────────────────────── */
+function toggleMobileNav() {
+  var menu = document.getElementById('mobileMenu');
+  menu.classList.toggle('open');
+}
+function closeMobileNav() {
+  document.getElementById('mobileMenu').classList.remove('open');
+}
+// Close mobile nav when clicking outside
+document.addEventListener('click', function(e) {
+  var menu   = document.getElementById('mobileMenu');
+  var toggle = document.getElementById('mobileToggle');
+  if (menu && menu.classList.contains('open') && !menu.contains(e.target) && !toggle.contains(e.target)) {
+    menu.classList.remove('open');
+  }
+});
 
 /* ── COMPARE CARD TABS ──────────────────────────── */
 function showTab(tab) {
@@ -1718,14 +1794,26 @@ function el(id) { return document.getElementById(id); }
 /* ── CTA FORM ───────────────────────────────────── */
 function ctaSubmit(e) {
   e.preventDefault();
-  var email = document.getElementById('cta-email').value;
+  var name     = (document.getElementById('cta-name')     ||{}).value || '';
+  var company  = (document.getElementById('cta-company')  ||{}).value || '';
+  var email    = (document.getElementById('cta-email')    ||{}).value || '';
+  var interest = (document.getElementById('cta-interest') ||{}).value || '';
+  var message  = (document.getElementById('cta-message')  ||{}).value || '';
+  var body = 'Name: ' + name
+    + '\nCompany: ' + company
+    + '\nEmail: ' + email
+    + '\nInterest: ' + (interest || 'Not specified')
+    + '\n\nMessage:\n' + (message || '(none)')
+    + '\n\n---\nSent via climrisk.io contact form';
   var a = document.createElement('a');
   a.href = 'mailto:contact@climrisk.io?subject='
-    + encodeURIComponent('ClimRisk enquiry from ' + email)
-    + '&body=' + encodeURIComponent('Hello ClimRisk,\n\nI would like to learn more about your climate risk analysis services.\n\nMy email: ' + email);
+    + encodeURIComponent('ClimRisk enquiry — ' + (company || name || email))
+    + '&body=' + encodeURIComponent(body);
   a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  document.getElementById('cta-note').innerHTML = '✅ <strong style="color:#fff">Thanks!</strong> We\'ll be in touch within 1 business day.';
-  document.getElementById('cta-email').value = '';
+  document.getElementById('cta-note').innerHTML = '✅ <strong style="color:#fff">Thanks, ' + (name.split(' ')[0]||'') + '!</strong> We\'ll respond within 1 business day.';
+  ['cta-name','cta-company','cta-email','cta-message'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
 }
 
 /* ── SCROLL FADE-IN ─────────────────────────────── */
