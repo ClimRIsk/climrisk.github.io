@@ -7383,7 +7383,10 @@ function _buildReportHTML(d) {
       topSev:(a.top&&a.top[0]?+a.top[0].sev.toFixed(1):0),
       gps:!!a.gps, lat:(lat||null), lon:(lon||null) };
   }).filter(function(a){ return a.lat && a.lon; });
-  var _brdMapJson = JSON.stringify(_brdMapAssets);
+  // safeJs: escape script-close sequences so JSON embedded in <script> blocks
+  // is safe for the HTML parser — no comment needed about what sequence it matches.
+  function _safeJs(s){ return s.replace(/<\//g, '<\\/'); }
+  var _brdMapJson = _safeJs(JSON.stringify(_brdMapAssets));
   var _brdHasMap  = _brdMapAssets.length > 0;
 
   /* Chart.js data payload embedded in downloaded HTML */
@@ -7407,8 +7410,7 @@ function _buildReportHTML(d) {
       scmpTrans:(d.scmpRows||[]).map(function(r){return +(( r.transB||0)*1000).toFixed(0);}),
       scmpCols:(d.scmpRows||[]).map(function(r){return r.color||'#888';})
     });
-    // Escape <\/ so script-close sequences in data don't break the downloaded report.
-    chartPayload = chartPayload.replace(/<\//g, '<\\/');
+    chartPayload = _safeJs(chartPayload);
   } catch(jsonErr) {
     console.warn('[_buildReportHTML] chartPayload JSON.stringify failed:', jsonErr);
     chartPayload = 'null';
