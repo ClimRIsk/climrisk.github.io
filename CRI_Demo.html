@@ -5440,7 +5440,8 @@ var RATINGS = {
     delete D.hazards[id];
     delete RATINGS[id];
   });
-  delete CO_REV26.shell; delete CO_REV26.bhp; delete CO_REV26.rio_tinto;
+  // Note: CO_REV26 is defined further down the file; the delete calls were removed
+  // to prevent a script-halting crash that blocked _rpt and all code below.
 })();
 
 var TIER_DATA = [
