@@ -6959,12 +6959,26 @@ function generateFullReport() {
 function generateFullReportNewTab() {
   var html = _gatherReportHTML();
   if (!html) return;
-  var w = window.open('', '_blank');
-  if (!w) { toast('⚠ Pop-up blocked — allow pop-ups in your browser settings, or use Download button'); return; }
-  w.document.open();
-  w.document.write(html);
-  w.document.close();
-  toast('📄 Report opened — press Ctrl+S / ⌘S inside that tab to save the file');
+  // Use Blob URL instead of document.write — avoids Chrome SyntaxError when the
+  // HTML content contains </script> closing tags (which document.write misparses).
+  try {
+    var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
+    var url  = URL.createObjectURL(blob);
+    var w    = window.open(url, '_blank');
+    if (!w) { toast('⚠ Pop-up blocked — allow pop-ups in your browser settings, or use Download button'); return; }
+    // Revoke the object URL after 60 s (tab already loaded the document by then)
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 60000);
+    toast('📄 Report opened — press Ctrl+S / ⌘S inside that tab to save the file');
+  } catch(e) {
+    console.error('[generateFullReportNewTab] Blob open failed, falling back to download:', e);
+    // Fallback: trigger download instead
+    var blob2 = new Blob([html], {type: 'text/html;charset=utf-8'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob2);
+    a.download = 'CRI_Climate_Risk_Report.html';
+    a.click();
+    toast('📄 Report downloaded');
+  }
 }
 
 /* Shared report-build helper (used by both download and new-tab paths) */
