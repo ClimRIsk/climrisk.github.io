@@ -5286,7 +5286,16 @@ function buildAndLoadResults() {
     }
   };
   // Real SSP-driven hazard assessment for each asset (all 10 hazards)
-  D.hazards[co_id] = wizAssets.map(function(a) {
+  // If no assets were added in the wizard, synthesise a corporate HQ asset so the
+  // Risk Report and scatter matrix always have at least one data point to render.
+  var _wizHazSource = wizAssets.length > 0 ? wizAssets : [{
+    name: name + ' (HQ)',
+    region: (el('i-hq') && el('i-hq').value) || 'global',
+    lat: null, lon: null,
+    commodity: sector,
+    production: 0, unit: ''
+  }];
+  D.hazards[co_id] = _wizHazSource.map(function(a) {
     var r = a.region || 'global';
     var prof2030 = assessHazards(r, a.lat, a.lon, 'ssp370', 2030);
     var prof2050 = assessHazards(r, a.lat, a.lon, 'ssp370', 2050);
@@ -5314,6 +5323,9 @@ function buildAndLoadResults() {
       _prof2050: prof2050,
     };
   });
+
+  // Safety net: ensure D.hazards[co_id] is always a valid array
+  if (!Array.isArray(D.hazards[co_id])) D.hazards[co_id] = [];
 
   // ── Build dynamic CRI Rating for this wizard company ──────────────────────
   (function() {
@@ -5646,7 +5658,26 @@ function _rptAllAssets(ssp, year) {
   var _haz = (window.D && window.D.hazards)   || HAZ;
   var coObj = _cos[cid];
   var hasList = _haz[cid];
-  if (!coObj || !hasList || !hasList.length) return list;
+  if (!coObj) return list;
+  // If hazard list is missing or empty, synthesise a corporate HQ entry so
+  // the scatter matrix and exposure bars always have something to render.
+  if (!hasList || !hasList.length) {
+    hasList = [{
+      asset:           (coObj.name || 'HQ') + ' (Corporate HQ)',
+      region:          'global',
+      lat:             null,
+      lon:             null,
+      commodity:       coObj.sector || 'Other',
+      cv:              0,
+      loss_2030_pct:   0,
+      loss_2050_pct:   0,
+      score:           0,
+      annual_loss_pct: 0,
+      top_hazards:     [],
+      top:             [],
+      hazard_breakdown:{},
+    }];
+  }
 
   // Pick SSP-proxied transition run
   var sspRun = coObj.runs['current_policies'];
@@ -7665,7 +7696,6 @@ function _xlGetData() {
    ─────────────────────────────────────────────────────────────────────────── */
 function _xlInjectToEngine() {
   var xd = _xlGetData();
-  if (!xd.assets || !xd.assets.length) return;
 
   var xCo   = xd.company || {};
   // Resolve company name: try parsed fields, then filename-based fallback, then default
@@ -7748,7 +7778,20 @@ function _xlInjectToEngine() {
   };
 
   // ── Run full hazard assessment on every imported asset ──────────────────
-  D.hazards[co_id] = xd.assets.map(function(a) {
+  // If the Excel file had no Assets sheet (or it was empty), synthesise a single
+  // corporate HQ asset so the Risk Report scatter matrix and exposure bars
+  // always have at least one data point to render.
+  var _xlHazSource = (xd.assets && xd.assets.length > 0) ? xd.assets : [{
+    assetName: name + ' (HQ)',
+    name:      name + ' (HQ)',
+    region:    'global',
+    lat:       null,
+    lon:       null,
+    sector:    sector,
+    commodity: sector,
+    cvM:       0
+  }];
+  D.hazards[co_id] = _xlHazSource.map(function(a) {
     var lat = a.lat || null;
     var lon = a.lon || null;
     // Derive region from lat/lon when not explicitly provided
@@ -7807,6 +7850,10 @@ function _xlInjectToEngine() {
       _prof2050:        p50,
     };
   });
+
+  // Safety net: ensure D.hazards[co_id] is always a valid array even if
+  // the mapping above threw an error that was swallowed by an outer try-catch.
+  if (!Array.isArray(D.hazards[co_id])) D.hazards[co_id] = [];
 
   // ── Build CRI Rating ────────────────────────────────────────────────────
   var hList    = D.hazards[co_id];
