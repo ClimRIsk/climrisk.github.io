@@ -7671,33 +7671,41 @@ roadmapHtml+
 '</div>\n'+
 /* Inline Chart.js initialisation */
 '<script>\ntry{var _cd=JSON.parse(decodeURIComponent(escape(atob("'+chartPayloadB64+'"))));}catch(e){var _cd=null;}\n'+
-'document.addEventListener("DOMContentLoaded",function(){\n'+
+'function _initRptCharts(){\n'+
+'  if(typeof Chart==="undefined"){setTimeout(_initRptCharts,120);return;}\n'+
 '  if(!_cd){console.warn("CRI: chart payload missing — charts will not render");return;}\n'+
-'  var gc = {grid:"#e5e7eb",tick:"#6b7280"};\n'+
-'  var mkOpts = function(yFmt,stacked){\n'+
+'  var gc={grid:"#e5e7eb",tick:"#6b7280"};\n'+
+'  var mkOpts=function(yFmt,stacked){\n'+
 '    var o={responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:gc.tick,font:{size:10}}}},scales:{x:{ticks:{color:gc.tick,font:{size:10}},grid:{color:gc.grid}},y:{ticks:{color:gc.tick,font:{size:10},callback:yFmt},grid:{color:gc.grid}}}};\n'+
 '    if(stacked){o.scales.x.stacked=true;o.scales.y.stacked=true;}\n'+
 '    return o;\n'+
 '  };\n'+
 '  /* Trend chart */\n'+
 '  var tc=document.getElementById("trendChart");\n'+
-'  if(tc){new Chart(tc,{type:"line",data:{labels:_cd.tYears,datasets:_cd.sspKeys.map(function(sk){return {label:_cd.sspLabel[sk],data:_cd.tData[sk]||[],borderColor:_cd.sspColor[sk],backgroundColor:"transparent",tension:0.3,borderWidth:2,pointRadius:3};})},options:mkOpts(function(v){return v+"/5";})});}\n'+
+'  try{if(tc){new Chart(tc,{type:"line",data:{labels:_cd.tYears||[],datasets:(_cd.sspKeys||[]).map(function(sk){return{label:(_cd.sspLabel||{})[sk]||sk,data:(_cd.tData||{})[sk]||[],borderColor:(_cd.sspColor||{})[sk]||"#888",backgroundColor:"transparent",tension:0.3,borderWidth:2,pointRadius:3};})},options:mkOpts(function(v){return v+"/5";})});}}\n'+
+'  catch(e){console.warn("CRI trendChart:",e);}\n'+
 '  /* Fin chart */\n'+
 '  var fc=document.getElementById("finChart");\n'+
-'  if(fc){new Chart(fc,{type:"bar",data:{labels:_cd.finLbls,datasets:[{label:"EBITDA $B",data:_cd.finEBIT,backgroundColor:"#2563eb88",yAxisID:"y"},{label:"Carbon Cost $B",data:_cd.finCarb,backgroundColor:"#b9530988",yAxisID:"y2",type:"line",borderColor:"#b45309",tension:0.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:gc.tick,font:{size:10}}}},scales:{x:{ticks:{color:gc.tick},grid:{color:gc.grid}},y:{ticks:{color:gc.tick,callback:function(v){return "$"+v+"B"}},grid:{color:gc.grid}},y2:{position:"right",ticks:{color:"#b45309",callback:function(v){return "$"+v+"B"}},grid:{display:false}}}}});}\n'+
+'  try{if(fc){new Chart(fc,{type:"bar",data:{labels:_cd.finLbls||[],datasets:[{label:"EBITDA $B",data:_cd.finEBIT||[],backgroundColor:"#2563eb88",yAxisID:"y"},{label:"Carbon Cost $B",data:_cd.finCarb||[],backgroundColor:"#b9530988",yAxisID:"y2",type:"line",borderColor:"#b45309",tension:0.3,pointRadius:3}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:gc.tick,font:{size:10}}}},scales:{x:{ticks:{color:gc.tick},grid:{color:gc.grid}},y:{ticks:{color:gc.tick,callback:function(v){return "$"+v+"B"}},grid:{color:gc.grid}},y2:{position:"right",ticks:{color:"#b45309",callback:function(v){return "$"+v+"B"}},grid:{display:false}}}}});}}\n'+
+'  catch(e){console.warn("CRI finChart:",e);}\n'+
 '  /* Damage chart */\n'+
 '  var dc=document.getElementById("dmgChart");\n'+
-'  if(dc){new Chart(dc,{type:"bar",data:{labels:_cd.assetLabels,datasets:_cd.dmgDatasets},options:mkOpts(function(v){return "$"+v+"M";},true)});}\n'+
+'  try{if(dc&&_cd.dmgDatasets&&_cd.dmgDatasets.length){new Chart(dc,{type:"bar",data:{labels:_cd.assetLabels||[],datasets:_cd.dmgDatasets},options:mkOpts(function(v){return "$"+v+"M";},true)});}}\n'+
+'  catch(e){console.warn("CRI dmgChart:",e);}\n'+
 '  /* Scenario comparison chart */\n'+
 '  var sc2=document.getElementById("scmpChart");\n'+
-'  if(sc2){new Chart(sc2,{type:"bar",data:{labels:_cd.scmpLabels,datasets:[{label:"Physical CaR $M",data:_cd.scmpPhys,backgroundColor:_cd.scmpCols.map(function(c){return c+"88";})},{label:"Transition CaR $M",data:_cd.scmpTrans,backgroundColor:_cd.scmpCols.map(function(c){return c+"44";})}]},options:mkOpts(function(v){return "$"+v+"M";},true)});}\n'+
+'  try{if(sc2){new Chart(sc2,{type:"bar",data:{labels:_cd.scmpLabels||[],datasets:[{label:"Physical CaR $M",data:_cd.scmpPhys||[],backgroundColor:(_cd.scmpCols||[]).map(function(c){return c+"88";}),borderRadius:3},{label:"Transition CaR $M",data:_cd.scmpTrans||[],backgroundColor:(_cd.scmpCols||[]).map(function(c){return c+"44";}),borderRadius:3}]},options:mkOpts(function(v){return "$"+v+"M";},true)});}}\n'+
+'  catch(e){console.warn("CRI scmpChart:",e);}\n'+
 '  /* Supply chain chart */\n'+
 '  var scc=document.getElementById("scChart");\n'+
-'  if(scc&&_cd.scLabels.length){new Chart(scc,{type:"bar",data:{labels:_cd.scLabels,datasets:[{label:"Base Spend $M",data:_cd.scBase,backgroundColor:"#2563eb88"},{label:"Risk Uplift $M",data:_cd.scUplift,backgroundColor:"#b4530988"}]},options:mkOpts(function(v){return "$"+v+"M";},true)});}\n'+
+'  try{if(scc&&(_cd.scLabels||[]).length){new Chart(scc,{type:"bar",data:{labels:_cd.scLabels,datasets:[{label:"Base Spend $M",data:_cd.scBase||[],backgroundColor:"#2563eb88"},{label:"Risk Uplift $M",data:_cd.scUplift||[],backgroundColor:"#b4530988"}]},options:mkOpts(function(v){return "$"+v+"M";},true)});}}\n'+
+'  catch(e){console.warn("CRI scChart:",e);}\n'+
 '  /* Recommendations chart */\n'+
 '  var rc=document.getElementById("recChart");\n'+
-'  if(rc){new Chart(rc,{type:"bar",data:{labels:_cd.recLabels,datasets:[{label:"Est. Annual Risk Saving $M",data:_cd.recSaving,backgroundColor:_cd.recCols.map(function(c){return c+"bb";})}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:gc.tick,callback:function(v){return "$"+v+"M"}},grid:{color:gc.grid}},y:{ticks:{color:gc.tick,font:{size:11}}}}}}});}\n'+
-'});\n'+
+'  try{if(rc&&(_cd.recLabels||[]).length){new Chart(rc,{type:"bar",data:{labels:_cd.recLabels,datasets:[{label:"Est. Annual Risk Saving $M",data:_cd.recSaving||[],backgroundColor:(_cd.recCols||[]).map(function(c){return c+"bb";})}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{x:{ticks:{color:gc.tick,callback:function(v){return "$"+v+"M"}},grid:{color:gc.grid}},y:{ticks:{color:gc.tick,font:{size:11}}}}}});}}\n'+
+'  catch(e){console.warn("CRI recChart:",e);}\n'+
+'}\n'+
+'if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",_initRptCharts);}else{setTimeout(_initRptCharts,80);}\n'+
 '<\/script>\n</body>\n</html>';
 }
 
