@@ -6959,8 +6959,8 @@ function generateFullReport() {
 function generateFullReportNewTab() {
   var html = _gatherReportHTML();
   if (!html) return;
-  // Use Blob URL instead of document.write — avoids Chrome SyntaxError when the
-  // HTML content contains </script> closing tags (which document.write misparses).
+  // Use Blob URL instead of document.write — avoids Chrome SyntaxError caused by
+  // script-close sequences in the generated HTML content.
   try {
     var blob = new Blob([html], {type: 'text/html;charset=utf-8'});
     var url  = URL.createObjectURL(blob);
