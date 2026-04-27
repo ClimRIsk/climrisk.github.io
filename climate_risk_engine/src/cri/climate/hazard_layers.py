@@ -51,6 +51,13 @@ from .ssp_scenarios import (
     WILDFIRE_INDEX_PCT_PER_DEG_C, CYCLONE_INTENSITY_PCT_PER_DEG_C,
     ngfs_to_ssp,
 )
+from .met_data import (
+    get_met_baseline,
+    heat_stress_baseline_multiplier,
+    precip_variability_index,
+    observed_cyclone_prob,
+    observed_drought_return,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -286,42 +293,61 @@ class AssetHazardProfile:
 def _heat_stress(region: str, ssp: SSPScenario, year: int) -> HazardScore:
     """
     Heat stress: WBGT exceedance, extreme heat days.
-    Source: NASA NEX-GDDP-CMIP6 + IPCC AR6 Ch11.
+    Sources: NASA NEX-GDDP-CMIP6 + IPCC AR6 Ch11 + WMO 1991-2020 observed normals.
+
+    Calibration: the base probability is now anchored to the observed annual
+    hot-day count from the meteorological baseline (met_data.py) rather than a
+    fixed 8%, so AU-NT (120 hot days) has a meaningfully higher baseline than
+    CA-QC (4 hot days).
     """
     baseline = WRI_BASELINE.get(region, WRI_BASELINE["global"])["heat_baseline"]
     warming = ssp.regional_warming(year, region)
     # Each °C of warming multiplies frequency of 1-in-50yr heat event
     freq_mult = HEAT_FREQ_PER_DEG_C ** warming
-    severity = min(5.0, baseline * (1 + warming * 0.35))
-    prob = min(0.95, 0.08 * freq_mult)          # base 8% annual p(damaging heat event)
+
+    # Met-calibrated base probability: anchored to observed hot-day count
+    met_mult = heat_stress_baseline_multiplier(region)  # e.g. 3.0 for AU-NT vs 0.5 for CA-QC
+    base_prob = min(0.60, 0.06 * met_mult)              # 6% × met multiplier
+    severity = min(5.0, baseline * met_mult * (1 + warming * 0.35))
+    prob = min(0.95, base_prob * freq_mult)
     loss = min(0.20, max(0.0, (severity - 2.0) * 0.025))  # labour/equipment loss
 
     # 2030 / 2050 trend
     w30 = ssp.regional_warming(2030, region)
     w50 = ssp.regional_warming(2050, region)
+    met_b = get_met_baseline(region)
 
     return HazardScore(
         hazard="heat_stress",
         annual_probability=round(prob, 4),
         severity_index=round(severity, 2),
         production_loss_pct=round(loss, 4),
-        trend_2030=round(min(5.0, baseline * (1 + w30 * 0.35)), 2),
-        trend_2050=round(min(5.0, baseline * (1 + w50 * 0.35)), 2),
-        data_source="NASA NEX-GDDP-CMIP6 + IPCC AR6 Ch11.3",
-        notes=f"Regional warming {warming:.2f}°C vs baseline; frequency multiplier {freq_mult:.2f}×",
+        trend_2030=round(min(5.0, baseline * met_mult * (1 + w30 * 0.35)), 2),
+        trend_2050=round(min(5.0, baseline * met_mult * (1 + w50 * 0.35)), 2),
+        data_source="NASA NEX-GDDP-CMIP6 + IPCC AR6 Ch11.3 + WMO 1991-2020 normals",
+        notes=(
+            f"Regional warming {warming:.2f}°C; freq mult {freq_mult:.2f}×; "
+            f"observed hot days {met_b.hot_days_above_35c:.0f}/yr; met calibration {met_mult:.2f}×"
+        ),
     )
 
 
 def _flood_riverine(region: str, ssp: SSPScenario, year: int, lulc: str) -> HazardScore:
     """
     Riverine (fluvial) flood: heavy precip + river system.
-    Source: WRI Aqueduct + IPCC AR6 Ch11.4 Clausius-Clapeyron.
+    Sources: WRI Aqueduct + IPCC AR6 Ch11.4 Clausius-Clapeyron + WMO precipitation normals.
+
+    Calibration: precip variability index from observed dry-day count amplifies
+    flood severity in regions with high precip variability (flash-flood regimes),
+    while humid equatorial regions (constant rain) show lower event severity.
     """
     baseline = WRI_BASELINE.get(region, WRI_BASELINE["global"])["riverine_flood"]
     warming = ssp.regional_warming(year, region)
     precip_change = 1 + (PRECIP_CHANGE_PCT_PER_DEG_C * warming / 100)
     runoff_mult = RUNOFF_BY_LULC.get(lulc, 1.0)
-    severity = min(5.0, baseline * precip_change * runoff_mult)
+    # Met calibration: high dry-day ratio → high variability → amplified flood peaks
+    pv_idx = precip_variability_index(region)
+    severity = min(5.0, baseline * precip_change * runoff_mult * (0.7 + 0.3 * pv_idx))
     prob = min(0.90, baseline / 5.0 * precip_change * 0.25)
     loss = min(0.25, max(0.0, (severity - 1.5) * 0.035))
 
@@ -334,10 +360,10 @@ def _flood_riverine(region: str, ssp: SSPScenario, year: int, lulc: str) -> Haza
         annual_probability=round(prob, 4),
         severity_index=round(severity, 2),
         production_loss_pct=round(loss, 4),
-        trend_2030=round(min(5.0, baseline * pc30 * runoff_mult), 2),
-        trend_2050=round(min(5.0, baseline * pc50 * runoff_mult), 2),
-        data_source="WRI Aqueduct 4.0 + IPCC AR6 Clausius-Clapeyron scaling",
-        notes=f"Precip intensity +{(precip_change-1)*100:.1f}%; runoff mult {runoff_mult:.1f}× (LULC: {lulc})",
+        trend_2030=round(min(5.0, baseline * pc30 * runoff_mult * (0.7 + 0.3 * pv_idx)), 2),
+        trend_2050=round(min(5.0, baseline * pc50 * runoff_mult * (0.7 + 0.3 * pv_idx)), 2),
+        data_source="WRI Aqueduct 4.0 + IPCC AR6 Clausius-Clapeyron + WMO precip variability",
+        notes=f"Precip intensity +{(precip_change-1)*100:.1f}%; runoff {runoff_mult:.1f}× (LULC: {lulc}); variability idx {pv_idx:.2f}",
     )
 
 
@@ -524,12 +550,16 @@ def _cyclone(region: str, ssp: SSPScenario, year: int, is_coastal: bool) -> Haza
             data_source="N/A", applicable=False,
             notes="Asset outside tropical cyclone belt or inland — not applicable",
         )
-    # Base cyclone frequency by region (annual p of Category 3+ landfall near asset)
-    base_prob = {
+    # Base cyclone frequency: blend IBTrACS historical lookup with observed met baseline
+    _ibtracs_base = {
         "AU-QLD": 0.12, "AU-WA": 0.08, "AU-NT": 0.10,
         "IN-MH": 0.06, "ID-KI": 0.04, "BR-PA": 0.03,
         "US-TX": 0.10, "ZA": 0.04,
     }.get(region, 0.05)
+    # Met baseline provides additional IBTRACS-derived probability for cross-check
+    met_cyclone_p = observed_cyclone_prob(region)
+    # Blend: 60% IBTrACS table + 40% met baseline (convergence as met data quality improves)
+    base_prob = 0.6 * _ibtracs_base + 0.4 * (met_cyclone_p if met_cyclone_p > 0 else _ibtracs_base)
     warming = ssp.regional_warming(year, region)
     intensity_change = 1 + CYCLONE_INTENSITY_PCT_PER_DEG_C * warming / 100
     # Fewer but more intense (net: frequency decreases slightly but damage up)
@@ -548,22 +578,32 @@ def _cyclone(region: str, ssp: SSPScenario, year: int, is_coastal: bool) -> Haza
         production_loss_pct=round(loss, 4),
         trend_2030=round(min(5.0, 3.0 * ic30), 2),
         trend_2050=round(min(5.0, 3.0 * ic50), 2),
-        data_source="IBTRACS v4 (historical tracks) + IPCC AR6 Ch11.7; Knutson et al. 2020",
-        notes=f"Cat3+ annual p {base_prob:.2f}; intensity +{(intensity_change-1)*100:.1f}% vs baseline",
+        data_source="IBTrACS v4 + WMO 1991-2020 observed landfall p + IPCC AR6 Ch11.7; Knutson et al. 2020",
+        notes=(
+            f"Blended base prob {base_prob:.3f} (IBTrACS {_ibtracs_base:.2f} + met obs {met_cyclone_p:.2f}); "
+            f"intensity +{(intensity_change-1)*100:.1f}% vs baseline"
+        ),
     )
 
 
 def _drought(region: str, ssp: SSPScenario, year: int) -> HazardScore:
     """
     Meteorological + hydrological drought intensity and duration.
-    Source: WRI Aqueduct (baseline) + IPCC AR6 Ch11.6 (PDSI projections).
+    Sources: WRI Aqueduct (baseline) + IPCC AR6 Ch11.6 (PDSI) + WMO observed return periods.
+
+    Calibration: the annual drought probability is anchored to the observed
+    drought return period from met baselines (e.g. CL-02 returns every 3yr
+    vs CA-QC every 12yr), giving meaningfully different event probabilities.
     """
     baseline = WRI_BASELINE.get(region, WRI_BASELINE["global"])["drought"]
     warming = ssp.regional_warming(year, region)
     # Drought intensifies non-linearly with warming (IPCC AR6 — PDSI scaling)
     drought_mult = 1 + warming * 0.22 + warming ** 2 * 0.04
     severity = min(5.0, baseline * drought_mult)
-    prob = min(0.80, severity / 5.0 * 0.30)
+    # Met-calibrated probability: inverse of observed return period
+    obs_return = observed_drought_return(region)                # years between events
+    base_drought_prob = min(0.40, 1.0 / max(obs_return, 1.0))  # e.g. 1/3 = 0.33 for CL-02
+    prob = min(0.80, base_drought_prob * drought_mult)
     loss = min(0.25, max(0.0, (severity - 2.0) * 0.030))
 
     w30 = ssp.regional_warming(2030, region); w50 = ssp.regional_warming(2050, region)
@@ -577,8 +617,11 @@ def _drought(region: str, ssp: SSPScenario, year: int) -> HazardScore:
         production_loss_pct=round(loss, 4),
         trend_2030=round(min(5.0, baseline * dm30), 2),
         trend_2050=round(min(5.0, baseline * dm50), 2),
-        data_source="WRI Aqueduct 4.0 + IPCC AR6 Ch11.6 PDSI scaling",
-        notes=f"Drought multiplier {drought_mult:.2f}× at {warming:.2f}°C regional warming",
+        data_source="WRI Aqueduct 4.0 + IPCC AR6 Ch11.6 PDSI + WMO observed return periods",
+        notes=(
+            f"Drought mult {drought_mult:.2f}× at {warming:.2f}°C; "
+            f"observed return period {obs_return:.0f}yr; base annual prob {base_drought_prob:.3f}"
+        ),
     )
 
 
@@ -640,6 +683,7 @@ class PhysicalHazardEngine:
         lat: float | None = None,
         lon: float | None = None,
         elevation_override: float | None = None,
+        _depth: int = 0,   # internal recursion guard — do NOT pass externally
     ) -> AssetHazardProfile:
         """
         Assess all hazards for one asset at one point in time.
@@ -698,29 +742,39 @@ class PhysicalHazardEngine:
         else:
             score = 0.0
 
-        # Peak 2050 loss
-        peak_profile = self.assess(
-            asset_id, asset_name, region, 2050,
-            ssp=scenario.id, lat=lat, lon=lon,
-            elevation_override=elevation_override,
-        ) if year != 2050 else None
-        peak_loss = peak_profile.annual_loss_pct if peak_profile else total_loss
-
-        # Top hazards by severity
+        # Top hazards by severity (always computed)
         top = sorted(
             [(k, v.severity_index) for k, v in hazards.items() if v.applicable and v.severity_index > 1.0],
             key=lambda x: x[1], reverse=True
         )[:3]
         top_names = [t[0].replace("_", " ").title() for t in top]
 
-        # Critical year (when cumulative loss exceeds 5%)
+        # Peak 2050 loss — only computed at top-level call to avoid recursion
+        if _depth == 0 and year != 2050:
+            peak_profile = self.assess(
+                asset_id, asset_name, region, 2050,
+                ssp=scenario.id, lat=lat, lon=lon,
+                elevation_override=elevation_override,
+                _depth=_depth + 1,
+            )
+            peak_loss = peak_profile.annual_loss_pct
+        else:
+            peak_loss = total_loss
+
+        # Critical year (when cumulative loss first exceeds 5%)
+        # Only computed at top-level to prevent recursive self-calls
         critical_year = None
-        for yr in range(year, 2051, 5):
-            p = self.assess(asset_id, asset_name, region, yr, ssp=scenario.id,
-                            lat=lat, lon=lon, elevation_override=elevation_override)
-            if p.annual_loss_pct >= 0.05:
-                critical_year = yr
-                break
+        if _depth == 0:
+            for yr in range(year, 2051, 5):
+                p = self.assess(
+                    asset_id, asset_name, region, yr,
+                    ssp=scenario.id, lat=lat, lon=lon,
+                    elevation_override=elevation_override,
+                    _depth=_depth + 1,
+                )
+                if p.annual_loss_pct >= 0.05:
+                    critical_year = yr
+                    break
 
         return AssetHazardProfile(
             asset_id=asset_id,
@@ -749,9 +803,23 @@ class PhysicalHazardEngine:
         years: list[int],
         lat: float | None = None,
         lon: float | None = None,
+        compute_critical_year: bool = False,
     ) -> dict[int, AssetHazardProfile]:
-        """Assess hazard profiles across a list of years."""
+        """
+        Assess hazard profiles across a list of years.
+
+        Args:
+            compute_critical_year: If True, compute critical_year for each year
+                (expensive — triggers extra sub-calls per year). Usually False
+                for trajectory use; call assess() directly for a single-year
+                result with full critical_year computation.
+        """
+        depth = 0 if compute_critical_year else 1
         return {
-            yr: self.assess(asset_id, asset_name, region, yr, ssp=ssp, lat=lat, lon=lon)
+            yr: self.assess(
+                asset_id, asset_name, region, yr,
+                ssp=ssp, lat=lat, lon=lon,
+                _depth=depth,
+            )
             for yr in years
         }

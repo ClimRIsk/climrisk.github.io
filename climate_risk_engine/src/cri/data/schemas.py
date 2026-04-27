@@ -266,6 +266,10 @@ class YearResult(BaseModel):
     # Breakdowns for transparency
     revenue_by_commodity: Dict[str, float] = Field(default_factory=dict)
     emissions_by_scope: Dict[str, float] = Field(default_factory=dict)
+    # Per-hazard dollar cost breakdown (USD) — populated by PhysicalHazardEngine
+    # Keys: heat_stress, flood_riverine, flood_coastal, sea_level_rise,
+    #       saltwater_intrusion, landslide, wildfire, cyclone, drought, water_stress
+    physical_loss_by_hazard: Dict[str, float] = Field(default_factory=dict)
 
 
 class RunResults(BaseModel):
