@@ -98,4 +98,5 @@ def compute_year(
             "scope_2": op.emissions_scope2,
             "scope_3": op.emissions_scope3,
         },
+        physical_loss_by_hazard=op.physical_loss_by_hazard,
     )
