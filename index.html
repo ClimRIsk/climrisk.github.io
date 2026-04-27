@@ -289,6 +289,88 @@ h1 .danger{color:var(--red)}
 @keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
 /* ════════════════════════════════════════════════
+   MANIFESTO / WHY SECTION
+   ════════════════════════════════════════════════ */
+.manifesto{
+  background:#0d1b2a;
+  padding:100px 24px;
+  position:relative;overflow:hidden;
+}
+.manifesto::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 20% 100%,rgba(56,189,248,.08),transparent),
+    radial-gradient(ellipse 50% 60% at 80% 0%,rgba(245,158,11,.06),transparent);
+  pointer-events:none;
+}
+.manifesto-inner{max-width:860px;margin:0 auto;position:relative;text-align:center}
+.manifesto-eyebrow{
+  font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;
+  color:#38bdf8;margin-bottom:20px;
+}
+.manifesto h2{
+  font-size:clamp(28px,4.5vw,52px);font-weight:900;
+  letter-spacing:-.03em;line-height:1.1;
+  color:#fff;margin-bottom:0;
+}
+.manifesto h2 em{font-style:normal;color:#38bdf8}
+.manifesto h2 .danger{color:#f59e0b}
+.manifesto-body{
+  margin-top:32px;display:flex;flex-direction:column;gap:18px;
+  text-align:left;
+}
+.manifesto-body p{
+  font-size:16px;color:rgba(255,255,255,.75);line-height:1.8;
+}
+.manifesto-body p strong{color:#fff}
+.manifesto-body p em{color:#38bdf8;font-style:normal}
+.manifesto-quote{
+  margin-top:40px;padding:24px 28px;
+  border-left:3px solid #38bdf8;
+  background:rgba(56,189,248,.06);
+  border-radius:0 12px 12px 0;
+}
+.manifesto-quote p{
+  font-size:18px;font-weight:700;color:#fff;
+  line-height:1.6;font-style:italic;margin:0;
+}
+.manifesto-quote cite{
+  display:block;margin-top:10px;font-size:12px;
+  color:rgba(255,255,255,.45);font-style:normal;letter-spacing:.05em;
+}
+
+/* Pioneer client note */
+.pioneer-card{
+  background:linear-gradient(135deg,#0d1b2a,#0f2518);
+  border:1.5px solid #235231;border-radius:16px;
+  padding:28px 32px;margin-top:32px;
+  position:relative;overflow:hidden;
+}
+.pioneer-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,#38bdf8,#16a34a,#f59e0b);
+}
+.pioneer-tag{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 12px;border-radius:100px;margin-bottom:14px;
+  background:rgba(22,163,74,.15);border:1px solid #16a34a44;
+  font-size:11px;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;color:#4ade80;
+}
+.pioneer-card h3{font-size:20px;font-weight:900;color:#fff;margin-bottom:10px;letter-spacing:-.02em}
+.pioneer-card p{font-size:14px;color:rgba(255,255,255,.7);line-height:1.75;margin-bottom:16px}
+.pioneer-perks{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.pioneer-perk{
+  display:flex;align-items:flex-start;gap:9px;
+  padding:11px 13px;background:rgba(255,255,255,.04);
+  border-radius:9px;border:1px solid rgba(255,255,255,.07);
+}
+.pioneer-perk-icon{font-size:16px;flex-shrink:0;margin-top:1px}
+.pioneer-perk-text{font-size:12px;color:rgba(255,255,255,.7);line-height:1.55}
+.pioneer-perk-text strong{color:#fff;display:block;margin-bottom:2px;font-size:12px}
+@media(max-width:600px){.pioneer-perks{grid-template-columns:1fr}}
+
+/* ════════════════════════════════════════════════
    PROBLEM SECTION
    ════════════════════════════════════════════════ */
 .problem{background:var(--surf)}
@@ -788,10 +870,10 @@ footer{
       <span style="letter-spacing:-.02em;font-size:19px">Clim<span style="color:#16a34a">Risk</span></span>
     </a>
     <div class="nav-links">
+      <a href="#manifesto">Our Story</a>
       <a href="#engine">Engine</a>
       <a href="#demo">Free Demo</a>
-      <a href="#about">About</a>
-      <a href="#regulatory">Regulatory</a>
+      <a href="#regulatory">Frameworks</a>
       <a href="#pricing">Pricing</a>
       <a href="#contact">Contact</a>
     </div>
@@ -811,10 +893,10 @@ footer{
   </div>
 </nav>
 <div class="nav-mobile-menu" id="mobileMenu">
+  <a href="#manifesto"  onclick="closeMobileNav()">Our Story</a>
   <a href="#engine"     onclick="closeMobileNav()">Engine</a>
   <a href="#demo"       onclick="closeMobileNav()">Free Demo</a>
-  <a href="#about"      onclick="closeMobileNav()">About</a>
-  <a href="#regulatory" onclick="closeMobileNav()">Regulatory</a>
+  <a href="#regulatory" onclick="closeMobileNav()">Frameworks</a>
   <a href="#pricing"    onclick="closeMobileNav()">Pricing</a>
   <a href="#contact"    onclick="closeMobileNav()">Contact</a>
 </div>
@@ -1012,6 +1094,32 @@ footer{
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════════════ MANIFESTO ════════════════ -->
+<section class="manifesto" id="manifesto">
+  <div class="manifesto-inner">
+    <p class="manifesto-eyebrow fade-up">Why we built this</p>
+    <h2 class="fade-up">
+      Climate risk became <em>mandatory.</em><br>
+      The tools stayed <span class="danger">unaffordable.</span>
+    </h2>
+
+    <div class="manifesto-body fade-up">
+      <p>When the IPCC declared that <strong>climate risk is financial risk</strong>, every regulator listened. TCFD became standard. IFRS S2 landed in annual financial statements. CSRD made quantified physical risk a legal obligation for thousands of European companies. SEBI made BRSR Core mandatory for India's top listed companies. Regulators on every continent are now asking the same question: <em>what does climate change actually cost your business, in dollars?</em></p>
+
+      <p>The companies that already had an answer were the ones that could afford <strong>$40,000–$200,000 per year</strong> on legacy ESG platforms built for institutional asset managers. Everyone else — the industrials, the manufacturers, the energy companies, the real estate developers with genuine physical exposure — was left with colour-coded regional heatmaps that couldn't answer a single question from their auditor or their lender.</p>
+
+      <p>We built the CRI Engine because <strong>that gap shouldn't exist.</strong> Not because climate disclosure is a box to tick — but because a company that genuinely understands its physical hazard exposure, its carbon cost trajectory, and its enterprise value sensitivity can make fundamentally better decisions. Better capital allocation. Better financing terms. A board narrative that holds up to scrutiny.</p>
+
+      <p>CRI is not a consultancy. It is not a data subscription. It is an <em>engine</em> — purpose-built to take GPS coordinates and operational data and turn them into the financial numbers a CFO can present to a board, an auditor, or a regulator. Built on open scientific data — WRI Aqueduct, IPCC AR6, NGFS, NASA NEX-GDDP — so every number traces back to a peer-reviewed source. Priced so the companies that actually need it can actually afford it.</p>
+    </div>
+
+    <div class="manifesto-quote fade-up">
+      <p>"The largest institutions already have the tools. We built CRI for everyone else — because the companies most exposed to climate risk are exactly the ones currently priced out of understanding it."</p>
+      <cite>— Shrinivash Dhamodhara Kannan, Founder · ClimRisk</cite>
     </div>
   </div>
 </section>
@@ -1439,6 +1547,32 @@ footer{
         ⚡ PILOT PRICING — Limited spots at these rates
       </div>
       <div style="font-size:12px;color:var(--subtle)">Standard SaaS pricing will be higher at general release</div>
+    </div>
+
+    <!-- Pioneer Client Programme explanation -->
+    <div class="pioneer-card fade-up">
+      <div class="pioneer-tag">🌱 Pioneer Client Programme</div>
+      <h3>Why we charge for the pilot — and why that benefits you</h3>
+      <p>Most climate tech companies raise venture capital, build in private for two years, and launch a product nobody tested against real-world regulatory submissions. We chose a different model: <strong>every pilot client who pays for a CRI report is directly co-funding the engine's refinement.</strong> No VC overhead. No investor return expectations. Your fee goes straight into calibration, methodology validation, and building the next feature your sector actually needs.</p>
+      <p style="margin-bottom:0">In return, pioneer clients get something no SaaS subscriber ever will:</p>
+      <div class="pioneer-perks">
+        <div class="pioneer-perk">
+          <div class="pioneer-perk-icon">🔬</div>
+          <div class="pioneer-perk-text"><strong>Direct methodology access</strong>Every assumption, weight, and data source is open to you — no black box, no "proprietary AI".</div>
+        </div>
+        <div class="pioneer-perk">
+          <div class="pioneer-perk-icon">🎯</div>
+          <div class="pioneer-perk-text"><strong>Shape the product</strong>Your sector's gaps become our next sprint. You get a say in what the engine builds next.</div>
+        </div>
+        <div class="pioneer-perk">
+          <div class="pioneer-perk-icon">⚡</div>
+          <div class="pioneer-perk-text"><strong>Pilot-locked pricing</strong>Today's rates are guaranteed for your account even after we move to higher SaaS pricing at general release.</div>
+        </div>
+        <div class="pioneer-perk">
+          <div class="pioneer-perk-icon">📣</div>
+          <div class="pioneer-perk-text"><strong>Founding partner status</strong>Your organisation is credited as a methodology validation partner — a meaningful signal to your own stakeholders.</div>
+        </div>
+      </div>
     </div>
 
     <!-- Currency toggle -->
