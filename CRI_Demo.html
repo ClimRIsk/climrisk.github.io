@@ -7393,9 +7393,7 @@ function _buildReportHTML(d) {
       scmpTrans:(d.scmpRows||[]).map(function(r){return +(( r.transB||0)*1000).toFixed(0);}),
       scmpCols:(d.scmpRows||[]).map(function(r){return r.color||'#888';})
     });
-    // CRITICAL: escape </ so "</script>" inside JSON values doesn't terminate the
-    // surrounding <script> tag in the downloaded HTML report.
-    // "<\/script>" is valid JS but invisible to the HTML parser.
+    // Escape <\/ so script-close sequences in data don't break the downloaded report.
     chartPayload = chartPayload.replace(/<\//g, '<\\/');
   } catch(jsonErr) {
     console.warn('[_buildReportHTML] chartPayload JSON.stringify failed:', jsonErr);
