@@ -2167,10 +2167,19 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <!-- ═══════════════════ LOAN PORTFOLIO (Banking Sector) ════════════════════════ -->
     <div id="p-loanbook" class="panel">
       <div class="ph">
-        <h1>🏦 Loan Portfolio Climate Risk</h1>
-        <p>ECB/EBA aligned climate risk assessment for loan books · Physical &amp; transition risk by borrower · ECL adjustment · Green Asset Ratio (GAR)</p>
+        <h1>🏦 Loan Portfolio — Climate Risk &amp; Net-Zero Target Setting</h1>
+        <p>ECB/EBA climate risk · PCAF financed emissions · IEA NZE 2030 target setting · Portfolio decarbonisation feasibility</p>
+      </div>
+      <!-- Module tabs -->
+      <div class="lb-tab-strip" style="display:flex;gap:4px;margin-bottom:18px;border-bottom:2px solid var(--border);padding-bottom:0">
+        <button class="lb-tab lb-tab-on" id="lbt-risk"     onclick="lbTab('risk')"        style="padding:8px 16px;border:none;border-bottom:2px solid var(--accent);margin-bottom:-2px;background:transparent;color:var(--accent);font-weight:700;cursor:pointer;font-size:13px">⚠ Climate Risk</button>
+        <button class="lb-tab"            id="lbt-pcaf"    onclick="lbTab('pcaf')"        style="padding:8px 16px;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:transparent;color:var(--muted);font-weight:600;cursor:pointer;font-size:13px">💨 Financed Emissions</button>
+        <button class="lb-tab"            id="lbt-target"  onclick="lbTab('target')"      style="padding:8px 16px;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:transparent;color:var(--muted);font-weight:600;cursor:pointer;font-size:13px">🎯 Target Setting</button>
+        <button class="lb-tab"            id="lbt-feasib"  onclick="lbTab('feasib')"      style="padding:8px 16px;border:none;border-bottom:2px solid transparent;margin-bottom:-2px;background:transparent;color:var(--muted);font-weight:600;cursor:pointer;font-size:13px">🚀 Feasibility</button>
       </div>
 
+      <!-- ─── TAB: CLIMATE RISK (existing) ─── -->
+      <div id="lb-pnl-risk">
       <!-- Import controls -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
         <button class="btn-primary" onclick="document.getElementById('lb-file-inp').click()">📂 Import Loan Book (Excel)</button>
@@ -2232,6 +2241,123 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         <div class="cc-title">Regulatory Framework Summary</div>
         <div id="lb-reg" style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;padding:4px 0"></div>
       </div>
+      </div><!-- lb-pnl-risk -->
+
+      <!-- ─── TAB: FINANCED EMISSIONS (PCAF) ─── -->
+      <div id="lb-pnl-pcaf" style="display:none">
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px" id="pcaf-kpis"></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+          <div class="cc">
+            <div class="cc-title">Financed Emissions by Sector (tCO₂e)</div>
+            <div class="ch h260"><canvas id="pcafSectorC"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-title">Emissions Intensity Distribution (tCO₂e / $M financed)</div>
+            <div class="ch h260"><canvas id="pcafIntensityC"></canvas></div>
+          </div>
+        </div>
+        <div class="cc">
+          <div class="cc-title" style="display:flex;align-items:center;justify-content:space-between">
+            <span>PCAF Counterparty Attribution — <span style="color:var(--muted);font-weight:400;font-size:11px">Formula: (Outstanding / EV) × Scope 1+2 · PCAF Standard Part A 2022</span></span>
+            <button class="btn-secondary" style="font-size:11px;padding:4px 10px" onclick="_pcafExportCsv()">⬇ Export CSV</button>
+          </div>
+          <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px" id="pcaf-table">
+            <thead><tr style="background:var(--bg2);color:var(--muted)">
+              <th style="padding:7px 10px;text-align:left">Counterparty</th>
+              <th style="padding:7px 10px;text-align:left">Sector</th>
+              <th style="padding:7px 6px;text-align:right">Outstanding ($M)</th>
+              <th style="padding:7px 6px;text-align:right">EV ($M)</th>
+              <th style="padding:7px 6px;text-align:right">Attribution %</th>
+              <th style="padding:7px 6px;text-align:right">Scope 1 (tCO₂e)</th>
+              <th style="padding:7px 6px;text-align:right">Scope 2 (tCO₂e)</th>
+              <th style="padding:7px 6px;text-align:right">Financed Emissions</th>
+              <th style="padding:7px 6px;text-align:right">Intensity (tCO₂e/$M)</th>
+              <th style="padding:7px 6px;text-align:center">PCAF Score</th>
+            </tr></thead>
+            <tbody id="pcaf-tbody"><tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">Import loan book with Scope 1, Scope 2, and Enterprise Value columns to calculate PCAF financed emissions</td></tr></tbody>
+          </table></div>
+        </div>
+      </div><!-- lb-pnl-pcaf -->
+
+      <!-- ─── TAB: TARGET SETTING ─── -->
+      <div id="lb-pnl-target" style="display:none">
+        <div class="cc" style="margin-bottom:14px">
+          <div class="cc-title">Methodology — IEA NZE 2050 Science-Based Targets</div>
+          <div style="font-size:12px;color:var(--muted);line-height:1.7">
+            Targets derived from <strong>IEA Net Zero Emissions by 2050 Roadmap (2023 update)</strong>, translated to financed-emissions reduction requirements per sector.
+            Attribution follows the <strong>PCAF Standard Part A</strong>. Absolute reduction targets applied to 2030 (base year = current portfolio).
+            Banks may also choose intensity targets (tCO₂e / $M financed) aligned to SBTi FLAG/TNFD for nature-related sectors.
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+          <div class="cc">
+            <div class="cc-title">2030 Implied Targets vs Current Baseline</div>
+            <div class="ch h280"><canvas id="tgtWaterfallC"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-title">Required Reduction by Sector (%)</div>
+            <div class="ch h280"><canvas id="tgtSectorC"></canvas></div>
+          </div>
+        </div>
+        <div class="cc">
+          <div class="cc-title">Science-Based Target Table</div>
+          <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:12px" id="tgt-table">
+            <thead><tr style="background:var(--bg2);color:var(--muted)">
+              <th style="padding:8px 10px;text-align:left">Sector</th>
+              <th style="padding:8px 8px;text-align:right">Current Financed Emissions (tCO₂e)</th>
+              <th style="padding:8px 8px;text-align:right">IEA Required Reduction</th>
+              <th style="padding:8px 8px;text-align:right">2030 Target (tCO₂e)</th>
+              <th style="padding:8px 8px;text-align:right">Absolute Gap</th>
+              <th style="padding:8px 8px;text-align:left">Pathway Source</th>
+              <th style="padding:8px 8px;text-align:center">Feasibility</th>
+            </tr></thead>
+            <tbody id="tgt-tbody"><tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Load PCAF data to generate targets</td></tr></tbody>
+          </table></div>
+        </div>
+      </div><!-- lb-pnl-target -->
+
+      <!-- ─── TAB: FEASIBILITY ─── -->
+      <div id="lb-pnl-feasib" style="display:none">
+        <div class="cc" style="margin-bottom:14px">
+          <div class="cc-title">⚙ Decarbonisation Lever Configuration</div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:18px;padding:12px 0">
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Client transition plans coverage (% of borrowers with active NZE plan)</label>
+              <input type="range" id="feas-client-pct" min="0" max="100" value="40" step="5" oninput="updateFeasLabel('feas-client-pct','feas-cl-val','%'); renderLbFeasibility()" style="width:100%">
+              <span id="feas-cl-val" style="font-size:12px;font-weight:700;color:var(--accent)">40%</span>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Annual client emissions reduction (% per year for transitioning borrowers)</label>
+              <input type="range" id="feas-client-red" min="0" max="20" value="8" step="1" oninput="updateFeasLabel('feas-client-red','feas-cr-val','%/yr'); renderLbFeasibility()" style="width:100%">
+              <span id="feas-cr-val" style="font-size:12px;font-weight:700;color:var(--accent)">8%/yr</span>
+            </div>
+            <div>
+              <label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Portfolio tilt — brown-to-green reallocation (% of high-carbon exposure shifted)</label>
+              <input type="range" id="feas-tilt" min="0" max="50" value="15" step="5" oninput="updateFeasLabel('feas-tilt','feas-tilt-val','%'); renderLbFeasibility()" style="width:100%">
+              <span id="feas-tilt-val" style="font-size:12px;font-weight:700;color:var(--accent)">15%</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px">
+          <div class="cc">
+            <div class="cc-title">Portfolio Emissions Pathway to 2030 (3 Scenarios)</div>
+            <div class="ch h300"><canvas id="feasScenC"></canvas></div>
+          </div>
+          <div class="cc">
+            <div class="cc-title">Decarbonisation Lever Contribution (Waterfall)</div>
+            <div class="ch h300"><canvas id="feasWatC"></canvas></div>
+          </div>
+        </div>
+        <div class="cc">
+          <div class="cc-title">Scenario Feasibility Assessment</div>
+          <div id="feas-table"></div>
+        </div>
+        <div class="cc" style="margin-top:14px">
+          <div class="cc-title">Board-Ready Narrative</div>
+          <div id="feas-narrative" style="font-size:13px;line-height:1.8;color:var(--fg)"></div>
+        </div>
+      </div><!-- lb-pnl-feasib -->
+
     </div><!-- p-loanbook -->
 
     <!-- ═══════════════════ PORTFOLIO ROLL-UP ════════════════════════ -->
@@ -2349,12 +2475,16 @@ function _lbProcessFile(input) {
       var rows = XLSX.utils.sheet_to_json(ws, {defval:''});
       _lbState.data = rows.map(function(r) {
         return {
-          borrower: r['Borrower Name'] || r['borrower'] || '',
-          sector:   r['Sector']        || r['sector']   || 'Other',
-          region:   r['Region']        || r['region']   || 'global',
-          country:  r['Country']       || r['country']  || '',
-          loanM:    +(r['Loan (USD M)']|| r['loanM']    || 0),
-          ltv:      +(r['LTV']         || r['ltv']      || 0.45),
+          borrower: r['Borrower Name']        || r['borrower']    || '',
+          sector:   r['Sector']               || r['sector']      || 'Other',
+          region:   r['Region']               || r['region']      || 'global',
+          country:  r['Country']              || r['country']     || '',
+          loanM:    +(r['Loan (USD M)']       || r['loanM']       || 0),
+          evM:      +(r['Enterprise Value (USD M)'] || r['Enterprise Value'] || r['evM'] || 0),
+          scope1:   +(r['Scope 1 (tCO2e)']   || r['Scope 1']     || r['scope1'] || 0),
+          scope2:   +(r['Scope 2 (tCO2e)']   || r['Scope 2']     || r['scope2'] || 0),
+          pcafScore:+(r['PCAF Score']         || r['pcafScore']   || 3),
+          ltv:      +(r['LTV']               || r['ltv']         || 0.45),
           lat:      r['Latitude']  != null ? +r['Latitude']  : null,
           lon:      r['Longitude'] != null ? +r['Longitude'] : null,
         };
@@ -2724,43 +2854,448 @@ function _physDownloadAuditTrail() {
 function downloadLoanTemplate() {
   var wb = XLSX.utils.book_new();
   var data = [
-    ['Borrower Name','Sector','Region','Country','Loan (USD M)','LTV','Latitude','Longitude'],
-    ['Deutsche Bank AG','Banking','europe','Germany',250,0.55,52.52,13.40],
-    ['Volkswagen Finance','Automotive','europe','Germany',180,0.60,52.42,10.79],
-    ['Total Energies SE','Oil & Gas','europe','France',320,0.50,48.85,2.35],
-    ['Iberdrola SA','Utilities','europe','Spain',210,0.48,40.41,-3.70],
-    ['ArcelorMittal','Steel','europe','Luxembourg',95,0.65,49.60,6.13],
-    ['Nestlé SA','Food & Beverage','europe','Switzerland',145,0.40,46.83,6.87],
-    ['BASF SE','Chemicals','europe','Germany',175,0.55,49.48,8.46],
-    ['Unilever PLC','Consumer Goods','europe','UK',130,0.42,51.50,-0.12],
+    ['Borrower Name','Sector','Region','Country','Loan (USD M)','Enterprise Value (USD M)','Scope 1 (tCO2e)','Scope 2 (tCO2e)','PCAF Score','LTV','Latitude','Longitude'],
+    ['Total Energies SE','Oil & Gas','europe','France',320,95000,43200000,8600000,2,0.50,48.85,2.35],
+    ['Iberdrola SA','Utilities','europe','Spain',210,72000,12400000,3100000,2,0.48,40.41,-3.70],
+    ['ArcelorMittal','Steel','europe','Luxembourg',95,18000,62000000,15500000,3,0.65,49.60,6.13],
+    ['BASF SE','Chemicals','europe','Germany',175,42000,18700000,4700000,2,0.55,49.48,8.46],
+    ['Glencore PLC','Mining','europe','Switzerland',140,55000,38900000,9700000,3,0.58,47.40,8.55],
+    ['RWE AG','Power','europe','Germany',165,22000,28500000,7100000,2,0.50,51.54,6.77],
+    ['Volkswagen Finance','Automotive','europe','Germany',180,78000,4200000,1050000,3,0.60,52.42,10.79],
+    ['Nestlé SA','Food & Beverage','europe','Switzerland',145,290000,8900000,2200000,2,0.40,46.83,6.87],
   ];
   var ws = XLSX.utils.aoa_to_sheet(data);
-  ws['!cols'] = [{wch:22},{wch:18},{wch:12},{wch:14},{wch:14},{wch:8},{wch:10},{wch:10}];
+  ws['!cols'] = [{wch:22},{wch:18},{wch:12},{wch:14},{wch:14},{wch:22},{wch:18},{wch:18},{wch:12},{wch:8},{wch:10},{wch:10}];
   XLSX.utils.book_append_sheet(wb, ws, 'Loan Book');
-  // Instructions sheet
   var ins = XLSX.utils.aoa_to_sheet([
-    ['CRI Engine — Loan Portfolio Template'],
-    [''],
+    ['CRI Engine — Loan Portfolio Template (PCAF Edition)'],[''],
     ['REQUIRED COLUMNS:'],
     ['Borrower Name','Full legal name of the borrower'],
-    ['Sector','Industry sector (e.g. Oil & Gas, Banking, Utilities, Chemicals, etc.)'],
-    ['Region','Climate region: europe, north_america, asia_pacific, middle_east, africa, latin_america'],
-    ['Loan (USD M)','Outstanding loan balance in USD millions'],
-    [''],
-    ['OPTIONAL COLUMNS:'],
-    ['Country','Country for display purposes'],
-    ['LTV','Loan-to-Value ratio (0.0–1.0, default 0.45 if omitted)'],
-    ['Latitude','Precise latitude for hazard assessment (overrides region)'],
-    ['Longitude','Precise longitude for hazard assessment (overrides region)'],
-    [''],
-    ['NOTES:'],
-    ['- High-carbon sectors (Oil & Gas, Coal, Steel, Cement, Chemicals) receive additional transition PD uplift'],
-    ['- ECL = Loan × PD_uplift × LGD (where LGD = LTV if provided, else 45%)'],
-    ['- Climate ratings: A (score<20), B (20-35), C (35-50), D/E (≥50)'],
-    ['- ECB/EBA/SFDR regulatory summaries auto-populate in the Regulatory Framework Summary panel'],
+    ['Sector','Industry sector (e.g. Oil & Gas, Power, Utilities, Steel, Chemicals, Mining, Transport, Real Estate, Other)'],
+    ['Region','Climate region (europe, north_america, asia_pacific, middle_east, africa, latin_america) or ISO country code'],
+    ['Loan (USD M)','Outstanding loan/bond balance in USD millions'],
+    [''],['PCAF COLUMNS (for Financed Emissions tab):'],
+    ['Enterprise Value (USD M)','Market cap + net debt at reporting date — used for PCAF attribution factor'],
+    ['Scope 1 (tCO2e)','Gross Scope 1 emissions reported by borrower (tCO2e/year)'],
+    ['Scope 2 (tCO2e)','Gross Scope 2 emissions reported by borrower (tCO2e/year)'],
+    ['PCAF Score','Data quality score 1-5 (1=audited, 2=verified, 3=estimated from reporting, 4=estimated from revenue, 5=default)'],
+    [''],['OPTIONAL COLUMNS:'],
+    ['Country','Country for display'],
+    ['LTV','Loan-to-Value ratio (0.0–1.0). Default 0.45.'],
+    ['Latitude / Longitude','GPS coordinates for site-specific physical hazard assessment'],
+    [''],['IEA NZE 2030 REDUCTION TARGETS BY SECTOR:'],
+    ['Oil & Gas','-30% absolute financed emissions by 2030'],
+    ['Power','-50% absolute financed emissions by 2030'],
+    ['Coal','-55% (phase-out trajectory)'],
+    ['Steel','-20% absolute'],['Cement','-20% absolute'],
+    ['Chemicals','-15% absolute'],['Mining','-20% absolute'],
+    ['Real Estate','-35% energy intensity'],['Transport','-25% emissions intensity'],
+    ['Other','-20% (IPCC AR6 average)'],
   ]);
   XLSX.utils.book_append_sheet(wb, ins, 'Instructions');
-  XLSX.writeFile(wb, 'CRI_LoanBook_Template.xlsx');
+  XLSX.writeFile(wb, 'CRI_LoanBook_PCAF_Template.xlsx');
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PCAF FINANCED EMISSIONS + IEA NZE TARGET SETTING + FEASIBILITY MODULE
+   Oliver Wyman Net-Zero Portfolio Framework — integrated into CRI Engine
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── IEA NZE 2050 sector reduction targets (% by 2030 vs base year) ────────
+var _IEA_2030 = {
+  'Oil & Gas':   { r:0.30, src:'IEA NZE 2050 Ch.3 — No new oil/gas fields; upstream Scope 1+2 reduction', feasibility:'Medium' },
+  'Coal':        { r:0.55, src:'IEA NZE 2050 Ch.3 — Coal phase-out trajectory to 2030',                  feasibility:'Hard'   },
+  'Power':       { r:0.50, src:'IEA NZE 2050 Ch.6 — Electricity sector decarbonisation pathway',         feasibility:'Medium' },
+  'Utilities':   { r:0.45, src:'IEA NZE 2050 Ch.6 — Clean power transition + efficiency',                feasibility:'Medium' },
+  'Steel':       { r:0.20, src:'IEA NZE 2050 Ch.7 — Near-zero steelmaking routes',                      feasibility:'Medium' },
+  'Cement':      { r:0.20, src:'IEA NZE 2050 Ch.7 — CCUS + clinker substitution',                       feasibility:'Medium' },
+  'Chemicals':   { r:0.15, src:'IEA NZE 2050 Ch.7 — Process heat electrification + green H₂',           feasibility:'Achievable'},
+  'Mining':      { r:0.20, src:'IPCC AR6 WGIII — Scope 1+2 reduction, electrification of haul fleet',   feasibility:'Achievable'},
+  'Real Estate': { r:0.35, src:'IEA NZE 2050 Ch.5 — Building energy intensity improvement',              feasibility:'Achievable'},
+  'Transport':   { r:0.25, src:'IEA NZE 2050 Ch.4 — Modal shift + EV penetration',                      feasibility:'Medium' },
+  'Automotive':  { r:0.20, src:'IEA NZE 2050 Ch.4 — EV transition in own operations',                   feasibility:'Achievable'},
+  'Other':       { r:0.20, src:'IPCC AR6 WGIII Annex — Cross-sector average',                           feasibility:'Achievable'},
+};
+
+// ── Tab switching ─────────────────────────────────────────────────────────
+function lbTab(tab) {
+  ['risk','pcaf','target','feasib'].forEach(function(t) {
+    var pnl = document.getElementById('lb-pnl-'+t);
+    var btn = document.getElementById('lbt-'+t);
+    if (!pnl || !btn) return;
+    var on = t === tab;
+    pnl.style.display = on ? '' : 'none';
+    btn.style.color        = on ? 'var(--accent)' : 'var(--muted)';
+    btn.style.borderBottom = on ? '2px solid var(--accent)' : '2px solid transparent';
+    btn.style.fontWeight   = on ? '700' : '600';
+  });
+  if (tab === 'pcaf')   renderLbPcaf();
+  if (tab === 'target') renderLbTargets();
+  if (tab === 'feasib') renderLbFeasibility();
+}
+
+// ── PCAF attribution calculation ──────────────────────────────────────────
+function _pcafCalc(b) {
+  // PCAF formula: Financed Emissions = (Outstanding / EV) × (Scope1 + Scope2)
+  // If EV not provided, infer from loan/LTV as a proxy
+  var ev = b.evM > 0 ? b.evM : (b.loanM / (b.ltv > 0 ? b.ltv : 0.45));
+  var attribution = Math.min(1, b.loanM / ev);
+  var totalScope  = (b.scope1||0) + (b.scope2||0);
+  var financed    = attribution * totalScope;
+  var intensity   = b.loanM > 0 ? financed / b.loanM : 0;
+  return { ev:ev, attribution:attribution, financed:financed, intensity:intensity };
+}
+
+// ── Render Financed Emissions tab ─────────────────────────────────────────
+function renderLbPcaf() {
+  var ass = _lbState.assessed;
+  if (!ass || !ass.length) {
+    var tb = document.getElementById('pcaf-tbody');
+    if (tb) tb.innerHTML = '<tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">Import loan book first (Climate Risk tab)</td></tr>';
+    return;
+  }
+
+  // Enrich each borrower with PCAF
+  var enriched = ass.map(function(b) {
+    return Object.assign({}, b, _pcafCalc(b));
+  });
+
+  var totalFinanced  = enriched.reduce(function(s,b){ return s+b.financed; }, 0);
+  var totalLoan      = enriched.reduce(function(s,b){ return s+b.loanM;    }, 0);
+  var avgIntensity   = totalLoan > 0 ? totalFinanced / totalLoan : 0;
+  var hasPcaf        = enriched.filter(function(b){ return (b.scope1||0)+(b.scope2||0) > 0; }).length;
+  var coveragePct    = enriched.length ? (hasPcaf / enriched.length * 100).toFixed(0) : 0;
+
+  // KPI cards
+  var kpi = document.getElementById('pcaf-kpis');
+  if (kpi) kpi.innerHTML =
+    cardHtml('Total Financed Emissions', (totalFinanced/1e6).toFixed(2)+' MtCO₂e', 'PCAF Scope 1+2 attributed to bank', 'r') +
+    cardHtml('Portfolio Intensity',      avgIntensity.toFixed(0)+' tCO₂e/$M',      'Weighted avg financed emissions intensity', 'q') +
+    cardHtml('Emissions Coverage',       coveragePct+'%',                            hasPcaf+' of '+enriched.length+' counterparties with data', coveragePct>=70?'g':'q') +
+    cardHtml('Portfolio Financed',       '$'+totalLoan.toFixed(0)+'M',               'Total outstanding loan balance', 'g');
+
+  // Sector chart
+  var sectorFE = {};
+  enriched.forEach(function(b) {
+    sectorFE[b.sector] = (sectorFE[b.sector]||0) + b.financed;
+  });
+  var sLabels = Object.keys(sectorFE).sort(function(a,b){ return sectorFE[b]-sectorFE[a]; });
+  var sColors = ['#b91c1c','#b45309','#d97706','#0891b2','#7c3aed','#16a34a','#0284c7','#6d28d9','#374151'];
+  mk('pcafSectorC', { type:'bar',
+    data:{ labels: sLabels, datasets:[{ label:'Financed Emissions (tCO₂e)',
+      data: sLabels.map(function(s){ return Math.round(sectorFE[s]); }),
+      backgroundColor: sLabels.map(function(_,i){ return sColors[i%sColors.length]; }), borderRadius:4 }]},
+    options: mkOpts(function(v){ return (v/1e6).toFixed(2)+'Mt'; }) });
+
+  // Intensity distribution chart
+  var intBins = [0,100,500,1000,5000,20000,50000,Infinity];
+  var intLabels = ['<100','100-500','500-1k','1k-5k','5k-20k','20k-50k','>50k'];
+  var intCounts = intLabels.map(function(){ return 0; });
+  enriched.forEach(function(b) {
+    for (var i=0;i<intBins.length-1;i++) {
+      if (b.intensity >= intBins[i] && b.intensity < intBins[i+1]) { intCounts[i]++; break; }
+    }
+  });
+  mk('pcafIntensityC', { type:'bar',
+    data:{ labels: intLabels, datasets:[{ label:'Counterparties',
+      data: intCounts, backgroundColor:'#0891b288', borderColor:'#0891b2', borderWidth:1, borderRadius:4 }]},
+    options: mkOpts(function(v){ return v+' firms'; }) });
+
+  // Table
+  var tbody = document.getElementById('pcaf-tbody');
+  if (!tbody) return;
+  var sorted = enriched.slice().sort(function(a,b){ return b.financed - a.financed; });
+  tbody.innerHTML = sorted.map(function(b) {
+    var hasData = (b.scope1||0)+(b.scope2||0) > 0;
+    var scoreColor = b.pcafScore<=2?'#16a34a':b.pcafScore<=3?'#d97706':'#b91c1c';
+    return '<tr style="border-bottom:1px solid var(--bd)">' +
+      '<td style="padding:6px 10px;font-weight:600">'+b.borrower+'</td>'+
+      '<td style="padding:6px 10px;color:var(--muted)">'+b.sector+'</td>'+
+      '<td style="padding:6px 8px;text-align:right">$'+b.loanM.toFixed(0)+'M</td>'+
+      '<td style="padding:6px 8px;text-align:right">$'+b.ev.toFixed(0)+'M</td>'+
+      '<td style="padding:6px 8px;text-align:right">'+(b.attribution*100).toFixed(1)+'%</td>'+
+      '<td style="padding:6px 8px;text-align:right">'+((b.scope1||0)/1000).toFixed(0)+'k</td>'+
+      '<td style="padding:6px 8px;text-align:right">'+((b.scope2||0)/1000).toFixed(0)+'k</td>'+
+      '<td style="padding:6px 8px;text-align:right;font-weight:700;color:'+(hasData?'var(--fg)':'var(--muted)')+'">'+
+        (hasData ? (b.financed/1000).toFixed(0)+'k tCO₂e' : '— (no data)') +'</td>'+
+      '<td style="padding:6px 8px;text-align:right">'+b.intensity.toFixed(0)+'</td>'+
+      '<td style="padding:6px 8px;text-align:center;font-weight:700;color:'+scoreColor+'">'+b.pcafScore+'</td>'+
+    '</tr>';
+  }).join('');
+}
+
+// ── Render Target Setting tab ─────────────────────────────────────────────
+function renderLbTargets() {
+  var ass = _lbState.assessed;
+  if (!ass || !ass.length) {
+    var tb = document.getElementById('tgt-tbody');
+    if (tb) tb.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:var(--muted)">Import loan book first</td></tr>';
+    return;
+  }
+
+  // Sector-level financed emissions
+  var sectorFE = {};
+  ass.forEach(function(b) {
+    var p = _pcafCalc(b);
+    sectorFE[b.sector] = (sectorFE[b.sector]||0) + p.financed;
+  });
+
+  var sectors = Object.keys(sectorFE).sort(function(a,b){ return sectorFE[b]-sectorFE[a]; });
+  var rows = sectors.map(function(s) {
+    var current = sectorFE[s];
+    var bench   = _IEA_2030[s] || _IEA_2030['Other'];
+    var target  = current * (1 - bench.r);
+    var gap     = current - target;
+    var feasCol = bench.feasibility==='Achievable'?'#16a34a':bench.feasibility==='Medium'?'#d97706':'#b91c1c';
+    return { s:s, current:current, bench:bench, target:target, gap:gap, feasCol:feasCol };
+  });
+
+  // Waterfall chart (current → reductions → 2030 target)
+  var totalCurrent = rows.reduce(function(s,r){ return s+r.current; }, 0);
+  var totalTarget  = rows.reduce(function(s,r){ return s+r.target;  }, 0);
+  var c = gc();
+  kill('tgtWaterfallC');
+  charts['tgtWaterfallC'] = new Chart(document.getElementById('tgtWaterfallC'), {
+    type: 'bar',
+    data: {
+      labels: ['2025 Baseline','Required Reduction','2030 IEA Target'],
+      datasets: [{
+        label: 'Financed Emissions (MtCO₂e)',
+        data: [totalCurrent/1e6, -(totalCurrent-totalTarget)/1e6, totalTarget/1e6],
+        backgroundColor: ['#b91c1c88','#16a34a88','#0891b288'],
+        borderColor:     ['#b91c1c',  '#16a34a',  '#0891b2'],
+        borderWidth: 2, borderRadius: 6,
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{color:c.tick,font:{size:11}}, grid:{color:c.grid} },
+        y:{ title:{display:true,text:'MtCO₂e',color:c.tick,font:{size:10}},
+            ticks:{color:c.tick,font:{size:10},callback:function(v){return v.toFixed(1)+'Mt';}},
+            grid:{color:c.grid} }
+      }
+    }
+  });
+
+  // Sector reduction bar
+  kill('tgtSectorC');
+  charts['tgtSectorC'] = new Chart(document.getElementById('tgtSectorC'), {
+    type: 'bar',
+    data: {
+      labels: rows.map(function(r){ return r.s; }),
+      datasets: [{
+        label: 'Required Reduction %',
+        data: rows.map(function(r){ return (r.bench.r*100).toFixed(0); }),
+        backgroundColor: rows.map(function(r){ return r.feasCol+'99'; }),
+        borderColor:     rows.map(function(r){ return r.feasCol; }),
+        borderWidth:1, borderRadius:4,
+      }]
+    },
+    options: {
+      indexAxis:'y', responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ max:70, ticks:{color:c.tick,font:{size:10},callback:function(v){return v+'%';}}, grid:{color:c.grid} },
+        y:{ ticks:{color:c.tick,font:{size:10}}, grid:{color:c.grid} }
+      }
+    }
+  });
+
+  // Table
+  var tbody = document.getElementById('tgt-tbody');
+  if (!tbody) return;
+  tbody.innerHTML = rows.map(function(r) {
+    return '<tr style="border-bottom:1px solid var(--bd)">' +
+      '<td style="padding:8px 10px;font-weight:700">'+r.s+'</td>'+
+      '<td style="padding:8px 8px;text-align:right">'+(r.current/1000).toFixed(0)+'k tCO₂e</td>'+
+      '<td style="padding:8px 8px;text-align:right;font-weight:700;color:#b91c1c">−'+(r.bench.r*100).toFixed(0)+'%</td>'+
+      '<td style="padding:8px 8px;text-align:right;color:#0891b2;font-weight:700">'+(r.target/1000).toFixed(0)+'k tCO₂e</td>'+
+      '<td style="padding:8px 8px;text-align:right;color:#b91c1c">'+(r.gap/1000).toFixed(0)+'k tCO₂e</td>'+
+      '<td style="padding:8px 8px;font-size:11px;color:var(--muted)">'+r.bench.src+'</td>'+
+      '<td style="padding:8px 8px;text-align:center"><span style="background:'+r.feasCol+'22;color:'+r.feasCol+';border:1px solid '+r.feasCol+'44;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700">'+r.bench.feasibility+'</span></td>'+
+    '</tr>';
+  }).join('');
+}
+
+// ── Lever update helper ───────────────────────────────────────────────────
+function updateFeasLabel(sliderId, labelId, suffix) {
+  var v = document.getElementById(sliderId);
+  var l = document.getElementById(labelId);
+  if (v && l) l.textContent = v.value + suffix;
+}
+
+// ── Render Feasibility tab ────────────────────────────────────────────────
+function renderLbFeasibility() {
+  var ass = _lbState.assessed;
+  if (!ass || !ass.length) {
+    var ft = document.getElementById('feas-table');
+    if (ft) ft.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Import loan book first</div>';
+    return;
+  }
+
+  var clientPct = +((document.getElementById('feas-client-pct')||{value:40}).value) / 100;
+  var clientRed = +((document.getElementById('feas-client-red')||{value:8}).value)  / 100;
+  var tiltPct   = +((document.getElementById('feas-tilt')||{value:15}).value)       / 100;
+
+  // Total financed emissions (baseline)
+  var totalFE = ass.reduce(function(s,b){ return s + _pcafCalc(b).financed; }, 0);
+  var brownFE = ass.filter(function(b){ return b.isHighCarbon; })
+                   .reduce(function(s,b){ return s + _pcafCalc(b).financed; }, 0);
+
+  // Average IEA target reduction across portfolio
+  var avgIEA = ass.reduce(function(s,b){
+    var bench = _IEA_2030[b.sector] || _IEA_2030['Other'];
+    return s + bench.r * _pcafCalc(b).financed;
+  }, 0) / (totalFE || 1);
+
+  // 3 scenarios: years 2025-2030
+  var years = [2025,2026,2027,2028,2029,2030];
+  function pathway(cPct, cRed, tilt) {
+    return years.map(function(yr) {
+      var t = yr - 2025;
+      // Lever 1: client decarbonisation
+      var clientEffect = cPct * cRed * t * totalFE;
+      // Lever 2: portfolio tilt (shifts brown to green, reducing financed emissions)
+      var tiltEffect   = tilt * brownFE * (t / 5);
+      // Lever 3: organic sector improvement (~2%/yr)
+      var organicEffect = totalFE * 0.02 * t;
+      return Math.max(0, totalFE - clientEffect - tiltEffect - organicEffect);
+    });
+  }
+
+  var bau      = pathway(0.10, 0.03, 0.05);
+  var moderate = pathway(clientPct * 0.6, clientRed * 0.6, tiltPct * 0.6);
+  var custom   = pathway(clientPct, clientRed, tiltPct);
+  var target   = years.map(function(yr) {
+    return totalFE * Math.pow(1 - avgIEA/5, yr - 2025); // linear path to IEA target
+  });
+
+  var c = gc();
+  kill('feasScenC');
+  charts['feasScenC'] = new Chart(document.getElementById('feasScenC'), {
+    type: 'line',
+    data: {
+      labels: years,
+      datasets: [
+        { label:'Business as Usual',     data:bau.map(function(v){return +(v/1e6).toFixed(3);}),    borderColor:'#b91c1c', backgroundColor:'#b91c1c22', tension:0.3, fill:false, borderDash:[5,4], borderWidth:1.5, pointRadius:2 },
+        { label:'Current Lever Settings',data:custom.map(function(v){return +(v/1e6).toFixed(3);}),  borderColor:'#0891b2', backgroundColor:'#0891b222', tension:0.3, fill:true, borderWidth:2.5, pointRadius:3 },
+        { label:'Moderate Scenario',     data:moderate.map(function(v){return +(v/1e6).toFixed(3);}),borderColor:'#d97706', backgroundColor:'transparent',tension:0.3, fill:false, borderDash:[3,3], borderWidth:1.5, pointRadius:2 },
+        { label:'IEA NZE Target Path',   data:target.map(function(v){return +(v/1e6).toFixed(3);}),  borderColor:'#16a34a', backgroundColor:'transparent',tension:0.3, fill:false, borderDash:[8,4], borderWidth:2, pointRadius:2 },
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'bottom',labels:{color:c.tick,font:{size:10},boxWidth:12,padding:8}} },
+      scales:{
+        x:{ ticks:{color:c.tick,font:{size:11}}, grid:{color:c.grid} },
+        y:{ title:{display:true,text:'Financed Emissions (MtCO₂e)',color:c.tick,font:{size:10}},
+            ticks:{color:c.tick,font:{size:10},callback:function(v){return v.toFixed(2)+'Mt';}},
+            grid:{color:c.grid} }
+      }
+    }
+  });
+
+  // Waterfall: lever contributions
+  var clientReduction  = Math.max(0, totalFE - custom[custom.length-1]) * clientPct;
+  var tiltReduction    = (tiltPct * brownFE);
+  var organicReduction = totalFE * 0.02 * 5;
+  var residualGap      = Math.max(0, target[target.length-1] - custom[custom.length-1]);
+  kill('feasWatC');
+  charts['feasWatC'] = new Chart(document.getElementById('feasWatC'), {
+    type:'bar',
+    data:{
+      labels:['Baseline','Client Plans','Portfolio Tilt','Organic','2030 Position','IEA Target'],
+      datasets:[{
+        label:'MtCO₂e',
+        data:[ totalFE/1e6, -clientReduction/1e6, -tiltReduction/1e6, -organicReduction/1e6, custom[5]/1e6, target[5]/1e6 ],
+        backgroundColor:['#374151','#16a34a88','#0891b288','#6d28d988','#d9770688','#16a34a'],
+        borderColor:    ['#374151','#16a34a',  '#0891b2',  '#6d28d9',  '#d97706',  '#16a34a'],
+        borderWidth:1.5, borderRadius:4,
+      }]
+    },
+    options:{
+      responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{display:false} },
+      scales:{
+        x:{ ticks:{color:c.tick,font:{size:10}}, grid:{color:c.grid} },
+        y:{ title:{display:true,text:'MtCO₂e',color:c.tick,font:{size:10}},
+            ticks:{color:c.tick,font:{size:10},callback:function(v){return v.toFixed(2)+'Mt';}},
+            grid:{color:c.grid} }
+      }
+    }
+  });
+
+  // Scenario table
+  var tgt2030 = target[5];
+  function scenRow(label, path, color) {
+    var v2030 = path[5];
+    var redPct = ((totalFE - v2030) / totalFE * 100).toFixed(1);
+    var gap    = v2030 - tgt2030;
+    var met    = gap <= 0;
+    return { label:label, v2030:v2030, redPct:redPct, gap:gap, met:met, color:color };
+  }
+  var scenarios = [
+    scenRow('Business as Usual',      bau,      '#b91c1c'),
+    scenRow('Moderate',               moderate, '#d97706'),
+    scenRow('Current Lever Settings', custom,   '#0891b2'),
+  ];
+
+  var ft = document.getElementById('feas-table');
+  if (ft) ft.innerHTML =
+    '<table style="width:100%;border-collapse:collapse;font-size:12px">'+
+    '<thead><tr style="background:var(--bg2);color:var(--muted)">'+
+    '<th style="padding:8px 10px;text-align:left">Scenario</th>'+
+    '<th style="padding:8px 8px;text-align:right">2025 Baseline</th>'+
+    '<th style="padding:8px 8px;text-align:right">2030 Projected</th>'+
+    '<th style="padding:8px 8px;text-align:right">Reduction</th>'+
+    '<th style="padding:8px 8px;text-align:right">IEA Target</th>'+
+    '<th style="padding:8px 8px;text-align:right">Gap to Target</th>'+
+    '<th style="padding:8px 8px;text-align:center">Target Met?</th>'+
+    '</tr></thead><tbody>'+
+    scenarios.map(function(sc) {
+      return '<tr style="border-bottom:1px solid var(--bd)">'+
+        '<td style="padding:8px 10px;font-weight:700;color:'+sc.color+'">'+sc.label+'</td>'+
+        '<td style="padding:8px 8px;text-align:right">'+(totalFE/1e6).toFixed(2)+' Mt</td>'+
+        '<td style="padding:8px 8px;text-align:right;font-weight:600">'+(sc.v2030/1e6).toFixed(2)+' Mt</td>'+
+        '<td style="padding:8px 8px;text-align:right;color:#16a34a">−'+sc.redPct+'%</td>'+
+        '<td style="padding:8px 8px;text-align:right;color:#16a34a">'+(tgt2030/1e6).toFixed(2)+' Mt</td>'+
+        '<td style="padding:8px 8px;text-align:right;color:'+(sc.met?'#16a34a':'#b91c1c')+';font-weight:700">'+(sc.met?'Surplus: ':'Gap: ')+(Math.abs(sc.gap)/1e6).toFixed(2)+'Mt</td>'+
+        '<td style="padding:8px 8px;text-align:center;font-size:16px">'+(sc.met?'✅':'❌')+'</td>'+
+      '</tr>';
+    }).join('')+
+    '</tbody></table>';
+
+  // Board narrative
+  var customRed = ((totalFE - custom[5]) / totalFE * 100).toFixed(1);
+  var iea2030Pct = (avgIEA * 100).toFixed(0);
+  var narrative = document.getElementById('feas-narrative');
+  if (narrative) narrative.innerHTML =
+    '<p><strong>Portfolio Overview:</strong> The bank\'s energy portfolio carries estimated financed emissions of '+
+    (totalFE/1e6).toFixed(2)+' MtCO₂e against a '+iea2030Pct+'% weighted-average IEA NZE reduction requirement by 2030 (implied target: '+(tgt2030/1e6).toFixed(2)+' MtCO₂e).</p>'+
+    '<p><strong>Scenario Analysis:</strong> Under business-as-usual conditions (minimal client action, no portfolio rebalancing), the bank reduces financed emissions by only '+(((totalFE-bau[5])/totalFE)*100).toFixed(1)+'% by 2030 — materially short of the IEA pathway. '+
+    'Under the current lever configuration ('+((clientPct)*100).toFixed(0)+'% client transition coverage, '+(clientRed*100).toFixed(0)+'%/yr reduction rate, '+(tiltPct*100).toFixed(0)+'% portfolio tilt), '+
+    'the portfolio achieves a '+customRed+'% reduction, '+((custom[5]<=tgt2030)?'<strong style="color:#16a34a">meeting the IEA 2030 target</strong>.':'<strong style="color:#b91c1c">still short of the IEA 2030 target by '+(((custom[5]-tgt2030)/totalFE)*100).toFixed(1)+'%</strong>. Additional levers — accelerated divestment from coal, increased green bond exposure, or bespoke transition finance agreements — should be explored.')+'</p>'+
+    '<p><strong>Key Levers:</strong> Client transition plans deliver the largest reduction impact, followed by portfolio rebalancing toward low-carbon sectors. Regulatory signals (EU Taxonomy, ECB climate stress testing) are expected to accelerate client action post-2027. Board recommendation: establish interim 2027 review checkpoint to assess trajectory.</p>'+
+    '<p style="font-size:11px;color:var(--muted);margin-top:12px"><em>Sources: IEA Net Zero Emissions by 2050 (2023 update) · PCAF Global GHG Accounting & Reporting Standard Part A (2022) · NGFS Phase 4 scenarios · IPCC AR6 WGIII (2022). This analysis is illustrative and should be reviewed by qualified sustainability professionals before board submission.</em></p>';
+}
+
+// ── CSV export ────────────────────────────────────────────────────────────
+function _pcafExportCsv() {
+  var ass = _lbState.assessed;
+  if (!ass || !ass.length) { toast('No data to export'); return; }
+  var enriched = ass.map(function(b){ return Object.assign({}, b, _pcafCalc(b)); });
+  var rows = [['Borrower','Sector','Outstanding ($M)','EV ($M)','Attribution %','Scope 1 (tCO2e)','Scope 2 (tCO2e)','Financed Emissions (tCO2e)','Intensity (tCO2e/$M)','PCAF Score']];
+  enriched.forEach(function(b) {
+    rows.push([b.borrower, b.sector, b.loanM, b.ev.toFixed(0), (b.attribution*100).toFixed(1),
+               b.scope1||0, b.scope2||0, Math.round(b.financed), b.intensity.toFixed(0), b.pcafScore]);
+  });
+  var csv = rows.map(function(r){ return r.join(','); }).join('\n');
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'PCAF_FinancedEmissions_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
 }
 
 /* ── LICENSE GATE (Supabase-backed 7-day trial) ─── */
