@@ -4346,12 +4346,32 @@ var HEAT_FREQ=1.40, PRECIP_PCT=7.0, FWI_PCT=12.0, CYC_INT=5.0;
 // 10 hazard functions
 function _hz_heat(r,ssp,yr){var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).ht,w=regW(ssp,yr,r),fm=Math.pow(HEAT_FREQ,w),sev=Math.min(5,bl*(1+w*0.35)),p=Math.min(0.95,0.08*fm),ls=Math.min(0.20,Math.max(0,(sev-2)*0.025)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);return{h:'Heat Stress',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*(1+w3*0.35)),t50:Math.min(5,bl*(1+w5*0.35)),src:'NASA NEX-GDDP-CMIP6 + IPCC AR6 Ch11.3',note:'Warming '+w.toFixed(2)+'°C; freq ×'+fm.toFixed(2),applicable:true};}
 function _hz_rflood(r,ssp,yr){var b=WRI_BASELINE[r]||WRI_BASELINE.global,bl=b.rf,w=regW(ssp,yr,r),lulc=REGION_LULC[r]||'grassland',pc=1+PRECIP_PCT*w/100,rm=RUNOFF_LULC[lulc]||1,sev=Math.min(5,bl*pc*rm),p=Math.min(0.90,bl/5*pc*0.25),ls=Math.min(0.25,Math.max(0,(sev-1.5)*0.035)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),p30=1+PRECIP_PCT*w3/100,p50=1+PRECIP_PCT*w5/100;return{h:'Riverine Flood',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*p30*rm),t50:Math.min(5,bl*p50*rm),src:'WRI Aqueduct 4.0 + Clausius-Clapeyron',note:'Precip +'+((pc-1)*100).toFixed(1)+'%; runoff '+rm.toFixed(1)+'× ('+lulc+')',applicable:true};}
-function _hz_cflood(r,ssp,yr,isc){if(!isc)return{h:'Coastal Flood',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'Inland',applicable:false};var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).cf,slr=sspSLR(ssp,yr,r),amp=1+slr*3.5,sev=Math.min(5,bl*amp),p=Math.min(0.80,bl/5*amp*0.20),ls=Math.min(0.30,Math.max(0,(sev-1)*0.045)),s30=sspSLR(ssp,2030,r),s50=sspSLR(ssp,2050,r);return{h:'Coastal Flood',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*(1+s30*3.5)),t50:Math.min(5,bl*(1+s50*3.5)),src:'WRI Aqueduct + IPCC AR6 Ch9',note:'SLR '+slr.toFixed(3)+'m',applicable:true};}
-function _hz_slr(r,ssp,yr,isc,el){if(!isc||el>20)return{h:'Sea Level Rise',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:isc?'Elev '+el+'m > 20m':'Inland',applicable:false};var slr=sspSLR(ssp,yr,r),ef=Math.max(0.1,1-el/20),sev=Math.min(5,slr*5*ef*2),p=Math.min(0.70,sev/5*0.30),ls=Math.min(0.40,sev*0.04*ef),s30=sspSLR(ssp,2030,r),s50=sspSLR(ssp,2050,r);return{h:'Sea Level Rise',sev:sev,prob:p,loss:ls,t30:Math.min(5,s30*5*ef*2),t50:Math.min(5,s50*5*ef*2),src:'IPCC AR6 Ch9 + NOAA SLR proxy',note:'SLR '+slr.toFixed(3)+'m; elev '+el+'m',applicable:true};}
-function _hz_swi(r,ssp,yr,isc,el){if(!isc)return{h:'Saltwater Intrusion',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'Inland',applicable:false};var b=WRI_BASELINE[r]||WRI_BASELINE.global,slr=sspSLR(ssp,yr,r),ef=Math.max(0,1-el/15),sev=Math.min(5,(slr*4+b.ws*0.5)*ef),p=Math.min(0.60,sev/5*0.20),ls=Math.min(0.15,sev*0.018),s30=sspSLR(ssp,2030,r),s50=sspSLR(ssp,2050,r);return{h:'Saltwater Intrusion',sev:sev,prob:p,loss:ls,t30:Math.min(5,(s30*4+b.ws*0.5)*ef),t50:Math.min(5,(s50*4+b.ws*0.5)*ef),src:'IPCC AR6 WG2 Ch4 + WRI Aqueduct',note:'SLR '+slr.toFixed(3)+'m; elev '+el+'m',applicable:true};}
+function _hz_cflood(r,ssp,yr,isc){if(!isc)return{h:'Coastal Flood',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'✓ Not applicable — inland site (>80km from coast)',applicable:false};var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).cf,slr=sspSLR(ssp,yr,r),amp=1+slr*3.5,sev=Math.min(5,bl*amp),p=Math.min(0.80,bl/5*amp*0.20),ls=Math.min(0.30,Math.max(0,(sev-1)*0.045)),s30=sspSLR(ssp,2030,r),s50=sspSLR(ssp,2050,r);return{h:'Coastal Flood',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*(1+s30*3.5)),t50:Math.min(5,bl*(1+s50*3.5)),src:'WRI Aqueduct + IPCC AR6 Ch9',note:'SLR '+slr.toFixed(3)+'m',applicable:true};}
+function _hz_slr(r,ssp,yr,isc,el){if(!isc||el>20)return{h:'Sea Level Rise',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:isc?'✓ Not applicable — elev '+el+'m (SLR affects <20m elevation only)':'✓ Not applicable — inland site (sea-level hazards are coastal only)',applicable:false};var slr=sspSLR(ssp,yr,r),ef=Math.max(0.1,1-el/20),sev=Math.min(5,slr*5*ef*2),p=Math.min(0.70,sev/5*0.30),ls=Math.min(0.40,sev*0.04*ef),s30=sspSLR(ssp,2030,r),s50=sspSLR(ssp,2050,r);return{h:'Sea Level Rise',sev:sev,prob:p,loss:ls,t30:Math.min(5,s30*5*ef*2),t50:Math.min(5,s50*5*ef*2),src:'IPCC AR6 Ch9 + NOAA SLR proxy',note:'SLR '+slr.toFixed(3)+'m; elev '+el+'m',applicable:true};}
+function _hz_swi(r,ssp,yr,isc,el){if(!isc)return{h:'Saltwater Intrusion',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'✓ Not applicable — inland site (saltwater intrusion affects coastal aquifers only)',applicable:false};var b=WRI_BASELINE[r]||WRI_BASELINE.global,slr=sspSLR(ssp,yr,r),ef=Math.max(0,1-el/15),sev=Math.min(5,(slr*4+b.ws*0.5)*ef),p=Math.min(0.60,sev/5*0.20),ls=Math.min(0.15,sev*0.018),s30=sspSLR(ssp,2030,r),s50=sspSLR(ssp,2050,r);return{h:'Saltwater Intrusion',sev:sev,prob:p,loss:ls,t30:Math.min(5,(s30*4+b.ws*0.5)*ef),t50:Math.min(5,(s50*4+b.ws*0.5)*ef),src:'IPCC AR6 WG2 Ch4 + WRI Aqueduct',note:'SLR '+slr.toFixed(3)+'m; elev '+el+'m',applicable:true};}
 function _hz_slide(r,ssp,yr,el){var prone=LANDSLIDE_SET.has(r),base=prone?2.5:0.8,w=regW(ssp,yr,r),pc=1+PRECIP_PCT*w/100,lulc=REGION_LULC[r]||'grassland',cf=SLIDE_CF[lulc]||1.0,ef=Math.min(2,1+el/3000),sev=Math.min(5,base*pc*cf*ef*0.85),p=Math.min(0.40,sev/5*0.15),ls=Math.min(0.20,Math.max(0,(sev-1.5)*0.025)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),p3=1+PRECIP_PCT*w3/100,p5=1+PRECIP_PCT*w5/100;return{h:'Landslide',sev:sev,prob:p,loss:ls,t30:Math.min(5,base*p3*cf*ef*0.85),t50:Math.min(5,base*p5*cf*ef*0.85),src:'IPCC AR6 WG2 Ch5; SRTM DEM proxy',note:'Prone:'+prone+'; elev '+el+'m; '+lulc,applicable:true};}
 function _hz_fire(r,ssp,yr){var prone=WILDFIRE_SET.has(r),base=prone?2.8:1.0,w=regW(ssp,yr,r),fwi=1+FWI_PCT*w/100,lulc=REGION_LULC[r]||'grassland',fuel=FUEL_LULC[lulc]||1,sev=Math.min(5,base*fwi*fuel),p=Math.min(0.85,sev/5*(prone?0.35:0.10)),ls=Math.min(0.35,Math.max(0,(sev-2)*0.04)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),f3=1+FWI_PCT*w3/100,f5=1+FWI_PCT*w5/100;return{h:'Wildfire',sev:sev,prob:p,loss:ls,t30:Math.min(5,base*f3*fuel),t50:Math.min(5,base*f5*fuel),src:'NASA FIRMS + IPCC AR6 WG2 Ch12.3',note:'FWI +'+((fwi-1)*100).toFixed(1)+'%; fuel '+fuel.toFixed(1)+'× ('+lulc+')',applicable:true};}
-function _hz_cyc(r,ssp,yr,isc){if(!CYCLONE_SET.has(r)||!isc)return{h:'Cyclone',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'Outside cyclone belt',applicable:false};var bP={'AU-QLD':0.12,'AU-WA':0.08,'AU-NT':0.10,'IN-MH':0.06,'ID-KI':0.04,'BR-PA':0.03,'US-TX':0.10,'ZA':0.04}[r]||0.05,w=regW(ssp,yr,r),ic=1+CYC_INT*w/100,p=Math.min(0.40,bP*(1-0.03*w)),sev=Math.min(5,3*ic),ls=Math.min(0.50,sev*0.06*bP*10),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),i3=1+CYC_INT*w3/100,i5=1+CYC_INT*w5/100;return{h:'Cyclone',sev:sev,prob:p,loss:ls,t30:Math.min(5,3*i3),t50:Math.min(5,3*i5),src:'IBTRACS v4 + IPCC AR6 Ch11.7',note:'Cat3+ p '+bP.toFixed(2)+'; int +'+((ic-1)*100).toFixed(1)+'%',applicable:true};}
+function _hz_cyc(r,ssp,yr,isc){
+  /* Cyclones affect BOTH coastal AND inland areas — WMO/IPCC AR6 Ch11.7 documents
+     tropical cyclone impacts 200–400km inland (storm surge, wind, rain, flooding).
+     Coastal assets face full intensity; inland assets in cyclone-belt regions receive
+     55% of coastal intensity (empirical attenuation per IBTrACS v4 landfall studies).
+     Only regions entirely outside tropical cyclone tracks are excluded. */
+  if(!CYCLONE_SET.has(r))return{h:'Cyclone',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'Outside cyclone belt',applicable:false};
+  var inlandF=isc?1.0:0.55; /* 45% attenuation >80km inland per WMO TC inland impact data */
+  var bP={'AU-QLD':0.12,'AU-WA':0.08,'AU-NT':0.10,'IN-MH':0.06,'ID-KI':0.04,'BR-PA':0.03,'US-TX':0.10,'ZA':0.04}[r]||0.05;
+  var w=regW(ssp,yr,r),ic=1+CYC_INT*w/100,
+      p=Math.min(0.40,bP*inlandF*(1-0.03*w)),
+      sev=Math.min(5,3*ic*inlandF),
+      ls=Math.min(0.50,sev*0.06*bP*10*inlandF);
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),i3=1+CYC_INT*w3/100,i5=1+CYC_INT*w5/100;
+  var locNote=isc?'coastal':'inland (55% attenuation)';
+  return{h:'Cyclone',sev:sev,prob:p,loss:ls,
+    t30:Math.min(5,3*i3*inlandF),t50:Math.min(5,3*i5*inlandF),
+    src:'IBTRACS v4 + IPCC AR6 Ch11.7',
+    note:'Cat3+ p '+bP.toFixed(2)+'; int +'+((ic-1)*100).toFixed(1)+'%; '+locNote,
+    applicable:true};
+}
 function _hz_drt(r,ssp,yr){var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).dr,w=regW(ssp,yr,r),dm=1+w*0.22+w*w*0.04,sev=Math.min(5,bl*dm),p=Math.min(0.80,sev/5*0.30),ls=Math.min(0.25,Math.max(0,(sev-2)*0.030)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),d3=1+w3*0.22+w3*w3*0.04,d5=1+w5*0.22+w5*w5*0.04;return{h:'Drought',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*d3),t50:Math.min(5,bl*d5),src:'WRI Aqueduct 4.0 + IPCC AR6 Ch11.6',note:'Drought mult '+dm.toFixed(2)+'× at '+w.toFixed(2)+'°C',applicable:true};}
 function _hz_wat(r,ssp,yr){var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).ws,w=regW(ssp,yr,r),sm=1+w*0.15,sev=Math.min(5,bl*sm),p=Math.min(0.95,sev/5*0.55),ls=Math.min(0.20,Math.max(0,(sev-2.5)*0.025)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);return{h:'Water Stress',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*(1+w3*0.15)),t50:Math.min(5,bl*(1+w5*0.15)),src:'WRI Aqueduct 4.0 + IPCC AR6 WG2 Ch4',note:'Baseline '+bl.toFixed(1)+'/5; mult '+sm.toFixed(2)+'×',applicable:true};}
 /* Seismic hazard — static (not climate-driven); based on USGS/GEM Global Seismic Hazard Atlas
@@ -5364,8 +5384,10 @@ function buildAndLoadResults() {
       ? hList.reduce(function(s,a){ return s + (a.loss_2030_pct||0); }, 0) / hList.length
       : 0;
 
-    // Physical pillar: scale 0–100 (5% avg loss → 100)
-    var physScore  = Math.min(100, avgLoss * 200);
+    // Physical pillar: scale 0–100. avgLoss is in % (e.g. 9.80 for 9.80%).
+    // Calibration: 4% loss→20 (Low), 9%→45 (Elevated), 14%→70 (High), 20%→100 (Very High).
+    // Factor *5 replaces the erroneous *200 which expected a decimal (0–1) not percent (0–100).
+    var physScore  = Math.min(100, avgLoss * 5);
     var physLabel  = physScore >= 70 ? 'High' : physScore >= 45 ? 'Elevated' : physScore >= 20 ? 'Moderate' : 'Low';
 
     // Transition pillar: carbon cost as % of EBITDA under NZE 2030
@@ -7985,7 +8007,9 @@ function _xlInjectToEngine() {
   // ── Build CRI Rating ────────────────────────────────────────────────────
   var hList    = D.hazards[co_id];
   var avgLoss  = hList.length ? hList.reduce(function(s,a){ return s+(a.loss_2030_pct||0); },0) / hList.length : 0;
-  var physScore = Math.min(100, avgLoss * 200);
+  // avgLoss is stored in % (e.g. 9.80 for 9.80%). Factor *5 gives proper 0–100 range:
+  // 4%→20 (Low), 9%→45 (Elevated), 14%→70 (High), 20%→100 (Very High)
+  var physScore = Math.min(100, avgLoss * 5);
   var physLabel = physScore>=70?'High':physScore>=45?'Elevated':physScore>=20?'Moderate':'Low';
   var nzeRun   = D.companies[co_id].runs.nze_2050;
   var cpRun    = D.companies[co_id].runs.current_policies;
