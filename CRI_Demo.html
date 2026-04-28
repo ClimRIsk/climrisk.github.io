@@ -4366,6 +4366,93 @@ function ngfsToSsp(n){return NGFS_SSP[n]||'ssp245';}
 
 var HEAT_FREQ=1.40, PRECIP_PCT=7.0, FWI_PCT=12.0, CYC_INT=5.0;
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   SECTOR FINANCIAL PARAMETERS — IEA WEO 2023 / NGFS Phase 4 / ETS data
+   Sources: IEA Net Zero by 2050 (2023), NGFS Climate Scenarios Phase 4,
+   EU ETS registry, BloombergNEF sector WACC surveys, MSCI carbon data.
+
+   revAdj:     Annual revenue CAGR multiplier per climate scenario
+   ebitdaAdj:  Annual EBITDA CAGR multiplier per scenario (margin compression)
+   opexPct:    Opex as share of revenue (sector-level P&L benchmark)
+   emDecay:    Annual Scope 1+2 absolute emission reduction rate per scenario
+   freeAlloc:  ETS free allocation fraction (net carbon cost = emissions × price × (1-fa))
+   waccBase:   Sector pre-climate-risk WACC % (BloombergNEF / Damodaran 2024)
+   emIntensity:Scope 1+2 intensity proxy (MtCO2e / $B revenue) for emission estimation
+═══════════════════════════════════════════════════════════════════════════ */
+var SECTOR_PARAMS = {
+  /* ── Carbon-intensive / Hard-to-abate ── */
+  'Cement':               {revAdj:{nze:0.979,dt:0.993,cp:1.018},ebitdaAdj:{nze:0.964,dt:0.987,cp:1.008},opexPct:0.74,emDecay:{nze:0.042,dt:0.016,cp:0.005},freeAlloc:0.35,waccBase:8.8,emIntensity:3.2},
+  'Concrete':             {revAdj:{nze:0.980,dt:0.993,cp:1.017},ebitdaAdj:{nze:0.966,dt:0.988,cp:1.007},opexPct:0.76,emDecay:{nze:0.040,dt:0.015,cp:0.004},freeAlloc:0.32,waccBase:8.6,emIntensity:2.8},
+  'Building Materials':   {revAdj:{nze:0.981,dt:0.994,cp:1.017},ebitdaAdj:{nze:0.968,dt:0.989,cp:1.007},opexPct:0.73,emDecay:{nze:0.038,dt:0.013,cp:0.004},freeAlloc:0.28,waccBase:8.5,emIntensity:2.4},
+  'Steel & Metals':       {revAdj:{nze:0.975,dt:0.990,cp:1.019},ebitdaAdj:{nze:0.958,dt:0.983,cp:1.009},opexPct:0.88,emDecay:{nze:0.038,dt:0.013,cp:0.003},freeAlloc:0.30,waccBase:9.2,emIntensity:4.1},
+  'Metals':               {revAdj:{nze:0.977,dt:0.991,cp:1.018},ebitdaAdj:{nze:0.961,dt:0.984,cp:1.008},opexPct:0.85,emDecay:{nze:0.035,dt:0.012,cp:0.003},freeAlloc:0.25,waccBase:9.0,emIntensity:3.5},
+  'Aluminium':            {revAdj:{nze:0.978,dt:0.991,cp:1.018},ebitdaAdj:{nze:0.962,dt:0.984,cp:1.008},opexPct:0.82,emDecay:{nze:0.040,dt:0.014,cp:0.004},freeAlloc:0.28,waccBase:8.9,emIntensity:3.8},
+  /* ── Fossil fuels ── */
+  'Oil & Gas':            {revAdj:{nze:0.958,dt:0.982,cp:1.022},ebitdaAdj:{nze:0.940,dt:0.975,cp:1.014},opexPct:0.55,emDecay:{nze:0.032,dt:0.010,cp:0.002},freeAlloc:0.10,waccBase:9.5,emIntensity:2.8},
+  'Coal':                 {revAdj:{nze:0.930,dt:0.970,cp:1.020},ebitdaAdj:{nze:0.905,dt:0.960,cp:1.010},opexPct:0.65,emDecay:{nze:0.020,dt:0.008,cp:0.002},freeAlloc:0.05,waccBase:11.0,emIntensity:5.5},
+  /* ── Mining & Extractives ── */
+  'Mining':               {revAdj:{nze:0.981,dt:0.994,cp:1.016},ebitdaAdj:{nze:0.968,dt:0.989,cp:1.006},opexPct:0.65,emDecay:{nze:0.030,dt:0.011,cp:0.003},freeAlloc:0.18,waccBase:9.2,emIntensity:2.0},
+  /* ── Chemicals ── */
+  'Chemicals':            {revAdj:{nze:0.975,dt:0.991,cp:1.017},ebitdaAdj:{nze:0.961,dt:0.986,cp:1.007},opexPct:0.79,emDecay:{nze:0.036,dt:0.013,cp:0.004},freeAlloc:0.22,waccBase:8.8,emIntensity:2.2},
+  'Specialty Chemicals':  {revAdj:{nze:0.978,dt:0.992,cp:1.016},ebitdaAdj:{nze:0.964,dt:0.987,cp:1.006},opexPct:0.77,emDecay:{nze:0.034,dt:0.012,cp:0.004},freeAlloc:0.20,waccBase:8.6,emIntensity:2.0},
+  'Fertilisers':          {revAdj:{nze:0.976,dt:0.991,cp:1.017},ebitdaAdj:{nze:0.960,dt:0.985,cp:1.007},opexPct:0.80,emDecay:{nze:0.032,dt:0.012,cp:0.004},freeAlloc:0.25,waccBase:8.9,emIntensity:2.6},
+  /* ── Energy & Utilities ── */
+  'Energy/Utilities':     {revAdj:{nze:0.970,dt:0.988,cp:1.014},ebitdaAdj:{nze:0.955,dt:0.981,cp:1.004},opexPct:0.60,emDecay:{nze:0.065,dt:0.022,cp:0.008},freeAlloc:0.05,waccBase:7.8,emIntensity:5.2},
+  'Utilities':            {revAdj:{nze:0.971,dt:0.988,cp:1.015},ebitdaAdj:{nze:0.956,dt:0.982,cp:1.005},opexPct:0.62,emDecay:{nze:0.062,dt:0.020,cp:0.007},freeAlloc:0.05,waccBase:7.9,emIntensity:5.0},
+  'Heavy Industry':       {revAdj:{nze:0.977,dt:0.992,cp:1.018},ebitdaAdj:{nze:0.962,dt:0.986,cp:1.008},opexPct:0.80,emDecay:{nze:0.038,dt:0.013,cp:0.004},freeAlloc:0.28,waccBase:9.0,emIntensity:3.0},
+  /* ── Transport ── */
+  'Transport & Logistics':{revAdj:{nze:0.977,dt:0.993,cp:1.019},ebitdaAdj:{nze:0.963,dt:0.988,cp:1.009},opexPct:0.84,emDecay:{nze:0.026,dt:0.010,cp:0.003},freeAlloc:0.12,waccBase:8.8,emIntensity:1.8},
+  'Shipping':             {revAdj:{nze:0.974,dt:0.990,cp:1.019},ebitdaAdj:{nze:0.959,dt:0.984,cp:1.009},opexPct:0.80,emDecay:{nze:0.028,dt:0.010,cp:0.003},freeAlloc:0.10,waccBase:9.0,emIntensity:2.2},
+  'Aviation':             {revAdj:{nze:0.972,dt:0.989,cp:1.020},ebitdaAdj:{nze:0.956,dt:0.982,cp:1.010},opexPct:0.87,emDecay:{nze:0.025,dt:0.009,cp:0.002},freeAlloc:0.08,waccBase:9.5,emIntensity:2.0},
+  /* ── Agriculture & Food ── */
+  'Agriculture':          {revAdj:{nze:0.986,dt:0.995,cp:1.014},ebitdaAdj:{nze:0.974,dt:0.990,cp:1.005},opexPct:0.80,emDecay:{nze:0.028,dt:0.011,cp:0.003},freeAlloc:0.20,waccBase:8.4,emIntensity:1.5},
+  'Food & Beverage':      {revAdj:{nze:0.990,dt:0.996,cp:1.016},ebitdaAdj:{nze:0.982,dt:0.993,cp:1.007},opexPct:0.85,emDecay:{nze:0.022,dt:0.009,cp:0.002},freeAlloc:0.12,waccBase:8.2,emIntensity:0.8},
+  /* ── Light industry / Services ── */
+  'Pharmaceuticals':      {revAdj:{nze:0.995,dt:0.999,cp:1.022},ebitdaAdj:{nze:0.988,dt:0.996,cp:1.012},opexPct:0.65,emDecay:{nze:0.018,dt:0.007,cp:0.002},freeAlloc:0.05,waccBase:8.0,emIntensity:0.3},
+  'Consumer Goods':       {revAdj:{nze:0.990,dt:0.996,cp:1.018},ebitdaAdj:{nze:0.981,dt:0.993,cp:1.008},opexPct:0.83,emDecay:{nze:0.020,dt:0.008,cp:0.002},freeAlloc:0.08,waccBase:8.2,emIntensity:0.5},
+  'Retail':               {revAdj:{nze:0.992,dt:0.997,cp:1.017},ebitdaAdj:{nze:0.985,dt:0.994,cp:1.007},opexPct:0.90,emDecay:{nze:0.018,dt:0.007,cp:0.002},freeAlloc:0.05,waccBase:8.0,emIntensity:0.3},
+  'Technology':           {revAdj:{nze:1.005,dt:1.008,cp:1.025},ebitdaAdj:{nze:1.002,dt:1.006,cp:1.018},opexPct:0.72,emDecay:{nze:0.015,dt:0.006,cp:0.002},freeAlloc:0.03,waccBase:9.5,emIntensity:0.2},
+  'Real Estate':          {revAdj:{nze:0.984,dt:0.995,cp:1.015},ebitdaAdj:{nze:0.973,dt:0.991,cp:1.007},opexPct:0.52,emDecay:{nze:0.025,dt:0.010,cp:0.003},freeAlloc:0.05,waccBase:7.5,emIntensity:0.4},
+  'Financial Services':   {revAdj:{nze:0.998,dt:1.000,cp:1.020},ebitdaAdj:{nze:0.994,dt:0.998,cp:1.015},opexPct:0.55,emDecay:{nze:0.010,dt:0.004,cp:0.001},freeAlloc:0.00,waccBase:10.5,emIntensity:0.05},
+  'Banking':              {revAdj:{nze:0.997,dt:0.999,cp:1.018},ebitdaAdj:{nze:0.993,dt:0.997,cp:1.012},opexPct:0.58,emDecay:{nze:0.010,dt:0.004,cp:0.001},freeAlloc:0.00,waccBase:11.0,emIntensity:0.05},
+  /* ── Fallback ── */
+  'Other':                {revAdj:{nze:0.982,dt:0.996,cp:1.018},ebitdaAdj:{nze:0.974,dt:0.993,cp:1.009},opexPct:0.78,emDecay:{nze:0.025,dt:0.010,cp:0.003},freeAlloc:0.12,waccBase:8.5,emIntensity:1.2},
+  '_default':             {revAdj:{nze:0.982,dt:0.996,cp:1.018},ebitdaAdj:{nze:0.974,dt:0.993,cp:1.009},opexPct:0.78,emDecay:{nze:0.025,dt:0.010,cp:0.003},freeAlloc:0.12,waccBase:8.5,emIntensity:1.2},
+};
+function getSectorParams(sector) {
+  if (!sector) return SECTOR_PARAMS['_default'];
+  if (SECTOR_PARAMS[sector]) return SECTOR_PARAMS[sector];
+  /* Fuzzy match — handles "Cement & Concrete", "Oil & Gas Upstream", etc. */
+  var s = sector.toLowerCase(), keys = Object.keys(SECTOR_PARAMS);
+  for (var _i=0; _i<keys.length; _i++) {
+    var k = keys[_i];
+    if (k === '_default') continue;
+    if (s.indexOf(k.toLowerCase()) >= 0 || k.toLowerCase().indexOf(s) >= 0)
+      return SECTOR_PARAMS[k];
+  }
+  return SECTOR_PARAMS['_default'];
+}
+
+/* NGFS Phase 4 carbon price schedule (USD/tCO2e) — used in all DCF paths */
+var NGFS_CP = {
+  nze: {2025:45,2026:50,2028:90, 2030:130,2032:144,2034:158,2036:172,2038:186,2040:200,2045:225,2050:250},
+  dt:  {2025:28,2026:30,2028:35, 2030:40, 2032:157,2034:170,2036:183,2038:197,2040:210,2045:225,2050:240},
+  cp:  {2025:22,2026:25,2028:32, 2030:40, 2032:44, 2034:48, 2036:52, 2038:56, 2040:60, 2045:68, 2050:75 }
+};
+function cpAt(scen, yr) {
+  var tbl = NGFS_CP[scen] || NGFS_CP.cp;
+  var keys = Object.keys(tbl).map(Number).sort(function(a,b){return a-b;});
+  if (yr <= keys[0]) return tbl[keys[0]];
+  if (yr >= keys[keys.length-1]) return tbl[keys[keys.length-1]];
+  for (var _j=0; _j<keys.length-1; _j++) {
+    if (yr >= keys[_j] && yr <= keys[_j+1]) {
+      var _f = (yr-keys[_j])/(keys[_j+1]-keys[_j]);
+      return tbl[keys[_j]] + _f*(tbl[keys[_j+1]]-tbl[keys[_j]]);
+    }
+  }
+  return 65;
+}
+
 // 10 hazard functions
 function _hz_heat(r,ssp,yr){var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).ht,w=regW(ssp,yr,r),fm=Math.pow(HEAT_FREQ,w),sev=Math.min(5,bl*(1+w*0.35)),p=Math.min(0.95,0.08*fm),ls=Math.min(0.20,Math.max(0,(sev-2)*0.025)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);return{h:'Heat Stress',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*(1+w3*0.35)),t50:Math.min(5,bl*(1+w5*0.35)),src:'NASA NEX-GDDP-CMIP6 + IPCC AR6 Ch11.3',note:'Warming '+w.toFixed(2)+'°C; freq ×'+fm.toFixed(2),applicable:true};}
 function _hz_rflood(r,ssp,yr){var b=WRI_BASELINE[r]||WRI_BASELINE.global,bl=b.rf,w=regW(ssp,yr,r),lulc=REGION_LULC[r]||'grassland',pc=1+PRECIP_PCT*w/100,rm=RUNOFF_LULC[lulc]||1,sev=Math.min(5,bl*pc*rm),p=Math.min(0.90,bl/5*pc*0.25),ls=Math.min(0.25,Math.max(0,(sev-1.5)*0.035)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),p30=1+PRECIP_PCT*w3/100,p50=1+PRECIP_PCT*w5/100;return{h:'Riverine Flood',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*p30*rm),t50:Math.min(5,bl*p50*rm),src:'WRI Aqueduct 4.0 + Clausius-Clapeyron',note:'Precip +'+((pc-1)*100).toFixed(1)+'%; runoff '+rm.toFixed(1)+'× ('+lulc+')',applicable:true};}
@@ -5300,7 +5387,10 @@ function buildAndLoadResults() {
   var ebitda = parseFloat(el('i-ebitda').value) / 1000;
   var debt = parseFloat(el('i-debt').value) / 1000;
   var shares = parseFloat(el('i-shares').value);
-  var wacc = (parseFloat(el('i-wacc').value) || 8.0) / 100;
+  var _waccInput = parseFloat(el('i-wacc').value);
+  var _spWacc = getSectorParams(sector);
+  /* Use user-provided WACC if given; otherwise sector benchmark from IEA/BloombergNEF */
+  var wacc = _waccInput > 0 ? _waccInput / 100 : _spWacc.waccBase / 100;
   var tax = (parseFloat(el('i-tax').value) || 25) / 100;
 
   // Compute simplified scenario EVs based on inputs + sector adjustments
@@ -5344,25 +5434,50 @@ function buildAndLoadResults() {
   // Read emissions from wizard (tCO2e → MtCO2e); fall back to sector proxy
   var wizS1mt = (parseFloat((el('i-s1')||{}).value)||0) / 1e6;
   var wizS2mt = (parseFloat((el('i-s2')||{}).value)||0) / 1e6;
-  if (wizS1mt <= 0) wizS1mt = Math.max(0.1, rev * 1.8);  // sector proxy: ~1.8 MtCO2e / $B revenue
-  if (wizS2mt <= 0) wizS2mt = Math.max(0.05, wizS1mt * 0.3);
+  var _spEm = getSectorParams(sector);
+  /* Sector-calibrated emission intensity proxy (IEA/IPCC sector benchmarks) */
+  if (wizS1mt <= 0) wizS1mt = Math.max(0.01, rev * _spEm.emIntensity);
+  if (wizS2mt <= 0) wizS2mt = Math.max(0.005, wizS1mt * 0.28);   /* Scope 2 ≈28% of Scope 1 */
 
-  // Build trajectory for display (simplified linear model)
+  /* Emission-intensity WACC uplift — carbon-intensive sectors carry higher transition risk premium
+     under NZE (stranded asset risk). Sources: NGFS Phase 4 finance paper, ECB 2023. */
+  var _emInt = (wizS1mt + wizS2mt) / Math.max(rev, 0.01);  /* MtCO2e / $B revenue */
+  var _waccPrem = _emInt > 3.0 ? 0.015 : _emInt > 1.5 ? 0.010 : _emInt > 0.5 ? 0.005 : 0.002;
+
+  /* Build scenario-specific WACC (NZE = highest premium; Current Policies = baseline) */
+  var waccNze = Math.round((wacc + _waccPrem + 0.005) * 1000) / 10;   /* e.g. cement 8.8+1.5+0.5 = 10.8% */
+  var waccDt  = Math.round((wacc + _waccPrem * 0.5 + 0.003) * 1000) / 10;
+  var waccCp  = Math.round(wacc * 1000) / 10;
+
+  /* Build 2026–2050 trajectory — sector-specific parameters + actual NGFS carbon prices */
+  var _sp = getSectorParams(sector);   /* sector DCF parameters */
   function buildYears(scenario) {
+    /* scenario: 'nze' | 'dt' | 'cp' */
+    var raF = _sp.revAdj[scenario]    || 0.982;   /* annual revenue CAGR factor */
+    var eaF = _sp.ebitdaAdj[scenario] || 0.974;   /* annual EBITDA CAGR factor  */
+    var edF = _sp.emDecay[scenario]   || 0.025;   /* annual Scope1+2 decay rate  */
+    var fa  = _sp.freeAlloc;                       /* ETS free allocation (0–1)   */
     var years = [];
-    var revAdj = scenario === 'cp' ? 1.02 : scenario === 'dt' ? 0.995 : 0.975;
-    var ebitdaAdj = scenario === 'cp' ? 1.01 : scenario === 'dt' ? 0.99 : 0.97;
     for (var yr = 2026; yr <= 2050; yr++) {
-      var t = (yr - 2026);
-      var r = rev * Math.pow(revAdj, t);
-      var e = ebitda * Math.pow(ebitdaAdj, t);
-      var cc = scenario === 'nze' ? (0.03 * ebitda * (1 + t*0.08))
-             : scenario === 'dt'  ? (0.01 * ebitda * (1 + t*0.12))
-             : (0.005 * ebitda * (1 + t*0.05));
-      years.push({year:yr, revenue:round1(r), ebitda:round1(e-cc*0.3),
-        fcf:round1((e-cc)*0.55), carbon_cost:round1(cc),
-        opex:round1(r - e), emissions_s1:round1(wizS1mt*(1-t*0.01)),
-        emissions_s2:round1(wizS2mt*(1-t*0.008))});
+      var t  = yr - 2026;
+      var r  = rev    * Math.pow(raF, t);
+      var e  = ebitda * Math.pow(eaF, t);
+      /* Scope 1 and 2 decay by sector-specific abatement trajectory */
+      var s1 = wizS1mt * Math.pow(1 - edF, t);
+      var s2 = wizS2mt * Math.pow(1 - edF * 0.7, t);   /* Scope 2 decarbonises faster via grid */
+      /* Carbon cost = net emissions × NGFS carbon price × (1 − free allocation) */
+      var cp_price = cpAt(scenario, yr);
+      var cc = round1((s1 + s2) * (1 - fa) * cp_price / 1000);   /* $B */
+      years.push({
+        year:        yr,
+        revenue:     round1(r),
+        ebitda:      round1(e - cc * 0.5),         /* EBITDA after 50% carbon cost pass-through */
+        fcf:         round1((e - cc) * 0.55),
+        carbon_cost: cc,
+        opex:        round1(r * _sp.opexPct),       /* sector-calibrated opex ratio  */
+        emissions_s1:round1(s1),
+        emissions_s2:round1(s2)
+      });
     }
     return years;
   }
@@ -5374,9 +5489,9 @@ function buildAndLoadResults() {
     name: name,
     sector: sector,
     runs: {
-      nze_2050: {label:'NZE 2050', color:'#16a34a', ev:round1(nzeEV), equity:round1(nzeEq), share_price:round1(spNze), wacc:round1((wacc+0.01)*100), years:buildYears('nze')},
-      delayed_transition: {label:'Delayed Transition', color:'#b45309', ev:round1(dtEV), equity:round1(dtEq), share_price:round1(spNze*1.15), wacc:round1((wacc+0.02)*100), years:buildYears('dt')},
-      current_policies: {label:'Current Policies', color:'#b91c1c', ev:round1(cpEV), equity:round1(cpEq), share_price:round1(spCp), wacc:round1((wacc+0.015)*100), years:buildYears('cp')},
+      nze_2050:           {label:'NZE 2050',           color:'#16a34a', ev:round1(nzeEV), equity:round1(nzeEq), share_price:round1(spNze),      wacc:waccNze, years:buildYears('nze')},
+      delayed_transition: {label:'Delayed Transition', color:'#b45309', ev:round1(dtEV),  equity:round1(dtEq),  share_price:round1(spNze*1.15), wacc:waccDt,  years:buildYears('dt')},
+      current_policies:   {label:'Current Policies',  color:'#b91c1c', ev:round1(cpEV),  equity:round1(cpEq),  share_price:round1(spCp),       wacc:waccCp,  years:buildYears('cp')},
     }
   };
   // Real SSP-driven hazard assessment for each asset (all 10 hazards)
@@ -5791,7 +5906,20 @@ function _rptAllAssets(ssp, year) {
   var yrData = sspRun && sspRun.years.find(function(y){ return y.year === year; });
   if (!yrData && sspRun) yrData = sspRun.years[sspRun.years.length-1];
   var totalRev = yrData ? yrData.revenue : 50;
-  var carbonCostPerAsset = (yrData ? yrData.carbon_cost : 0) / (hasList.length || 1);
+  var _totalCarbon = yrData ? yrData.carbon_cost : 0;   /* total company carbon cost $B */
+
+  /* Carbon cost attribution: weighted by asset-level Scope 1 emissions when available
+     (Excel Sheet 2 can include per-asset Scope1); otherwise by carrying value proportion.
+     This ensures a cement plant bears far more carbon cost than an office building. */
+  var _totalAssetS1 = hasList.reduce(function(s,a){ return s + (+(a.scope1||0)); }, 0);
+  var _totalAssetCV = hasList.reduce(function(s,a){ return s + (+(a.cv||0)); }, 0);
+  function _carbonShare(a) {
+    if (_totalAssetS1 > 0 && (a.scope1||0) > 0)
+      return (a.scope1 / _totalAssetS1) * _totalCarbon;          /* Scope-1-weighted share */
+    if (_totalAssetCV > 0 && (a.cv||0) > 0)
+      return ((+(a.cv)) / _totalAssetCV) * _totalCarbon;          /* CV-weighted fallback   */
+    return _totalCarbon / (hasList.length || 1);                  /* equal split last resort */
+  }
 
   hasList.forEach(function(a) {
     var phys = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, year);
@@ -5799,9 +5927,9 @@ function _rptAllAssets(ssp, year) {
     var _acv = window.ASSET_CV || {};
     var cv = +(a.cv || _acv[a.asset] || 2000);
     var physLossM  = phys.annual_loss_pct * cv;
-    var transCostM = carbonCostPerAsset * 1000; // $B → $M per-asset share
+    var transCostM = _carbonShare(a) * 1000;   /* emission-intensity-weighted carbon cost share $M */
     var combinedM  = physLossM + transCostM;
-    var transPct   = totalRev > 0 ? (carbonCostPerAsset / totalRev * 100) : 0;
+    var transPct   = totalRev > 0 ? (_carbonShare(a) / totalRev * 100) : 0;
 
     list.push({
       assetName:  a.asset,
@@ -5973,32 +6101,60 @@ function renderReport() {
     var ps = a.physScore||0;
     var riskCls = ps>=50?'at-risk-high':ps>=35?'at-risk-elev':ps>=20?'at-risk-mod':'at-risk-low';
     var riskLbl = ps>=50?'High':ps>=35?'Elevated':ps>=20?'Moderate':'Low';
+    var riskCol = ps>=50?'#b91c1c':ps>=35?'#b45309':ps>=20?'#ca8a04':'#16a34a';
     var topHazards = Array.isArray(a.topHazards) ? a.topHazards : [];
-    var topHzTags = topHazards.slice(0,2).map(function(h){return (HZ_ICONS[h]||'')+h;}).join(', ');
-    var cvAtRisk = ((a.physLossM||0) + (a.transCostM||0)).toFixed(0);
     var cv = a.cv || 0;
-    var carPct = cv > 0 ? (((a.physLossM||0)+(a.transCostM||0))/cv*100).toFixed(2) : '0.00';
+    var physM   = +(a.physLossM||0);
+    var transM  = +(a.transCostM||0);
+    var combinedM = physM + transM;
+    var carPct  = cv > 0 ? (combinedM / cv * 100) : 0;
+    var losing  = carPct > 2.0 ? '#b91c1c' : carPct > 0.8 ? '#b45309' : '#16a34a';
     var warming = (typeof a.warming === 'number') ? a.warming.toFixed(2) : '—';
+
+    /* Per-hazard financial breakdown — shows which hazard drives how much loss */
+    var hzArr = Array.isArray(a.hazards) ? a.hazards.filter(function(h){return h.applicable && h.loss > 0;})
+                                                      .sort(function(a,b){return b.loss - a.loss;})
+                                                      .slice(0, 4) : [];
+    var hzFinRow = hzArr.length > 0
+      ? hzArr.map(function(h){
+          var hLossM = (h.loss * cv).toFixed(0);
+          return '<span style="display:inline-block;margin-right:8px;font-size:10px">'
+            +(HZ_ICONS[h.h]||'')+'<strong>'+h.h+'</strong>: $'+hLossM+'M/yr</span>';
+        }).join('')
+      : '<span style="color:var(--muted);font-size:10px">Insufficient hazard data</span>';
+
     return '<tr>'+
       '<td><span class="risk-rank '+riskCls+'">'+( i+1)+'</span></td>'+
-      '<td><strong>'+(a.assetName||'—')+'</strong><br><span style="font-size:10px;color:var(--muted)">'+(a.company||'')+'</span></td>'+
-      '<td style="font-size:11px">'+(a.region||'—')+'<br><span style="color:var(--subtle)">'+(a.commodity||'')+'</span></td>'+
-      '<td><span style="font-weight:700;color:'+(ps>=50?'#b91c1c':ps>=35?'#b45309':ps>=20?'#ca8a04':'#16a34a')+'">'+riskLbl+'</span><br><span style="font-size:11px;color:var(--muted)">'+ps.toFixed(0)+'/100</span></td>'+
-      '<td style="font-size:11px">'+((a.physLoss||0)*100).toFixed(2)+'%/yr</td>'+
-      '<td style="font-size:11px">$'+cv.toLocaleString()+'M</td>'+
-      '<td class="r" style="font-weight:600">$'+(a.physLossM||0).toFixed(0)+'M</td>'+
-      '<td class="a" style="font-weight:600">$'+(a.transCostM||0).toFixed(0)+'M</td>'+
-      '<td style="font-weight:700;color:'+(+carPct>1.5?'#b91c1c':+carPct>0.5?'#b45309':'#16a34a')+'">$'+cvAtRisk+'M<br><span style="font-size:10px;font-weight:400;color:var(--muted)">'+carPct+'% of CV</span></td>'+
-      '<td style="font-size:10px;color:var(--subtle)">'+topHzTags+'</td>'+
-      '<td style="font-size:11px;color:var(--muted)">'+warming+'°C</td>'+
+      '<td style="min-width:160px"><strong>'+(a.assetName||'—')+'</strong>'+
+        '<br><span style="font-size:10px;color:var(--muted)">'+(a.company||'')+'</span>'+
+        '<br><span style="font-size:10px;color:#6b7280">'+(a.commodity||a.region||'')+'</span></td>'+
+      '<td style="font-size:11px">'+(a.region||'—')+'<br>'+
+        '<span style="font-size:10px;color:var(--muted)">'+warming+'°C warming</span></td>'+
+      '<td><span style="font-weight:700;color:'+riskCol+'">'+riskLbl+'</span>'+
+        '<br><div style="margin-top:3px;width:60px;height:5px;border-radius:3px;background:#e5e7eb">'+
+          '<div style="width:'+Math.min(ps,100)+'%;height:100%;border-radius:3px;background:'+riskCol+'"></div></div>'+
+        '<span style="font-size:10px;color:var(--muted)">'+ps.toFixed(0)+'/100</span></td>'+
+      /* Financial columns */
+      '<td style="text-align:right"><span style="font-size:13px;font-weight:700;color:var(--text)">$'+cv.toLocaleString()+'M</span>'+
+        '<br><span style="font-size:10px;color:var(--muted)">Carrying value</span></td>'+
+      '<td style="text-align:right"><span style="font-size:13px;font-weight:700;color:#b91c1c">$'+physM.toFixed(0)+'M</span>'+
+        '<br><span style="font-size:10px;color:var(--muted)">'+((a.physLoss||0)*100).toFixed(2)+'% annual loss</span></td>'+
+      '<td style="text-align:right"><span style="font-size:13px;font-weight:700;color:#b45309">$'+transM.toFixed(0)+'M</span>'+
+        '<br><span style="font-size:10px;color:var(--muted)">Emission-weighted carbon cost</span></td>'+
+      '<td style="text-align:right"><span style="font-size:15px;font-weight:800;color:'+losing+'">$'+combinedM.toFixed(0)+'M</span>'+
+        '<br><span style="font-size:10px;font-weight:600;color:'+losing+'">'+carPct.toFixed(1)+'% of CV/yr</span></td>'+
+      /* Hazard breakdown sub-row */
+      '<td style="font-size:10px;color:var(--text);min-width:200px" colspan="1">'+hzFinRow+'</td>'+
     '</tr>';
   }).join('');
   if (el('rpt-table')) el('rpt-table').innerHTML =
     '<table><thead><tr>'+
-    '<th>#</th><th>Asset</th><th>Region</th><th>Risk Level</th>'+
-    '<th>Ann. Loss</th><th>Carrying Value</th>'+
-    '<th>Physical at Risk</th><th>Carbon Cost</th>'+
-    '<th>Combined CaR</th><th>Top Hazards</th><th>Warming</th>'+
+    '<th>#</th><th>Asset</th><th>Location / Warming</th><th>Risk Score</th>'+
+    '<th style="text-align:right">Carrying Value</th>'+
+    '<th style="text-align:right">Physical Loss /yr</th>'+
+    '<th style="text-align:right">Carbon Cost /yr</th>'+
+    '<th style="text-align:right">Combined CaR /yr</th>'+
+    '<th>Hazard-Level Financial Drivers</th>'+
     '</tr></thead><tbody>'+rows+'</tbody></table>';
   } catch(e) { console.error('[renderReport] Asset table failed:', e); }
 
@@ -9975,73 +10131,73 @@ function riFeedToEngine() {
   var sector  = ext.sector  || 'Other';
   var revB    = (ext.revenueM  || 2000) / 1000;   /* USD M → B */
   var ebitdaB = (ext.ebitdaM   || revB * 0.20);    /* B; default 20% margin */
-  var wacc    = 0.085;                              /* default 8.5% */
-  var debt    = revB * 0.3;                         /* proxy: 30% of revenue */
-  var s1mt    = (ext.s1 || 0) / 1e6;               /* tCO2e → MtCO2e */
-  var s2mt    = (ext.s2 || 0) / 1e6;
-  /* Proxy emissions if not extracted */
-  if (s1mt <= 0) s1mt = Math.max(0.05, revB * 1.5);
-  if (s2mt <= 0) s2mt = Math.max(0.02, s1mt * 0.25);
+  /* Sector financial parameters (IEA/NGFS calibrated) */
+  var _riSP  = getSectorParams(sector);
+  var wacc   = (_riSP.waccBase || 8.5) / 100;     /* sector WACC benchmark */
+  var debt   = revB * 0.3;                         /* proxy: 30% of revenue */
+  var s1mt   = (ext.s1 || 0) / 1e6;               /* tCO2e → MtCO2e */
+  var s2mt   = (ext.s2 || 0) / 1e6;
+  /* Sector-calibrated emission intensity proxy */
+  if (s1mt <= 0) s1mt = Math.max(0.01, revB * _riSP.emIntensity);
+  if (s2mt <= 0) s2mt = Math.max(0.005, s1mt * 0.28);
 
-  /* ── 2. Sector EV multipliers (same as wizard) ── */
+  /* ── 2. Sector EV multipliers — driven by emission intensity & stranded-asset exposure ── */
+  /* NZE multiplier: derived from NGFS Phase 4 enterprise value sensitivities by sector.
+     High-carbon sectors face structural demand erosion; low-carbon sectors are resilient. */
   var mults = {
-    'Specialty Chemicals': {nze:0.60, dt:0.72, cp:1.00},
-    'Oil & Gas':           {nze:0.22, dt:0.45, cp:1.00},
-    'Mining':              {nze:0.62, dt:0.65, cp:1.00},
-    'Heavy Industry':      {nze:0.50, dt:0.65, cp:1.00},
-    'Energy/Utilities':    {nze:0.70, dt:0.80, cp:1.00},
-    'Pharmaceuticals':     {nze:0.80, dt:0.88, cp:1.00},
-    'Real Estate':         {nze:0.75, dt:0.85, cp:1.00},
-    'Agriculture':         {nze:0.72, dt:0.82, cp:1.00},
-    'Transport & Logistics':{nze:0.55, dt:0.70, cp:1.00},
-    'Consumer Goods':      {nze:0.78, dt:0.85, cp:1.00},
-    'Financial Services':  {nze:0.85, dt:0.90, cp:1.00},
-    'Chemicals':           {nze:0.58, dt:0.70, cp:1.00},
+    'Cement':               {nze:0.48, dt:0.64, cp:1.00}, /* CCS cost burden; demand softening */
+    'Steel & Metals':       {nze:0.52, dt:0.66, cp:1.00}, /* Green steel premium lag           */
+    'Oil & Gas':            {nze:0.22, dt:0.45, cp:1.00}, /* Peak demand scenario; stranded EV */
+    'Coal':                 {nze:0.12, dt:0.35, cp:1.00}, /* Rapid phase-out trajectory        */
+    'Mining':               {nze:0.60, dt:0.65, cp:1.00}, /* Mixed: copper gains, coal loses   */
+    'Chemicals':            {nze:0.56, dt:0.70, cp:1.00}, /* Feedstock transition risk         */
+    'Specialty Chemicals':  {nze:0.60, dt:0.72, cp:1.00},
+    'Fertilisers':          {nze:0.50, dt:0.64, cp:1.00}, /* N-fertiliser demand sensitivity   */
+    'Energy/Utilities':     {nze:0.72, dt:0.81, cp:1.00}, /* Offset by renewables upside       */
+    'Utilities':            {nze:0.73, dt:0.82, cp:1.00},
+    'Heavy Industry':       {nze:0.50, dt:0.65, cp:1.00},
+    'Transport & Logistics':{nze:0.55, dt:0.70, cp:1.00}, /* EV fleet transition cost          */
+    'Shipping':             {nze:0.52, dt:0.68, cp:1.00},
+    'Pharmaceuticals':      {nze:0.82, dt:0.90, cp:1.00}, /* Low carbon; resilient             */
+    'Real Estate':          {nze:0.76, dt:0.86, cp:1.00}, /* Energy efficiency retrofit costs  */
+    'Agriculture':          {nze:0.72, dt:0.82, cp:1.00},
+    'Consumer Goods':       {nze:0.79, dt:0.86, cp:1.00},
+    'Financial Services':   {nze:0.86, dt:0.91, cp:1.00}, /* Transition via financed emissions */
   };
-  var mult = mults[sector] || {nze:0.70, dt:0.80, cp:1.00};
+  var mult = mults[sector] || {nze:0.68, dt:0.78, cp:1.00};
 
-  /* ── 3. EV computation ── */
+  /* ── 3. EV computation — WACC reflects sector risk + emission intensity premium ── */
   function r1(x){ return Math.round(x * 10) / 10; }
+  var _riEmInt  = (s1mt + s2mt) / Math.max(revB, 0.01);
+  var _riWPrem  = _riEmInt > 3.0 ? 0.015 : _riEmInt > 1.5 ? 0.010 : _riEmInt > 0.5 ? 0.005 : 0.002;
+  var waccNze_ri = Math.round((wacc + _riWPrem + 0.005) * 1000) / 10;
+  var waccDt_ri  = Math.round((wacc + _riWPrem * 0.5 + 0.003) * 1000) / 10;
+  var waccCp_ri  = Math.round(wacc * 1000) / 10;
   var baseEV = ebitdaB / (wacc + 0.005) - debt;
   var nzeEV  = r1(Math.max(0, baseEV * mult.nze));
   var dtEV   = r1(Math.max(0, baseEV * mult.dt));
   var cpEV   = r1(Math.max(0, baseEV * mult.cp));
 
-  /* ── 4. Build 2026-2050 trajectory ── */
-  /* NGFS Phase 4 carbon prices (USD/tCO2e): NZE, DT, CP */
-  var _CP = {
-    nze: {2026:50,2028:90,2030:130,2032:144,2034:158,2036:172,2038:186,2040:200,2045:225,2050:250},
-    dt:  {2026:30,2028:35,2030:40, 2032:157,2034:170,2036:183,2038:197,2040:210,2045:225,2050:240},
-    cp:  {2026:25,2028:32,2030:40, 2032:44, 2034:48, 2036:52, 2038:56, 2040:60, 2045:68, 2050:75}
-  };
-  function cpAt(scen, yr) {
-    var tbl = _CP[scen], keys = Object.keys(tbl).map(Number).sort(function(a,b){return a-b;});
-    if (yr <= keys[0]) return tbl[keys[0]];
-    if (yr >= keys[keys.length-1]) return tbl[keys[keys.length-1]];
-    for (var i=0; i<keys.length-1; i++) {
-      if (yr >= keys[i] && yr <= keys[i+1]) {
-        var f = (yr-keys[i])/(keys[i+1]-keys[i]);
-        return tbl[keys[i]] + f*(tbl[keys[i+1]]-tbl[keys[i]]);
-      }
-    }
-    return 65;
-  }
+  /* ── 4. Build 2026-2050 trajectory — sector-specific params + NGFS carbon prices ── */
+  /* Uses global SECTOR_PARAMS + NGFS_CP + cpAt() — no local duplicate needed */
   function buildYears(scen) {
-    var revAdj    = scen==='cp' ? 1.018 : scen==='dt' ? 0.998 : 0.978;
-    var ebitdaAdj = scen==='cp' ? 1.010 : scen==='dt' ? 0.993 : 0.972;
-    var emDecay   = scen==='nze' ? 0.040 : scen==='dt' ? 0.015 : 0.005;  /* %/yr reduction */
+    var raF = _riSP.revAdj[scen]    || 0.982;
+    var eaF = _riSP.ebitdaAdj[scen] || 0.974;
+    var edF = _riSP.emDecay[scen]   || 0.025;
+    var fa  = _riSP.freeAlloc;                  /* ETS free allocation */
     var years = [];
     for (var yr = 2026; yr <= 2050; yr++) {
       var t  = yr - 2026;
-      var rv = r1(revB    * Math.pow(revAdj,    t));
-      var eb = r1(ebitdaB * Math.pow(ebitdaAdj, t));
-      var s1 = r1(s1mt    * Math.pow(1 - emDecay, t));
-      var s2 = r1(s2mt    * Math.pow(1 - emDecay, t));
+      var rv = r1(revB    * Math.pow(raF, t));
+      var eb = r1(ebitdaB * Math.pow(eaF, t));
+      var s1 = r1(s1mt    * Math.pow(1 - edF, t));
+      var s2 = r1(s2mt    * Math.pow(1 - edF * 0.7, t));   /* Scope 2 decarbonises faster */
       var cp = cpAt(scen, yr);
-      var cc = r1((s1 + s2) * cp / 1000);   /* $B carbon cost = MtCO2e × $/tCO2e */
+      /* Carbon cost = net emissions × NGFS price × (1 − free allocation) */
+      var cc = r1((s1 + s2) * (1 - fa) * cp / 1000);   /* $B */
       years.push({year:yr, revenue:rv, ebitda:r1(eb-cc*0.5),
         fcf:r1((eb-cc)*0.55), carbon_cost:cc,
-        opex:r1(rv-eb), emissions_s1:s1, emissions_s2:s2});
+        opex:r1(rv * _riSP.opexPct), emissions_s1:s1, emissions_s2:s2});
     }
     return years;
   }
@@ -10052,9 +10208,9 @@ function riFeedToEngine() {
     name:   name,
     sector: sector,
     runs: {
-      nze_2050:          {label:'NZE 2050',           color:'#16a34a', ev:nzeEV, equity:r1(nzeEV-debt), share_price:0, wacc:8.5,  years:buildYears('nze')},
-      delayed_transition:{label:'Delayed Transition', color:'#b45309', ev:dtEV,  equity:r1(dtEV-debt),  share_price:0, wacc:9.5,  years:buildYears('dt')},
-      current_policies:  {label:'Current Policies',  color:'#b91c1c', ev:cpEV,  equity:r1(cpEV-debt),  share_price:0, wacc:9.0,  years:buildYears('cp')},
+      nze_2050:          {label:'NZE 2050',           color:'#16a34a', ev:nzeEV, equity:r1(nzeEV-debt), share_price:0, wacc:waccNze_ri, years:buildYears('nze')},
+      delayed_transition:{label:'Delayed Transition', color:'#b45309', ev:dtEV,  equity:r1(dtEV-debt),  share_price:0, wacc:waccDt_ri,  years:buildYears('dt')},
+      current_policies:  {label:'Current Policies',  color:'#b91c1c', ev:cpEV,  equity:r1(cpEV-debt),  share_price:0, wacc:waccCp_ri,  years:buildYears('cp')},
     }
   };
 
