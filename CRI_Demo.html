@@ -3823,7 +3823,10 @@ var COUNTRY_DATA = {
   'CA': { def:'global', states:[{l:'Alberta',v:'CA-AB'},{l:'British Columbia',v:'global'},{l:'Manitoba',v:'global'},{l:'New Brunswick',v:'global'},{l:'Newfoundland',v:'global'},{l:'Northwest Territories',v:'global'},{l:'Nova Scotia',v:'global'},{l:'Nunavut',v:'global'},{l:'Ontario',v:'global'},{l:'Prince Edward Island',v:'global'},{l:'Quebec',v:'CA-QC'},{l:'Saskatchewan',v:'global'},{l:'Yukon',v:'global'}] },
   'GB': { def:'GB-ENG', states:[{l:'England',v:'GB-ENG'},{l:'Northern Ireland',v:'global'},{l:'Scotland',v:'global'},{l:'Wales',v:'global'}] },
   'CN': { def:'global', states:[{l:'Anhui',v:'global'},{l:'Fujian',v:'global'},{l:'Gansu',v:'global'},{l:'Guangdong',v:'global'},{l:'Guizhou',v:'global'},{l:'Hebei',v:'global'},{l:'Heilongjiang',v:'global'},{l:'Henan',v:'global'},{l:'Hubei',v:'global'},{l:'Hunan',v:'global'},{l:'Inner Mongolia',v:'CN-NM'},{l:'Jiangsu',v:'global'},{l:'Jiangxi',v:'global'},{l:'Jilin',v:'global'},{l:'Liaoning',v:'global'},{l:'Qinghai',v:'global'},{l:'Shaanxi',v:'global'},{l:'Shandong',v:'global'},{l:'Shanxi',v:'global'},{l:'Sichuan',v:'global'},{l:'Xinjiang',v:'global'},{l:'Yunnan',v:'global'},{l:'Zhejiang',v:'global'}] },
-  'IN': { def:'global', states:[{l:'Andhra Pradesh',v:'global'},{l:'Assam',v:'global'},{l:'Bihar',v:'global'},{l:'Chhattisgarh',v:'global'},{l:'Delhi',v:'global'},{l:'Goa',v:'global'},{l:'Gujarat',v:'global'},{l:'Haryana',v:'global'},{l:'Jharkhand',v:'global'},{l:'Karnataka',v:'global'},{l:'Kerala',v:'global'},{l:'Madhya Pradesh',v:'global'},{l:'Maharashtra',v:'IN-MH'},{l:'Odisha',v:'global'},{l:'Punjab',v:'global'},{l:'Rajasthan',v:'global'},{l:'Tamil Nadu',v:'global'},{l:'Telangana',v:'global'},{l:'Uttar Pradesh',v:'global'},{l:'West Bengal',v:'global'}] },
+  /* India: all states mapped to 'IN' (WRI Aqueduct India baseline) so cyclone belt,
+     drought, heat and flood data use India-specific values. Maharashtra → IN-MH for
+     Mumbai's higher coastal flood / water-stress profile. */
+  'IN': { def:'IN', states:[{l:'Andhra Pradesh',v:'IN'},{l:'Assam',v:'IN'},{l:'Bihar',v:'IN'},{l:'Chhattisgarh',v:'IN'},{l:'Delhi',v:'IN'},{l:'Goa',v:'IN'},{l:'Gujarat',v:'IN'},{l:'Haryana',v:'IN'},{l:'Jharkhand',v:'IN'},{l:'Karnataka',v:'IN'},{l:'Kerala',v:'IN'},{l:'Madhya Pradesh',v:'IN'},{l:'Maharashtra',v:'IN-MH'},{l:'Odisha',v:'IN'},{l:'Punjab',v:'IN'},{l:'Rajasthan',v:'IN'},{l:'Tamil Nadu',v:'IN'},{l:'Telangana',v:'IN'},{l:'Uttar Pradesh',v:'IN'},{l:'West Bengal',v:'IN'}] },
   'ID': { def:'global', states:[{l:'Bali',v:'global'},{l:'Banten',v:'global'},{l:'East Kalimantan',v:'ID-KI'},{l:'East Java',v:'global'},{l:'Jakarta',v:'ID-KI'},{l:'Kalimantan (general)',v:'ID-KI'},{l:'North Kalimantan',v:'ID-KI'},{l:'North Sumatra',v:'global'},{l:'Papua',v:'global'},{l:'Riau',v:'global'},{l:'South Kalimantan',v:'ID-KI'},{l:'South Sumatra',v:'global'},{l:'West Java',v:'global'},{l:'West Kalimantan',v:'ID-KI'}] },
   'BR': { def:'global', states:[{l:'Amazonas',v:'BR-PA'},{l:'Bahia',v:'global'},{l:'Goiás',v:'global'},{l:'Maranhão',v:'global'},{l:'Mato Grosso',v:'global'},{l:'Minas Gerais',v:'global'},{l:'Pará',v:'BR-PA'},{l:'Paraná',v:'global'},{l:'Rio de Janeiro',v:'global'},{l:'Rio Grande do Sul',v:'global'},{l:'Rondônia',v:'BR-PA'},{l:'São Paulo',v:'global'}] },
   'CL': { def:'global', states:[{l:'Antofagasta (Region II)',v:'CL-02'},{l:'Arica y Parinacota (Region XV)',v:'CL-15'},{l:'Atacama (Region III)',v:'CL-02'},{l:'Coquimbo (Region IV)',v:'global'},{l:'Metropolitan (Santiago)',v:'global'},{l:'Tarapacá (Region I)',v:'CL-02'},{l:'Other region',v:'global'}] },
@@ -4351,15 +4354,32 @@ function _hz_slr(r,ssp,yr,isc,el){if(!isc||el>20)return{h:'Sea Level Rise',sev:0
 function _hz_swi(r,ssp,yr,isc,el){if(!isc)return{h:'Saltwater Intrusion',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'✓ Not applicable — inland site (saltwater intrusion affects coastal aquifers only)',applicable:false};var b=WRI_BASELINE[r]||WRI_BASELINE.global,slr=sspSLR(ssp,yr,r),ef=Math.max(0,1-el/15),sev=Math.min(5,(slr*4+b.ws*0.5)*ef),p=Math.min(0.60,sev/5*0.20),ls=Math.min(0.15,sev*0.018),s30=sspSLR(ssp,2030,r),s50=sspSLR(ssp,2050,r);return{h:'Saltwater Intrusion',sev:sev,prob:p,loss:ls,t30:Math.min(5,(s30*4+b.ws*0.5)*ef),t50:Math.min(5,(s50*4+b.ws*0.5)*ef),src:'IPCC AR6 WG2 Ch4 + WRI Aqueduct',note:'SLR '+slr.toFixed(3)+'m; elev '+el+'m',applicable:true};}
 function _hz_slide(r,ssp,yr,el){var prone=LANDSLIDE_SET.has(r),base=prone?2.5:0.8,w=regW(ssp,yr,r),pc=1+PRECIP_PCT*w/100,lulc=REGION_LULC[r]||'grassland',cf=SLIDE_CF[lulc]||1.0,ef=Math.min(2,1+el/3000),sev=Math.min(5,base*pc*cf*ef*0.85),p=Math.min(0.40,sev/5*0.15),ls=Math.min(0.20,Math.max(0,(sev-1.5)*0.025)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),p3=1+PRECIP_PCT*w3/100,p5=1+PRECIP_PCT*w5/100;return{h:'Landslide',sev:sev,prob:p,loss:ls,t30:Math.min(5,base*p3*cf*ef*0.85),t50:Math.min(5,base*p5*cf*ef*0.85),src:'IPCC AR6 WG2 Ch5; SRTM DEM proxy',note:'Prone:'+prone+'; elev '+el+'m; '+lulc,applicable:true};}
 function _hz_fire(r,ssp,yr){var prone=WILDFIRE_SET.has(r),base=prone?2.8:1.0,w=regW(ssp,yr,r),fwi=1+FWI_PCT*w/100,lulc=REGION_LULC[r]||'grassland',fuel=FUEL_LULC[lulc]||1,sev=Math.min(5,base*fwi*fuel),p=Math.min(0.85,sev/5*(prone?0.35:0.10)),ls=Math.min(0.35,Math.max(0,(sev-2)*0.04)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),f3=1+FWI_PCT*w3/100,f5=1+FWI_PCT*w5/100;return{h:'Wildfire',sev:sev,prob:p,loss:ls,t30:Math.min(5,base*f3*fuel),t50:Math.min(5,base*f5*fuel),src:'NASA FIRMS + IPCC AR6 WG2 Ch12.3',note:'FWI +'+((fwi-1)*100).toFixed(1)+'%; fuel '+fuel.toFixed(1)+'× ('+lulc+')',applicable:true};}
-function _hz_cyc(r,ssp,yr,isc){
+function _hz_cyc(r,ssp,yr,isc,lat,lon){
   /* Cyclones affect BOTH coastal AND inland areas — WMO/IPCC AR6 Ch11.7 documents
      tropical cyclone impacts 200–400km inland (storm surge, wind, rain, flooding).
      Coastal assets face full intensity; inland assets in cyclone-belt regions receive
      55% of coastal intensity (empirical attenuation per IBTrACS v4 landfall studies).
-     Only regions entirely outside tropical cyclone tracks are excluded. */
-  if(!CYCLONE_SET.has(r))return{h:'Cyclone',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'Outside cyclone belt',applicable:false};
+     GPS coordinates are used to detect cyclone belt when region='global' or is otherwise
+     unspecified — this handles Excel-loaded assets where the region code may be generic. */
+  var inCycloneBelt = CYCLONE_SET.has(r);
+  /* GPS-based cyclone belt detection: fall back to lat/lon when region='global'
+     or region is not in CYCLONE_SET. Covers the four tropical cyclone basins. */
+  if (!inCycloneBelt && lat != null && lon != null && !isNaN(lat) && !isNaN(lon)) {
+    var absLat = Math.abs(lat);
+    /* Bay of Bengal + Arabian Sea (India, Bangladesh, Sri Lanka, Myanmar): 5–25°N, 60–105°E */
+    if (lat>5 && lat<28 && lon>60 && lon<105) inCycloneBelt=true;
+    /* Western Pacific typhoon belt (SE Asia, Japan, Philippines): 0–35°N, 100–180°E */
+    if (lat>0 && lat<35 && lon>100) inCycloneBelt=true;
+    /* Atlantic/Gulf of Mexico hurricane belt: 5–35°N, 60–105°W */
+    if (lat>5 && lat<35 && lon>-105 && lon<-55) inCycloneBelt=true;
+    /* South-West Indian Ocean (Madagascar, Mozambique, Réunion): 5–25°S, 30–100°E */
+    if (lat<-5 && lat>-28 && lon>30 && lon<105) inCycloneBelt=true;
+    /* Australian TC belt (NW & NE Australia): 5–25°S */
+    if (lat<-5 && lat>-28 && lon>100 && lon<155) inCycloneBelt=true;
+  }
+  if(!inCycloneBelt)return{h:'Cyclone',sev:0,prob:0,loss:0,t30:0,t50:0,src:'N/A',note:'Outside cyclone belt',applicable:false};
   var inlandF=isc?1.0:0.55; /* 45% attenuation >80km inland per WMO TC inland impact data */
-  var bP={'AU-QLD':0.12,'AU-WA':0.08,'AU-NT':0.10,'IN-MH':0.06,'ID-KI':0.04,'BR-PA':0.03,'US-TX':0.10,'ZA':0.04}[r]||0.05;
+  var bP={'AU-QLD':0.12,'AU-WA':0.08,'AU-NT':0.10,'IN-MH':0.06,'IN':0.07,'ID-KI':0.04,'BR-PA':0.03,'US-TX':0.10,'US-FL':0.12,'ZA':0.04,'MZ':0.06,'PH':0.15,'VN':0.10,'BD':0.08}[r]||0.05;
   var w=regW(ssp,yr,r),ic=1+CYC_INT*w/100,
       p=Math.min(0.40,bP*inlandF*(1-0.03*w)),
       sev=Math.min(5,3*ic*inlandF),
@@ -4444,7 +4464,7 @@ function assessHazards(region, lat, lon, ssp, year) {
     _hz_swi(region,ssp,year,siteIsc,siteElev),
     _hz_slide(region,ssp,year,siteElev),
     _hz_fire(region,ssp,year),
-    _hz_cyc(region,ssp,year,siteIsc),
+    _hz_cyc(region,ssp,year,siteIsc,lat,lon),
     _hz_drt(region,ssp,year),
     _hz_wat(region,ssp,year),
   ];
@@ -6241,7 +6261,7 @@ function _rptKpi(lbl, val, sub, color, pct) {
 
 /* ── Boot ───────────────────────────────────────── */
 // Default to Excel Integration panel on load
-showTab('dataint');
+show('dataint');
 </script>
 
 <!-- ═══════════════════════════════════════════════════
