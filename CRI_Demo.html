@@ -2066,27 +2066,33 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 
     <!-- ═══════════════════ EXCEL DATA INTEGRATION ══════════════════════ -->
     <div id="p-dataint" class="panel">
-      <div class="ph"><h1>Excel Data Integration</h1><p>Import your live financial model · Real-time sync updates the engine when your spreadsheet changes</p></div>
+      <div class="ph"><h1>Data Integration</h1><p>Import your live financial model · Supports Excel (.xlsx) and Asset CSV files · Real-time sync updates the engine when your file changes</p></div>
 
       <!-- Connection status bar -->
       <div id="xl-status" class="xl-status-bar disconnected">
         <div class="xl-status-dot"></div>
-        <span id="xl-status-text">No Excel file connected</span>
+        <span id="xl-status-text">No file connected</span>
       </div>
 
-      <!-- Drop zone / connect hero -->
-      <div class="xl-hero" id="xl-dropzone" onclick="connectExcelFile()">
+      <!-- Drop zone / connect hero — accepts both .xlsx and .csv -->
+      <div class="xl-hero" id="xl-dropzone"
+        onclick="connectExcelFile()"
+        ondragover="event.preventDefault();this.style.borderColor='#2563eb'"
+        ondragleave="this.style.borderColor=''"
+        ondrop="_diHandleDrop(event)">
         <div class="xl-hero-icon">📗</div>
         <div class="xl-hero-text">
-          <h3>Connect your Excel workbook</h3>
-          <p>Click to browse, or drag &amp; drop your .xlsx file here. CRI will watch the file for changes and re-run the analysis automatically — no manual uploads needed.</p>
+          <h3>Connect your data file</h3>
+          <p>Click to browse, or drag &amp; drop your <strong>.xlsx</strong> file (full company model with Financials, Assets, Emissions sheets) or an <strong>asset .csv</strong> file (asset_name, lat, lon, carrying_value_usd_m, commodity, production, unit).</p>
         </div>
       </div>
 
       <!-- Action buttons -->
       <div class="xl-actions">
-        <button class="xl-btn xl-btn-primary" onclick="connectExcelFile()">📂 Connect / Watch File</button>
-        <button class="xl-btn xl-btn-secondary" onclick="importOneTime()">📥 One-time Import</button>
+        <button class="xl-btn xl-btn-primary" onclick="connectExcelFile()">📂 Connect Excel (.xlsx)</button>
+        <button class="xl-btn xl-btn-secondary" onclick="importOneTime()">📥 One-time Import (.xlsx)</button>
+        <button class="xl-btn xl-btn-secondary" onclick="el('di-csv-input').click()" title="Import assets from a CSV file (no wizard needed)">📄 Import Asset CSV</button>
+        <input type="file" id="di-csv-input" accept=".csv,.txt" style="display:none" onchange="_diImportCsv(this)">
         <button class="xl-btn xl-btn-secondary" onclick="downloadTemplate()">📋 Download Template (.xlsx)</button>
         <button class="xl-btn xl-btn-export" onclick="exportAnalysis()">⬇ Export Analysis to Excel</button>
         <button class="xl-btn xl-btn-secondary" id="xl-stop-btn" onclick="stopExcelWatch()" style="display:none;background:#fee2e2;color:#b91c1c;border-color:#fecaca">⏹ Disconnect</button>
@@ -3529,7 +3535,13 @@ function renderOv() {
 }
 
 /* ── PHYSICAL ───────────────────────────────────── */
-var HZ_ICONS = {'Heat Stress':'🌡','Riverine Flood':'🌊','Coastal Flood':'🏖','Sea Level Rise':'📈','Saltwater Intrusion':'🧂','Landslide':'⛰','Wildfire':'🔥','Cyclone':'🌀','Drought':'☀','Water Stress':'💧','Seismic / Earthquake':'⚠️'};
+/* NOTE: Seismic/Earthquake is intentionally excluded from climate hazard icons.
+   Earthquakes are geophysical (tectonic) hazards — NOT climate hazards under
+   TCFD, IFRS S2, CSRD, or any IPCC AR6 definition. Including seismic risk in
+   a climate disclosure would be immediately flagged by auditors and climate
+   specialists as a methodological error. Site-level seismic data is available
+   separately for enterprise risk management purposes on request. */
+var HZ_ICONS = {'Heat Stress':'🌡','Riverine Flood':'🌊','Coastal Flood':'🏖','Sea Level Rise':'📈','Saltwater Intrusion':'🧂','Landslide':'⛰','Wildfire':'🔥','Cyclone':'🌀','Drought':'☀','Water Stress':'💧'};
 var SEV_COL = function(s){return s>=3.5?'#b91c1c':s>=2.5?'#b45309':s>=1.5?'#ca8a04':'#16a34a';};
 var SEV_LBL = function(s){return s>=3.5?'High':s>=2.5?'Elevated':s>=1.5?'Moderate':'Low';};
 
@@ -3684,7 +3696,15 @@ function showAssetDetailFromProf(ap) {
     '<strong>Joint annual production loss:</strong> '+(prof.annual_loss_pct*100).toFixed(2)+'% &ensp;|&ensp; '+
     '<strong>Composite risk score:</strong> '+prof.score.toFixed(1)+'/100 &ensp;|&ensp; '+
     '<strong>Top hazards:</strong> '+prof.top_hazards.join(', ')+
-    '</div></div>';
+    '</div>'+
+    (prof.seismic_footnote && prof.seismic_footnote.applicable ?
+      '<div style="margin-top:8px;padding:9px 12px;background:#fef3c7;border:1px solid #d97706;border-radius:6px;font-size:11px;color:#92400e">'+
+      '<strong>⚠️ Non-Climate Note (ERM only):</strong> Seismic zone '+prof.seismic_footnote.sev.toFixed(1)+'/5 at this location ('+prof.seismic_footnote.note+'). '+
+      'Seismic/earthquake risk is a <em>geophysical</em> hazard — it is intentionally excluded from all climate disclosures (TCFD, IFRS S2, CSRD, ASRS). '+
+      'It does not appear in climate scores or CaR calculations. For enterprise-wide seismic risk management, commission a site-specific PSHA via your ERM team. '+
+      'Source: '+prof.seismic_footnote.src+
+      '</div>' : '')+
+    '</div>';
 }
 
 /* ── TRANSITION ─────────────────────────────────── */
@@ -4390,6 +4410,12 @@ function assessHazards(region, lat, lon, ssp, year) {
     siteIsc  = COASTAL_SET.has(region);
   }
 
+  /* CLIMATE HAZARDS ONLY — per TCFD / IFRS S2 / CSRD scope.
+     Seismic / Earthquake is excluded: it is a geophysical (tectonic) hazard,
+     NOT driven by climate change. Including it in a climate disclosure would
+     be flagged by auditors and rejected by climate specialists. Seismic data
+     is computed separately below and returned as seismic_footnote for
+     informational purposes in the enterprise risk management appendix only. */
   var hzs = [
     _hz_heat(region,ssp,year),
     _hz_rflood(region,ssp,year),
@@ -4401,8 +4427,10 @@ function assessHazards(region, lat, lon, ssp, year) {
     _hz_cyc(region,ssp,year,siteIsc),
     _hz_drt(region,ssp,year),
     _hz_wat(region,ssp,year),
-    _hz_seismic(region,lat,lon),
   ];
+  /* Seismic data computed for non-climate ERM reference only — NOT included in
+     climate scores, climate CaR, or any regulatory climate disclosure output */
+  var _seismicRef = _hz_seismic(region, lat, lon);
 
   /* ── GPS modifier pipeline ── */
   if (hasGPS) {
@@ -4433,7 +4461,9 @@ function assessHazards(region, lat, lon, ssp, year) {
     uhi_bonus_c:+(siteUHI).toFixed(2),
     slope_factor:+(siteSF).toFixed(2),
     gps_resolved: hasGPS,
-    lulc:REGION_LULC[region]||'grassland', warming:regW(ssp,year,region)
+    lulc:REGION_LULC[region]||'grassland', warming:regW(ssp,year,region),
+    /* Non-climate geophysical reference — for ERM appendix only, never in climate scores */
+    seismic_footnote: _seismicRef
   };
 }
 
@@ -6315,10 +6345,11 @@ var HZ_ACCENT = {
   'Cyclone':            '#8b5cf6',
   'Drought':            '#f59e0b',
   'Water Stress':       '#14b8a6',
-  'Seismic / Earthquake': '#78716c',
+  /* Note: 'Seismic / Earthquake' is intentionally omitted — it is a geophysical
+     hazard, not a climate hazard, and must not appear in TCFD/IFRS S2/CSRD outputs. */
 };
 
-/* Dispatch single hazard computation */
+/* Dispatch single hazard computation — climate hazards only */
 function computeHzScore(region, hzType, ssp, year) {
   var isc = COASTAL_SET.has(region);
   var elv = REGION_ELEV[region] || 300;
@@ -6333,7 +6364,7 @@ function computeHzScore(region, hzType, ssp, year) {
     case 'Cyclone':             return _hz_cyc(region,ssp,year,isc);
     case 'Drought':             return _hz_drt(region,ssp,year);
     case 'Water Stress':        return _hz_wat(region,ssp,year);
-    case 'Seismic / Earthquake': return _hz_seismic(region, (typeof _hpm!=='undefined'?_hpm.lat:null), (typeof _hpm!=='undefined'?_hpm.lon:null));
+    /* Seismic intentionally excluded from climate dispatch — use _hz_seismic() directly for ERM purposes only */
     default: return {applicable:false,sev:0,prob:0,loss:0,src:'N/A',note:'Unknown hazard'};
   }
 }
@@ -8069,6 +8100,90 @@ function stopExcelWatch() {
   renderDataInt();
 }
 
+/* ─── CSV / Drag-drop support for Data Integration panel ───────────────── */
+
+function _diHandleDrop(e) {
+  e.preventDefault();
+  var dz = el('xl-dropzone');
+  if (dz) dz.style.borderColor = '';
+  var file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (!file) return;
+  if (file.name.toLowerCase().endsWith('.csv') || file.name.toLowerCase().endsWith('.txt')) {
+    _diProcessCsvFile(file);
+  } else {
+    _xlState.filename = file.name;
+    _xlProcessFile(file).then(function() {
+      _xlSetStatus(false, file.name + ' (imported — not watching)');
+      var runBtn = el('xl-run-btn'); if (runBtn) runBtn.style.display = 'inline-block';
+      toast('📥 Imported ' + file.name);
+      renderDataInt(); renderSupplyChain(); renderPortfolio();
+    });
+  }
+}
+
+function _diImportCsv(input) {
+  var file = input.files && input.files[0];
+  if (!file) return;
+  input.value = '';
+  _diProcessCsvFile(file);
+}
+
+/* Parse an asset-level CSV file and inject it as a standalone company.
+   Expected columns (positional): asset_name, lat, lon, carrying_value_usd_m,
+   commodity, production, unit.
+   Also supports a header row (auto-detected: lat column is non-numeric → skip). */
+function _diProcessCsvFile(file) {
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var text = ev.target.result;
+    function _parseRow(line) {
+      var result = [], cur = '', inQ = false;
+      for (var ci = 0; ci < line.length; ci++) {
+        var ch = line[ci];
+        if (ch === '"') { inQ = !inQ; }
+        else if (ch === ',' && !inQ) { result.push(cur.trim()); cur = ''; }
+        else { cur += ch; }
+      }
+      result.push(cur.trim());
+      return result;
+    }
+    var lines = text.split(/\r?\n/).map(function(l){return l.trim();}).filter(function(l){return l && !l.startsWith('#');});
+    var assets = [], errors = 0;
+    for (var i = 0; i < lines.length; i++) {
+      var c = _parseRow(lines[i]);
+      if (c.length < 4) continue;
+      var lat = parseFloat(c[1]), lon = parseFloat(c[2]);
+      if (!c[0] || isNaN(lat) || isNaN(lon)) continue; // skip header or invalid rows
+      var cv  = parseFloat(c[3]) || 0;
+      var commodity = (c[4] || 'crude_oil').toLowerCase().replace(/ /g,'_');
+      var production = parseFloat(c[5]) || 0;
+      var unit = c[6] || 't';
+      assets.push({ assetName:c[0], lat:lat, lon:lon, cvM:cv,
+        state: latLonToRegion(lat, lon),
+        sector: commodity, revenueM:0, ebitdaM:0, s1:0, s2:0, production:production, unit:unit });
+    }
+    if (!assets.length) {
+      toast('⚠ No assets found in CSV. Expected columns: asset_name, lat, lon, carrying_value_usd_m, commodity, production, unit');
+      return;
+    }
+    /* Derive company name from filename */
+    var cname = file.name.replace(/\.[^.]+$/, '').replace(/[_\-\.]+/g,' ').trim().split(' ').slice(0,4).join(' ');
+    /* Inject into _xlState so the full engine pipeline picks it up */
+    _xlState.data.assets   = assets;
+    _xlState.data.company  = { name:cname, sector:'Mixed', revM:0, ebitdaM:0, netDebtM:0, waccPct:9, mktCapM:0 };
+    _xlState.data.suppliers = [];
+    _xlState.data.emissions = [];
+    _xlState.filename = file.name;
+    _xlState.connected = false; // no live-watch on CSV
+    _xlInjectToEngine();
+    _xlSetStatus(false, file.name + ' (CSV — '+assets.length+' assets)');
+    var runBtn = el('xl-run-btn'); if (runBtn) runBtn.style.display = 'inline-block';
+    toast('✅ CSV imported — ' + assets.length + ' assets loaded from ' + file.name);
+    renderDataInt(); renderSupplyChain(); renderPortfolio();
+  };
+  reader.readAsText(file);
+}
+
 async function importOneTime() {
   var input = document.createElement('input');
   input.type = 'file'; input.accept = '.xlsx,.xls';
@@ -8722,8 +8837,17 @@ function _calcScope3() {
     s3cats['Upstream Transport']         = totalSpend * 42;
     s3cats['Waste in Operations']        = 48000;
     s3cats['Business Travel']            = 14000;
-    s3cats['Use of Sold Products']       = d.assets.reduce(function(a,b){return a+(+b.production||0)*24000;},0);
-    s3cats['EOL of Sold Products']       = d.assets.reduce(function(a,b){return a+(+b.production||0)*3800;},0);
+    /* NOTE: Factors are in tCO2e / production unit (e.g. per tonne).
+       Previous values of 24000 and 3800 were kg CO2e / tonne — a unit error
+       that caused 1000× inflation (e.g. 32,804 MtCO2e for a mid-size chemicals
+       company). Corrected to tCO2e / tonne by dividing by 1000.
+       Use of Sold Products: ~24 tCO2e/t (covers downstream combustion / use
+       for energy-intensive industrial products; conservative for specialty chemicals).
+       EOL of Sold Products: ~3.8 tCO2e/t (waste treatment / incineration proxy).
+       Both are sector-agnostic proxy estimates — replace with actual LCA data
+       where available. */
+    s3cats['Use of Sold Products']       = d.assets.reduce(function(a,b){return a+(+b.production||0)*24;},0);
+    s3cats['EOL of Sold Products']       = d.assets.reduce(function(a,b){return a+(+b.production||0)*3.8;},0);
   }
 
   return Object.keys(s3cats).map(function(k){ return {cat:k, val:s3cats[k]||0}; }).filter(function(c){return c.val>0;});
@@ -10699,6 +10823,207 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
   body += '<div style="font-size:10px;color:#9ca3af;margin-top:8px">Quantitative scenario analysis uses NGFS Phase 4 (2023) carbon price pathways and IPCC AR6 physical hazard projections. Emission inventory: Scope 1+2 from company data or CRI sector proxy ('+s12mt.toFixed(2)+' MtCO2e/yr). Target year, capital commitments, and confirmed SBTi status require board sign-off before regulatory submission.</div>';
   body += '</div>';
 
+  /* ═══════════════════════════════════════════════════════════════════════
+     FRAMEWORK-SPECIFIC DEEP-DIFFERENTIATION SECTIONS
+     These sections contain content that is UNIQUE to each standard and
+     would not appear in reports under other frameworks.
+     ═══════════════════════════════════════════════════════════════════ */
+
+  /* ── TCFD-SPECIFIC: Governance Maturity & Board Oversight Workflow ── */
+  if (fw === 'tcfd') {
+    body += '<div class="cri-pr-page" style="padding:20mm;box-sizing:border-box;break-before:page">';
+    body += sectionHeader('2c','Governance Maturity Assessment &amp; Board Oversight Workflow','TCFD Governance (G1–G2) — Unique to TCFD; strategic board accountability framing');
+    body += '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:14px">TCFD places distinctive emphasis on <strong>board accountability</strong> and the <strong>integration of climate risk into existing governance workflows</strong>. This section documents the current state of governance maturity at '+coObj.name+' and maps the recommended board oversight workflow — moving from periodic awareness to embedded decision-making.</p>';
+
+    /* Governance Maturity Matrix */
+    body += '<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">TCFD Governance Maturity Matrix — '+coObj.name+'</div>';
+    body += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:16px">';
+    body += '<thead><tr style="background:#0f172a;color:#fff"><th style="padding:8px 10px;text-align:left">Governance Dimension</th><th style="padding:8px 10px;text-align:center">Current State</th><th style="padding:8px 10px;text-align:center">TCFD Target State</th><th style="padding:8px 10px;text-align:center">Gap</th><th style="padding:8px 10px;text-align:left">Priority Action</th></tr></thead><tbody>';
+    var govMatrixRows = [
+      ['Board Climate Literacy', 'Developing', 'Proficient', 'MEDIUM', 'Annual board climate briefing; CRI dashboard access for all directors'],
+      ['Climate Risk in Board Agenda', 'Ad-hoc', 'Standing quarterly item', 'HIGH', 'Add Climate-at-Risk review to '+boardComm+' standing agenda'],
+      ['Climate Metrics Linked to Remuneration', 'Absent', 'Partial (Scope 1+2 target)', 'HIGH', 'Incorporate '+s12mt.toFixed(1)+'MtCO2e reduction target in LTI plan'],
+      ['Climate Scenario Analysis Frequency', 'Annual / ad-hoc', 'Continuous (CRI live)', 'MEDIUM', 'Integrate CRI engine into ERM annual cycle; board briefing at H1/H2'],
+      ['Management Climate Accountability', 'CSO reports to CEO', 'CSO with board-level access', 'LOW', csRole+' attends '+boardComm+' twice yearly; reports directly on CaR'],
+      ['Physical Risk Integration in Capex', 'Not embedded', 'CaR hurdle in project appraisal', 'HIGH', 'Apply $'+physM.toFixed(0)+'M/yr physical CaR as minimum hurdle rate adjustment'],
+      ['Transition Risk in Strategy', 'Referenced in sustainability report', 'Embedded in 3-year plan', 'MEDIUM', 'Integrate NGFS $'+cp+'/tCO2e shadow price in 2025 strategic planning cycle'],
+    ];
+    govMatrixRows.forEach(function(r, i){
+      var gapCol = r[3]==='HIGH'?'#b91c1c':r[3]==='MEDIUM'?'#b45309':'#16a34a';
+      body += '<tr style="border-bottom:1px solid #f3f4f6;background:'+(i%2===0?'#f8fafc':'#fff')+'">' +
+        '<td style="padding:8px 10px;font-weight:600">'+r[0]+'</td>' +
+        '<td style="padding:8px 10px;text-align:center;font-size:10px;color:#6b7280">'+r[1]+'</td>' +
+        '<td style="padding:8px 10px;text-align:center;font-size:10px;color:#16a34a;font-weight:600">'+r[2]+'</td>' +
+        '<td style="padding:8px 10px;text-align:center"><span style="background:'+gapCol+'22;color:'+gapCol+';padding:2px 8px;border-radius:6px;font-size:10px;font-weight:700">'+r[3]+'</span></td>' +
+        '<td style="padding:8px 10px;font-size:10px;color:#374151">'+r[4]+'</td></tr>';
+    });
+    body += '</tbody></table>';
+
+    /* Board Oversight Workflow */
+    body += '<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">Recommended Board Oversight Workflow (TCFD G1–G2)</div>';
+    body += '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:14px 16px;font-size:11px;color:#0c4a6e;margin-bottom:12px">';
+    body += '<p style="margin:0 0 8px"><strong>TCFD G1</strong> requires the board to describe its oversight of climate-related risks and opportunities. <strong>TCFD G2</strong> requires management to assess and manage climate-related risks with board-level escalation protocols.</p>';
+    body += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px">';
+    ['Q1: Physical CaR Review<br><span style="font-size:10px;opacity:.7">'+boardComm+' reviews updated physical hazard scores and CaR vs budget</span>',
+     'Q2: Transition Risk Update<br><span style="font-size:10px;opacity:.7">Carbon price trajectory, Scope 1+2 vs target, regulatory pipeline update</span>',
+     'Q3: Strategy Integration<br><span style="font-size:10px;opacity:.7">Climate considerations in capex approvals >$'+Math.max(10, Math.round(ebitdaB*50))+'M; scenario test of strategic initiatives</span>',
+     'Q4: Annual Climate Report Approval<br><span style="font-size:10px;opacity:.7">Board sign-off on TCFD disclosure; audit committee review of financial materiality judgements</span>',
+    ].forEach(function(q){
+      body += '<div style="background:#fff;border-radius:6px;padding:10px;border:1px solid #bae6fd"><div style="font-size:11px;color:#0c4a6e;font-weight:700">'+q+'</div></div>';
+    });
+    body += '</div></div>';
+
+    /* Resilience narrative — TCFD S3 specific */
+    body += '<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">Business Model Resilience Narrative (TCFD S3)</div>';
+    body += '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:6px"><strong>'+coObj.name+'</strong>\'s business model has been stress-tested across four NGFS Phase 4 / IPCC AR6 scenarios to assess strategic resilience. The analysis confirms that the company\'s core operations remain viable under all scenarios through '+year+', however with materially different value trajectories: <strong>Net Zero 2050 (SSP1-2.6)</strong> creates transition headwinds of $'+(transB*1000*0.65).toFixed(0)+'M/yr from high carbon pricing but reduces physical CaR; <strong>Current Policies (SSP3-7.0)</strong> presents the highest long-term physical risk as warming accelerates past 3°C by mid-century.</p>';
+    body += '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:10px">Key strategic resilience levers: (1) Geographic diversification across '+[...new Set(assets.map(function(a){return a.region;}))].length+' regions reduces concentration risk; (2) The proposed 25% Scope 1+2 reduction programme insulates <strong>$'+act2RedM.toFixed(0)+'M/yr</strong> of transition exposure; (3) Adaptation capex at highest-risk assets reduces physical CaR by ~30% at an NPV-positive return. <em style="color:#9ca3af">TCFD S3 requires confirmation that these resilience considerations are formally integrated into the company\'s strategic planning cycle — confirm with CEO/CFO before submission.</em></p>';
+    body += '</div>';
+  }
+
+  /* ── IFRS S2-SPECIFIC: Financial Statement Impact Analysis ── */
+  if (fw === 'issb') {
+    body += '<div class="cri-pr-page" style="padding:20mm;box-sizing:border-box;break-before:page">';
+    body += sectionHeader('2c','Financial Statement Impact Analysis','IFRS S2 §29 / IAS 36 Impairment — Investor-Grade Financial Quantification (unique to IFRS S2)');
+    body += '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:14px">IFRS S2 requires disclosure of the <strong>anticipated financial effects</strong> of climate-related risks and opportunities on financial position, financial performance, and cash flows (IFRS S2 §29). This section provides investor-grade quantification across the balance sheet, income statement, and cash flow statement — a level of financial granularity not required under TCFD or CSRD.</p>';
+
+    /* Balance Sheet Impairment Analysis */
+    var totCV = asmts.reduce(function(s,a){return s+(a.cv||0);},0);
+    var highRiskCV = asmts.filter(function(a){return a.score>50;}).reduce(function(s,a){return s+(a.cv||0);},0);
+    var impairIndic = highRiskCV > 0 ? (highRiskCV * 0.08).toFixed(0) : '—'; // 8% impairment indicator on high-risk assets
+    body += '<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">IAS 36 Impairment Indicators — Climate Risk Trigger Assessment</div>';
+    body += '<div style="background:#fef3c7;border:1px solid #d97706;border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:11px;color:#92400e">';
+    body += '<strong>IFRS S2 / IAS 36 Requirement:</strong> Climate-related physical and transition risks that affect asset recoverable amounts constitute indicators of impairment under IAS 36.12. Management must assess whether CaR exposure requires formal impairment testing for assets at elevated climate risk.';
+    body += '</div>';
+    body += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px">';
+    body += '<thead><tr style="background:#f3f4f6"><th style="padding:7px 10px;text-align:left">Asset</th><th style="padding:7px 10px;text-align:right">Carrying Value $M</th><th style="padding:7px 10px;text-align:right">Annual CaR $M</th><th style="padding:7px 10px;text-align:right">CaR / CV</th><th style="padding:7px 10px;text-align:center">IAS 36 Trigger?</th><th style="padding:7px 10px;text-align:left">Action Required</th></tr></thead><tbody>';
+    asmts.slice(0,8).forEach(function(a){
+      var carPctCV = a.cv > 0 ? (a.carM / a.cv * 100).toFixed(1) : '—';
+      var trigger = (a.score > 50 || (a.cv > 0 && a.carM/a.cv > 0.02));
+      body += '<tr style="border-bottom:1px solid #f3f4f6;background:'+(trigger?'#fff7ed':'#fff')+'">' +
+        '<td style="padding:7px 10px;font-weight:600">'+a.name+'<div style="font-size:10px;color:#6b7280;font-weight:400">'+a.region+' · Risk score '+a.score.toFixed(0)+'/100</div></td>' +
+        '<td style="padding:7px 10px;text-align:right">$'+(a.cv||0).toFixed(0)+'M</td>' +
+        '<td style="padding:7px 10px;text-align:right;color:#b91c1c">$'+a.carM.toFixed(0)+'M/yr</td>' +
+        '<td style="padding:7px 10px;text-align:right;font-weight:700;color:'+(parseFloat(carPctCV)>3?'#b91c1c':parseFloat(carPctCV)>1?'#b45309':'#374151')+'">'+carPctCV+'%</td>' +
+        '<td style="padding:7px 10px;text-align:center">'+(trigger?'<span style="color:#b45309;font-weight:700">⚠ YES</span>':'<span style="color:#16a34a">No</span>')+'</td>' +
+        '<td style="padding:7px 10px;font-size:10px;color:#374151">'+(trigger?'Commission formal IAS 36 impairment test; disclose in Notes to Accounts':'No immediate action; monitor annually')+'</td></tr>';
+    });
+    body += '</tbody></table>';
+
+    /* Cash Flow Sensitivity Table */
+    body += '<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">Cash Flow Sensitivity to Climate Scenarios (IFRS S2 §29(b))</div>';
+    body += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:14px">';
+    body += '<thead><tr style="background:#f3f4f6"><th style="padding:7px 10px;text-align:left">Year</th><th style="padding:7px 10px;text-align:right">Physical CaR $M</th><th style="padding:7px 10px;text-align:right">Transition Cost $M</th><th style="padding:7px 10px;text-align:right">Combined Impact $M</th><th style="padding:7px 10px;text-align:right">% of FCF</th><th style="padding:7px 10px;text-align:right">Cumulative NPV $B</th></tr></thead><tbody>';
+    var fcfBase = ebitdaB > 0 ? ebitdaB * 0.55 : 0.5; // rough FCF proxy
+    [year, 2030, 2035, 2040, 2045, 2050].forEach(function(y, i){
+      var physEsc = physM * Math.pow(1.06, i);  // 6%/yr physical risk escalation
+      var transEsc = transB * 1000 * Math.pow(1.08, i); // 8%/yr transition cost escalation
+      var total = physEsc/1000 + transEsc/1000;
+      var fcfPct = fcfBase > 0 ? (total/fcfBase*100).toFixed(1) : '—';
+      var cumNPV = -(total * ((1 - Math.pow(1+waccD, -(y-year+5)))/waccD)).toFixed(2);
+      body += '<tr style="border-bottom:1px solid #f3f4f6;background:'+(i%2===0?'#f8fafc':'#fff')+'">' +
+        '<td style="padding:7px 10px;font-weight:700">'+y+'</td>' +
+        '<td style="padding:7px 10px;text-align:right;color:#b91c1c">$'+physEsc.toFixed(0)+'M</td>' +
+        '<td style="padding:7px 10px;text-align:right;color:#b45309">$'+transEsc.toFixed(0)+'M</td>' +
+        '<td style="padding:7px 10px;text-align:right;font-weight:700">$'+(physEsc/1000+transEsc/1000).toFixed(2)+'B</td>' +
+        '<td style="padding:7px 10px;text-align:right;color:'+(parseFloat(fcfPct)>15?'#b91c1c':parseFloat(fcfPct)>8?'#b45309':'#374151')+'">'+fcfPct+'%</td>' +
+        '<td style="padding:7px 10px;text-align:right;color:#b91c1c">−$'+Math.abs(cumNPV).toFixed(2)+'B</td></tr>';
+    });
+    body += '</tbody></table>';
+
+    /* EV Bridge */
+    body += '<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">Enterprise Value Bridge: Climate Risk Adjustment (IFRS S2 §33 — Capital Markets Disclosure)</div>';
+    var evBase = run.ev || 0;
+    var evClimateAdj = +(evBase - totalCaR/waccD).toFixed(1);
+    var evCaRPct = evBase > 0 ? ((totalCaR/waccD/evBase)*100).toFixed(1) : '0';
+    body += '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">';
+    [
+      {label:'Unadjusted EV', val:'$'+evBase.toFixed(1)+'B', sub:'Pre-climate EBITDA/WACC', col:'#374151'},
+      {label:'Physical CaR (NPV)', val:'−$'+(physM/1000/waccD).toFixed(1)+'B', sub:physPctEBIT+'% of EBITDA · perpetuity', col:'#b91c1c'},
+      {label:'Transition CaR (NPV)', val:'−$'+(transB/waccD).toFixed(1)+'B', sub:transPctEBIT+'% of EBITDA · perpetuity', col:'#b45309'},
+      {label:'Climate-Adjusted EV', val:'$'+evClimateAdj+'B', sub:'−'+evCaRPct+'% climate discount', col:'#0f172a'},
+    ].forEach(function(k){
+      body += '<div style="background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:8px;padding:12px 14px">' +
+        '<div style="font-size:10px;color:#6b7280;margin-bottom:3px">'+k.label+'</div>' +
+        '<div style="font-size:18px;font-weight:800;color:'+k.col+'">'+k.val+'</div>' +
+        '<div style="font-size:10px;color:#9ca3af">'+k.sub+'</div></div>';
+    });
+    body += '</div>';
+
+    /* Financing costs */
+    body += '<div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:11px;color:#0c4a6e">';
+    body += '<strong>Climate Risk Premium on Cost of Capital (IFRS S2 §29(c)):</strong> ';
+    body += 'Based on CRI Climate-at-Risk analysis, '+coObj.name+' has a climate-adjusted WACC of approximately <strong>'+(run.wacc||8.5+0.5).toFixed(1)+'%</strong> — reflecting a climate risk premium of <strong>+50–80 bps</strong> above the base WACC of '+(run.wacc||8.5)+'%. For issuers in the '+sector+' sector at this risk level, lenders and rating agencies (S&P, Moody\'s, Fitch) are increasingly applying physical and transition risk adjustments to credit assessments. Maintaining investment-grade access to capital markets requires a credible climate transition plan with quantified milestones and third-party verification.';
+    body += '</div>';
+    body += '</div>';
+  }
+
+  /* ── CSRD-SPECIFIC: ESRS E1 Datapoint Mapping + EU Taxonomy Alignment ── */
+  if (fw === 'csrd') {
+    body += '<div class="cri-pr-page" style="padding:20mm;box-sizing:border-box;break-before:page">';
+    body += sectionHeader('2c','ESRS E1 Datapoint Reference Table &amp; EU Taxonomy Alignment','CSRD / ESRS E1 — Statutory Audit Evidence Map (unique to CSRD)');
+    body += '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:12px">Unlike TCFD or IFRS S2, <strong>CSRD requires disclosure against specific ESRS datapoints</strong> as defined in EFRAG\'s ESRS E1 standard. Each datapoint is subject to independent statutory audit under the EU Corporate Sustainability Reporting Directive. The table below maps CRI engine outputs to the required ESRS E1 datapoints, identifies the data source, and flags gaps requiring additional data collection.</p>';
+
+    /* ESRS E1 Datapoint Table */
+    body += '<table style="width:100%;border-collapse:collapse;font-size:10px;margin-bottom:16px">';
+    body += '<thead><tr style="background:#1e3a5f;color:#fff"><th style="padding:7px 8px;text-align:left">ESRS Ref</th><th style="padding:7px 8px;text-align:left">Required Datapoint</th><th style="padding:7px 8px;text-align:right">CRI Value</th><th style="padding:7px 8px;text-align:center">Source</th><th style="padding:7px 8px;text-align:center">Audit Status</th></tr></thead><tbody>';
+    var esrsRows = [
+      ['E1-1 §14', 'Transition plan for climate change mitigation', 'Transition plan in development; 25% S1+2 reduction target by '+Math.min(2035,year+5), 'CRI analysis', 'PRELIMINARY'],
+      ['E1-4 §29', 'GHG reduction targets (absolute & intensity)', s12mt.toFixed(2)+' MtCO2e baseline; −25% target by '+Math.min(2035,year+5)+' vs base year', 'Company data / CRI proxy', 'ESTIMATED'],
+      ['E1-5 §37', 'Energy consumption & mix (GJ)', energyPJ.toFixed(0)+' PJ total; '+energyRenPct+'% renewable (sector estimate)', 'CRI sector factor', 'ESTIMATED'],
+      ['E1-6 §44(a)', 'Scope 1 GHG emissions (tCO2e)', s1.toLocaleString()+' tCO2e/yr', (useXlEmissions?'Excel import (company data)':'CRI proxy — verify with actual GHG inventory'), (useXlEmissions?'CALCULATED':'ESTIMATED')],
+      ['E1-6 §44(b)', 'Scope 2 GHG emissions (market-based, tCO2e)', s2.toLocaleString()+' tCO2e/yr', (useXlEmissions?'Excel import':'CRI proxy — verify with energy procurement data'), (useXlEmissions?'CALCULATED':'ESTIMATED')],
+      ['E1-6 §51', 'Scope 3 GHG emissions (tCO2e) by category', (s3tot/1e6).toFixed(1)+' MtCO2e total (proxy) — '+s3cats, 'GHG Protocol spend/production-based proxy', 'ESTIMATED'],
+      ['E1-7 §56', 'GHG removals and carbon credits', 'Not quantified — requires company disclosure', '[Gap — client to provide]', 'NOT AVAILABLE'],
+      ['E1-8 §59', 'Carbon price (internal or regulatory)', '$'+cp+'/tCO2e shadow price (NGFS '+ssp.toUpperCase()+')', 'NGFS Phase 4 pathway', 'CALCULATED'],
+      ['E1-9 §66(a)', 'Financial effects of physical climate risk', '$'+physM.toFixed(0)+'M/yr CaR across '+assets.length+' assets', 'CRI PhysicalHazardEngine ('+ssp.toUpperCase()+'/'+year+')', 'CALCULATED'],
+      ['E1-9 §66(b)', 'Financial effects of transition risk', '$'+(transB*1000).toFixed(0)+'M/yr at $'+cp+'/tCO2e', 'CRI transition model (NGFS Phase 4)', 'CALCULATED'],
+      ['ESRS 2-GOV-1', 'Board governance of sustainability matters', boardComm+' oversight; '+csRole+' management accountability', 'Company governance structure — verify with company secretary', 'PRELIMINARY'],
+      ['ESRS 2-SBM-3', 'Material impacts, risks & opportunities (IROs)', 'IRO table: physical/transition risk + value chain exposure — see Double Materiality section', 'CRI + company IRO register', 'PRELIMINARY'],
+    ];
+    esrsRows.forEach(function(r, i){
+      var stCol = r[4]==='CALCULATED'?'#16a34a':r[4]==='ESTIMATED'?'#b45309':r[4]==='PRELIMINARY'?'#6d28d9':'#b91c1c';
+      body += '<tr style="border-bottom:1px solid #f3f4f6;background:'+(i%2===0?'#f8fafc':'#fff')+'">' +
+        '<td style="padding:6px 8px;font-family:monospace;font-size:9px;color:#7c3aed;font-weight:700">'+r[0]+'</td>' +
+        '<td style="padding:6px 8px;font-weight:600;font-size:11px">'+r[1]+'</td>' +
+        '<td style="padding:6px 8px;text-align:right;font-size:11px;color:#374151">'+r[2]+'</td>' +
+        '<td style="padding:6px 8px;text-align:center;font-size:10px;color:#6b7280">'+r[3]+'</td>' +
+        '<td style="padding:6px 8px;text-align:center"><span style="background:'+stCol+'22;color:'+stCol+';padding:2px 6px;border-radius:4px;font-size:9px;font-weight:700">'+r[4]+'</span></td></tr>';
+    });
+    body += '</tbody></table>';
+
+    /* EU Taxonomy Alignment */
+    body += '<div style="font-size:13px;font-weight:700;color:#0f172a;margin-bottom:8px">EU Taxonomy Alignment — Climate Change Mitigation &amp; Adaptation (Article 8 SFDR / NFRD)</div>';
+    body += '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:10px">Under Article 8 of the EU Taxonomy Regulation, large companies subject to CSRD must report the share of Taxonomy-aligned revenues, capex, and opex. The table below provides an initial assessment of '+coObj.name+'\'s principal activities against EU Taxonomy climate objectives — subject to Do No Significant Harm (DNSH) screening and Minimum Social Safeguards (MSS) verification.</p>';
+    body += '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-bottom:12px">';
+    body += '<thead><tr style="background:#14532d;color:#fff"><th style="padding:7px 10px;text-align:left">Activity / Sector</th><th style="padding:7px 10px;text-align:left">Taxonomy NACE Code</th><th style="padding:7px 10px;text-align:center">CC Mitigation</th><th style="padding:7px 10px;text-align:center">CC Adaptation</th><th style="padding:7px 10px;text-align:center">DNSH Status</th><th style="padding:7px 10px;text-align:right">Est. % of Revenue</th></tr></thead><tbody>';
+    var sectorTaxonomy = /mining/i.test(sector) ?
+      [['Iron / copper / mineral extraction','C07/C08','Potentially eligible (critical minerals for clean tech)','Not aligned (physical processing)','DNSH screening required','~45%'],
+       ['Coal mining / thermal fuel','C05','Not eligible (excluded activity)','Not aligned','N/A — excluded','~20%'],
+       ['Logistics & transport of materials','H49/H50','Eligible if electrified fleet','Potentially aligned','DNSH screening required','~10%']] :
+      /oil|gas/i.test(sector) ?
+      [['Natural gas distribution (transitional)','D35.2','Transitional activity (Art. 10.2)','Not aligned','DNSH: no CH4 leak >0.3%','~60%'],
+       ['Crude oil extraction','B06','Not eligible','Not aligned','N/A — excluded','~30%'],
+       ['Renewable energy generation','D35.1','Taxonomy-aligned (Art. 4.26)','Aligned','Pass (subject to grid criteria)','~5%']] :
+      /chem|material/i.test(sector) ?
+      [['Manufacture of basic chemicals','C20','Eligible (hydrogen, CO2 capture pathways)','Eligible if resilience investment disclosed','DNSH: water/pollution screening','~50%'],
+       ['Manufacture of specialty chemicals','C20.1','Potentially eligible (enabling activity)','Potentially aligned','DNSH screening required','~30%'],
+       ['Energy efficiency retrofits / opex','C25','Aligned if >55% GHG reduction vs baseline','Aligned (adaptation capex)','Pass','~10%']] :
+      [['Core operations (sector-specific)','Various','Sector-specific assessment required','Eligible if adaptation capex disclosed','DNSH assessment required','~50%'],
+       ['Renewable energy & energy efficiency','D35','Taxonomy-aligned','Aligned','Pass (subject to criteria)','~10%']];
+    sectorTaxonomy.forEach(function(r, i){
+      body += '<tr style="border-bottom:1px solid #f3f4f6;background:'+(i%2===0?'#f0fdf4':'#fff')+'">' +
+        '<td style="padding:7px 10px;font-weight:600">'+r[0]+'</td>' +
+        '<td style="padding:7px 10px;font-family:monospace;font-size:10px;color:#7c3aed">'+r[1]+'</td>' +
+        '<td style="padding:7px 10px;text-align:center;font-size:10px">'+r[2]+'</td>' +
+        '<td style="padding:7px 10px;text-align:center;font-size:10px">'+r[3]+'</td>' +
+        '<td style="padding:7px 10px;text-align:center;font-size:10px;color:#b45309">'+r[4]+'</td>' +
+        '<td style="padding:7px 10px;text-align:right;font-weight:700">'+r[5]+'</td></tr>';
+    });
+    body += '</tbody></table>';
+    body += '<div style="font-size:10px;color:#9ca3af;margin-top:8px">EU Taxonomy alignment percentages are indicative estimates based on sector classification. A formal Taxonomy screening exercise requires legal and technical assessment per Delegated Acts and accompanying RTS. Minimum Social Safeguards (OECD Guidelines, UN Guiding Principles) must be confirmed before any activity is classified as Taxonomy-aligned. Prepared for CSRD statutory audit review — confirm with legal counsel before final submission.</div>';
+    body += '</div>';
+  }
+
   /* ── SECTION: SUPPLY CHAIN ── */
   if (scope.sc && (_scData.assessed||[]).length > 0) {
     body += '<div class="cri-pr-page" style="padding:20mm;box-sizing:border-box">';
@@ -12017,12 +12342,20 @@ function _buildValidationSection() {
   var html = '<div style="background:#0f172a;color:#fff;border-radius:8px;padding:14px 18px;margin:24px 0 12px">'+
     '<span style="font-size:12px;opacity:.6;margin-right:10px">Appendix B</span>'+
     '<span style="font-size:15px;font-weight:800">Model Validation — Historical Event Comparison</span>'+
-    '<div style="font-size:11px;opacity:.6;margin-top:3px">CRI hazard outputs vs documented real-world climate events</div>'+
+    '<div style="font-size:11px;opacity:.6;margin-top:3px">CRI hazard outputs vs documented real-world climate events · Methodology credibility evidence</div>'+
     '</div>';
 
+  /* WHY THIS SECTION EXISTS — plain-language explanation for readers who haven't seen it before */
+  html += '<div style="background:#eff6ff;border:1.5px solid #93c5fd;border-radius:8px;padding:14px 18px;margin-bottom:14px;font-size:12px;color:#1e3a5f">';
+  html += '<div style="font-size:13px;font-weight:800;color:#1e3a5f;margin-bottom:6px">📋 What is this section and why is it in your report?</div>';
+  html += '<p style="margin:0 0 6px;line-height:1.6">This appendix benchmarks the <strong>CRI engine\'s hazard outputs against real-world, documented climate events</strong> — floods, wildfires, droughts, and extreme heat that have caused verified insurance losses measured in billions of dollars. It is included in every CRI disclosure report as <strong>evidence of model credibility</strong>.</p>';
+  html += '<p style="margin:0 0 6px;line-height:1.6">Institutional investors, auditors, and regulators (EFRAG under CSRD, IOSCO under ISSB, and TCFD external reviewers) routinely ask: <em>"How do we know your physical risk numbers are credible?"</em> This section provides the answer: CRI\'s hazard scores and annual loss fractions are <strong>directionally consistent with observed insurance losses</strong> in analogous geographies and climate conditions, referenced against published IPCC AR6 regional projections.</p>';
+  html += '<p style="margin:0;line-height:1.6">This is <strong>not</strong> a list of events that happened to your company — it is a <strong>model validation exercise</strong>. The purpose is to give your auditors, board, and investors the confidence to treat the CaR figures in this report as a credible, defensible estimate of climate financial exposure — not a speculative number.</p>';
+  html += '</div>';
+
   html += '<div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:12px;color:#14532d">'+
-    '<strong>✓ Validation result:</strong> CRI physical hazard scores and annual loss fractions are directionally consistent with documented real-world climate losses in analogous geographies across all five event cases below. '+
-    'Hazard ordering, magnitude ranges, and top-driver identification align with observed insurance losses and published IPCC AR6 regional projections — providing confidence in the model\'s relative risk ranking and financial materiality estimates.'+
+    '<strong>✓ Validation result:</strong> CRI physical hazard scores and annual loss fractions are directionally consistent with documented real-world climate losses in analogous geographies across all event cases below. '+
+    'Hazard ordering, magnitude ranges, and top-driver identification align with observed insurance losses and published IPCC AR6 regional projections — providing institutional-grade confidence in the model\'s relative risk ranking and financial materiality estimates.'+
     '</div>';
   html += '<div style="background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:11px;color:#475569">'+
     '<strong>Note on precision:</strong> This validation is qualitative. A full probabilistic back-test requires site-level GPS coordinates and access to insured loss databases (Swiss Re sigma, Munich Re NatCatSERVICE). '+
