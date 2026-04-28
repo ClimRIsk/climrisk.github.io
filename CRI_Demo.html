@@ -1632,7 +1632,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         </div>
       </div>
 
-      <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. Physical risk score = mean applicable severity × 20 (0–100 scale). SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission.</span></div>
+      <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. <strong>Physical risk score = mean applicable severity × 20 (0–100 scale)</strong> — the same formula used in the Supply Chain panel (Hazard Score) and in the physical pillar of the Climate Rating. The Climate Rating composite = physical × 35% + transition × 35% + financial × 30%; it is a portfolio-level three-pillar average and will naturally differ from individual asset scores. SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission.</span></div>
 
       <!-- SSP scenario selector for physical panel -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
@@ -1743,6 +1743,15 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 
       <!-- Pillar scores -->
       <div class="pillars" id="rat-pillars"></div>
+
+      <!-- Score derivation note -->
+      <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:11px 15px;margin-bottom:14px;font-size:12px;line-height:1.6;color:var(--muted)">
+        <strong style="color:var(--text)">📊 How the composite score is built</strong> —
+        The <em>physical pillar</em> (35% weight) is the CV-weighted average of individual asset hazard scores (0–100 severity scale) — the <strong>same formula</strong> used in the Physical Risk and Supply Chain panels.
+        The transition pillar (35%) is carbon cost as % of EBITDA under the NZE 2030 scenario.
+        The financial pillar (30%) is enterprise-value at risk under NZE vs Current Policies.
+        The composite therefore lies below individual high-scoring assets when those assets are offset by lower transition or financial risk, or by other assets with lower physical scores.
+      </div>
 
       <!-- Peer context note -->
       <div class="note" id="rat-note">
@@ -2180,6 +2189,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <!-- Supplier table by tier -->
       <div class="cc">
         <div class="cc-title">Supplier Risk Profile</div>
+        <div id="sc-method-note" style="padding:12px 16px 0"></div>
         <div id="sc-table" style="padding:0 16px 16px"></div>
       </div>
 
@@ -5539,15 +5549,19 @@ function buildAndLoadResults() {
   // ── Build dynamic CRI Rating for this wizard company ──────────────────────
   (function() {
     var hList = D.hazards[co_id];
+    // avgLoss kept for driver text (annual production loss rate)
     var avgLoss = hList.length > 0
       ? hList.reduce(function(s,a){ return s + (a.loss_2030_pct||0); }, 0) / hList.length
       : 0;
 
-    // Physical pillar: scale 0–100. avgLoss is in % (e.g. 9.80 for 9.80%).
-    // Calibration: 4% loss→20 (Low), 9%→45 (Elevated), 14%→70 (High), 20%→100 (Very High).
-    // Factor *5 replaces the erroneous *200 which expected a decimal (0–1) not percent (0–100).
-    var physScore  = Math.min(100, avgLoss * 5);
-    var physLabel  = physScore >= 70 ? 'High' : physScore >= 45 ? 'Elevated' : physScore >= 20 ? 'Moderate' : 'Low';
+    // Physical pillar: use the same severity-based hz.score (0–100) as the Physical Risk panel.
+    // Formula: hz.score = avgSev × 20 inside assessHazards(). Simple average across assets.
+    // Thresholds align with Physical Risk panel: <20 Low, 20–35 Moderate, 35–55 Elevated, ≥55 High.
+    // (Previously used avgLoss×5 which is a different quantity and produced systematically lower values.)
+    var physScore  = hList.length > 0
+      ? Math.min(100, hList.reduce(function(s,a){ return s+(a.score||0); }, 0) / hList.length)
+      : 0;
+    var physLabel  = physScore >= 55 ? 'High' : physScore >= 35 ? 'Elevated' : physScore >= 20 ? 'Moderate' : 'Low';
 
     // Transition pillar: carbon cost as % of EBITDA under NZE 2030
     var nzeRun  = D.companies[co_id].runs.nze_2050;
@@ -5574,7 +5588,7 @@ function buildAndLoadResults() {
     var ratingLabel = {A:'Low Climate Risk',B:'Moderate Climate Risk',C:'Elevated Climate Risk',D:'High Climate Risk',E:'Very High Climate Risk'}[rating];
 
     var topPhys = hList.length > 0
-      ? hList.slice().sort(function(a,b){ return (b.loss_2030_pct||0)-(a.loss_2030_pct||0); })[0]
+      ? hList.slice().sort(function(a,b){ return (b.score||0)-(a.score||0); })[0]
       : null;
 
     RATINGS[co_id] = {
@@ -5587,8 +5601,8 @@ function buildAndLoadResults() {
       pillars: {
         physical:   { label: physLabel,  score: physScore,
                       drivers: [
-                        'Average annual physical loss 2030: ' + avgLoss.toFixed(2) + '% of asset value',
-                        topPhys ? 'Highest-risk asset: ' + topPhys.asset + ' (' + (topPhys.loss_2030_pct||0).toFixed(2) + '% loss/yr)' : 'Assets assessed under SSP3-7.0 scenario'
+                        'Physical hazard severity score (avg across ' + hList.length + ' asset' + (hList.length>1?'s':'') + '): ' + physScore.toFixed(1) + '/100 · Annual loss 2030: ' + avgLoss.toFixed(2) + '% of asset value',
+                        topPhys ? 'Highest-risk asset: ' + topPhys.asset + ' (score ' + (topPhys.score||0).toFixed(1) + '/100 · ' + (topPhys.loss_2030_pct||0).toFixed(2) + '% loss/yr)' : 'Assets assessed under SSP3-7.0 scenario'
                       ]},
         transition: { label: transLabel, score: transScore,
                       drivers: [
@@ -8479,11 +8493,18 @@ function _xlInjectToEngine() {
 
   // ── Build CRI Rating ────────────────────────────────────────────────────
   var hList    = D.hazards[co_id];
+  // avgLoss kept for driver text
   var avgLoss  = hList.length ? hList.reduce(function(s,a){ return s+(a.loss_2030_pct||0); },0) / hList.length : 0;
-  // avgLoss is stored in % (e.g. 9.80 for 9.80%). Factor *5 gives proper 0–100 range:
-  // 4%→20 (Low), 9%→45 (Elevated), 14%→70 (High), 20%→100 (Very High)
-  var physScore = Math.min(100, avgLoss * 5);
-  var physLabel = physScore>=70?'High':physScore>=45?'Elevated':physScore>=20?'Moderate':'Low';
+  // Physical pillar: CV-weighted average of hz.score (0–100 severity scale, same as Physical Risk panel).
+  // Weights by carrying value so larger/more-exposed assets have greater influence on the composite.
+  // Thresholds: <20 Low, 20–35 Moderate, 35–55 Elevated, ≥55 High (aligned with Physical Risk panel).
+  var _cvTot   = hList.reduce(function(s,a){ return s+(+(a.cv||0)); }, 0);
+  var physScore = hList.length ? Math.min(100,
+    _cvTot > 0
+      ? hList.reduce(function(s,a){ return s+(a.score||0)*(+(a.cv||0)); }, 0) / _cvTot
+      : hList.reduce(function(s,a){ return s+(a.score||0); }, 0) / hList.length
+  ) : 0;
+  var physLabel = physScore>=55?'High':physScore>=35?'Elevated':physScore>=20?'Moderate':'Low';
   var nzeRun   = D.companies[co_id].runs.nze_2050;
   var cpRun    = D.companies[co_id].runs.current_policies;
   var nzeY30   = nzeRun.years.find(function(y){return y.year===2030;}) || nzeRun.years[0];
@@ -8512,14 +8533,14 @@ function _xlInjectToEngine() {
   var composite= Math.round(physScore*0.35 + transScore*0.35 + finScore*0.30);
   var rating   = composite>=75?'E':composite>=55?'D':composite>=35?'C':composite>=18?'B':'A';
   var rLabels  = {A:'Low Climate Risk',B:'Moderate Climate Risk',C:'Elevated Climate Risk',D:'High Climate Risk',E:'Very High Climate Risk'};
-  var topPhys  = hList.length ? hList.slice().sort(function(a,b){return (b.loss_2030_pct||0)-(a.loss_2030_pct||0);})[0] : null;
+  var topPhys  = hList.length ? hList.slice().sort(function(a,b){return (b.score||0)-(a.score||0);})[0] : null;
   RATINGS[co_id] = {
     rating:composite>=75?'E':composite>=55?'D':composite>=35?'C':composite>=18?'B':'A',
     label: rLabels[rating], composite:composite, confidence:'Medium',
     sector_rank: hList.length + ' asset(s) · ' + sector + ' · Excel import',
     summary: name + ' receives a CRI Rating of ' + rating + ' (' + rLabels[rating] + '), computed from site-specific physical hazard assessment across ' + hList.length + ' asset location(s), NGFS Phase 4 transition scenario modelling, and enterprise value sensitivity analysis under NZE 2050 vs Current Policies.',
     pillars: {
-      physical:   { label:physLabel,  score:physScore,  drivers:['Average annual physical loss 2030: '+avgLoss.toFixed(2)+'% of asset value', topPhys?'Highest-risk asset: '+topPhys.asset+' ('+topPhys.loss_2030_pct.toFixed(2)+'% loss/yr)':'Multi-asset portfolio'] },
+      physical:   { label:physLabel,  score:physScore,  drivers:['CV-weighted physical hazard score ('+hList.length+' asset'+(hList.length>1?'s':'')+', severity scale): '+physScore.toFixed(1)+'/100 · Avg annual loss 2030: '+avgLoss.toFixed(2)+'%', topPhys?'Highest-risk asset: '+topPhys.asset+' (score '+(topPhys.score||0).toFixed(1)+'/100 · '+(topPhys.loss_2030_pct||0).toFixed(2)+'% loss/yr)':'Multi-asset portfolio'] },
       transition: { label:transLabel, score:transScore, drivers:['Carbon cost 2030 (NZE 2050): '+ccPct.toFixed(1)+'% of EBITDA','NGFS Phase 4 NZE 2050 carbon price path'] },
       financial:  { label:finLabel,   score:finScore,   drivers:['EV at risk (NZE vs Current Policies): '+evAtRisk.toFixed(1)+'%','NZE EV: $'+nzeRun.ev.toFixed(1)+'B  ·  CP EV: $'+cpRun.ev.toFixed(1)+'B  ·  WACC: '+nzeRun.wacc.toFixed(1)+'%'] }
     }
@@ -9090,6 +9111,25 @@ function renderSupplyChain() {
   if(el('sc-critical')) el('sc-critical').textContent = critCount;
   if(el('sc-spend'))    el('sc-spend').textContent    = '$'+(totalSpend/1000).toFixed(1)+'B';
   if(el('sc-uplift'))   el('sc-uplift').textContent   = '+$'+uplift.toFixed(0)+'M';
+
+  // ── Scoring methodology note ───────────────────────────────────────────
+  var avgScoreSC = all.length ? all.reduce(function(s,a){return s+a.hazardScore;},0)/all.length : 0;
+  var maxLossSC  = all.length ? Math.max.apply(null, all.map(function(s){return s.annualLoss;})) : 0;
+  var scNoteEl = el('sc-method-note');
+  if (scNoteEl) {
+    scNoteEl.innerHTML =
+      '<div style="background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.25);border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:12px;line-height:1.6;color:var(--muted)">' +
+      '<strong style="color:var(--text)">📐 Score Methodology</strong> — ' +
+      '<strong>Hazard Score (0–100)</strong> = severity-weighted index (avg hazard severity × 20), ' +
+      'identical formula to the Physical Risk panel so scores are directly comparable. ' +
+      'Suppliers score lower than own assets when they operate in lower-risk geographic regions. ' +
+      'Portfolio avg: <strong>' + avgScoreSC.toFixed(1) + '/100</strong>. &ensp;' +
+      '<strong>Annual Loss %</strong> = joint compounded loss rate across all applicable hazards ' +
+      '(1 − Π(1 − lossᵢ)) — a worst-case production-disruption metric, not the same as Hazard Score. ' +
+      (maxLossSC > 30 ? 'Figures above 30% indicate a supplier with multiple co-occurring high-severity hazards (e.g. coastal + riverine + heat) compounding in the same region. ' : '') +
+      'Risk-Adj Spend = procurement cost adjusted for supply disruption probability.' +
+      '</div>';
+  }
 
   // Tier groups
   var tiers = {1:[], 2:[], 3:[]};
