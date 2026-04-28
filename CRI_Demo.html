@@ -5414,7 +5414,14 @@ function buildAndLoadResults() {
     var nzeRun  = D.companies[co_id].runs.nze_2050;
     var cpRun   = D.companies[co_id].runs.current_policies;
     var nzeY30  = nzeRun.years.find(function(y){ return y.year === 2030; }) || nzeRun.years[0];
-    var ccPct   = (nzeY30 && nzeY30.ebitda > 0) ? (nzeY30.carbon_cost / nzeY30.ebitda * 100) : 10;
+    var ccPctRaw = (nzeY30 && nzeY30.ebitda > 0) ? (nzeY30.carbon_cost / nzeY30.ebitda * 100) : 0;
+    /* Apply sector-based minimum transition risk floor when DCF has no carbon pricing.
+       Source: IEA NZE 2050 sector carbon cost estimates at $130/tCO2e NZE 2030. */
+    var _sFloor={'Cement':8,'Concrete':8,'Building Materials':6,'Steel':10,'Steel & Metals':10,
+      'Oil & Gas':15,'Coal':20,'Mining':5,'Chemicals':6,'Fertilisers':8,'Aluminium':7};
+    var _sf=0;
+    Object.keys(_sFloor).forEach(function(k){if(sector&&sector.toLowerCase().indexOf(k.toLowerCase())>=0)_sf=Math.max(_sf,_sFloor[k]);});
+    var ccPct = Math.max(ccPctRaw, _sf);
     var transScore = Math.min(100, ccPct * 3);
     var transLabel = transScore >= 70 ? 'Critical' : transScore >= 50 ? 'High' : transScore >= 30 ? 'Elevated' : transScore >= 15 ? 'Moderate' : 'Low';
 
@@ -7142,9 +7149,19 @@ function _gatherReportHTML() {
     });
     var s3d=_calcScope3();
     var s3tot=s3d.reduce(function(a,b){return a+b.val;},0);
+    /* ── Unified composite score: use RATINGS[cid] if it exists (three-pillar:
+       physical loss % + transition cost + financial EV impact), so the Risk Report
+       and Climate Rating panel always show the same number.
+       avgScore (hazard-severity-based) is kept as a secondary metric displayed
+       as "Physical Hazard Score" inside the report body. */
     var avgScore=asmts.length?asmts.reduce(function(s,a){return s+a.score;},0)/asmts.length:0;
-    var riskLevel=avgScore>70?'CRITICAL':avgScore>50?'HIGH':avgScore>30?'MODERATE':'LOW';
-    var riskCol=avgScore>70?'#b91c1c':avgScore>50?'#b45309':avgScore>30?'#2563eb':'#16a34a';
+    var unifiedComposite = (RATINGS[cid] && RATINGS[cid].composite != null)
+      ? RATINGS[cid].composite
+      : avgScore;  /* fallback to severity score if RATINGS not yet built */
+    /* Labels exactly mirror the A–E Climate Rating so both panels are consistent:
+       A=<18 → Minimal, B=18-34 → Moderate, C=35-54 → Elevated, D=55-74 → High, E≥75 → Very High */
+    var riskLevel = unifiedComposite>=75?'VERY HIGH RISK':unifiedComposite>=55?'HIGH RISK':unifiedComposite>=35?'ELEVATED RISK':unifiedComposite>=18?'MODERATE RISK':'MINIMAL RISK';
+    var riskCol   = unifiedComposite>=75?'#b91c1c':unifiedComposite>=55?'#b45309':unifiedComposite>=35?'#d97706':unifiedComposite>=18?'#2563eb':'#16a34a';
     return _buildReportHTML({
       coName:coObj.name, cid:cid, sector:coObj.sector||'Energy/Mining',
       ssp:ssp, sspLabel:sspLabel[ssp], year:year,
@@ -7152,7 +7169,7 @@ function _gatherReportHTML() {
       ev:run.ev, ebitda:yr.ebitda||0, carbon:yr.carbon_cost||0, wacc:run.wacc||8.5,
       totalPhysM:+totalPhysM.toFixed(1), transCarB:transCarB, totalCarB:totalCarB,
       pctEV:pctEV, evImpact:evImpact,
-      riskLevel:riskLevel, riskCol:riskCol, avgScore:+avgScore.toFixed(1),
+      riskLevel:riskLevel, riskCol:riskCol, avgScore:+unifiedComposite.toFixed(1),
       asmts:asmts, heatRows:heatRows, hzNames:hzNames,
       scmpRows:scmpRows, sspKeys:sspKeys, sspLabelMap:sspLabel, sspColor:sspColor,
       tYears:tYears, tData:tData, topHz:topHz,
@@ -8034,7 +8051,23 @@ function _xlInjectToEngine() {
   var nzeRun   = D.companies[co_id].runs.nze_2050;
   var cpRun    = D.companies[co_id].runs.current_policies;
   var nzeY30   = nzeRun.years.find(function(y){return y.year===2030;}) || nzeRun.years[0];
-  var ccPct    = (nzeY30 && nzeY30.ebitda > 0) ? (nzeY30.carbon_cost / nzeY30.ebitda * 100) : 10;
+  var ccPctRaw = (nzeY30 && nzeY30.ebitda > 0) ? (nzeY30.carbon_cost / nzeY30.ebitda * 100) : 0;
+  /* Sector-based minimum transition risk: high-carbon sectors must have a floor
+     carbon cost % even when Excel data has no carbon pricing modelled.
+     Source: IEA NZE 2050 sector-level carbon cost estimates at $130/tCO2e (2030). */
+  var _sectorTransFloor = {
+    'Cement':8,'Concrete':8,'Building Materials':6,
+    'Steel':10,'Steel & Metals':10,'Metals':7,
+    'Oil & Gas':15,'Oil and Gas':15,'Refining':12,
+    'Coal':20,'Mining':5,'Chemicals':6,'Fertilisers':8,
+    'Aluminium':7,'Glass':5,'Paper':4,'Shipping':6,'Aviation':10
+  };
+  var _transFloor = 0;
+  Object.keys(_sectorTransFloor).forEach(function(k){
+    if (sector && sector.toLowerCase().indexOf(k.toLowerCase())>=0)
+      _transFloor = Math.max(_transFloor, _sectorTransFloor[k]);
+  });
+  var ccPct = Math.max(ccPctRaw, _transFloor);
   var transScore= Math.min(100, ccPct * 3);
   var transLabel= transScore>=70?'Critical':transScore>=50?'High':transScore>=30?'Elevated':transScore>=15?'Moderate':'Low';
   var evAtRisk = cpRun.ev > 0 ? (cpRun.ev - nzeRun.ev) / cpRun.ev * 100 : 0;
