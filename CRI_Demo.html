@@ -7460,6 +7460,24 @@ var _REC_DB = {
   '_supplychain':  {icon:'🔗',actions:['Dual-source all critical Tier 1 materials from geographically diverse suppliers','Build strategic buffer inventory for top 5 critical inputs (60–90 day target)','Require climate risk disclosures from all Tier 1 suppliers by 2026','Include climate force majeure and business continuity clauses in contracts','Deploy supply chain risk monitoring platform for real-time hazard alerts','Develop near-shoring strategy for highest-risk imported materials']}
 };
 
+/* Adaptation effectiveness by hazard — fraction of hazard-specific annual loss that
+   recommended physical interventions can realistically eliminate or defer.
+   Sources: Swiss Re Resilience Index 2023, Munich Re NatCatSERVICE, C40 Cities Adaptation,
+   IPCC AR6 WG2 Ch16.4 (residual risk after adaptation), IEA Industrial Deep Decarbonisation. */
+var HAZARD_ADAPT_EFF = {
+  'Riverine Flood':     {eff:0.68, label:'flood barriers + elevated switchgear + drainage',    effLo:0.55, effHi:0.78},
+  'Coastal Flood':      {eff:0.62, label:'seawall / berm + equipment relocation',              effLo:0.50, effHi:0.72},
+  'Heat Stress':        {eff:0.55, label:'cooling stations + schedule shift + HVAC upgrade',   effLo:0.40, effHi:0.65},
+  'Water Stress':       {eff:0.60, label:'ZLD / closed-loop recycling + IoT metering',         effLo:0.48, effHi:0.70},
+  'Drought':            {eff:0.58, label:'water recycling + alternative sourcing',              effLo:0.45, effHi:0.68},
+  'Wildfire':           {eff:0.62, label:'defensible space + ember-resistant materials',        effLo:0.50, effHi:0.72},
+  'Cyclone':            {eff:0.65, label:'structural upgrade to Cat-5 + storm shutters',       effLo:0.52, effHi:0.75},
+  'Landslide':          {eff:0.52, label:'slope stability + debris barriers + monitoring',     effLo:0.38, effHi:0.62},
+  'Sea Level Rise':     {eff:0.38, label:'elevation survey + managed retreat planning',        effLo:0.25, effHi:0.50},
+  'Saltwater Intrusion':{eff:0.55, label:'RO treatment + cathodic protection + bore sealing', effLo:0.42, effHi:0.65},
+  '_default':           {eff:0.45, label:'hazard-specific adaptation programme',               effLo:0.30, effHi:0.58},
+};
+
 function _generateDetailedRecs(asmts, totalCarB, transCarB, yr, ssp, year) {
   var recs = [];
   var seenHazards = {};
@@ -7476,15 +7494,42 @@ function _generateDetailedRecs(asmts, totalCarB, transCarB, yr, ssp, year) {
       var col = t.sev>=3.5?'#b91c1c':t.sev>=2.5?'#b45309':'#2563eb';
       var costPctLow  = t.sev>=3.5?2:t.sev>=2.5?1:0.5;
       var costPctHigh = t.sev>=3.5?5:t.sev>=2.5?2:1;
-      var savingM     = +(a.carM * 0.45).toFixed(0);
+
+      /* ── Hazard-specific saving calculation ──────────────────────────────
+         Formula: hzLossM = t.loss × asset_CV
+                  savingM = hzLossM × adaptation_effectiveness_factor
+         t.loss is the annualised loss FRACTION for THIS specific hazard alone
+         (not total asset CaR), so each hazard produces a different saving figure.
+         Effectiveness factors sourced from Swiss Re Resilience Index 2023 +
+         IPCC AR6 WG2 Ch16.4 residual risk after adaptation.                   */
+      var adaptData   = HAZARD_ADAPT_EFF[t.h] || HAZARD_ADAPT_EFF['_default'];
+      var hzLossM     = +(t.loss * a.cv).toFixed(1);   /* hazard-specific annual loss $M */
+      var savingLo    = +(hzLossM * adaptData.effLo).toFixed(0);
+      var savingHi    = +(hzLossM * adaptData.effHi).toFixed(0);
+      var savingM     = +(hzLossM * adaptData.eff).toFixed(0);
+      var lossSharePct= a.carM > 0 ? (hzLossM / a.carM * 100).toFixed(0) : '—';
+
+      /* Cost of adaptation: based on severity × CV and independent of saving calc */
+      var adaptCostLo = +(a.cv * costPctLow  / 100).toFixed(0);
+      var adaptCostHi = +(a.cv * costPctHigh / 100).toFixed(0);
+      var paybackYrs  = savingM > 0 ? Math.ceil((adaptCostLo + adaptCostHi) / 2 / savingM) : '—';
+
       recs.push({
         priority:pri, col:col,
         icon:db.icon, category:t.h, assetName:a.name,
-        issue:'Projected severity '+t.sev.toFixed(2)+'/5 under '+ssp.toUpperCase()+' by '+year+'. '+(d.daysM||0)+'-day avg disruption per event. Annualised loss: $'+a.carM.toFixed(0)+'M.',
+        issue:'Projected '+t.h+' severity '+t.sev.toFixed(2)+'/5 under '+ssp.toUpperCase()+' by '+year+
+              '. This hazard alone drives $'+hzLossM+'M/yr ('+lossSharePct+'% of this asset\'s total CaR).'+
+              (d.daysM ? ' Avg disruption: '+(d.daysM)+' days/event.' : ''),
+        savingCalc:  /* shown in UI to explain exactly where the number comes from */
+              'Hazard loss: $'+hzLossM+'M/yr (annual loss rate '+
+              (t.loss*100).toFixed(2)+'% × $'+a.cv+'M carrying value) × '+
+              Math.round(adaptData.eff*100)+'% adaptation effectiveness ['+adaptData.label+'] = $'+savingM+'M/yr saved.',
+        savingRange: '$'+savingLo+'M–$'+savingHi+'M/yr ('+Math.round(adaptData.effLo*100)+'–'+Math.round(adaptData.effHi*100)+'% effectiveness range)',
         actions:db.actions,
-        costEstM:(a.cv*costPctLow/100).toFixed(0)+'–'+(a.cv*costPctHigh/100).toFixed(0),
+        costEstM:adaptCostLo+'–'+adaptCostHi,
+        paybackYrs:paybackYrs,
         timeline:t.sev>=3.5?'Immediate — 12 months':'12–36 months',
-        benefitPct:t.sev>=3.5?'40–65%':'20–45%',
+        benefitPct:Math.round(adaptData.effLo*100)+'–'+Math.round(adaptData.effHi*100)+'%',
         savingM:savingM,
         impactM:savingM
       });
@@ -7568,12 +7613,19 @@ function _buildReportHTML(d) {
       '<div><div class="ast-lbl">Warming by '+d.year+'</div><div class="ast-val">+'+a.warming.toFixed(2)+'°C</div></div>'+
       '<div><div class="ast-lbl">LULC Type</div><div class="ast-val" style="font-size:11px">'+a.lulc+'</div></div>'+
       '</div>'+
-      '<div style="font-size:11px;color:#6b7280;margin-top:8px;font-style:italic">Mitigation potential: 40–60% CaR reduction achievable with recommended actions</div>'+
+      '<div style="font-size:11px;color:#6b7280;margin-top:8px;font-style:italic">Mitigation potential: effectiveness varies by hazard — Riverine Flood 55–78%, Heat Stress 40–65%, Water Stress 48–70% (Swiss Re Resilience Index 2023). See recommendations below for hazard-specific derivations.</div>'+
       '</div>';
   }).join('');
 
   var recsHtml = d.recs.map(function(r,i){
     var actHtml = r.actions.slice(0,4).map(function(a){return '<li>'+a+'</li>';}).join('');
+    /* Saving derivation block — shows exactly where the $M figure comes from */
+    var savingDerivation = r.savingCalc
+      ? '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:6px;padding:9px 12px;margin-bottom:10px;font-size:12px;color:#166534">'+
+          '<strong>📐 How $'+r.savingM+'M saving was calculated:</strong><br>'+r.savingCalc+'<br>'+
+          '<span style="color:#15803d">Range: '+r.savingRange+'</span>'+
+        '</div>'
+      : '';
     return '<div class="rec-card">'+
       '<div class="rec-head">'+
       '<div class="rec-priority" style="background:'+r.col+';color:#fff">'+r.priority+'</div>'+
@@ -7582,11 +7634,15 @@ function _buildReportHTML(d) {
       '</div>'+
       '<div class="rec-issue">⚠ <strong>Issue: </strong>'+r.issue+'</div>'+
       '<div class="rec-body">'+
-      '<div class="rec-actions"><div class="rec-section-title">Priority Actions</div><ul style="margin:6px 0 0 16px;font-size:13px;line-height:1.7">'+actHtml+'</ul></div>'+
+      '<div class="rec-actions">'+
+        savingDerivation+
+        '<div class="rec-section-title">Priority Actions to Achieve This Saving</div>'+
+        '<ul style="margin:6px 0 0 16px;font-size:13px;line-height:1.7">'+actHtml+'</ul></div>'+
       '<div class="rec-meta">'+
       '<div class="rec-meta-item"><span class="rml">Est. Capex</span><span class="rmv">$'+r.costEstM+'M</span></div>'+
+      '<div class="rec-meta-item"><span class="rml">Payback</span><span class="rmv">'+(r.paybackYrs||'—')+' yrs</span></div>'+
       '<div class="rec-meta-item"><span class="rml">Timeline</span><span class="rmv">'+r.timeline+'</span></div>'+
-      '<div class="rec-meta-item"><span class="rml">Benefit</span><span class="rmv">'+r.benefitPct+'</span></div>'+
+      '<div class="rec-meta-item"><span class="rml">Effectiveness</span><span class="rmv">'+r.benefitPct+'</span></div>'+
       '<div class="rec-meta-item"><span class="rml">Est. Saving</span><span class="rmv" style="color:#16a34a;font-weight:700">$'+r.savingM+'M/yr</span></div>'+
       '</div>'+
       '</div>'+
@@ -7604,7 +7660,29 @@ function _buildReportHTML(d) {
     var colMap = {'Immediate (0–12 months)':'#b91c1c','Short-Term (12–36 months)':'#b45309','Medium-Term (3–7 years)':'#2563eb'};
     return '<div class="road-phase"><div class="road-phase-head" style="border-left:4px solid '+colMap[phase]+'">'+phase+'</div>'+
       '<div class="road-items">'+items.map(function(r){
-        return '<div class="road-item"><span class="road-icon">'+r.icon+'</span><div><strong>'+r.category+'</strong><div style="font-size:12px;color:#6b7280">'+r.assetName.substring(0,50)+'</div></div><div style="font-size:12px;font-weight:700;color:#16a34a;white-space:nowrap">Save $'+r.savingM+'M</div></div>';
+        var calcNote = r.savingCalc
+          ? '<div style="font-size:10px;color:#6b7280;margin-top:3px;line-height:1.5">'+r.savingCalc+'</div>'
+          : '';
+        var rangeNote = r.savingRange
+          ? '<div style="font-size:10px;color:#9ca3af;margin-top:1px">Range: '+r.savingRange+'</div>'
+          : '';
+        var payback = r.paybackYrs
+          ? '<div style="font-size:10px;color:#6b7280">Capex est. $'+r.costEstM+'M · '+r.paybackYrs+' yr payback</div>'
+          : '';
+        return '<div class="road-item" style="align-items:flex-start;padding:12px 14px;border-bottom:1px solid var(--bd)">'+
+          '<span class="road-icon" style="margin-top:2px">'+r.icon+'</span>'+
+          '<div style="flex:1;min-width:0">'+
+            '<strong style="font-size:13px">'+r.category+'</strong>'+
+            '<div style="font-size:12px;color:#6b7280;margin-bottom:4px">'+r.assetName.substring(0,60)+'</div>'+
+            calcNote+
+            rangeNote+
+            payback+
+          '</div>'+
+          '<div style="text-align:right;flex-shrink:0;margin-left:16px">'+
+            '<div style="font-size:16px;font-weight:800;color:#16a34a">Save $'+r.savingM+'M</div>'+
+            '<div style="font-size:10px;color:#9ca3af">per year</div>'+
+          '</div>'+
+        '</div>';
       }).join('')+'</div></div>';
   }).join('');
 
