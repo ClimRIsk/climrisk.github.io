@@ -7082,6 +7082,74 @@ function buildAssetDamageReport(assetData) {
   var annualRevM = cv * 0.16; // ~16% of CV as annual revenue proxy
   var dailyRevM  = annualRevM / 330;
 
+  /* ── Asset-level saving summary across all hazard categories ── */
+  var applicableHazards = prof.hazards.filter(function(h){return h.applicable && h.loss > 0;});
+  var assetTotalLossM   = applicableHazards.reduce(function(s,h){ return s + h.loss * cv; }, 0);
+  var assetTotalSavingM = applicableHazards.reduce(function(s,h) {
+    var ad = HAZARD_ADAPT_EFF[h.h] || HAZARD_ADAPT_EFF['_default'];
+    return s + h.loss * cv * ad.eff;
+  }, 0);
+  var assetTotalCapexM  = applicableHazards.reduce(function(s,h) {
+    var cpPctMid = h.sev >= 3.5 ? 3.5 : h.sev >= 2.5 ? 2.0 : 1.25;
+    return s + cv * cpPctMid / 100;
+  }, 0);
+  /* 2050 projected loss — using t50 severity escalation */
+  var assetLoss2050M = applicableHazards.reduce(function(s,h) {
+    var sevScale = Math.max(h.t50||h.sev, 0.01) / Math.max(h.sev, 0.01);
+    return s + h.loss * sevScale * cv;
+  }, 0);
+
+  var assetSummary = applicableHazards.length > 0 ? (
+    '<div style="background:linear-gradient(135deg,#0f172a 0%,#1e293b 100%);border-radius:12px;padding:16px 20px;margin-bottom:16px;color:#f0f4f8">'+
+    '<div style="font-size:13px;font-weight:800;letter-spacing:.5px;margin-bottom:12px;color:#94a3b8">'+
+      'ASSET SAVINGS OVERVIEW — ALL HAZARD CATEGORIES COMBINED</div>'+
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px">'+
+      '<div style="background:#1e293b;border-radius:8px;padding:10px 12px;border-top:3px solid #b91c1c">'+
+        '<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em">Current Annual Loss</div>'+
+        '<div style="font-size:22px;font-weight:800;color:#f87171">$'+assetTotalLossM.toFixed(0)+'M</div>'+
+        '<div style="font-size:10px;color:#64748b">across '+applicableHazards.length+' active hazards</div>'+
+      '</div>'+
+      '<div style="background:#1e293b;border-radius:8px;padding:10px 12px;border-top:3px solid #b45309">'+
+        '<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em">Projected 2050 Loss</div>'+
+        '<div style="font-size:22px;font-weight:800;color:#fbbf24">$'+assetLoss2050M.toFixed(0)+'M</div>'+
+        '<div style="font-size:10px;color:#64748b">without adaptation</div>'+
+      '</div>'+
+      '<div style="background:#1e293b;border-radius:8px;padding:10px 12px;border-top:3px solid #16a34a">'+
+        '<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em">Max Achievable Saving</div>'+
+        '<div style="font-size:22px;font-weight:800;color:#4ade80">$'+assetTotalSavingM.toFixed(0)+'M/yr</div>'+
+        '<div style="font-size:10px;color:#64748b">if all hazards addressed</div>'+
+      '</div>'+
+      '<div style="background:#1e293b;border-radius:8px;padding:10px 12px;border-top:3px solid #6366f1">'+
+        '<div style="font-size:10px;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em">Total Adaptation Capex</div>'+
+        '<div style="font-size:22px;font-weight:800;color:#a5b4fc">$'+assetTotalCapexM.toFixed(0)+'M</div>'+
+        '<div style="font-size:10px;color:#64748b">'+
+          (assetTotalSavingM > 0 ? (assetTotalCapexM / assetTotalSavingM).toFixed(1)+' yr payback' : 'est. combined capex')+
+        '</div>'+
+      '</div>'+
+    '</div>'+
+    /* Per-hazard saving bar chart */
+    '<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Annual Saving by Hazard Category ($M/yr)</div>'+
+    applicableHazards.slice().sort(function(a,b){
+      var adA = HAZARD_ADAPT_EFF[a.h]||HAZARD_ADAPT_EFF['_default'];
+      var adB = HAZARD_ADAPT_EFF[b.h]||HAZARD_ADAPT_EFF['_default'];
+      return (b.loss*cv*adB.eff) - (a.loss*cv*adA.eff);
+    }).map(function(h) {
+      var ad = HAZARD_ADAPT_EFF[h.h] || HAZARD_ADAPT_EFF['_default'];
+      var hzSaving = h.loss * cv * ad.eff;
+      var hzLoss   = h.loss * cv;
+      var barW = assetTotalSavingM > 0 ? Math.round(hzSaving / assetTotalSavingM * 100) : 0;
+      return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
+        '<div style="width:120px;font-size:11px;color:#cbd5e1;flex-shrink:0">'+(HZ_ICONS[h.h]||'')+' '+h.h+'</div>'+
+        '<div style="flex:1;background:#334155;border-radius:4px;height:14px;position:relative">'+
+          '<div style="width:'+barW+'%;background:linear-gradient(90deg,#16a34a,#4ade80);height:100%;border-radius:4px"></div>'+
+        '</div>'+
+        '<div style="width:70px;text-align:right;font-size:12px;font-weight:700;color:#4ade80">$'+hzSaving.toFixed(0)+'M</div>'+
+        '<div style="width:80px;text-align:right;font-size:10px;color:#64748b">(of $'+hzLoss.toFixed(0)+'M)</div>'+
+      '</div>';
+    }).join('')+
+    '</div>'
+  ) : '';
+
   var hazRows = prof.hazards.filter(function(h){return h.applicable;}).map(function(h) {
     var d = HAZARD_DAMAGE[h.h];
     if (!d) return '';
@@ -7171,10 +7239,120 @@ function buildAssetDamageReport(assetData) {
         '<ul class="mitigation-list">'+mitigations.map(function(m){return '<li>✓ '+m+'</li>';}).join('')+'</ul>'
       ) : '')+
 
+      // ── Saving Projection by Hazard ────────────────────────────────────
+      (function() {
+        var adaptData = HAZARD_ADAPT_EFF[h.h] || HAZARD_ADAPT_EFF['_default'];
+
+        /* Project severity from today → 2030 → 2050 using assessHazards t30/t50 */
+        var curYr = 2026;
+        var sevNow = Math.max(h.sev, 0.01);
+        var sev30  = Math.max(h.t30 || sevNow, 0.01);
+        var sev50  = Math.max(h.t50 || sev30,  0.01);
+
+        function sevAt(yr) {
+          if (yr <= curYr) return sevNow;
+          if (yr <= 2030)  return sevNow + (sev30-sevNow)*(yr-curYr)/(2030-curYr);
+          if (yr <= 2050)  return sev30  + (sev50-sev30) *(yr-2030)/20;
+          return sev50;
+        }
+        function lossAt(yr) {
+          /* Annual loss $M = (hazard loss fraction × severity scaling) × CV */
+          var sevScale = sevAt(yr) / sevNow;
+          return h.loss * sevScale * cv;   /* $M/yr */
+        }
+
+        var projYears = [2026, 2028, 2030, 2032, 2035, 2038, 2040, 2045, 2050];
+        var rows = projYears.map(function(yr) {
+          return { yr:yr, unadapt: lossAt(yr), adapt: lossAt(yr)*(1-adaptData.eff), saving: lossAt(yr)*adaptData.eff };
+        });
+
+        /* Capex estimate — midpoint of low/high band by severity */
+        var cpPctMid = h.sev >= 3.5 ? 3.5 : h.sev >= 2.5 ? 2.0 : 1.25;
+        var capexM   = cv * cpPctMid / 100;
+
+        /* Payback — year when cumulative saving exceeds capex */
+        var cumSaving = 0, paybackYr = null;
+        for (var pi=0; pi<projYears.length-1; pi++) {
+          var span = projYears[pi+1] - projYears[pi];
+          cumSaving += rows[pi].saving * span;
+          if (cumSaving >= capexM && !paybackYr) paybackYr = projYears[pi+1];
+        }
+        var paybackTxt = paybackYr ? paybackYr+' ('+( paybackYr - curYr)+' yrs)' : '> 2050';
+
+        /* Cumulative NPV over 2026-2050 (simple sum, no discounting for clarity) */
+        var totalSaving = 0;
+        for (var ni=0; ni<projYears.length-1; ni++) totalSaving += rows[ni].saving * (projYears[ni+1]-projYears[ni]);
+        var npvNote = (totalSaving - capexM).toFixed(0);
+
+        /* Max unadapted loss for bar scaling */
+        var maxLoss = Math.max.apply(null, rows.map(function(r){return r.unadapt;})) || 1;
+
+        /* Build projection rows */
+        var tableRows = rows.map(function(r) {
+          var uBar = Math.round(r.unadapt / maxLoss * 100);
+          var aBar = Math.round(r.adapt   / maxLoss * 100);
+          var sBar = Math.round(r.saving  / maxLoss * 100);
+          return '<tr style="border-bottom:1px solid #f3f4f6">'+
+            '<td style="padding:5px 8px;font-weight:700;color:#374151;width:46px">'+r.yr+'</td>'+
+            /* Unadapted */
+            '<td style="padding:5px 8px;width:130px">'+
+              '<div style="display:flex;align-items:center;gap:6px">'+
+                '<div style="flex:1;background:#fee2e2;border-radius:3px;height:8px">'+
+                  '<div style="width:'+uBar+'%;background:#b91c1c;height:100%;border-radius:3px"></div></div>'+
+                '<span style="font-size:11px;font-weight:700;color:#b91c1c;width:42px;text-align:right">$'+r.unadapt.toFixed(0)+'M</span>'+
+              '</div>'+
+            '</td>'+
+            /* Adapted */
+            '<td style="padding:5px 8px;width:130px">'+
+              '<div style="display:flex;align-items:center;gap:6px">'+
+                '<div style="flex:1;background:#fef3c7;border-radius:3px;height:8px">'+
+                  '<div style="width:'+aBar+'%;background:#b45309;height:100%;border-radius:3px"></div></div>'+
+                '<span style="font-size:11px;font-weight:700;color:#b45309;width:42px;text-align:right">$'+r.adapt.toFixed(0)+'M</span>'+
+              '</div>'+
+            '</td>'+
+            /* Saving */
+            '<td style="padding:5px 8px">'+
+              '<div style="display:flex;align-items:center;gap:6px">'+
+                '<div style="flex:1;background:#dcfce7;border-radius:3px;height:8px">'+
+                  '<div style="width:'+sBar+'%;background:#16a34a;height:100%;border-radius:3px"></div></div>'+
+                '<span style="font-size:12px;font-weight:800;color:#16a34a;width:42px;text-align:right">$'+r.saving.toFixed(0)+'M</span>'+
+              '</div>'+
+            '</td>'+
+          '</tr>';
+        }).join('');
+
+        return '<div style="margin-top:16px;border-top:2px solid #e5e7eb;padding-top:14px">'+
+          '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">'+
+            '📈 Annual Saving Projection — '+h.h+' Adaptation ('+Math.round(adaptData.effLo*100)+'–'+Math.round(adaptData.effHi*100)+'% effectiveness)'+
+          '</div>'+
+          '<div style="font-size:11px;color:#6b7280;margin-bottom:10px;line-height:1.6">'+
+            'Intervention: <strong>'+adaptData.label+'</strong><br>'+
+            'Est. capex: <strong>$'+capexM.toFixed(0)+'M</strong> ('+cpPctMid+'% of $'+cv+'M carrying value) &ensp;·&ensp; '+
+            'Payback year: <strong>'+paybackTxt+'</strong> &ensp;·&ensp; '+
+            'Cumulative gross saving 2026–2050: <strong>$'+totalSaving.toFixed(0)+'M</strong> &ensp;·&ensp; '+
+            'Net NPV: <strong style="color:'+(+npvNote>=0?'#16a34a':'#b91c1c')+'">'+(+npvNote>=0?'+':'')+npvNote+'M</strong>'+
+          '</div>'+
+          '<table style="width:100%;border-collapse:collapse">'+
+          '<thead><tr style="background:#f9fafb;border-bottom:2px solid #e5e7eb">'+
+            '<th style="padding:6px 8px;text-align:left;font-size:11px;color:#6b7280;font-weight:700">Year</th>'+
+            '<th style="padding:6px 8px;text-align:left;font-size:11px;color:#b91c1c;font-weight:700">Without Adaptation</th>'+
+            '<th style="padding:6px 8px;text-align:left;font-size:11px;color:#b45309;font-weight:700">After Adaptation</th>'+
+            '<th style="padding:6px 8px;text-align:left;font-size:11px;color:#16a34a;font-weight:700">Annual Saving</th>'+
+          '</tr></thead>'+
+          '<tbody>'+tableRows+'</tbody>'+
+          '</table>'+
+          '<div style="font-size:10px;color:#9ca3af;margin-top:8px">'+
+            'Projection uses IPCC AR6 severity trajectory ('+year+': '+sevNow.toFixed(2)+'/5 → 2030: '+sev30.toFixed(2)+'/5 → 2050: '+sev50.toFixed(2)+'/5). '+
+            'Saving = unadapted annual loss × adaptation effectiveness ('+Math.round(adaptData.eff*100)+'%). '+
+            'Sources: Swiss Re Resilience Index 2023, IPCC AR6 WG2 Ch16.4.'+
+          '</div>'+
+        '</div>';
+      })()+
+
     '</div>';
   }).join('');
 
-  return hazRows || '<div style="padding:16px;color:var(--muted);font-style:italic">No applicable hazards for this asset at the selected location and scenario.</div>';
+  return assetSummary + (hazRows || '<div style="padding:16px;color:var(--muted);font-style:italic">No applicable hazards for this asset at the selected location and scenario.</div>');
 }
 
 function _damCard(icon, lbl, val, sub, col) {
