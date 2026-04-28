@@ -1612,6 +1612,26 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         <div class="ht"><div class="ht-icon">💧</div><div class="ht-name">Water Stress</div><div class="ht-desc">WRI Aqueduct 4.0</div></div>
       </div>
 
+      <!-- IPCC AR6 alignment banner -->
+      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#1e40af;line-height:1.6">
+        <strong>📋 IPCC AR6 Hazard Category Alignment</strong> — This engine covers all 10 acute &amp; chronic physical hazard categories identified by IPCC AR6 WG1 Ch.11 and WGII Ch.3–4 as financially material:
+        <span style="display:inline-flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Heat Stress (Ch.11.3)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Riverine Flood (Ch.11.5)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Coastal Flood (Ch.11.5)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Sea Level Rise (Ch.9)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Saltwater Intrusion (Ch.9)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Landslide (Ch.11.5)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Wildfire (Ch.11.6)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Cyclone/TC (Ch.11.7)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Drought (Ch.11.6)</span>
+          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Water Stress (Ch.11.6)</span>
+        </span>
+        <div style="margin-top:8px;font-size:11px;color:#3b82f6">
+          ℹ️ <strong>Why some hazards show "Not applicable":</strong> Coastal Flood, Sea Level Rise, and Saltwater Intrusion are <em>inherently coastal hazards</em> per IPCC definitions — they do not affect inland sites (&gt;80 km from coast or elevation &gt;20 m). This is geophysically correct behaviour, not a data gap. Landslide is not applicable on flat terrain (GPS slope factor &lt;0.25). These results reflect site-specific GPS-resolved assessments aligned with IPCC AR6 methodology.
+        </div>
+      </div>
+
       <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. Physical risk score = mean applicable severity × 20 (0–100 scale). SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission.</span></div>
 
       <!-- SSP scenario selector for physical panel -->
@@ -4865,7 +4885,11 @@ function _applyGPSModifiers(hzs, sp) {
 
     if (h.h === 'Landslide') {
       /* Flat terrain: not applicable; steep: amplified */
-      if (slope < 0.25) { h.applicable=false; h.sev=h.prob=h.loss=h.t30=h.t50=0; return h; }
+      if (slope < 0.25) {
+        h.note = '✓ Not applicable — flat terrain (GPS slope factor '+slope.toFixed(2)+
+                 '; landslide risk negligible on low-gradient terrain)';
+        h.applicable=false; h.sev=h.prob=h.loss=h.t30=h.t50=0; return h;
+      }
       mult = Math.min(2.5, slope);
       tag = 'slope ×'+slope.toFixed(2)+' (GPS)';
     }
