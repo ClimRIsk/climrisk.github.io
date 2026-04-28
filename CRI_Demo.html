@@ -5714,24 +5714,46 @@ function renderRat() {
   badge.textContent = rat.rating;
   badge.className = 'rating-badge ' + ratingBgClass(rat.rating);
   el('rat-title').textContent = rat.label;
-  el('rat-sub').textContent = 'Composite score: ' + rat.composite + ' / 100 · Confidence: ' + rat.confidence + ' · ' + rat.sector_rank;
+  var _physPil = rat.pillars && rat.pillars.physical ? Math.round(rat.pillars.physical.score||0) : '—';
+  el('rat-sub').textContent = 'Composite: ' + rat.composite + '/100 (Physical ' + _physPil + '/100 × 35% + Transition ' + Math.round((rat.pillars&&rat.pillars.transition?rat.pillars.transition.score:0)||0) + '/100 × 35% + Financial ' + Math.round((rat.pillars&&rat.pillars.financial?rat.pillars.financial.score:0)||0) + '/100 × 30%) · ' + rat.sector_rank;
   el('rat-summary').textContent = rat.summary;
 
-  // Pillars
+  // Pillars — show numeric score + weight + contribution so composite derivation is transparent
   var ph = rat.pillars;
+  var weights = {physical:0.35, transition:0.35, financial:0.30};
+  var pillarDefs = [{key:'physical',name:'Physical Risk'},{key:'transition',name:'Transition Risk'},{key:'financial',name:'Financial Impact'}];
   var html = '';
-  [{key:'physical',name:'Physical Risk'},{key:'transition',name:'Transition Risk'},{key:'financial',name:'Financial Impact'}].forEach(function(p) {
+  var contributions = pillarDefs.map(function(p){ return Math.round((ph[p.key].score||0) * weights[p.key] * 10) / 10; });
+  pillarDefs.forEach(function(p, i) {
     var pil = ph[p.key];
-    var sc = pil.score;
-    var fc = pillarFillClass(pil.label);
+    var sc  = Math.round(pil.score || 0);
+    var wt  = Math.round(weights[p.key] * 100);
+    var fc  = pillarFillClass(pil.label);
+    var contrib = contributions[i];
     html += '<div class="pillar">';
-    html += '<div class="pillar-name">'+p.name+'</div>';
-    html += '<div class="pillar-label '+colorForLabel(pil.label)+'">'+pil.label+'</div>';
-    html += '<div class="pillar-bar"><div class="pillar-fill '+fc+'" style="width:'+Math.round(sc)+'%"></div></div>';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">';
+    html += '<div class="pillar-name" style="margin-bottom:0">'+p.name+'</div>';
+    html += '<div style="display:flex;align-items:center;gap:8px">';
+    html += '<span style="font-size:11px;color:var(--muted)">weight '+wt+'%</span>';
+    html += '<span style="font-size:18px;font-weight:800;color:var(--text)">'+sc+'</span><span style="font-size:11px;color:var(--muted)">/100</span>';
+    html += '</div></div>';
+    html += '<div class="pillar-label '+colorForLabel(pil.label)+'" style="margin-bottom:4px">'+pil.label+'</div>';
+    html += '<div class="pillar-bar"><div class="pillar-fill '+fc+'" style="width:'+sc+'%"></div></div>';
+    html += '<div style="font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:6px">Contributes <strong>'+contrib.toFixed(1)+'</strong> pts to composite ('+sc+' × '+wt+'%)</div>';
     html += '<div class="pillar-drivers">';
     pil.drivers.forEach(function(d){ html += '• '+d+'<br>'; });
     html += '</div></div>';
   });
+  // Composite formula row
+  var formulaParts = pillarDefs.map(function(p,i){
+    return Math.round(ph[p.key].score||0)+' × '+Math.round(weights[p.key]*100)+'%';
+  });
+  html += '<div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:12px;color:var(--muted)">' +
+    '<strong style="color:var(--text)">Composite formula:</strong> ' +
+    formulaParts.join(' + ') + ' = <strong style="font-size:15px;color:var(--text)">'+rat.composite+' / 100</strong>' +
+    ' &ensp;→&ensp; Rating <strong style="font-size:15px;color:var(--text)">'+rat.rating+'</strong> ('+rat.label+')' +
+    '<div style="margin-top:5px;font-size:11px">Physical score reflects average asset hazard severity · Transition score reflects carbon cost vs EBITDA under NZE 2030 · Financial score reflects EV at risk (NZE vs Current Policies). Lower transition/financial scores will always pull the composite below the physical-only score — this is by design in a three-pillar model.</div>' +
+    '</div>';
   el('rat-pillars').innerHTML = html;
 
   // Tiers
