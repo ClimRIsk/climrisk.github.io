@@ -4432,8 +4432,24 @@ var SECTOR_PARAMS = {
 function getSectorParams(sector) {
   if (!sector) return SECTOR_PARAMS['_default'];
   if (SECTOR_PARAMS[sector]) return SECTOR_PARAMS[sector];
+  /* Normalise common aliases before fuzzy match */
+  var _aliases = {
+    'beverages':'Food & Beverage','beer':'Food & Beverage','brewing':'Food & Beverage',
+    'brewery':'Food & Beverage','spirits':'Food & Beverage','wine':'Food & Beverage',
+    'food':'Food & Beverage','fmcg':'Consumer Goods','consumer staples':'Food & Beverage',
+    'oil and gas':'Oil & Gas','oil & gas upstream':'Oil & Gas','upstream':'Oil & Gas',
+    'renewable energy':'Energy/Utilities','power generation':'Energy/Utilities',
+    'steel':'Steel & Metals','metals':'Metals','aluminum':'Aluminium',
+    'pharma':'Pharmaceuticals','healthcare':'Pharmaceuticals',
+    'financial services':'Financial Services','banks':'Banking','insurance':'Financial Services',
+    'tech':'Technology','software':'Technology','semiconductor':'Technology'
+  };
+  var _low = sector.toLowerCase().trim();
+  for (var _ak in _aliases) {
+    if (_low === _ak || _low.indexOf(_ak) >= 0) return SECTOR_PARAMS[_aliases[_ak]] || SECTOR_PARAMS['_default'];
+  }
   /* Fuzzy match — handles "Cement & Concrete", "Oil & Gas Upstream", etc. */
-  var s = sector.toLowerCase(), keys = Object.keys(SECTOR_PARAMS);
+  var s = _low, keys = Object.keys(SECTOR_PARAMS);
   for (var _i=0; _i<keys.length; _i++) {
     var k = keys[_i];
     if (k === '_default') continue;
@@ -8455,23 +8471,45 @@ function _xlInjectToEngine() {
     // Derive region from lat/lon when not explicitly provided
     var region = a.state || a.region || 'global';
     if (region === 'global' && lat !== null && lon !== null) {
-      // Simple bounding-box geocoder for major regions
-      if (lat > 35 && lat < 72 && lon > -10 && lon < 40)  region = lat < 45 ? (lon < 15 ? 'IT' : lon < 25 ? 'GR' : 'TR') : (lon < 0 ? 'GB-ENG' : lon < 8 ? 'FR' : lon < 15 ? 'DE' : lon < 25 ? 'PL' : 'RO');
-      else if (lat > 50 && lat < 72 && lon > 4 && lon < 9) region = 'NL';
-      else if (lat > 49 && lat < 52 && lon > 3 && lon < 7) region = 'BE';
-      else if (lat > 24 && lat < 50 && lon > -125 && lon < -60) region = lat > 40 ? 'US-NY' : (lon < -100 ? 'US-TX' : 'US-FL');
-      else if (lat > 24 && lat < 50 && lon > -100 && lon < -85) region = lat < 36 ? 'US-TX' : (lon < -88 ? 'US-OK' : 'US-NY');
-      else if (lat > -55 && lat < 13 && lon > -82 && lon < -34) region = lat < -15 ? 'AR' : (lat < 0 ? 'BR-PA' : 'CO');
-      else if (lat > -10 && lat < 36 && lon > 25 && lon < 60) region = lat < 15 ? 'YE' : (lat < 25 ? 'SA' : (lon > 50 ? 'AE' : 'EG'));
-      else if (lat > -35 && lat < 37 && lon > -20 && lon < 55) region = lat < 0 ? 'ZA' : (lat < 15 ? 'NG' : (lat < 25 ? 'ET' : 'EG'));
+      // ── GPS bounding-box geocoder — order matters: specific before general ──
+      // Netherlands / Belgium (must come before broad Europe check)
+      if      (lat > 50 && lat < 54 && lon > 3.3 && lon < 7.2)  region = 'NL-NB';  // S Netherlands (Den Bosch etc.)
+      else if (lat > 54 && lat < 72 && lon > 3   && lon < 9)    region = 'NL';
+      else if (lat > 49 && lat < 52 && lon > 2.5 && lon < 6.5)  region = 'BE';
+      // Iberian Peninsula — lon < -3 separates Spain/Portugal from mainland Europe
+      else if (lat > 36 && lat < 44 && lon > -9.5 && lon < -3)  region = 'PT';      // Portugal
+      else if (lat > 36 && lat < 44 && lon > -9.5 && lon < 4)   region = 'ES-AN';   // Spain (incl. Seville lat 37)
+      // Mexico — must come BEFORE the broad North/Central America block
+      else if (lat > 14 && lat < 33 && lon > -118 && lon < -86) {
+        region = lat > 29 ? (lon < -106 ? 'MX-CHH' : 'MX-NLE')  // N Mexico: Chihuahua / Nuevo León
+               : lat > 19 ? 'MX-GJ'                               // Central Mexico
+               : 'MX-VC';                                          // Gulf/S Mexico
+      }
+      // Rest of Europe (lon > -3 avoids re-catching Iberia)
+      else if (lat > 35 && lat < 72 && lon > -3 && lon < 40) {
+        region = lat < 45 ? (lon < 15 ? 'IT' : lon < 25 ? 'GR' : 'TR')
+               : (lon < 8 ? 'FR' : lon < 15 ? 'DE' : lon < 25 ? 'PL' : 'RO');
+      }
+      else if (lat > 50 && lat < 60 && lon > -5 && lon < 2)     region = 'GB-ENG';
+      // USA / Canada (lat > 33 separates from Mexico)
+      else if (lat > 33 && lat < 50 && lon > -125 && lon < -60) region = lat > 40 ? 'US-NY' : (lon < -100 ? 'US-TX' : 'US-FL');
+      else if (lat > 50 && lat < 70 && lon > -140 && lon < -60) region = 'CA-AB';
+      // Central & South America
+      else if (lat > -55 && lat < 14 && lon > -82 && lon < -34) region = lat < -15 ? 'AR' : (lat < 0 ? 'BR-PA' : 'CO');
+      // Middle East / North Africa
+      else if (lat > -10 && lat < 36 && lon > 25 && lon < 60)   region = lat < 15 ? 'YE' : (lat < 25 ? 'SA' : (lon > 50 ? 'AE' : 'EG'));
+      // Sub-Saharan Africa
+      else if (lat > -35 && lat < 37 && lon > -20 && lon < 55)  region = lat < 0 ? 'ZA' : (lat < 15 ? 'NG' : (lat < 25 ? 'ET' : 'EG'));
+      // Asia-Pacific (lon 60–135)
       else if (lat > 5 && lat < 55 && lon > 60 && lon < 135) {
-        if (lat > 30 && lat < 45 && lon > 100 && lon < 122) region = 'CN';
-        else if (lat > 20 && lat < 35 && lon > 65 && lon < 90) region = 'IN-MH';
+        if      (lat > 30 && lat < 45 && lon > 100 && lon < 122) region = 'CN';
+        else if (lat > 20 && lat < 35 && lon > 65  && lon < 90)  region = 'IN-MH';
         else if (lat > 35 && lat < 46 && lon > 128 && lon < 146) region = 'JP';
         else if (lat > 30 && lat < 38 && lon > 126 && lon < 130) region = 'KR';
-        else if (lat > -10 && lat < 30 && lon > 95 && lon < 135) region = lat < 5 ? 'SG' : (lon > 115 ? 'ID-KI' : 'TH');
-        else if (lat > 8 && lat < 25 && lon > 100 && lon < 110) region = 'VN';
+        // Vietnam BEFORE generic SEA (fixes ordering bug)
+        else if (lat > 8  && lat < 25 && lon > 102 && lon < 109) region = 'VN-77';  // Vietnam (Vung Tau lon 107)
         else if (lat > 10 && lat < 25 && lon > 115 && lon < 130) region = 'PH';
+        else if (lat > -10 && lat < 30 && lon > 95 && lon < 135) region = lat < 5 ? 'SG' : (lon > 115 ? 'ID-KI' : 'TH');
         else region = 'asia_pacific';
       }
       else if (lat > -45 && lat < -10 && lon > 110 && lon < 155) region = lat > -25 ? 'AU-QLD' : (lon < 135 ? 'AU-SA' : 'AU-NSW');
@@ -8548,23 +8586,43 @@ function _xlInjectToEngine() {
   });
   var ccPct = Math.max(ccPctRaw, _transFloor);
   var transScore= Math.min(100, ccPct * 3);
-  var transLabel= transScore>=70?'Critical':transScore>=50?'High':transScore>=30?'Elevated':transScore>=15?'Moderate':'Low';
+
+  // ── Transition discount: verified decarbonization commitments reduce risk ──
+  // Source: IPCC AR6 WG3 Ch17; TCFD guidance — SBTi-verified companies show
+  // measurably lower carbon-cost exposure in NZE-aligned transition scenarios.
+  var _trKV = xd.transitionKV;
+  var _transDiscount = 0;
+  var _transDiscountNote = '';
+  if (_trKV) {
+    if (_trKV.sbtiVerified)           { _transDiscount += 4;  _transDiscountNote += 'SBTi-verified commitment (−4 pts); '; }
+    if (_trKV.netZeroYear && _trKV.netZeroYear <= 2050)       { _transDiscount += 3;  _transDiscountNote += 'Net-zero target '+_trKV.netZeroYear+' (−3 pts); '; }
+    if (_trKV.reduction2030 >= 40)    { _transDiscount += 4;  _transDiscountNote += _trKV.reduction2030+'% 2030 reduction target (−4 pts); '; }
+    else if (_trKV.reduction2030 >= 20){ _transDiscount += 2; _transDiscountNote += _trKV.reduction2030+'% 2030 reduction target (−2 pts); '; }
+    if (_trKV.activeInitiatives >= 3) { _transDiscount += 3;  _transDiscountNote += _trKV.activeInitiatives+' active initiatives (−3 pts); '; }
+    else if (_trKV.activeInitiatives >= 1){ _transDiscount += 1; _transDiscountNote += _trKV.activeInitiatives+' active initiative(s) (−1 pt); '; }
+    _transDiscount = Math.min(15, _transDiscount);  // cap discount at 15 pts
+  }
+  var transScoreAdj = Math.max(0, transScore - _transDiscount);
+  var transLabel= transScoreAdj>=70?'Critical':transScoreAdj>=50?'High':transScoreAdj>=30?'Elevated':transScoreAdj>=15?'Moderate':'Low';
+
   var evAtRisk = cpRun.ev > 0 ? (cpRun.ev - nzeRun.ev) / cpRun.ev * 100 : 0;
   var finScore = Math.min(100, evAtRisk * 1.3);
   var finLabel = finScore>=70?'High':finScore>=45?'Elevated':finScore>=20?'Moderate':'Low';
-  var composite= Math.round(physScore*0.35 + transScore*0.35 + finScore*0.30);
+  var composite= Math.round(physScore*0.35 + transScoreAdj*0.35 + finScore*0.30);
   var rating   = composite>=75?'E':composite>=55?'D':composite>=35?'C':composite>=18?'B':'A';
   var rLabels  = {A:'Low Climate Risk',B:'Moderate Climate Risk',C:'Elevated Climate Risk',D:'High Climate Risk',E:'Very High Climate Risk'};
   var topPhys  = hList.length ? hList.slice().sort(function(a,b){return (b.score||0)-(a.score||0);})[0] : null;
+  var _transDrivers = ['Carbon cost 2030 (NZE 2050): '+ccPct.toFixed(1)+'% of EBITDA → score '+transScore.toFixed(0)+'/100','NGFS Phase 4 NZE 2050 carbon price path'];
+  if (_transDiscountNote) _transDrivers.push('Decarbonization discount −'+_transDiscount+' pts: '+_transDiscountNote.replace(/;\s*$/,''));
   RATINGS[co_id] = {
     rating:composite>=75?'E':composite>=55?'D':composite>=35?'C':composite>=18?'B':'A',
     label: rLabels[rating], composite:composite, confidence:'Medium',
     sector_rank: hList.length + ' asset(s) · ' + sector + ' · Excel import',
-    summary: name + ' receives a CRI Rating of ' + rating + ' (' + rLabels[rating] + '), computed from site-specific physical hazard assessment across ' + hList.length + ' asset location(s), NGFS Phase 4 transition scenario modelling, and enterprise value sensitivity analysis under NZE 2050 vs Current Policies.',
+    summary: name + ' receives a CRI Rating of ' + rating + ' (' + rLabels[rating] + '), computed from site-specific physical hazard assessment across ' + hList.length + ' asset location(s), NGFS Phase 4 transition scenario modelling, and enterprise value sensitivity analysis under NZE 2050 vs Current Policies.' + (_trKV && _trKV.sbtiVerified ? ' SBTi-verified net-zero commitment reduces transition pillar score by '+_transDiscount+' points.' : ''),
     pillars: {
-      physical:   { label:physLabel,  score:physScore,  drivers:['CV-weighted physical hazard score ('+hList.length+' asset'+(hList.length>1?'s':'')+', severity scale): '+physScore.toFixed(1)+'/100 · Avg annual loss 2030: '+avgLoss.toFixed(2)+'%', topPhys?'Highest-risk asset: '+topPhys.asset+' (score '+(topPhys.score||0).toFixed(1)+'/100 · '+(topPhys.loss_2030_pct||0).toFixed(2)+'% loss/yr)':'Multi-asset portfolio'] },
-      transition: { label:transLabel, score:transScore, drivers:['Carbon cost 2030 (NZE 2050): '+ccPct.toFixed(1)+'% of EBITDA','NGFS Phase 4 NZE 2050 carbon price path'] },
-      financial:  { label:finLabel,   score:finScore,   drivers:['EV at risk (NZE vs Current Policies): '+evAtRisk.toFixed(1)+'%','NZE EV: $'+nzeRun.ev.toFixed(1)+'B  ·  CP EV: $'+cpRun.ev.toFixed(1)+'B  ·  WACC: '+nzeRun.wacc.toFixed(1)+'%'] }
+      physical:   { label:physLabel,     score:physScore,       drivers:['CV-weighted physical hazard score ('+hList.length+' asset'+(hList.length>1?'s':'')+', severity scale): '+physScore.toFixed(1)+'/100 · Avg annual loss 2030: '+avgLoss.toFixed(2)+'%', topPhys?'Highest-risk asset: '+topPhys.asset+' (score '+(topPhys.score||0).toFixed(1)+'/100 · '+(topPhys.loss_2030_pct||0).toFixed(2)+'% loss/yr)':'Multi-asset portfolio'] },
+      transition: { label:transLabel,    score:transScoreAdj,   drivers:_transDrivers },
+      financial:  { label:finLabel,      score:finScore,        drivers:['EV at risk (NZE vs Current Policies): '+evAtRisk.toFixed(1)+'%','NZE EV: $'+nzeRun.ev.toFixed(1)+'B  ·  CP EV: $'+cpRun.ev.toFixed(1)+'B  ·  WACC: '+nzeRun.wacc.toFixed(1)+'%'] }
     }
   };
 
@@ -8770,11 +8828,21 @@ async function _xlProcessFile(file) {
     if (_assetSheetName) {
       var rows = XLSX.utils.sheet_to_json(wb.Sheets[_assetSheetName]);
       // Commodity → sector mapping for common industrial Excel formats
-      var _commToSector = { refined_products:'Chemicals', chemicals:'Chemicals', petrochemicals:'Chemicals',
-        specialty_chemicals:'Chemicals', oil:'Oil & Gas', gas:'Oil & Gas', lng:'Oil & Gas',
+      var _commToSector = {
+        // Food & Beverage — brewing, spirits, dairy, packaged food
+        beverages:'Food & Beverage', beer:'Food & Beverage', brewing:'Food & Beverage',
+        brewery:'Food & Beverage', malt:'Food & Beverage', spirits:'Food & Beverage',
+        wine:'Food & Beverage', winery:'Food & Beverage', dairy:'Food & Beverage',
+        food:'Food & Beverage', packaged_food:'Food & Beverage', fmcg:'Food & Beverage',
+        // Petrochemicals / Chemicals (refined_products is petroleum, not generic chemicals for a brewery)
+        refined_products:'Oil & Gas', petroleum:'Oil & Gas', refining:'Oil & Gas',
+        chemicals:'Chemicals', petrochemicals:'Chemicals', specialty_chemicals:'Chemicals',
+        oil:'Oil & Gas', gas:'Oil & Gas', lng:'Oil & Gas',
         coal:'Coal', iron_ore:'Mining', copper:'Mining', gold:'Mining', nickel:'Mining',
-        steel:'Steel & Metals', aluminium:'Steel & Metals', cement:'Cement', agriculture:'Agriculture',
-        pulp:'Agriculture', timber:'Agriculture', power:'Utilities', electricity:'Utilities' };
+        steel:'Steel & Metals', aluminium:'Steel & Metals', cement:'Cement',
+        agriculture:'Agriculture', pulp:'Agriculture', timber:'Agriculture',
+        power:'Utilities', electricity:'Utilities', renewables:'Energy/Utilities'
+      };
       _xlState.data.assets = rows.map(function(r) {
         var rawSector = r['Sector'] || r['sector'] || r['Commodity'] || r['commodity'] || r['Industry'] || '';
         var mappedSector = _commToSector[String(rawSector).toLowerCase().replace(/\s+/g,'_')] || rawSector || '';
@@ -8839,8 +8907,13 @@ async function _xlProcessFile(file) {
       _xlState.data.company = {
         name:     rawCo['Company Name'] || rawCo['name'] || rawCo['Company'] || rawCo['Organisation'] ||
                   rawCo['Organisation Name'] || rawCo['Legal Name'] || rawCo['Entity'] || rawCo['Entity Name'] ||
-                  rawCo['Corporate Name'] || rawCo['Client'] || rawCo['Client Name'] || rawCo['Issuer'] || rawCo['Issuer Name'] || '',
-        sector:   rawCo['Sector'] || rawCo['sector'] || rawCo['Industry'] || rawCo['industry'] || 'Chemicals',
+                  rawCo['Corporate Name'] || rawCo['Client'] || rawCo['Client Name'] || rawCo['Issuer'] || rawCo['Issuer Name'] ||
+                  /* Try common Financial Overview label formats */
+                  rawCo['Company / Issuer'] || rawCo['Company/Issuer'] || rawCo['Issuer / Company'] || '',
+        sector:   rawCo['Sector'] || rawCo['sector'] || rawCo['Industry'] || rawCo['industry'] ||
+                  rawCo['Industry / Sector'] || rawCo['Sector / Industry'] || rawCo['Business Segment'] ||
+                  /* Fallback: infer from any row labelled "Sector" in Financial Overview sheets */
+                  (function(){ var _s=''; Object.keys(rawCo).forEach(function(k){ if(/sector|industry/i.test(k)) _s=_s||String(rawCo[k]); }); return _s; })() || '',
         revM:     +(rawCo['Annual Revenue (USD M)'] || rawCo['Revenue (USD M)'] || rawCo['Revenue'] || rawCo['revM'] || rawCo['Revenues'] || 0),
         ebitdaM:  +(rawCo['EBITDA (USD M)'] || rawCo['EBITDA'] || rawCo['ebitdaM'] || rawCo['Adjusted EBITDA'] || 0),
         mktCapM:  +(rawCo['Market Cap (USD M)'] || rawCo['Market Cap'] || rawCo['Market Capitalisation'] || rawCo['mktCapM'] || 0),
@@ -8878,6 +8951,35 @@ async function _xlProcessFile(file) {
         _xlState.data.emissions = _emRaw;
         _xlState.data.emissionsKV = null;
       }
+    }
+
+    // ── Parse Transition & Decarbonization sheet ─────────────────────────────
+    // Extracts SBTi commitments, net-zero targets, reduction targets, and
+    // active decarbonization initiatives. Used to discount the transition pillar
+    // score — companies with verified commitments carry less transition risk.
+    var _transSheetName = wb.SheetNames.find(function(n){ return /transit|decarb|net.?zero|climate.*action|sustain/i.test(n); });
+    _xlState.data.transitionKV = null;
+    if (_transSheetName) {
+      var _trRaw = XLSX.utils.sheet_to_json(wb.Sheets[_transSheetName], {header:1});
+      var _trKV  = {};
+      _trRaw.forEach(function(r) {
+        if (r[0] && r[1] !== undefined && r[1] !== null) {
+          _trKV[String(r[0]).trim().toLowerCase()] = r[1];
+        }
+      });
+      var _sbti     = /sbti|science.?based|committed/i.test(String(_trKV['net-zero commitment']||_trKV['sbti']||_trKV['science-based target']||''));
+      var _nzYear   = +(_trKV['net-zero target year'] || _trKV['net zero target year'] || _trKV['netzero year'] || 0);
+      var _red2030  = String(_trKV['2030 interim reduction target'] || _trKV['2030 reduction target'] || '0').replace(/[^0-9.]/g,'');
+      var _activeInits = ['renewable energy','energy efficiency','fuel switching','electrification','nature'].filter(function(kw){
+        return Object.keys(_trKV).some(function(k){ return k.indexOf(kw)>=0 && /active/i.test(String(_trKV[k]||'')); });
+      });
+      _xlState.data.transitionKV = {
+        sbtiVerified:   _sbti,
+        netZeroYear:    _nzYear,
+        reduction2030:  parseFloat(_red2030) || 0,   // % absolute reduction by 2030
+        activeInitiatives: _activeInits.length,
+        raw: _trKV
+      };
     }
 
     _xlState.lastSync = new Date();
