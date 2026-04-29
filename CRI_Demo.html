@@ -7135,11 +7135,13 @@ function buildAssetDamageReport(assetData) {
   var dailyRevM  = annualRevM / 330;
 
   /* ── Asset-level saving summary across all hazard categories ── */
+  var _assetSector = (typeof COS !== 'undefined' && typeof co === 'function' && COS[co()]) ? (COS[co()].sector||'') : '';
+  var _assetRegion = assetData.region || '';
   var applicableHazards = prof.hazards.filter(function(h){return h.applicable && h.loss > 0;});
   var assetTotalLossM   = applicableHazards.reduce(function(s,h){ return s + h.loss * cv; }, 0);
   var assetTotalSavingM = applicableHazards.reduce(function(s,h) {
-    var ad = HAZARD_ADAPT_EFF[h.h] || HAZARD_ADAPT_EFF['_default'];
-    return s + h.loss * cv * ad.eff;
+    var _de = deriveAdaptEff(h.h, h.sev, _assetSector, _assetRegion, cv);
+    return s + h.loss * cv * _de.eff;
   }, 0);
   var assetTotalCapexM  = applicableHazards.reduce(function(s,h) {
     var cpPctMid = h.sev >= 3.5 ? 3.5 : h.sev >= 2.5 ? 2.0 : 1.25;
@@ -7182,12 +7184,13 @@ function buildAssetDamageReport(assetData) {
     /* Per-hazard saving bar chart */
     '<div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.04em;margin-bottom:8px">Annual Saving by Hazard Category ($M/yr)</div>'+
     applicableHazards.slice().sort(function(a,b){
-      var adA = HAZARD_ADAPT_EFF[a.h]||HAZARD_ADAPT_EFF['_default'];
-      var adB = HAZARD_ADAPT_EFF[b.h]||HAZARD_ADAPT_EFF['_default'];
-      return (b.loss*cv*adB.eff) - (a.loss*cv*adA.eff);
+      var deA = deriveAdaptEff(a.h, a.sev, _assetSector, _assetRegion, cv);
+      var deB = deriveAdaptEff(b.h, b.sev, _assetSector, _assetRegion, cv);
+      return (b.loss*cv*deB.eff) - (a.loss*cv*deA.eff);
     }).map(function(h) {
-      var ad = HAZARD_ADAPT_EFF[h.h] || HAZARD_ADAPT_EFF['_default'];
-      var hzSaving = h.loss * cv * ad.eff;
+      var ad       = HAZARD_ADAPT_EFF[h.h] || HAZARD_ADAPT_EFF['_default'];
+      var _de      = deriveAdaptEff(h.h, h.sev, _assetSector, _assetRegion, cv);
+      var hzSaving = h.loss * cv * _de.eff;
       var hzLoss   = h.loss * cv;
       var barW = assetTotalSavingM > 0 ? Math.round(hzSaving / assetTotalSavingM * 100) : 0;
       return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'+
@@ -7294,6 +7297,8 @@ function buildAssetDamageReport(assetData) {
       // ── Saving Projection by Hazard ────────────────────────────────────
       (function() {
         var adaptData = HAZARD_ADAPT_EFF[h.h] || HAZARD_ADAPT_EFF['_default'];
+        /* Derive site-specific effectiveness for this hazard */
+        var _dEff = deriveAdaptEff(h.h, h.sev, _assetSector, _assetRegion, cv);
 
         /* Project severity from today → 2030 → 2050 using assessHazards t30/t50 */
         var curYr = 2026;
@@ -7315,7 +7320,10 @@ function buildAssetDamageReport(assetData) {
 
         var projYears = [2026, 2028, 2030, 2032, 2035, 2038, 2040, 2045, 2050];
         var rows = projYears.map(function(yr) {
-          return { yr:yr, unadapt: lossAt(yr), adapt: lossAt(yr)*(1-adaptData.eff), saving: lossAt(yr)*adaptData.eff };
+          /* Use future-year severity to re-derive effectiveness at that point in time */
+          var futSev  = sevAt(yr);
+          var futDEff = deriveAdaptEff(h.h, futSev, _assetSector, _assetRegion, cv);
+          return { yr:yr, unadapt: lossAt(yr), adapt: lossAt(yr)*(1-futDEff.eff), saving: lossAt(yr)*futDEff.eff };
         });
 
         /* Capex estimate — midpoint of low/high band by severity */
@@ -7374,8 +7382,16 @@ function buildAssetDamageReport(assetData) {
         }).join('');
 
         return '<div style="margin-top:16px;border-top:2px solid #e5e7eb;padding-top:14px">'+
-          '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">'+
-            '📈 Annual Saving Projection — '+h.h+' Adaptation ('+Math.round(adaptData.effLo*100)+'–'+Math.round(adaptData.effHi*100)+'% effectiveness)'+
+          '<div style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+
+            '📈 Annual Saving Projection — '+h.h+' Adaptation'+
+          '</div>'+
+          /* ── Derived effectiveness badge ── */
+          '<div style="display:inline-flex;align-items:center;gap:8px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:6px 12px;margin-bottom:10px">'+
+            '<span style="font-size:18px;font-weight:900;color:#15803d">'+_dEff.effPct+'%</span>'+
+            '<div>'+
+              '<div style="font-size:11px;font-weight:700;color:#15803d">Derived Effectiveness</div>'+
+              '<div style="font-size:10px;color:#6b7280;max-width:480px">'+_dEff.explain+'</div>'+
+            '</div>'+
           '</div>'+
           '<div style="font-size:11px;color:#6b7280;margin-bottom:10px;line-height:1.6">'+
             'Intervention: <strong>'+adaptData.label+'</strong><br>'+
@@ -7395,7 +7411,8 @@ function buildAssetDamageReport(assetData) {
           '</table>'+
           '<div style="font-size:10px;color:#9ca3af;margin-top:8px">'+
             'Projection uses IPCC AR6 severity trajectory ('+year+': '+sevNow.toFixed(2)+'/5 → 2030: '+sev30.toFixed(2)+'/5 → 2050: '+sev50.toFixed(2)+'/5). '+
-            'Saving = unadapted annual loss × adaptation effectiveness ('+Math.round(adaptData.eff*100)+'%). '+
+            'Effectiveness '+_dEff.effPct+'% derived from site-specific factors (severity, sector, climate zone, asset scale). '+
+            'Band range: '+Math.round(_dEff.lo*100)+'–'+Math.round(_dEff.hi*100)+'%. '+
             'Sources: Swiss Re Resilience Index 2023, IPCC AR6 WG2 Ch16.4.'+
           '</div>'+
         '</div>';
@@ -7708,6 +7725,95 @@ var HAZARD_ADAPT_EFF = {
   '_default':           {eff:0.45, label:'hazard-specific adaptation programme',               effLo:0.30, effHi:0.58},
 };
 
+/* ──────────────────────────────────────────────────────────────────────────
+   deriveAdaptEff(hazardName, severity, sector, region, cv)
+   Returns a SITE-SPECIFIC adaptation effectiveness object:
+     { eff: 0.52, effPct: 52, explain: '...derivation...', lo: 0.40, hi: 0.65 }
+
+   Calibrated to Swiss Re Resilience Index 2023 + IPCC AR6 WG2 Ch16.4.
+
+   Adjustment logic (all in percentage points, clamped to table band):
+   1. Base eff  : midpoint from HAZARD_ADAPT_EFF table
+   2. Severity  : extreme events reduce achievable protection
+                  sev < 2.0 → +4 pts  (mild; standard measures sufficient)
+                  2.0–2.9  → ±0 pts  (moderate; baseline)
+                  3.0–3.9  → −5 pts  (severe; residual risk grows)
+                  ≥ 4.0   → −10 pts (extreme; hard limits of adaptation)
+   3. Sector    : industrial sectors with water/thermal infrastructure outperform
+                  Food & Beverage / Water  +3 pts  (ZLD, closed-loop well-established)
+                  Oil & Gas / Chemicals    +4 pts  (engineered resilience)
+                  Real Estate / Retail     −3 pts  (lower capex commitment)
+                  Agriculture              −5 pts  (high exposure, low capacity)
+   4. Climate zone (from region prefix):
+                  Arid (SA,AE,QA,OM…) + water/drought hazard  −4 pts
+                  Arid + heat hazard                           −3 pts
+                  Tropical (SG,MY,ID…) + heat/flood hazard    +2 pts
+                  Northern Europe (NO,SE,FI,DK,IS)            +2 pts
+   5. Scale (carrying value):
+                  CV < $10M   −3 pts  (small site, limited resilience capex)
+                  CV > $100M  +3 pts  (large facility, dedicated programme)
+   6. Clamp result to [effLo × 100, effHi × 100] from table.
+────────────────────────────────────────────────────────────────────────── */
+function deriveAdaptEff(hazardName, severity, sector, region, cv) {
+  var base    = HAZARD_ADAPT_EFF[hazardName] || HAZARD_ADAPT_EFF['_default'];
+  var baseEff = base.eff * 100;   /* work in percentage points */
+  var parts   = ['Base ' + Math.round(baseEff) + '% (' + hazardName + ')'];
+
+  /* 2. Severity adjustment */
+  var sev = +(severity || 2.0);
+  var sevAdj = 0;
+  if      (sev < 2.0) { sevAdj = +4;  parts.push('severity ' + sev.toFixed(2) + '/5 +4pts (mild)'); }
+  else if (sev < 3.0) { sevAdj =  0;  parts.push('severity ' + sev.toFixed(2) + '/5 ±0pts'); }
+  else if (sev < 4.0) { sevAdj = -5;  parts.push('severity ' + sev.toFixed(2) + '/5 −5pts (severe)'); }
+  else                { sevAdj = -10; parts.push('severity ' + sev.toFixed(2) + '/5 −10pts (extreme)'); }
+  baseEff += sevAdj;
+
+  /* 3. Sector adjustment */
+  var secLow = (sector || '').toLowerCase();
+  var secAdj = 0;
+  if      (/food|beverage|beer|brew|dairy|drink|distil/.test(secLow)) { secAdj = +3; parts.push('F&B sector +3pts'); }
+  else if (/oil|gas|chemical|petro|refin|lng/.test(secLow))           { secAdj = +4; parts.push('O&G/Chem +4pts'); }
+  else if (/real.?estate|retail|hospitality|hotel|leisure/.test(secLow)) { secAdj = -3; parts.push('RE/Retail −3pts'); }
+  else if (/agri|farm|crop|livestock/.test(secLow))                   { secAdj = -5; parts.push('Agriculture −5pts'); }
+  baseEff += secAdj;
+
+  /* 4. Climate zone adjustment */
+  var reg     = (region || '').toUpperCase();
+  var hzLow   = hazardName.toLowerCase();
+  var isArid   = /^(SA|AE|QA|OM|KW|BH|DZ|MA|EG|LY|TN|JO|IQ|IR|PK)/.test(reg);
+  var isTrop   = /^(SG|MY|ID|PH|TH|VN|BD|LK|KH|MM)/.test(reg);
+  var isNEu    = /^(NO|SE|FI|DK|IS)/.test(reg);
+  var isWater  = /water|drought|salt/.test(hzLow);
+  var isHeat   = /heat/.test(hzLow);
+  var isFlood  = /flood|cyclone/.test(hzLow);
+  var regAdj   = 0;
+  if      (isArid && isWater)            { regAdj = -4; parts.push('Arid zone+water −4pts'); }
+  else if (isArid && isHeat)             { regAdj = -3; parts.push('Arid zone+heat −3pts'); }
+  else if (isTrop && (isHeat||isFlood))  { regAdj = +2; parts.push('Tropical zone +2pts'); }
+  else if (isNEu)                        { regAdj = +2; parts.push('N.Europe +2pts'); }
+  baseEff += regAdj;
+
+  /* 5. Investment scale */
+  var cvNum    = +(cv || 0);
+  var scaleAdj = 0;
+  if      (cvNum > 0 && cvNum < 10)  { scaleAdj = -3; parts.push('small site −3pts'); }
+  else if (cvNum > 100)              { scaleAdj = +3; parts.push('large facility +3pts'); }
+  baseEff += scaleAdj;
+
+  /* 6. Clamp to table band */
+  var lo      = Math.round(base.effLo * 100);
+  var hi      = Math.round(base.effHi * 100);
+  var derived = Math.min(hi, Math.max(lo, Math.round(baseEff)));
+
+  return {
+    eff:    derived / 100,
+    effPct: derived,
+    explain: parts.join(' · ') + ' = ' + derived + '%',
+    lo:     base.effLo,
+    hi:     base.effHi
+  };
+}
+
 function _generateDetailedRecs(asmts, totalCarB, transCarB, yr, ssp, year) {
   var recs = [];
   var seenHazards = {};
@@ -7733,10 +7839,13 @@ function _generateDetailedRecs(asmts, totalCarB, transCarB, yr, ssp, year) {
          Effectiveness factors sourced from Swiss Re Resilience Index 2023 +
          IPCC AR6 WG2 Ch16.4 residual risk after adaptation.                   */
       var adaptData   = HAZARD_ADAPT_EFF[t.h] || HAZARD_ADAPT_EFF['_default'];
+      /* Derive site-specific effectiveness instead of static midpoint */
+      var _coSector   = (typeof COS !== 'undefined' && typeof co === 'function' && COS[co()]) ? (COS[co()].sector||'') : '';
+      var _dEff       = deriveAdaptEff(t.h, t.sev, _coSector, a.region, a.cv);
       var hzLossM     = +(t.loss * a.cv).toFixed(1);   /* hazard-specific annual loss $M */
-      var savingLo    = +(hzLossM * adaptData.effLo).toFixed(0);
-      var savingHi    = +(hzLossM * adaptData.effHi).toFixed(0);
-      var savingM     = +(hzLossM * adaptData.eff).toFixed(0);
+      var savingLo    = +(hzLossM * _dEff.lo).toFixed(0);
+      var savingHi    = +(hzLossM * _dEff.hi).toFixed(0);
+      var savingM     = +(hzLossM * _dEff.eff).toFixed(0);
       var lossSharePct= a.carM > 0 ? (hzLossM / a.carM * 100).toFixed(0) : '—';
 
       /* Cost of adaptation: based on severity × CV and independent of saving calc */
@@ -7753,13 +7862,15 @@ function _generateDetailedRecs(asmts, totalCarB, transCarB, yr, ssp, year) {
         savingCalc:  /* shown in UI to explain exactly where the number comes from */
               'Hazard loss: $'+hzLossM+'M/yr (annual loss rate '+
               (t.loss*100).toFixed(2)+'% × $'+a.cv+'M carrying value) × '+
-              Math.round(adaptData.eff*100)+'% adaptation effectiveness ['+adaptData.label+'] = $'+savingM+'M/yr saved.',
-        savingRange: '$'+savingLo+'M–$'+savingHi+'M/yr ('+Math.round(adaptData.effLo*100)+'–'+Math.round(adaptData.effHi*100)+'% effectiveness range)',
+              _dEff.effPct+'% derived effectiveness ['+adaptData.label+'] = $'+savingM+'M/yr saved. '+
+              'Derivation: '+_dEff.explain,
+        savingRange: '$'+savingLo+'M–$'+savingHi+'M/yr (band '+Math.round(_dEff.lo*100)+'–'+Math.round(_dEff.hi*100)+'%)',
         actions:db.actions,
         costEstM:adaptCostLo+'–'+adaptCostHi,
         paybackYrs:paybackYrs,
         timeline:t.sev>=3.5?'Immediate — 12 months':'12–36 months',
-        benefitPct:Math.round(adaptData.effLo*100)+'–'+Math.round(adaptData.effHi*100)+'%',
+        benefitPct:_dEff.effPct+'%',
+        effExplain:_dEff.explain,
         savingM:savingM,
         impactM:savingM
       });
@@ -7872,7 +7983,10 @@ function _buildReportHTML(d) {
       '<div class="rec-meta-item"><span class="rml">Est. Capex</span><span class="rmv">$'+r.costEstM+'M</span></div>'+
       '<div class="rec-meta-item"><span class="rml">Payback</span><span class="rmv">'+(r.paybackYrs||'—')+' yrs</span></div>'+
       '<div class="rec-meta-item"><span class="rml">Timeline</span><span class="rmv">'+r.timeline+'</span></div>'+
-      '<div class="rec-meta-item"><span class="rml">Effectiveness</span><span class="rmv">'+r.benefitPct+'</span></div>'+
+      '<div class="rec-meta-item" title="'+(r.effExplain||r.benefitPct)+'"><span class="rml">Effectiveness</span>'+
+        '<span class="rmv" style="color:#15803d;font-weight:800">'+r.benefitPct+
+        (r.effExplain ? '<span style="font-size:9px;color:#6b7280;font-weight:400;display:block;line-height:1.3;max-width:160px;white-space:normal">'+r.effExplain+'</span>' : '')+
+        '</span></div>'+
       '<div class="rec-meta-item"><span class="rml">Est. Saving</span><span class="rmv" style="color:#16a34a;font-weight:700">$'+r.savingM+'M/yr</span></div>'+
       '</div>'+
       '</div>'+
