@@ -1676,6 +1676,17 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 
       <div class="tc"><div class="tc-head" id="phys-head">Asset Hazard Profile</div><div id="phys-tbl"></div></div>
       <div id="phys-detail"></div>
+
+      <!-- Inline asset hazard map — permanent div so Leaflet never re-initialises on a destroyed container -->
+      <div id="phys-map-section" class="cc" style="display:none;margin-top:0;margin-bottom:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <span style="font-size:13px;font-weight:700;color:var(--fg)">📍 Asset Location &amp; Hazard Footprint</span>
+          <span id="phys-map-gps-badge" style="font-size:11px;padding:2px 10px;border-radius:4px;font-weight:700;letter-spacing:.2px"></span>
+        </div>
+        <div id="phys-inline-map" style="height:240px;border-radius:8px;border:1.5px solid var(--brd);overflow:hidden;position:relative;z-index:0"></div>
+        <div style="font-size:10px;color:var(--subtle);margin-top:5px">Rings = hazard severity at asset location. Hover for details. Click <strong>🗺 Projection Map</strong> in any hazard row for 2026–2070 animation.</div>
+      </div>
+
       <div class="cc"><div class="cc-title">Production Loss by Asset (%) — Joint Probability</div><div class="ch h220"><canvas id="hazC"></canvas></div></div>
       <div class="cc" id="phys-trend-box" style="display:none"><div class="cc-title" id="phys-trend-title">Hazard Severity Trend 2026–2050 · Primary Asset · All SSP Scenarios</div><div class="ch h260"><canvas id="hazTrendC"></canvas></div></div>
     </div>
@@ -3703,29 +3714,56 @@ function showAssetDetail(assetName) {
 }
 
 /* ── INLINE HAZARD MAP (physical risk panel) ──────── */
-var _physInlineMapInst = null;
-function _initPhysInlineMap(a, prof) {
-  if (_physInlineMapInst) {
-    try { _physInlineMapInst.remove(); } catch(e) {}
-    _physInlineMapInst = null;
+// One persistent Leaflet instance — never destroyed, only updated
+var _pimMap = null;          // Leaflet map instance
+var _pimLayers = [];         // Circles / markers added per asset — cleared on each update
+
+function _updatePhysInlineMap(a, prof) {
+  var section = document.getElementById('phys-map-section');
+  var mapEl   = document.getElementById('phys-inline-map');
+  var badge   = document.getElementById('phys-map-gps-badge');
+  if (!section || !mapEl || typeof L === 'undefined') return;
+
+  // Show the section
+  section.style.display = '';
+
+  // Update GPS badge
+  if (badge) {
+    if (prof.gps_resolved) {
+      badge.textContent = '✓ GPS-Resolved';
+      badge.style.cssText = 'font-size:11px;padding:2px 10px;border-radius:4px;background:#d1fae5;color:#065f46;font-weight:700;letter-spacing:.2px';
+    } else {
+      badge.textContent = '⚠ Regional Approximation';
+      badge.style.cssText = 'font-size:11px;padding:2px 10px;border-radius:4px;background:#fef3c7;color:#92400e;font-weight:700;letter-spacing:.2px';
+    }
   }
-  var mapEl = document.getElementById('phys-inline-map');
-  if (!mapEl || typeof L === 'undefined') return;
 
   var lat = (a.lat != null) ? a.lat : ((REGION_CENTROIDS[prof.region] || [20,0])[0]);
   var lon = (a.lon != null) ? a.lon : ((REGION_CENTROIDS[prof.region] || [20,0])[1]);
 
-  var m = L.map(mapEl, {
-    zoomControl: true,
-    attributionControl: false,
-    scrollWheelZoom: false
-  }).setView([lat, lon], 5);
+  // Initialise Leaflet once — the container div is permanent, so this only runs once
+  if (!_pimMap) {
+    _pimMap = L.map(mapEl, {
+      zoomControl: true,
+      attributionControl: false,
+      scrollWheelZoom: false
+    }).setView([lat, lon], 5);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 18
+    }).addTo(_pimMap);
+    L.control.attribution({
+      prefix: '<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap</a>'
+    }).addTo(_pimMap);
+  } else {
+    // Just pan to the new location — no re-init needed
+    _pimMap.setView([lat, lon], 5, {animate: false});
+  }
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 18
-  }).addTo(m);
+  // Remove old asset-specific layers
+  _pimLayers.forEach(function(l) { try { _pimMap.removeLayer(l); } catch(e) {} });
+  _pimLayers = [];
 
-  // Regional context: draw low-opacity background circles for top 2 hazards across all regions
+  // Regional context: low-opacity circles for top 2 hazards across all REGION_CENTROIDS
   var topApplicable = prof.hazards.filter(function(h){ return h.applicable && h.sev > 0.3; })
     .sort(function(x,y){ return y.sev - x.sev; }).slice(0,2);
   topApplicable.forEach(function(h) {
@@ -3733,59 +3771,60 @@ function _initPhysInlineMap(a, prof) {
       var coord = REGION_CENTROIDS[r];
       var b = WRI_BASELINE[r] || WRI_BASELINE['global'];
       var val = 0;
-      if (h.h === 'Water Stress')   val = b.ws || 0;
-      else if (h.h === 'Riverine Flood') val = b.rf || 0;
-      else if (h.h === 'Drought')   val = b.dr || 0;
-      else if (h.h === 'Heat Stress') val = b.ht || 0;
+      if      (h.h === 'Water Stress')    val = b.ws || 0;
+      else if (h.h === 'Riverine Flood')  val = b.rf || 0;
+      else if (h.h === 'Drought')         val = b.dr || 0;
+      else if (h.h === 'Heat Stress')     val = b.ht || 0;
       else return;
       if (val < 0.4) return;
       var rcol = SEV_COL(val);
-      L.circle(coord, {
+      var c = L.circle(coord, {
         radius: Math.max(60000, val / 5 * 500000),
         color: rcol, fillColor: rcol,
-        fillOpacity: Math.max(0.04, Math.min(0.16, val / 5 * 0.18)),
+        fillOpacity: Math.max(0.04, Math.min(0.15, val / 5 * 0.17)),
         weight: 0.5, interactive: false
-      }).addTo(m);
+      }).addTo(_pimMap);
+      _pimLayers.push(c);
     });
   });
 
-  // Asset-centred rings — one per applicable hazard, sorted low→high so highest renders on top
+  // Asset-centred severity rings — sorted low→high so highest renders on top
   var sortedHz = prof.hazards.filter(function(h){ return h.applicable && h.sev > 0.2; })
     .sort(function(x,y){ return x.sev - y.sev; });
   sortedHz.forEach(function(h) {
-    var col = SEV_COL(h.sev);
+    var col    = SEV_COL(h.sev);
     var radius = Math.max(30000, h.sev / 5 * 260000);
-    L.circle([lat, lon], {
+    var c = L.circle([lat, lon], {
       radius: radius,
       color: col, fillColor: col,
-      fillOpacity: Math.max(0.05, Math.min(0.28, h.sev / 5 * 0.32)),
+      fillOpacity: Math.max(0.06, Math.min(0.28, h.sev / 5 * 0.32)),
       weight: 1.5
-    }).addTo(m).bindTooltip(
-      (HZ_ICONS[h.h] || '') + ' <strong>' + h.h + '</strong>: ' + h.sev.toFixed(2) + '/5',
+    }).addTo(_pimMap).bindTooltip(
+      (HZ_ICONS[h.h] || '') + ' <strong>' + h.h + '</strong>: Sev ' + h.sev.toFixed(2) + '/5',
       {sticky: true, direction: 'top'}
     );
+    _pimLayers.push(c);
   });
 
   // GPS pin — green if GPS-resolved, amber if regional centroid
   var pinColor = prof.gps_resolved ? '#16a34a' : '#d97706';
-  var pinIcon = L.divIcon({
+  var pinIcon  = L.divIcon({
     html: '<div style="width:14px;height:14px;border-radius:50%;background:' + pinColor +
           ';border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);"></div>',
     className: '', iconSize: [14, 14], iconAnchor: [7, 7]
   });
-  L.marker([lat, lon], {icon: pinIcon, zIndexOffset: 1000}).addTo(m)
+  var marker = L.marker([lat, lon], {icon: pinIcon, zIndexOffset: 1000})
+    .addTo(_pimMap)
     .bindTooltip(
       '<strong>' + a.asset + '</strong><br>' +
       (prof.gps_resolved ? '✓ GPS-Resolved' : '⚠ Regional Approximation') + '<br>' +
-      'Lat: ' + lat.toFixed(3) + '  Lon: ' + lon.toFixed(3),
-      {permanent: false, direction: 'top', offset: [0, -8]}
+      'Lat: ' + lat.toFixed(3) + '&nbsp; Lon: ' + lon.toFixed(3),
+      {permanent: false, direction: 'top', offset: [0, -10]}
     );
+  _pimLayers.push(marker);
 
-  L.control.attribution({
-    prefix: '<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap</a>'
-  }).addTo(m);
-
-  _physInlineMapInst = m;
+  // Force Leaflet to recalculate dimensions (needed if section was hidden on init)
+  _pimMap.invalidateSize();
 }
 
 function showAssetDetailFromProf(ap) {
@@ -3846,21 +3885,9 @@ function showAssetDetailFromProf(ap) {
       'It does not appear in climate scores or CaR calculations. For enterprise-wide seismic risk management, commission a site-specific PSHA via your ERM team. '+
       'Source: '+prof.seismic_footnote.src+
       '</div>' : '')+
-    '<div style="margin-top:14px">'+
-      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
-        '<span style="font-size:12px;font-weight:700;color:var(--fg)">📍 Asset Location &amp; Hazard Footprint</span>'+
-        (prof.gps_resolved ?
-          '<span style="font-size:11px;padding:2px 10px;border-radius:4px;background:#d1fae5;color:#065f46;font-weight:700;letter-spacing:.2px">✓ GPS-Resolved</span>' :
-          '<span style="font-size:11px;padding:2px 10px;border-radius:4px;background:#fef3c7;color:#92400e;font-weight:700;letter-spacing:.2px">⚠ Regional Approximation</span>')+
-      '</div>'+
-      '<div id="phys-inline-map" style="height:230px;border-radius:8px;border:1.5px solid var(--brd);overflow:hidden;position:relative;z-index:0"></div>'+
-      '<div style="font-size:10px;color:var(--subtle);margin-top:4px;padding:0 2px">'+
-        'Rings show hazard severity radius at this location. Hover a ring for details. '+
-        'Click <strong>🗺 Projection Map</strong> in any hazard row for 2026–2070 global animation.'+
-      '</div>'+
-    '</div>'+
     '</div>';
-  setTimeout(function() { _initPhysInlineMap(a, prof); }, 30);
+  // Update the permanent inline map (never recreates the container)
+  _updatePhysInlineMap(a, prof);
 }
 
 /* ── TRANSITION ─────────────────────────────────── */
