@@ -2567,7 +2567,7 @@ function _lbAssessPortfolio() {
   var HIGH_CARBON = ['Oil & Gas','Coal','Steel','Cement','Chemicals','Mining','Utilities'];
   _lbState.assessed = _lbState.data.map(function(r) {
     var hz = { score: 25, top_hazards: ['—'] };
-    try { hz = assessHazards(r.region, r.lat, r.lon, ssp, year); } catch(e) {}
+    try { hz = assessHazardsSector(r.region||'global', r.lat, r.lon, ssp, year, r.sector||'Other'); } catch(e) {}
     var physPd = hz.score >= 50 ? 0.030 : hz.score >= 30 ? 0.015 : 0.005;
     var isHighCarbon = HIGH_CARBON.some(function(s){ return (r.sector||'').indexOf(s) >= 0; });
     var transPd = isHighCarbon ? 0.020 : 0.005;
@@ -2732,7 +2732,7 @@ function _lbDownloadAuditTrail() {
   ];
   var dataRows = _lbState.assessed.map(function(r) {
     var hz = { score: 25, annual_loss_pct: 0, top_hazards: ['—'], gps_resolved: false, elevation_m: 0, coastal_dist_km: 0 };
-    try { hz = assessHazards(r.region, r.lat, r.lon, ssp, yr); } catch(e) {}
+    try { hz = assessHazardsSector(r.region||'global', r.lat, r.lon, ssp, yr, r.sector||'Other'); } catch(e) {}
     var physSrc = 'WRI Aqueduct 4.0; IPCC AR6 WG1/WG2; NASA NEX-GDDP-CMIP6; IBTrACS; SRTM DEM';
     var transSrc = 'NGFS Phase 4 Scenarios; IEA World Energy Outlook 2023; IPCC AR6 Ch.13';
     return [
@@ -2842,9 +2842,10 @@ function _physDownloadAuditTrail() {
   var hdrRow = ['Asset','Region','Latitude','Longitude','GPS Resolved','Elevation (m)','Coastal Dist (km)','Overall Score (0–100)','Annual Loss % (Joint)','Top Hazard 1','Top Hazard 2','Top Hazard 3'];
   HAZARD_NAMES.forEach(function(h){ hdrRow.push(h+' Severity (0–5)'); hdrRow.push(h+' Loss %'); hdrRow.push(h+' Applicable'); hdrRow.push(h+' Source'); });
 
+  var _auditCoSector = (D.companies && D.companies[cid] && D.companies[cid].sector) || 'Other';
   var dataRows = hList.map(function(a) {
     var prof = { score:0, annual_loss_pct:0, top_hazards:[], hazards:[], gps_resolved:false, elevation_m:0, coastal_dist_km:0 };
-    try { prof = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, yr); } catch(e) {}
+    try { prof = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, yr, a.commodity||_auditCoSector); } catch(e) {}
     var row = [
       a.asset||a.name||'Asset', a.region||'global',
       a.lat||'', a.lon||'',
@@ -3617,8 +3618,8 @@ function renderPh() {
   // For pre-computed demo companies, run the engine on their known regions
   // For intake companies, use stored _prof objects or re-compute
   var assetProfiles = assets.map(function(a) {
-    // Re-compute under the selected SSP/year for interactivity
-    var prof = assessHazards(a.region || 'global', a.lat||null, a.lon||null, ssp, yr);
+    // Re-compute under the selected SSP/year for interactivity (sector-aware)
+    var prof = assessHazardsSector(a.region || 'global', a.lat||null, a.lon||null, ssp, yr, a.commodity||cd.sector||'Other');
     return {meta: a, prof: prof};
   });
 
@@ -3666,7 +3667,8 @@ function renderPh() {
       return {
         label: sspLabels[s],
         data: trendYears.map(function(yr) {
-          var p = assessHazards(pa.meta.region||'global', pa.meta.lat||null, pa.meta.lon||null, s, yr);
+          var _tSector = pa.meta.commodity||(COS[co()]&&COS[co()].sector)||'Other';
+          var p = assessHazardsSector(pa.meta.region||'global', pa.meta.lat||null, pa.meta.lon||null, s, yr, _tSector);
           var hz = p.hazards.find(function(h){return h.h===topHzName;});
           return hz ? +hz.sev.toFixed(2) : 0;
         }),
@@ -3695,7 +3697,8 @@ function showAssetDetail(assetName) {
   var yr  = parseInt((el('phys-yr') && el('phys-yr').value) || 2050);
   var a = assets.find(function(x){return x.asset===assetName;});
   if (!a) return;
-  var prof = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, yr);
+  var _adSector = a.commodity || (COS[cid]&&COS[cid].sector) || 'Other';
+  var prof = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, yr, _adSector);
   showAssetDetailFromProf({meta:a, prof:prof});
 }
 
@@ -6444,7 +6447,8 @@ function _rptAllAssets(ssp, year) {
   }
 
   hasList.forEach(function(a) {
-    var phys = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, year);
+    var _aSector = a.commodity || coObj.sector || 'Other';
+    var phys = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, year, _aSector);
     // Use Excel-supplied carrying value (a.cv in $M), fall back to ASSET_CV lookup, then $2B default
     var _acv = window.ASSET_CV || {};
     var cv = +(a.cv || _acv[a.asset] || 2000);
@@ -6685,10 +6689,11 @@ function renderReport() {
     var trajYears = [2026,2030,2035,2040,2045,2050,2060,2070];
     var topAssets = assets.slice(0, 5);
     var trajColors = ['#b91c1c','#2563eb','#b45309','#16a34a','#7c3aed'];
+    var _trajCo = (_coCheck[co()]||{});
     var trajDatasets = topAssets.map(function(a, i) {
       var data = trajYears.map(function(yr) {
         try {
-          var p = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, yr);
+          var p = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, yr, a.commodity||_trajCo.sector||'Other');
           return Math.round((p.annual_loss_pct||0) * 10000) / 100;
         } catch(e2) { return 0; }
       });
@@ -6866,9 +6871,11 @@ function renderReport() {
         }
       } catch(e){}
     }
-    // Store _prof on each asset for damage report
+    // Store _prof on each asset for damage report (sector-aware)
+    var _rpCo = (_coCheck[co()]||{});
     assets.forEach(function(a) {
-      var prof = assessHazards(a.region, a.lat||null, a.lon||null, ssp, year);
+      var _aSector = a.commodity || _rpCo.sector || 'Other';
+      var prof = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, year, _aSector);
       a._prof = prof;
     });
     renderAssetDamageSection();
@@ -6895,10 +6902,11 @@ function renderAssetDamageSection() {
   try {
     var meta = JSON.parse(assetSel.value);
   } catch(e) { return; }
-  // Find asset in current list
+  // Find asset in current list — resolve sector from stored asset data or current company
   var ssp  = _rpt.ssp;
   var year = _rpt.year;
-  var prof = assessHazards(meta.region, meta.lat||null, meta.lon||null, ssp, year);
+  var _dadSector = meta.commodity || ((_coCheck&&_coCheck[co()])||{}).sector || 'Other';
+  var prof = assessHazardsSector(meta.region||'global', meta.lat||null, meta.lon||null, ssp, year, _dadSector);
   var assetData = {
     assetName: meta.assetName, region: meta.region,
     cv: meta.cv || 2000, _prof: prof
@@ -7973,11 +7981,12 @@ function _gatherReportHTML() {
   var cpMap    = {ssp126:130,ssp245:90,ssp370:60,ssp585:55};
   var sspKeys  = ['ssp126','ssp245','ssp370','ssp585'];
 
+  var _nzeCoSector = coObj.sector||'Other';
   try {
     var asmts = assets.map(function(a) {
-      var hz = assessHazards(a.region||'global', a.lat||null, a.lon||null, ssp, year);
+      var hz = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, year, a.commodity||_nzeCoSector);
       var cv = ASSET_CV[a.asset] || 2000;
-      /* top_hazards from assessHazards are strings — we need full objects with .sev/.h.
+      /* top_hazards are strings — we need full objects with .sev/.h.
          Build them from hz.hazards (which ARE the full {h, sev, prob, loss} objects). */
       var topObjs = (hz.hazards||[])
         .filter(function(h){ return h.applicable && h.sev > 0; })
@@ -7999,7 +8008,7 @@ function _gatherReportHTML() {
     var evImpact = +(totalCarB/0.085).toFixed(1);
     var scmpRows = sspKeys.map(function(sk){
       var c2=cpMap[sk]||60;
-      var a2=asmts.map(function(a){var h2=assessHazards(a.region||'global',a.lat||null,a.lon||null,sk,year);return {carM:+(a.cv*(h2.annual_loss_pct||0)).toFixed(1)};});
+      var a2=asmts.map(function(a){var h2=assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,sk,year,a.commodity||_nzeCoSector);return {carM:+(a.cv*(h2.annual_loss_pct||0)).toFixed(1)};});
       var p2M=a2.reduce(function(s,a){return s+a.carM;},0);
       var t2B=+(s12*c2*0.001).toFixed(2);
       var tot=+(p2M/1000+t2B).toFixed(2);
@@ -9714,8 +9723,9 @@ function exportAnalysis() {
 
   // Physical Risk sheet
   var physRows = [['Asset','Region','Risk Score','Top Hazard','Severity','Joint Loss %','Carrying Value $M','Physical CaR $M','Warming °C']];
+  var _expAnalysisSector = (COS[cid]&&COS[cid].sector)||'Other';
   (D.hazards[cid]||[]).forEach(function(a) {
-    var hz = assessHazards(a.region||'global',a.lat||null,a.lon||null,ssp,year);
+    var hz = assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,ssp,year,a.commodity||_expAnalysisSector);
     var cv = ASSET_CV[a.asset]||2000;
     var topHz0 = (hz.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;})[0]||{h:'—',sev:0};
     physRows.push([a.asset,a.region,(hz.score||0).toFixed(1),topHz0.h,(topHz0.sev||0).toFixed(2),((hz.annual_loss_pct||0)*100).toFixed(3)+'%',cv,(cv*(hz.annual_loss_pct||0)).toFixed(0),(hz.warming||0).toFixed(2)]);
@@ -9827,7 +9837,8 @@ function _assessSupplyChainFromData(suppliers, ssp, year) {
   _scData.ssp = ssp; _scData.year = year;
   _scData.assessed = suppliers.map(function(s) {
     var region = s.region || (s.lat && s.lon ? latLonToRegion(s.lat, s.lon) : 'global');
-    var hz = assessHazards(region, s.lat||null, s.lon||null, ssp, year);
+    var _scSector = s.sector || s.commodity || 'Other';
+    var hz = assessHazardsSector(region, s.lat||null, s.lon||null, ssp, year, _scSector);
     var topH = (hz.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;})[0] || {h:'—', sev:0};
     var scaledLoss = hz.annual_loss_pct||0;
     return {
@@ -9958,10 +9969,11 @@ function _portfolioRollup(ssp, year) {
 
     // Physical CaR
     var assets = D.hazards[cid]||[];
+    var _carCoSector = coData.sector||'Other';
     var totalCv=0, totalPhysCaR=0;
     assets.forEach(function(a){
       var cv = ASSET_CV[a.asset]||2000;
-      var hz = assessHazards(a.region||'global',a.lat||null,a.lon||null,ssp,year);
+      var hz = assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,ssp,year,a.commodity||_carCoSector);
       totalCv += cv; totalPhysCaR += (hz.annual_loss_pct||0) * cv;
     });
     var physCaRb = totalPhysCaR / 1000; // USD B
@@ -11270,8 +11282,8 @@ function riFeedToEngine() {
     var lat = (asset.lat && Math.abs(asset.lat) > 0.01) ? asset.lat : null;
     var lon = (asset.lon && Math.abs(asset.lon) > 0.01) ? asset.lon : null;
     var reg = asset.region || asset.name || 'global';
-    var prof30 = (typeof assessHazards === 'function') ? assessHazards(reg, lat, lon, 'ssp370', 2030) : {annual_loss_pct:0.02, hazards:[]};
-    var prof50 = (typeof assessHazards === 'function') ? assessHazards(reg, lat, lon, 'ssp370', 2050) : {annual_loss_pct:0.04, hazards:[]};
+    var prof30 = (typeof assessHazardsSector === 'function') ? assessHazardsSector(reg, lat, lon, 'ssp370', 2030, sector||'Other') : {annual_loss_pct:0.02, hazards:[]};
+    var prof50 = (typeof assessHazardsSector === 'function') ? assessHazardsSector(reg, lat, lon, 'ssp370', 2050, sector||'Other') : {annual_loss_pct:0.04, hazards:[]};
     var hzBk = {};
     if (prof30.hazards) prof30.hazards.forEach(function(h){ if(h.applicable && h.loss>0) hzBk[h.h] = r1(h.loss*100); });
     return {
@@ -11464,9 +11476,9 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
   var sector = coObj.sector||'Energy/Mining';
   var date   = new Date().toLocaleDateString('en-GB',{year:'numeric',month:'long',day:'numeric'});
 
-  /* ── Compute all values ─────────────────────────────── */
+  /* ── Compute all values (sector-aware hazard assessment) ─────────────────────────────── */
   var asmts = assets.map(function(a){
-    var hz = assessHazards(a.region||'global',a.lat||null,a.lon||null,ssp,year);
+    var hz = assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,ssp,year,a.commodity||sector);
     var cv = ASSET_CV[a.asset]||2000;
     var topObjs = (hz.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;});
     return {name:a.asset,region:a.region||'global',cv:cv,score:hz.score||0,
@@ -12075,7 +12087,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
   var sceWarm  = {ssp126:'1.5–2.0°C',ssp245:'2.2–3.2°C',ssp370:'3.0–4.0°C',ssp585:'4.2–5.4°C'};
   ['ssp126','ssp245','ssp370','ssp585'].forEach(function(sk){
     var cp2 = cpMap2[sk]||60;
-    var phys2 = asmts.reduce(function(s,a){var hz2=assessHazards(a.region||'global',a.lat||null,a.lon||null,sk,year);return s+a.cv*(hz2.annual_loss_pct||0);},0);
+    var phys2 = asmts.reduce(function(s,a){var hz2=assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,sk,year,a.commodity||sector);return s+a.cv*(hz2.annual_loss_pct||0);},0);
     var trans2 = (s1+s2)*cp2/1e9;
     var tot2 = +(phys2/1000+trans2).toFixed(2);
     var revImp = revenueB>0 ? (tot2/revenueB*100).toFixed(1)+'%' : '—';
@@ -12492,7 +12504,8 @@ function _rfmExportXlsx(fw, scope) {
   var s3d=_calcScope3(),s3tot=s3d.reduce(function(a,b){return a+b.val;},0);
   var cpMap={ssp126:130,ssp245:90,ssp370:60,ssp585:55},cp=cpMap[ssp]||60;
   var assets=D.hazards[cid]||[];
-  var asmts=assets.map(function(a){var hz=assessHazards(a.region||'global',a.lat||null,a.lon||null,ssp,year);var cv=ASSET_CV[a.asset]||2000;var top=(hz.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;});return{name:a.asset,region:a.region,cv:cv,score:hz.score||0,top:top,carM:+(cv*(hz.annual_loss_pct||0)).toFixed(1),warming:hz.warming||0};});
+  var _xlCoSector=coObj.sector||'Other';
+  var asmts=assets.map(function(a){var hz=assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,ssp,year,a.commodity||_xlCoSector);var cv=ASSET_CV[a.asset]||2000;var top=(hz.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;});return{name:a.asset,region:a.region,cv:cv,score:hz.score||0,top:top,carM:+(cv*(hz.annual_loss_pct||0)).toFixed(1),warming:hz.warming||0};});
   var physM=asmts.reduce(function(s,a){return s+a.carM;},0);
   var wb=XLSX.utils.book_new();
   /* Summary */
@@ -12516,7 +12529,8 @@ function _rfmExportXlsx(fw, scope) {
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(em),'Emissions');
   /* Scenarios */
   var sc2=[['Scenario','Physical CaR $M','Carbon Price $/t','Transition CaR $B','Total CaR $B']];
-  ['ssp126','ssp245','ssp370','ssp585'].forEach(function(sk){var cp2=cpMap[sk]||60;var p2=asmts.reduce(function(s,a){var hz=assessHazards(a.region||'global',a.lat||null,a.lon||null,sk,year);return s+a.cv*(hz.annual_loss_pct||0);},0);sc2.push([sk.toUpperCase(),p2.toFixed(0),cp2,(s1+s2)/1e6*cp2/1e3,((p2/1000)+(s1+s2)/1e6*cp2/1e3).toFixed(2)]);});
+  var _xlScSector=coObj.sector||'Other';
+  ['ssp126','ssp245','ssp370','ssp585'].forEach(function(sk){var cp2=cpMap[sk]||60;var p2=asmts.reduce(function(s,a){var hz=assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,sk,year,a.commodity||_xlScSector);return s+a.cv*(hz.annual_loss_pct||0);},0);sc2.push([sk.toUpperCase(),p2.toFixed(0),cp2,(s1+s2)/1e6*cp2/1e3,((p2/1000)+(s1+s2)/1e6*cp2/1e3).toFixed(2)]);});
   XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet(sc2),'Scenarios');
   var fname='CRI_'+fw.toUpperCase()+'_'+coObj.name.replace(/[^a-zA-Z0-9]/g,'_')+'.xlsx';
   XLSX.writeFile(wb,fname);
@@ -12914,8 +12928,9 @@ function _rhBuildChecklist(c) {
 
   /* ── Live computed values ── */
   var assets = D.hazards[cid]||[];
+  var _chkCoSector = coObj.sector||'Other';
   var asmts  = assets.map(function(a){
-    var hz = assessHazards(a.region||'global',a.lat||null,a.lon||null,ssp,year);
+    var hz = assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,ssp,year,a.commodity||_chkCoSector);
     return {carM:+((ASSET_CV[a.asset]||2000)*(hz.annual_loss_pct||0)).toFixed(1)};
   });
   var physM = asmts.reduce(function(s,a){return s+a.carM;},0);
@@ -13044,10 +13059,11 @@ function _rhBuildDoubleMat(c) {
   var cid = co(), coObj = COS[cid];
   var ssp = (_rpt&&_rpt.ssp)||'ssp370', year = (_rpt&&_rpt.year)||2030;
   var assets = D.hazards[cid]||[];
+  var _dmCoSector = coObj.sector||'Other';
 
   /* Financial materiality (outside-in): climate → company */
   var asmts = assets.map(function(a){
-    var hz = assessHazards(a.region||'global',a.lat||null,a.lon||null,ssp,year);
+    var hz = assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,ssp,year,a.commodity||_dmCoSector);
     var cv = ASSET_CV[a.asset]||2000;
     return {name:a.asset, carM:(cv*(hz.annual_loss_pct||0)), score:hz.score, warming:hz.warming};
   });
@@ -13159,8 +13175,9 @@ function _rhBuildStructuredOutput(c) {
   var run = coObj.runs[sspRunMap[ssp]]||Object.values(coObj.runs)[0];
   var yr  = run.years.find(function(y){return y.year===year;})||run.years[run.years.length-1];
   var assets = D.hazards[cid]||[];
+  var _soCoSector = coObj.sector||'Other';
   var asmts = assets.map(function(a){
-    var hz = assessHazards(a.region||'global',a.lat||null,a.lon||null,ssp,year);
+    var hz = assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,ssp,year,a.commodity||_soCoSector);
     var cv = ASSET_CV[a.asset]||2000;
     return {name:a.asset, region:a.region, cv:cv, score:hz.score,
       topObjs:(hz.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;}),
@@ -13698,8 +13715,9 @@ function exportDataPackage() {
   // File 1: Asset-level CaR CSV
   var carCsv = 'Asset,Region,SSP,Year,WRI_Score,Warming_C,Annual_Loss_Pct,CaR_USD_M,Top_Hazard_1,Top_Hazard_2,Top_Hazard_3\n';
   var carJson = {company:coObj.name,generated:new Date().toISOString(),ssp:ssp,year:year,assets:[]};
+  var _expCoSector = coObj.sector||'Other';
   assets.forEach(function(a) {
-    var hz = assessHazards(a.region||'global',a.lat||null,a.lon||null,ssp,year);
+    var hz = assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,ssp,year,a.commodity||_expCoSector);
     var cv = ASSET_CV[a.asset]||2000;
     var carM = +(cv*(hz.annual_loss_pct||0)).toFixed(1);
     var top = (hz.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;}).slice(0,3);
@@ -13730,7 +13748,8 @@ function exportDataPackage() {
     var xlD2=_xlGetData();
     xlD2.suppliers.forEach(function(s) {
       var region = s.region||'global';
-      var hz = assessHazards(region,s.lat||null,s.lon||null,ssp,year);
+      var _expScSector = s.sector||s.commodity||_expCoSector;
+      var hz = assessHazardsSector(region,s.lat||null,s.lon||null,ssp,year,_expScSector);
       var spend = parseFloat(s.spendM)||0;
       var carM = +(spend*(hz.annual_loss_pct||0)*0.15).toFixed(2); // 15% revenue at risk multiplier
       var topH = (hz.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;})[0];
