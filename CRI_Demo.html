@@ -3702,6 +3702,92 @@ function showAssetDetail(assetName) {
   showAssetDetailFromProf({meta:a, prof:prof});
 }
 
+/* ── INLINE HAZARD MAP (physical risk panel) ──────── */
+var _physInlineMapInst = null;
+function _initPhysInlineMap(a, prof) {
+  if (_physInlineMapInst) {
+    try { _physInlineMapInst.remove(); } catch(e) {}
+    _physInlineMapInst = null;
+  }
+  var mapEl = document.getElementById('phys-inline-map');
+  if (!mapEl || typeof L === 'undefined') return;
+
+  var lat = (a.lat != null) ? a.lat : ((REGION_CENTROIDS[prof.region] || [20,0])[0]);
+  var lon = (a.lon != null) ? a.lon : ((REGION_CENTROIDS[prof.region] || [20,0])[1]);
+
+  var m = L.map(mapEl, {
+    zoomControl: true,
+    attributionControl: false,
+    scrollWheelZoom: false
+  }).setView([lat, lon], 5);
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 18
+  }).addTo(m);
+
+  // Regional context: draw low-opacity background circles for top 2 hazards across all regions
+  var topApplicable = prof.hazards.filter(function(h){ return h.applicable && h.sev > 0.3; })
+    .sort(function(x,y){ return y.sev - x.sev; }).slice(0,2);
+  topApplicable.forEach(function(h) {
+    Object.keys(REGION_CENTROIDS).forEach(function(r) {
+      var coord = REGION_CENTROIDS[r];
+      var b = WRI_BASELINE[r] || WRI_BASELINE['global'];
+      var val = 0;
+      if (h.h === 'Water Stress')   val = b.ws || 0;
+      else if (h.h === 'Riverine Flood') val = b.rf || 0;
+      else if (h.h === 'Drought')   val = b.dr || 0;
+      else if (h.h === 'Heat Stress') val = b.ht || 0;
+      else return;
+      if (val < 0.4) return;
+      var rcol = SEV_COL(val);
+      L.circle(coord, {
+        radius: Math.max(60000, val / 5 * 500000),
+        color: rcol, fillColor: rcol,
+        fillOpacity: Math.max(0.04, Math.min(0.16, val / 5 * 0.18)),
+        weight: 0.5, interactive: false
+      }).addTo(m);
+    });
+  });
+
+  // Asset-centred rings — one per applicable hazard, sorted low→high so highest renders on top
+  var sortedHz = prof.hazards.filter(function(h){ return h.applicable && h.sev > 0.2; })
+    .sort(function(x,y){ return x.sev - y.sev; });
+  sortedHz.forEach(function(h) {
+    var col = SEV_COL(h.sev);
+    var radius = Math.max(30000, h.sev / 5 * 260000);
+    L.circle([lat, lon], {
+      radius: radius,
+      color: col, fillColor: col,
+      fillOpacity: Math.max(0.05, Math.min(0.28, h.sev / 5 * 0.32)),
+      weight: 1.5
+    }).addTo(m).bindTooltip(
+      (HZ_ICONS[h.h] || '') + ' <strong>' + h.h + '</strong>: ' + h.sev.toFixed(2) + '/5',
+      {sticky: true, direction: 'top'}
+    );
+  });
+
+  // GPS pin — green if GPS-resolved, amber if regional centroid
+  var pinColor = prof.gps_resolved ? '#16a34a' : '#d97706';
+  var pinIcon = L.divIcon({
+    html: '<div style="width:14px;height:14px;border-radius:50%;background:' + pinColor +
+          ';border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);"></div>',
+    className: '', iconSize: [14, 14], iconAnchor: [7, 7]
+  });
+  L.marker([lat, lon], {icon: pinIcon, zIndexOffset: 1000}).addTo(m)
+    .bindTooltip(
+      '<strong>' + a.asset + '</strong><br>' +
+      (prof.gps_resolved ? '✓ GPS-Resolved' : '⚠ Regional Approximation') + '<br>' +
+      'Lat: ' + lat.toFixed(3) + '  Lon: ' + lon.toFixed(3),
+      {permanent: false, direction: 'top', offset: [0, -8]}
+    );
+
+  L.control.attribution({
+    prefix: '<a href="https://www.openstreetmap.org/copyright" target="_blank">© OpenStreetMap</a>'
+  }).addTo(m);
+
+  _physInlineMapInst = m;
+}
+
 function showAssetDetailFromProf(ap) {
   var a = ap.meta, prof = ap.prof;
   // Store asset context for the projection modal
@@ -3760,7 +3846,21 @@ function showAssetDetailFromProf(ap) {
       'It does not appear in climate scores or CaR calculations. For enterprise-wide seismic risk management, commission a site-specific PSHA via your ERM team. '+
       'Source: '+prof.seismic_footnote.src+
       '</div>' : '')+
+    '<div style="margin-top:14px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'+
+        '<span style="font-size:12px;font-weight:700;color:var(--fg)">📍 Asset Location &amp; Hazard Footprint</span>'+
+        (prof.gps_resolved ?
+          '<span style="font-size:11px;padding:2px 10px;border-radius:4px;background:#d1fae5;color:#065f46;font-weight:700;letter-spacing:.2px">✓ GPS-Resolved</span>' :
+          '<span style="font-size:11px;padding:2px 10px;border-radius:4px;background:#fef3c7;color:#92400e;font-weight:700;letter-spacing:.2px">⚠ Regional Approximation</span>')+
+      '</div>'+
+      '<div id="phys-inline-map" style="height:230px;border-radius:8px;border:1.5px solid var(--brd);overflow:hidden;position:relative;z-index:0"></div>'+
+      '<div style="font-size:10px;color:var(--subtle);margin-top:4px;padding:0 2px">'+
+        'Rings show hazard severity radius at this location. Hover a ring for details. '+
+        'Click <strong>🗺 Projection Map</strong> in any hazard row for 2026–2070 global animation.'+
+      '</div>'+
+    '</div>'+
     '</div>';
+  setTimeout(function() { _initPhysInlineMap(a, prof); }, 30);
 }
 
 /* ── TRANSITION ─────────────────────────────────── */
