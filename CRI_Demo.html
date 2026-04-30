@@ -3895,56 +3895,157 @@ function showAssetDetailFromProf(ap) {
   var pArrow = mp.p_delta_pct > 0 ? '▲ +'+mp.p_delta_pct+'%' : '▼ '+mp.p_delta_pct+'%';
   var tCol = mp.t_delta > 1.5 ? '#b91c1c' : mp.t_delta > 0.8 ? '#d97706' : '#16a34a';
   var pCol = mp.p_delta_pct < -5 ? '#b91c1c' : mp.p_delta_pct < 0 ? '#d97706' : '#065a82';
+
+  // Unique panel ID so async live-data updates target the right DOM elements
+  window._metSeq = (window._metSeq || 0) + 1;
+  var mpId = 'mp' + window._metSeq;
+
+  // Pre-compute GPS interpolation weights for the transparency panel
+  var interpRows = '';
+  if (a.lat != null && a.lon != null) {
+    var iLat = a.lat, iLon = a.lon;
+    var iE = Object.keys(REGION_CENTROIDS).map(function(r) {
+      var c = REGION_CENTROIDS[r];
+      var dlat = iLat-c[0], dlon = (iLon-c[1])*Math.cos(iLat*Math.PI/180);
+      var d2 = dlat*dlat + dlon*dlon + 1e-8;
+      return { r:r, distKm:+(Math.sqrt(d2)*111).toFixed(0), w:1/d2 };
+    }).sort(function(a,b){return a.distKm-b.distKm;}).slice(0,4);
+    var iTotW = iE.reduce(function(s,e){return s+e.w;},0);
+    interpRows = iE.map(function(e){
+      return '&nbsp;&nbsp;• <b>'+e.r+'</b> ('+e.distKm+' km, weight '+((e.w/iTotW*100).toFixed(1))+'%)';
+    }).join('<br>');
+  }
+
+  var _h0 = ERA5_HIST[mp.era5_region] || ERA5_HIST['global'];
+  var _rAmp = (_REG_AMP[mp.era5_region]||1.0).toFixed(2);
+
   var metHtml =
-    '<div class="cc" style="margin-top:12px">'+
+    '<div class="cc" style="margin-top:12px" id="'+mpId+'">'+
     '<div class="cc-title" style="display:flex;align-items:center;justify-content:space-between">'+
       '<span>🌡 Meteorological Baseline &amp; Projection</span>'+
-      '<span style="font-size:11px;font-weight:400;color:var(--muted)">ERA5 (1980–2010 baseline) · '+
-        (mp.interp ? 'GPS-interpolated · ' : 'Regional centroid · ')+
-        mp.era5_region+' · '+ssp.toUpperCase()+' · '+yr+'</span>'+
+      '<span id="'+mpId+'-badge" style="font-size:11px;font-weight:400;color:var(--accent)">'+
+        (a.lat!=null ? '⏳ Fetching live ERA5…' : '⚪ Static baseline (no GPS)' )+
+      '</span>'+
     '</div>'+
-    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px">'+
+    '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;margin-top:2px">'+
+      (mp.interp
+        ? '📍 GPS-interpolated — ('+a.lat.toFixed(3)+', '+a.lon.toFixed(3)+')'
+        : '📌 Regional centroid: '+mp.era5_region )+
+      ' · <b>'+ssp.toUpperCase()+'</b> · Target: <b>'+yr+'</b>'+
+    '</div>'+
 
-      // Temperature card
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">'+
+
+      // ── Temperature card
       '<div style="border:1px solid var(--brd);border-radius:8px;padding:12px;background:var(--surf2)">'+
         '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">🌡 Temperature (°C)</div>'+
         '<table style="width:100%;font-size:12px;border-collapse:collapse">'+
-          '<tr><td style="color:var(--muted);padding:3px 0">ERA5 historical mean (1980–2010)</td><td style="text-align:right;font-weight:700">'+mp.t_hist+'°C</td></tr>'+
-          '<tr><td style="color:var(--muted);padding:3px 0">Estimated current (2022)</td><td style="text-align:right;font-weight:700">'+mp.t_curr+'°C</td></tr>'+
+          '<tr><td style="color:var(--muted);padding:3px 0">ERA5 historical mean (1980–2010)</td>'+
+               '<td style="text-align:right;font-weight:700"><span id="'+mpId+'-t-hist">'+mp.t_hist+'°C</span></td></tr>'+
+          '<tr><td style="color:var(--muted);padding:3px 0">Estimated current (2022)</td>'+
+               '<td style="text-align:right;font-weight:700"><span id="'+mpId+'-t-curr">'+mp.t_curr+'°C</span></td></tr>'+
           '<tr style="border-top:1px solid var(--brd)"><td style="padding:4px 0;font-weight:600">Projected '+yr+' ('+ssp.toUpperCase()+')</td>'+
-            '<td style="text-align:right;font-weight:700;color:'+tCol+'">'+mp.t_proj+'°C &ensp;'+tArrow+'</td></tr>'+
+               '<td style="text-align:right;font-weight:700" id="'+mpId+'-t-proj">'+
+               '<span style="color:'+tCol+'">'+mp.t_proj+'°C &ensp;'+tArrow+'</span></td></tr>'+
         '</table>'+
         '<div style="margin-top:8px;height:6px;border-radius:3px;background:linear-gradient(to right,#16a34a,#d97706,#b91c1c);opacity:.7;position:relative">'+
-          '<div style="position:absolute;top:-2px;width:10px;height:10px;border-radius:50%;background:'+tCol+';border:2px solid #fff;left:'+Math.min(95,Math.max(2,(mp.t_proj-5)/35*100)).toFixed(0)+'%;transform:translateX(-50%);box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>'+
+          '<div id="'+mpId+'-t-dot" style="position:absolute;top:-2px;width:10px;height:10px;border-radius:50%;background:'+tCol+';border:2px solid #fff;left:'+Math.min(95,Math.max(2,(mp.t_proj-5)/35*100)).toFixed(0)+'%;transform:translateX(-50%);box-shadow:0 1px 4px rgba(0,0,0,.4)"></div>'+
         '</div>'+
         '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--subtle);margin-top:2px"><span>5°C</span><span>40°C</span></div>'+
       '</div>'+
 
-      // Precipitation card
+      // ── Precipitation card
       '<div style="border:1px solid var(--brd);border-radius:8px;padding:12px;background:var(--surf2)">'+
         '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px">💧 Precipitation (mm/year)</div>'+
         '<table style="width:100%;font-size:12px;border-collapse:collapse">'+
-          '<tr><td style="color:var(--muted);padding:3px 0">ERA5 historical mean (1980–2010)</td><td style="text-align:right;font-weight:700">'+mp.p_hist+' mm</td></tr>'+
-          '<tr><td style="color:var(--muted);padding:3px 0">Estimated current (2022)</td><td style="text-align:right;font-weight:700">'+mp.p_curr+' mm</td></tr>'+
+          '<tr><td style="color:var(--muted);padding:3px 0">ERA5 historical mean (1980–2010)</td>'+
+               '<td style="text-align:right;font-weight:700"><span id="'+mpId+'-p-hist">'+mp.p_hist+' mm</span></td></tr>'+
+          '<tr><td style="color:var(--muted);padding:3px 0">Estimated current (2022)</td>'+
+               '<td style="text-align:right;font-weight:700"><span id="'+mpId+'-p-curr">'+mp.p_curr+' mm</span></td></tr>'+
           '<tr style="border-top:1px solid var(--brd)"><td style="padding:4px 0;font-weight:600">Projected '+yr+' ('+ssp.toUpperCase()+')</td>'+
-            '<td style="text-align:right;font-weight:700;color:'+pCol+'">'+mp.p_proj+' mm &ensp;'+pArrow+'</td></tr>'+
+               '<td style="text-align:right;font-weight:700" id="'+mpId+'-p-proj">'+
+               '<span style="color:'+pCol+'">'+mp.p_proj+' mm &ensp;'+pArrow+'</span></td></tr>'+
         '</table>'+
         '<div style="margin-top:8px;font-size:10px;color:var(--muted);padding:4px 6px;background:var(--surf);border-radius:4px;border-left:2px solid '+pCol+'">'+
-          'Precipitation shift contributes to '+
-          (mp.p_delta_pct < -3 ? 'elevated Drought and Water Stress exposure' :
-           mp.p_delta_pct > 3  ? 'increased Riverine Flood frequency under Clausius-Clapeyron scaling' :
-           'moderate hydrological change — monitor Drought and Flood hazard trends')+'.'+
+          (mp.p_delta_pct < -3 ? 'Precipitation decline → elevated Drought and Water Stress exposure.' :
+           mp.p_delta_pct > 3  ? 'Precipitation increase → higher Riverine Flood frequency (Clausius-Clapeyron scaling).' :
+           'Moderate hydrological shift — monitor Drought and Flood trends.')+
         '</div>'+
       '</div>'+
 
     '</div>'+
-    '<div style="font-size:10px;color:var(--subtle);margin-top:8px">'+
-      'Historical baseline: ERA5 reanalysis (Hersbach et al. 2020, ECMWF). Projections: NASA NEX-GDDP-CMIP6 ensemble median + regional amplification (IPCC AR6 WG1). '+
-      'Temperature uncertainty ±0.3°C (1σ); precipitation ±8%.'+
+
+    // ── Transparency / Data lineage collapsible ──────────────────────────
+    '<details style="margin-top:10px">'+
+      '<summary style="cursor:pointer;font-size:11px;font-weight:600;color:var(--muted);padding:4px 0;user-select:none;list-style:none">'+
+        '▸ 📐 Data lineage &amp; calculation methodology (click to expand)'+
+      '</summary>'+
+      '<div style="margin-top:8px;padding:12px;background:var(--surf2);border-radius:6px;border:1px solid var(--brd);font-size:11px;line-height:1.75">'+
+
+        // Step 1
+        '<div style="margin-bottom:10px">'+
+          '<span style="font-weight:700;color:var(--fg)">① Historical baseline (ERA5 reanalysis, 1980–2010)</span><br>'+
+          '<span style="color:var(--muted)">Source: ECMWF ERA5 (Hersbach et al. 2020). 30-year climatological mean. '+
+          (mp.interp
+            ? 'When GPS is known, data is fetched live from <b>open-meteo.com ERA5 Archive API</b> at exact coordinates — no grid-cell aggregation. Fallback: embedded regional centroid table.'
+            : 'GPS not resolved — using embedded centroid for region <b>'+mp.era5_region+'</b>.' )+
+          '</span>'+
+          (interpRows
+            ? '<div style="margin-top:5px;padding:5px 8px;background:var(--surf);border-radius:4px;color:var(--muted)">'+
+              '<b>GPS bilinear interpolation — 4 nearest REGION_CENTROIDS (inverse-distance² weights):</b><br>'+interpRows+
+              '</div>' : '' )+
+        '</div>'+
+
+        // Step 2
+        '<div style="margin-bottom:10px">'+
+          '<span style="font-weight:700;color:var(--fg)">② Observed trend → current estimate (2022)</span><br>'+
+          '<span style="color:var(--muted)">Regional warming trend: <b>'+_h0[1].toFixed(2)+'°C/decade</b> (ERA5 multi-decadal regression). '+
+          'Applied over 4.2 decades (1980–2022): Δ'+(+(_h0[1]*4.2).toFixed(2))+'°C added to historical mean.</span>'+
+        '</div>'+
+
+        // Step 3
+        '<div style="margin-bottom:10px">'+
+          '<span style="font-weight:700;color:var(--fg)">③ CMIP6 projection delta (delta method)</span><br>'+
+          '<span style="color:var(--muted)">Method: CMIP6 change signal is added to ERA5 observational baseline — <b>not</b> raw model output — avoiding model mean-state bias. '+
+          'Source: NASA NEX-GDDP-CMIP6 ensemble median, IPCC AR6 WG1 SPM Table SPM.1. '+
+          'Global mean warming signal at '+yr+' under <b>'+ssp.toUpperCase()+'</b>: <b>+'+mp.warming+'°C</b></span>'+
+        '</div>'+
+
+        // Step 4
+        '<div style="margin-bottom:10px">'+
+          '<span style="font-weight:700;color:var(--fg)">④ Regional amplification (IPCC AR6 pattern scaling)</span><br>'+
+          '<span style="color:var(--muted)">Region <b>'+mp.era5_region+'</b> amplification factor: <b>×'+_rAmp+'</b>. '+
+          'Derived from IPCC AR6 WG1 Ch11 regional climate change patterns (polar amplification, subtropical jet shifts, monsoon intensification). '+
+          'Asset-level warming = global CMIP6 signal × regional factor.</span>'+
+        '</div>'+
+
+        // Step 5
+        '<div style="margin-bottom:10px">'+
+          '<span style="font-weight:700;color:var(--fg)">⑤ Precipitation projection</span><br>'+
+          '<span style="color:var(--muted)">Clausius-Clapeyron thermodynamic scaling (~4%/°C regional warming). Arid regions (AU-SA, ZA, CL) apply a drying correction. '+
+          'Historical precipitation trend: <b>'+_h0[3].toFixed(1)+'%/decade</b>. Precipitation uncertainty substantially higher than temperature (±8%).</span>'+
+        '</div>'+
+
+        // Live computation trace (updates dynamically)
+        '<div style="background:var(--surf);border-radius:4px;padding:6px 10px;font-family:monospace;font-size:10px;color:var(--muted);margin-top:4px" id="'+mpId+'-trace">'+
+          '⚙ Static: ERA5 table → '+mp.t_hist+'°C hist → +'+(_h0[1]*4.2).toFixed(2)+'°C trend → '+mp.t_curr+'°C → CMIP6 Δ+'+mp.warming+'°C × '+_rAmp+' → <b>'+mp.t_proj+'°C @ '+yr+'</b>'+
+        '</div>'+
+
+      '</div>'+
+    '</details>'+
+
+    '<div style="font-size:10px;color:var(--subtle);margin-top:6px">'+
+      'ERA5 reanalysis: Hersbach et al. 2020 (ECMWF). Live fetch: open-meteo.com (CC BY 4.0). '+
+      'CMIP6 projections: NASA NEX-GDDP-CMIP6 + IPCC AR6 WG1. Temperature uncertainty ±0.3°C (1σ); precipitation ±8%.'+
     '</div>'+
     '</div>';
 
   el('phys-detail').innerHTML += metHtml;
+
+  // Async: fetch live ERA5 from Open-Meteo and update panel cells in-place
+  if (a.lat != null && a.lon != null) {
+    _asyncUpdateMetPanel(mpId, a.lat, a.lon, ssp, yr);
+  }
 
   // Update the permanent inline map (never recreates the container)
   _updatePhysInlineMap(a, prof);
@@ -5414,6 +5515,110 @@ function _nearestERA5Region(lat, lon) {
     if (d < bestD && ERA5_HIST[r]) { best = r; bestD = d; }
   });
   return best;
+}
+
+// ── Live ERA5 data via Open-Meteo Archive API ─────────────────────────────
+// Free, no API key required, CORS-enabled. Fetches 30-year observed baseline
+// at exact GPS coordinates — replaces static lookup table when GPS is known.
+var _meteoLiveCache = {};
+
+async function _fetchLiveERA5(lat, lon) {
+  var key = lat.toFixed(3) + ',' + lon.toFixed(3);
+  if (_meteoLiveCache[key]) return _meteoLiveCache[key];
+  try {
+    var url = 'https://archive-api.open-meteo.com/v1/archive'
+      + '?latitude='  + lat.toFixed(4)
+      + '&longitude=' + lon.toFixed(4)
+      + '&start_date=1980-01-01&end_date=2010-12-31'
+      + '&daily=temperature_2m_mean,precipitation_sum'
+      + '&timezone=UTC';
+    var ctrl  = new AbortController();
+    var timer = setTimeout(function() { ctrl.abort(); }, 12000);
+    var resp  = await fetch(url, { signal: ctrl.signal });
+    clearTimeout(timer);
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var data    = await resp.json();
+    var temps   = (data.daily && data.daily.temperature_2m_mean)
+                    ? data.daily.temperature_2m_mean.filter(function(v) { return v != null; }) : [];
+    var precips = (data.daily && data.daily.precipitation_sum)
+                    ? data.daily.precipitation_sum.filter(function(v) { return v != null; }) : [];
+    if (temps.length < 3000) throw new Error('Insufficient data (' + temps.length + ' days)');
+    var tMean = temps.reduce(function(a,b) { return a+b; }, 0) / temps.length;
+    var pMean = precips.reduce(function(a,b) { return a+b; }, 0) / precips.length;
+    var result = { t_mean: +tMean.toFixed(2), p_annual: +(pMean * 365.25).toFixed(0), n_days: temps.length };
+    _meteoLiveCache[key] = result;
+    return result;
+  } catch(e) {
+    console.warn('[CRI] ERA5 live fetch failed:', e.message || e);
+    return null;
+  }
+}
+
+// Rebuild projection from live ERA5 baseline (keeps CMIP6 delta method)
+function _liveMeteoProjection(liveERA5, lat, lon, ssp, year) {
+  var r      = _nearestERA5Region(lat, lon);
+  var h      = ERA5_HIST[r] || ERA5_HIST['global'];
+  var deltas = ERA5_PROJ_DELTA[ssp] || ERA5_PROJ_DELTA['ssp370'];
+  var tHist  = liveERA5.t_mean;
+  var tTrend = h[1];                         // °C/decade from calibrated ERA5 table
+  var tCurr  = tHist + tTrend * 4.2;        // 4.2 decades 1980→2022
+  var milestones = [2030, 2040, 2050, 2070, 2100];
+  var projIdx = milestones.findIndex(function(m) { return year <= m; });
+  if (projIdx < 0) projIdx = milestones.length - 1;
+  var delta;
+  if (projIdx === 0) {
+    delta = deltas[0] * Math.max(0, (year - 2025) / 5);
+  } else {
+    var lo = milestones[projIdx-1], hi = milestones[projIdx];
+    delta = deltas[projIdx-1] + (deltas[projIdx]-deltas[projIdx-1]) * ((year-lo)/(hi-lo));
+  }
+  var regAmp = _REG_AMP[r] || 1.0;
+  var tProj  = tCurr + delta * regAmp;
+  var pHist  = liveERA5.p_annual;
+  var pCurr  = pHist * (1 + h[3] / 100 * 4.2);
+  var pFac   = 1 + (delta * regAmp) * (r.match(/AU-SA|ZA|CL/) ? -0.04 : 0.04);
+  var pProj  = pCurr * pFac;
+  return {
+    era5_region: r, live: true, n_days: liveERA5.n_days,
+    t_hist: +tHist.toFixed(1), t_curr: +tCurr.toFixed(1), t_proj: +tProj.toFixed(1),
+    p_hist: +pHist.toFixed(0), p_curr: +pCurr.toFixed(0), p_proj: +pProj.toFixed(0),
+    t_delta: +(tProj-tCurr).toFixed(2), p_delta_pct: +(((pProj-pCurr)/pCurr)*100).toFixed(1),
+    warming: +(delta*regAmp).toFixed(2), t_trend: +tTrend.toFixed(2), reg_amp: +regAmp.toFixed(2)
+  };
+}
+
+// Async: update met panel cells once live ERA5 data arrives
+function _asyncUpdateMetPanel(mpId, lat, lon, ssp, yr) {
+  _fetchLiveERA5(lat, lon).then(function(live) {
+    var badge = document.getElementById(mpId+'-badge');
+    if (!live) {
+      if (badge) { badge.textContent = '⚪ Static ERA5 baseline (API unavailable)'; badge.style.color='var(--muted)'; }
+      return;
+    }
+    var lm = _liveMeteoProjection(live, lat, lon, ssp, yr);
+    var tCol = lm.t_delta > 1.5 ? '#b91c1c' : lm.t_delta > 0.8 ? '#d97706' : '#16a34a';
+    var pCol = lm.p_delta_pct < -5 ? '#b91c1c' : lm.p_delta_pct < 0 ? '#d97706' : '#065a82';
+    var tAr  = lm.t_delta > 0 ? '▲ +'+lm.t_delta+'°C' : '▼ '+lm.t_delta+'°C';
+    var pAr  = lm.p_delta_pct > 0 ? '▲ +'+lm.p_delta_pct+'%' : '▼ '+lm.p_delta_pct+'%';
+    var upd  = function(id, txt) { var el=document.getElementById(id); if(el) el.innerHTML=txt; };
+    upd(mpId+'-t-hist', lm.t_hist+'°C');
+    upd(mpId+'-t-curr', lm.t_curr+'°C');
+    upd(mpId+'-t-proj', '<span style="color:'+tCol+'">'+lm.t_proj+'°C &ensp;'+tAr+'</span>');
+    upd(mpId+'-p-hist', lm.p_hist+' mm');
+    upd(mpId+'-p-curr', lm.p_curr+' mm');
+    upd(mpId+'-p-proj', '<span style="color:'+pCol+'">'+lm.p_proj+' mm &ensp;'+pAr+'</span>');
+    var dot = document.getElementById(mpId+'-t-dot');
+    if (dot) { dot.style.left=Math.min(95,Math.max(2,(lm.t_proj-5)/35*100)).toFixed(0)+'%'; dot.style.background=tCol; }
+    if (badge) {
+      badge.innerHTML = '🟢 Live ERA5 · '+live.n_days.toLocaleString()+' days · open-meteo.com';
+      badge.style.color = '#16a34a';
+    }
+    upd(mpId+'-trace',
+      'Open-Meteo ERA5 archive ('+live.n_days.toLocaleString()+' days) → '+
+      '<b>'+lm.t_hist+'°C</b> hist mean → +'+lm.t_trend+'°C/dec × 4.2 → '+
+      '<b>'+lm.t_curr+'°C</b> current → CMIP6 '+ssp.toUpperCase()+' Δ+'+lm.warming+'°C (×'+lm.reg_amp+' regional amp) → '+
+      '<b style="color:'+tCol+'">'+lm.t_proj+'°C @ '+yr+'</b>');
+  });
 }
 
 // Lat/lon → approximate region detection
