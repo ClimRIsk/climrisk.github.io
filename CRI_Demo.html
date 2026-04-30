@@ -1657,7 +1657,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         </div>
       </div>
 
-      <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. <strong>Physical risk score = mean applicable severity × 20 (0–100 scale)</strong> — the same formula used in the Supply Chain panel (Hazard Score) and in the physical pillar of the Climate Rating. The Climate Rating composite = physical × 35% + transition × 35% + financial × 30%; it is a portfolio-level three-pillar average and will naturally differ from individual asset scores. SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission.</span></div>
+      <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. <strong>Physical risk score = mean applicable severity × 20 (0–100 scale)</strong> — the same formula used in the Supply Chain panel (Hazard Score) and in the physical pillar of the Climate Rating. The Climate Rating composite = physical × 35% + transition × 35% + financial × 30%; it is a portfolio-level three-pillar average and will naturally differ from individual asset scores. SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission. <strong>Spatial downscaling:</strong> NASA NEX-GDDP-CMIP6 provides climate projections at 0.25° (~25 km) resolution. The engine downscales to asset-level precision using GPS bilinear interpolation — the asset's WRI Aqueduct baseline is computed as the inverse-distance²-weighted mean of its nearest regional centroids (w&#7522; = 1/d²&#7522;, normalised). Only centroids contributing ≥1% weight influence the result; distant centroids are suppressed. This follows the IPCC AR6 WG1 statistical downscaling framework and avoids raw CMIP6 model mean-state bias by applying change signals (delta method) to the ERA5 observational baseline rather than using raw model output. Site-level physics (coastal distance, elevation lapse rate, urban heat island, slope factor, river proximity) are then applied on top of the interpolated baseline. See the 🔬 Downscaling tab in the Portfolio Map above for asset-level weight visualisation.</span></div>
 
       <!-- SSP scenario selector for physical panel -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
@@ -3887,16 +3887,17 @@ function _drawDownscaleWeb2D(a) {
   if (!_portMap2D || a.lat == null) return;
   var entries = _getTop4Centroids(a.lat, a.lon);
   var cols = ['#22c55e','#3b82f6','#f59e0b','#ec4899'];
-  entries.forEach(function(e, i) {
+  // Only draw centroids that meaningfully contribute (≥1% weight)
+  entries.filter(function(e){ return e.pct >= 1.0; }).forEach(function(e, i) {
     var line = L.polyline([[a.lat,a.lon],[e.lat,e.lon]], {
-      color:cols[i], weight:Math.max(1.5, e.pct/14),
-      dashArray:'7,4', opacity:0.75
+      color:cols[i], weight:Math.max(2, e.pct/12),
+      dashArray:'7,4', opacity:0.82
     }).addTo(_portMap2D)
       .bindTooltip('<b>'+e.r+'</b><br>'+e.dist.toFixed(0)+' km · <b>'+e.pct.toFixed(1)+'%</b> weight', {sticky:true});
     _portMap2DLyrs.push(line);
 
     var dot = L.circleMarker([e.lat,e.lon], {
-      radius:5+e.pct/14, color:cols[i], fillColor:cols[i], fillOpacity:0.82, weight:2
+      radius:6+e.pct/12, color:cols[i], fillColor:cols[i], fillOpacity:0.88, weight:2
     }).addTo(_portMap2D)
       .bindTooltip('<b>'+e.r+'</b> centroid<br>Weight: '+e.pct.toFixed(1)+'%', {direction:'top'});
     _portMap2DLyrs.push(dot);
@@ -4083,12 +4084,20 @@ function _renderDownscalePanel(a, prof) {
   var top4 = _getTop4Centroids(a.lat, a.lon);
   var cols  = ['#22c55e','#3b82f6','#f59e0b','#ec4899'];
 
-  // SVG geographic sketch
+  // Only show centroids that meaningfully contribute (≥1% weight)
+  // Suppress distant zero-weight centroids so the map isn't cluttered
+  var active = top4.filter(function(e){ return e.pct >= 1.0; });
+  var suppressed = top4.filter(function(e){ return e.pct < 1.0; });
+
+  // SVG geographic sketch — use only active centroids for bounding box
   var svgW = 640, svgH = 280;
-  var allLats = top4.map(function(e){return e.lat;}).concat([a.lat]);
-  var allLons = top4.map(function(e){return e.lon;}).concat([a.lon]);
-  var padLat = Math.max(2, (Math.max.apply(null,allLats)-Math.min.apply(null,allLats))*0.25+1);
-  var padLon = Math.max(3, (Math.max.apply(null,allLons)-Math.min.apply(null,allLons))*0.25+2);
+  var vizCentroids = active.length ? active : top4.slice(0,1);
+  var allLats = vizCentroids.map(function(e){return e.lat;}).concat([a.lat]);
+  var allLons = vizCentroids.map(function(e){return e.lon;}).concat([a.lon]);
+  var spanLat = Math.max.apply(null,allLats) - Math.min.apply(null,allLats);
+  var spanLon = Math.max.apply(null,allLons) - Math.min.apply(null,allLons);
+  var padLat = Math.max(1.5, spanLat * 0.3 + 0.8);
+  var padLon = Math.max(2,   spanLon * 0.3 + 1.5);
   var mnLt = Math.min.apply(null,allLats)-padLat, mxLt = Math.max.apply(null,allLats)+padLat;
   var mnLn = Math.min.apply(null,allLons)-padLon, mxLn = Math.max.apply(null,allLons)+padLon;
   var px = function(ln){return ((ln-mnLn)/(mxLn-mnLn))*(svgW-100)+50;};
@@ -4102,41 +4111,51 @@ function _renderDownscalePanel(a, prof) {
     svg+='<line x1="'+gx+'" y1="35" x2="'+gx+'" y2="'+(svgH-35)+'" stroke="#1e293b" stroke-width="1"/>';
     svg+='<line x1="50" y1="'+gy+'" x2="'+(svgW-50)+'" y2="'+gy+'" stroke="#1e293b" stroke-width="1"/>';
   }
-  // Gradient lines centroid → asset
-  top4.forEach(function(e,i){
+  // Lines: only active centroids
+  active.forEach(function(e,i){
     var cx=px(e.lon), cy=py(e.lat);
-    var sw = Math.max(1.5, e.pct/14);
+    var sw = Math.max(2, e.pct/10);
     svg += '<defs><marker id="arr'+i+'" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">'+
            '<path d="M0,0 L6,3 L0,6 Z" fill="'+cols[i]+'"/></marker></defs>';
     svg += '<line x1="'+cx+'" y1="'+cy+'" x2="'+ax+'" y2="'+ay+'"'+
            ' stroke="'+cols[i]+'" stroke-width="'+sw.toFixed(1)+'" stroke-dasharray="8,4"'+
-           ' opacity="0.78" marker-end="url(#arr'+i+')"/>';
+           ' opacity="0.82" marker-end="url(#arr'+i+')"/>';
   });
-  // Centroid circles + labels
-  top4.forEach(function(e,i){
+  // Centroid circles + labels — only active
+  active.forEach(function(e,i){
     var cx=px(e.lon), cy=py(e.lat);
-    var r = 8 + e.pct/9;
-    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+cols[i]+'" stroke="#fff" stroke-width="1.5" opacity="0.9"/>';
-    svg += '<text x="'+cx+'" y="'+(cy-r-6)+'" text-anchor="middle" fill="'+cols[i]+'" font-size="9.5" font-weight="700">'+e.r+'</text>';
-    svg += '<text x="'+cx+'" y="'+(cy+r+13)+'" text-anchor="middle" fill="'+cols[i]+'" font-size="10">'+e.pct.toFixed(1)+'% · '+e.dist+'km</text>';
+    var r = 9 + e.pct/8;
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+cols[i]+'" stroke="#fff" stroke-width="1.5" opacity="0.92"/>';
+    svg += '<text x="'+cx+'" y="'+(cy-r-7)+'" text-anchor="middle" fill="'+cols[i]+'" font-size="10" font-weight="700">'+e.r+'</text>';
+    svg += '<text x="'+cx+'" y="'+(cy+r+14)+'" text-anchor="middle" fill="'+cols[i]+'" font-size="10.5" font-weight="600">'+e.pct.toFixed(1)+'%</text>';
+    svg += '<text x="'+cx+'" y="'+(cy+r+26)+'" text-anchor="middle" fill="#64748b" font-size="9">'+e.dist+' km</text>';
   });
   // Asset pin
-  svg += '<circle cx="'+ax+'" cy="'+ay+'" r="10" fill="#fff" stroke="#22c55e" stroke-width="3"/>';
-  svg += '<circle cx="'+ax+'" cy="'+ay+'" r="4" fill="#22c55e"/>';
-  svg += '<text x="'+ax+'" y="'+(ay+23)+'" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="700">'+
+  svg += '<circle cx="'+ax+'" cy="'+ay+'" r="11" fill="#fff" stroke="#22c55e" stroke-width="3"/>';
+  svg += '<circle cx="'+ax+'" cy="'+ay+'" r="5" fill="#22c55e"/>';
+  svg += '<text x="'+ax+'" y="'+(ay+26)+'" text-anchor="middle" fill="#22c55e" font-size="10.5" font-weight="700">'+
          a.asset.split(' ').slice(0,3).join(' ')+'</text>';
-  svg += '<text x="10" y="22" fill="#475569" font-size="9">25km NASA NEX-GDDP-CMIP6 grid → GPS bilinear downscaling to ('+a.lat.toFixed(3)+', '+a.lon.toFixed(3)+')</text>';
+  // Header
+  svg += '<text x="12" y="20" fill="#475569" font-size="9">25km NASA NEX-GDDP-CMIP6 → GPS bilinear interpolation · ('+a.lat.toFixed(3)+', '+a.lon.toFixed(3)+')</text>';
+  // Suppressed note (if any centroids hidden)
+  if (suppressed.length) {
+    svg += '<text x="'+(svgW-12)+'" y="20" text-anchor="end" fill="#334155" font-size="9">'+
+           suppressed.length+' distant centroid'+(suppressed.length>1?'s':'')+' suppressed (&lt;1% weight: '+
+           suppressed.map(function(e){return e.r;}).join(', ')+')</text>';
+  }
   svg = '<svg viewBox="0 0 '+svgW+' '+svgH+'" style="width:100%;border-radius:6px 6px 0 0">'+svg+'</svg>';
 
-  // Weight bars
+  // Weight bars — show all 4 but dim suppressed ones
   var bars = top4.map(function(e,i){
-    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
+    var isDim = e.pct < 1.0;
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;opacity:'+(isDim?'0.35':'1')+'">'+
       '<div style="width:90px;font-size:11px;color:'+cols[i]+';text-align:right;font-weight:600">'+e.r+'</div>'+
       '<div style="flex:1;height:16px;background:#1e293b;border-radius:3px;overflow:hidden">'+
-        '<div style="height:100%;width:'+e.pct.toFixed(0)+'%;background:'+cols[i]+';opacity:0.85"></div>'+
+        '<div style="height:100%;width:'+Math.max(e.pct,0.3).toFixed(1)+'%;background:'+cols[i]+';opacity:0.85"></div>'+
       '</div>'+
       '<div style="width:44px;font-size:11px;font-weight:700;color:'+cols[i]+'">'+e.pct.toFixed(1)+'%</div>'+
       '<div style="width:55px;font-size:10px;color:#64748b">'+e.dist+' km</div>'+
+      (isDim ? '<div style="font-size:9px;color:#334155;font-style:italic">suppressed</div>' : '')+
     '</div>';
   }).join('');
 
