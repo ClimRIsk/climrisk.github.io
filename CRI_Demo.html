@@ -3,12 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRI · Climate Risk Intelligence · Pilot v0.2</title>
+<title>CRI · Climate Risk Intelligence · v0.3</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>/* PDF.js + jsPDF loaded lazily */</script>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.css"/>
+<script src="https://unpkg.com/maplibre-gl@3.6.2/dist/maplibre-gl.js"></script>
 <style>
 /* ─── Tokens ─────────────────────────────────── */
 :root {
@@ -706,7 +708,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
   <!-- Access Request Modal -->
   <div id="gate-signup" style="background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:460px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
     <div style="font-size:36px;margin-bottom:10px">🌍</div>
-    <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK · CRI ENGINE v0.2</div>
+    <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK · CRI ENGINE v0.3</div>
     <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 8px">Request Engine Access</h2>
     <p style="font-size:13px;color:#64748b;margin:0 0 28px;line-height:1.7">GPS-precise climate risk · TCFD · IFRS S2 · CSRD<br>We review all requests and respond within 1 business day.</p>
     <div style="text-align:left;margin-bottom:14px">
@@ -873,7 +875,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <button class="nav-btn" onclick="exportDataPackage()" style="font-size:11px"><span class="nav-icon">📦</span>Export Data Package</button>
     <button class="nav-btn" onclick="openPilotModal()" style="font-size:11px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;font-weight:700"><span class="nav-icon">🚀</span>Generate Pilot</button>
   </div>
-  <div class="side-foot">CRI v0.2 · Pilot · 2026–2050</div>
+  <div class="side-foot">CRI v0.3 · 2026–2100</div>
 </nav>
 
 <!-- ═══ PILOT BANNER (hidden unless initPilotMode activated) ═══ -->
@@ -881,7 +883,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
   <span style="font-size:18px">🚀</span>
   <span style="font-weight:800;font-size:13px" id="pb-client"></span>
   <span style="opacity:.7">·</span>
-  <span style="opacity:.85">CRI Climate Risk Analysis · Pilot v0.2</span>
+  <span style="opacity:.85">CRI Climate Risk Analysis · v0.3</span>
   <span style="flex:1"></span>
   <span id="pb-days" style="background:rgba(255,255,255,.15);padding:3px 10px;border-radius:10px;font-weight:700"></span>
   <span style="opacity:.7">·</span>
@@ -1010,7 +1012,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 <div class="main">
   <div class="top">
     <span class="top-title" id="top-title">Overview</span>
-    <span class="top-tag">CRI Engine v0.2 · Pilot</span>
+    <span class="top-tag">CRI Engine v0.3 · Pilot</span>
     <div class="sel-wrap">
       <span class="sel-lbl">Company</span>
       <select id="coSel">
@@ -1675,16 +1677,67 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       </div>
 
       <div class="tc"><div class="tc-head" id="phys-head">Asset Hazard Profile</div><div id="phys-tbl"></div></div>
+
+      <!-- ── PORTFOLIO INTERACTIVE MAP — always visible once company loaded ── -->
+      <div id="phys-portmap" class="cc" style="display:none;margin-top:12px">
+        <div class="cc-title" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+          <span>🌍 Portfolio Risk Map</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <button id="ptab-2d" onclick="_setPhysTab('2d')"
+              style="font-size:11px;padding:4px 12px;border-radius:4px;cursor:pointer;border:1.5px solid var(--accent);background:var(--accent);color:#fff;font-weight:600">🗺 2D Map</button>
+            <button id="ptab-3d" onclick="_setPhysTab('3d')"
+              style="font-size:11px;padding:4px 12px;border-radius:4px;cursor:pointer;border:1.5px solid var(--brd);background:transparent;color:var(--muted);font-weight:600">🏔 3D Terrain</button>
+            <button id="ptab-ds" onclick="_setPhysTab('ds')"
+              style="font-size:11px;padding:4px 12px;border-radius:4px;cursor:pointer;border:1.5px solid var(--brd);background:transparent;color:var(--muted);font-weight:600">🔬 Downscaling</button>
+          </div>
+        </div>
+
+        <!-- 2D LEAFLET TAB -->
+        <div id="phys-port-2d" style="position:relative">
+          <div id="phys-port-2d-map" style="height:380px;border-radius:8px;border:1.5px solid var(--brd);overflow:hidden;z-index:0"></div>
+          <div style="font-size:10px;color:var(--subtle);margin-top:5px">
+            Circles = assets sized &amp; coloured by risk score. Click any circle for detail. When GPS available, dashed lines show the 4-centroid interpolation web.
+          </div>
+        </div>
+
+        <!-- 3D MAPLIBRE TAB -->
+        <div id="phys-port-3d" style="display:none;position:relative">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;flex-wrap:wrap">
+            <span style="font-size:11px;color:var(--muted)">Column height = risk score · Drag to rotate · Scroll to zoom</span>
+            <div style="display:flex;align-items:center;gap:6px;margin-left:auto">
+              <span style="font-size:11px;color:var(--muted)">Animate:</span>
+              <button onclick="_animatePortMap3D(this)" style="font-size:11px;padding:3px 10px;border-radius:4px;cursor:pointer;border:1px solid var(--accent);color:var(--accent);background:transparent">▶ Play 2026→2100</button>
+              <span id="port3d-year-label" style="font-size:12px;font-weight:700;color:var(--fg);min-width:36px"></span>
+            </div>
+          </div>
+          <div id="phys-port-3d-map" style="height:400px;border-radius:8px;border:1.5px solid var(--brd);overflow:hidden"></div>
+          <div style="font-size:10px;color:var(--subtle);margin-top:5px">
+            3D risk columns: height = physical risk score (0–100). Click ▶ Play to animate risk landscape change 2026→2100 under current SSP scenario. Hover columns for asset detail.
+          </div>
+        </div>
+
+        <!-- DOWNSCALING SVG TAB -->
+        <div id="phys-port-ds" style="display:none">
+          <div id="phys-ds-panel">
+            <div style="text-align:center;padding:50px 20px;color:var(--muted)">
+              <div style="font-size:32px;margin-bottom:10px">🔬</div>
+              <strong>Select an asset row</strong> to visualise the GPS bilinear interpolation — how the engine downscales from 25km CMIP6 grid to exact asset coordinates.
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- ── END PORTFOLIO MAP ── -->
+
       <div id="phys-detail"></div>
 
-      <!-- Inline asset hazard map — permanent div so Leaflet never re-initialises on a destroyed container -->
+      <!-- Per-asset hazard detail map — permanent Leaflet div, shown on asset click -->
       <div id="phys-map-section" class="cc" style="display:none;margin-top:0;margin-bottom:16px">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <span style="font-size:13px;font-weight:700;color:var(--fg)">📍 Asset Location &amp; Hazard Footprint</span>
           <span id="phys-map-gps-badge" style="font-size:11px;padding:2px 10px;border-radius:4px;font-weight:700;letter-spacing:.2px"></span>
         </div>
         <div id="phys-inline-map" style="height:240px;border-radius:8px;border:1.5px solid var(--brd);overflow:hidden;position:relative;z-index:0"></div>
-        <div style="font-size:10px;color:var(--subtle);margin-top:5px">Rings = hazard severity at asset location. Hover for details. Click <strong>🗺 Projection Map</strong> in any hazard row for 2026–2070 animation.</div>
+        <div style="font-size:10px;color:var(--subtle);margin-top:5px">Rings = hazard severity at asset location. Hover for details.</div>
       </div>
 
       <div class="cc"><div class="cc-title">Production Loss by Asset (%) — Joint Probability</div><div class="ch h220"><canvas id="hazC"></canvas></div></div>
@@ -2713,7 +2766,7 @@ function _lbDownloadAuditTrail() {
   var meta = [
     ['CRI Engine Loan Portfolio Audit Trail'],
     ['Generated', ts],
-    ['Model Version', 'CRI Engine v0.2'],
+    ['Model Version', 'CRI Engine v0.3'],
     ['GDPR Basis', 'GDPR Article 6(1)(b) – contractual necessity; Article 6(1)(f) – legitimate interests (regulatory compliance)'],
     ['SSP Scenario', sspLabel],
     ['Assessment Year', yr],
@@ -2809,7 +2862,7 @@ function _lbDownloadAuditTrail() {
     ['Green Asset Ratio (GAR)','Loans to borrowers with physScore < 20 AND NOT high-carbon sectors as % of total portfolio'],
     ['SFDR Article 8/9','Portfolio GAR ≥ 60% → Art.9 aligned; ≥ 30% → Art.8 aligned; below → review required'],
     [''],
-    ['Disclaimer','This assessment is generated by the CRI Engine v0.2 for regulatory reporting support purposes. It should be reviewed by qualified risk professionals and does not constitute financial advice. Data sources are updated annually.'],
+    ['Disclaimer','This assessment is generated by the CRI Engine v0.3 for regulatory reporting support purposes. It should be reviewed by qualified risk professionals and does not constitute financial advice. Data sources are updated annually.'],
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(method), 'Methodology');
 
@@ -2833,7 +2886,7 @@ function _physDownloadAuditTrail() {
   var meta = [
     ['CRI Engine Physical Risk Audit Trail'],
     ['Generated', ts],
-    ['Model Version', 'CRI Engine v0.2'],
+    ['Model Version', 'CRI Engine v0.3'],
     ['Company', coName],
     ['SSP Scenario', sspLabel],
     ['Assessment Year', yr],
@@ -2915,7 +2968,7 @@ function _physDownloadAuditTrail() {
     ['Elevated','35–49 — material financial impact likely'],
     ['High','50–100 — potential asset stranding risk'],
     [''],
-    ['Disclaimer','This assessment is generated by the CRI Engine v0.2 for regulatory reporting support. Review by qualified risk professionals required before submission to regulators. Sources updated annually.'],
+    ['Disclaimer','This assessment is generated by the CRI Engine v0.3 for regulatory reporting support. Review by qualified risk professionals required before submission to regulators. Sources updated annually.'],
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(method), 'Methodology');
 
@@ -3698,6 +3751,25 @@ function renderPh() {
     });
   }
 
+  // Cache profiles globally so portfolio map functions can access them
+  window._portAssetProfiles = assetProfiles;
+
+  // Show & initialise portfolio map
+  var portBox = document.getElementById('phys-portmap');
+  if (portBox) portBox.style.display = '';
+  var hasGPS = assetProfiles.some(function(ap){return ap.meta.lat!=null;});
+  var centerLat = 20, centerLon = 20;
+  if (hasGPS) {
+    var gpsAssets = assetProfiles.filter(function(ap){return ap.meta.lat!=null;});
+    centerLat = gpsAssets.reduce(function(s,ap){return s+ap.meta.lat;},0)/gpsAssets.length;
+    centerLon = gpsAssets.reduce(function(s,ap){return s+ap.meta.lon;},0)/gpsAssets.length;
+  }
+  _initPortMap2D(centerLat, centerLon);
+  setTimeout(function(){
+    _updatePortMap2D(assetProfiles, assetProfiles[0]&&assetProfiles[0].meta.asset);
+    if (_portMap3D && _portMap3DReady) _updatePortMap3D(assetProfiles);
+  }, 200);
+
   // Show detail for first asset by default
   if (assetProfiles.length) showAssetDetailFromProf(assetProfiles[0]);
 }
@@ -3711,6 +3783,411 @@ function showAssetDetail(assetName) {
   var _adSector = a.commodity || (COS[cid]&&COS[cid].sector) || 'Other';
   var prof = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, yr, _adSector);
   showAssetDetailFromProf({meta:a, prof:prof});
+}
+
+/* ══════════════════════════════════════════════════════════════════════════
+   PORTFOLIO INTERACTIVE MAP  —  2D · 3D Terrain · Downscaling Visualisation
+   ══════════════════════════════════════════════════════════════════════════ */
+
+// ── state ──────────────────────────────────────────────────────────────────
+var _portMap2D      = null;   // Leaflet portfolio overview
+var _portMap2DLyrs  = [];
+var _portMap3D      = null;   // MapLibre GL 3D terrain
+var _portMap3DReady = false;
+var _portMapTab     = '2d';
+var _portAnim       = null;   // animation interval handle
+
+// ── Tab switcher ──────────────────────────────────────────────────────────
+function _setPhysTab(tab) {
+  _portMapTab = tab;
+  ['2d','3d','ds'].forEach(function(t) {
+    var btn  = document.getElementById('ptab-'+t);
+    var pane = document.getElementById('phys-port-'+t);
+    if (btn) {
+      var active = t === tab;
+      btn.style.background    = active ? 'var(--accent)' : 'transparent';
+      btn.style.color         = active ? '#fff' : 'var(--muted)';
+      btn.style.borderColor   = active ? 'var(--accent)' : 'var(--brd)';
+    }
+    if (pane) pane.style.display = t === tab ? '' : 'none';
+  });
+  if (tab === '2d' && _portMap2D) setTimeout(function(){_portMap2D.invalidateSize();},120);
+  if (tab === '3d') {
+    if (!_portMap3D) _initPortMap3D();
+    else setTimeout(function(){_portMap3D.resize();},120);
+  }
+}
+
+// ── 2D Portfolio map ──────────────────────────────────────────────────────
+function _initPortMap2D(centerLat, centerLon) {
+  var el2 = document.getElementById('phys-port-2d-map');
+  if (!el2 || typeof L === 'undefined') return;
+  if (_portMap2D) { _portMap2D.setView([centerLat, centerLon], 3, {animate:false}); return; }
+  _portMap2D = L.map(el2, { zoomControl:true, attributionControl:false, scrollWheelZoom:true })
+    .setView([centerLat, centerLon], 3);
+  L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+    { maxZoom:18, subdomains:'abcd' }).addTo(_portMap2D);
+  L.control.attribution({ prefix:'© <a href="https://carto.com">CARTO</a> © OpenStreetMap' }).addTo(_portMap2D);
+}
+
+function _updatePortMap2D(assetProfiles, selectedAsset) {
+  if (!_portMap2D) return;
+  _portMap2DLyrs.forEach(function(l){ try{_portMap2D.removeLayer(l);}catch(e){} });
+  _portMap2DLyrs = [];
+
+  var hasGPS = assetProfiles.some(function(ap){ return ap.meta.lat != null; });
+
+  assetProfiles.forEach(function(ap) {
+    var a = ap.meta, prof = ap.prof;
+    if (a.lat == null || a.lon == null) return;
+    var isSel = a.asset === selectedAsset;
+    var col   = SEV_COL(prof.score / 20);
+    var r     = 8 + prof.score / 8;
+
+    var circle = L.circleMarker([a.lat, a.lon], {
+      radius: r, color: col, fillColor: col,
+      fillOpacity: isSel ? 0.9 : 0.55,
+      weight: isSel ? 3.5 : 1.5
+    }).addTo(_portMap2D);
+
+    circle.bindTooltip(
+      '<div style="min-width:160px"><strong>' + a.asset + '</strong><br>' +
+      'Risk Score: <strong style="color:'+col+'">' + prof.score.toFixed(0) + '</strong>/100<br>' +
+      'Ann. Loss: <strong>' + (prof.annual_loss_pct*100).toFixed(2) + '%</strong><br>' +
+      'Top hazard: ' + (prof.top_hazards[0]||'—') + '</div>',
+      { direction:'top', sticky:false }
+    );
+    circle.on('click', function(){
+      var ap2 = (window._portAssetProfiles||[]).find(function(p){return p.meta.asset===a.asset;});
+      if (ap2) showAssetDetailFromProf(ap2);
+    });
+    _portMap2DLyrs.push(circle);
+
+    // Asset name label
+    var lbl = L.marker([a.lat, a.lon], {
+      icon: L.divIcon({
+        html: '<div style="font-size:9.5px;font-weight:700;color:#111;white-space:nowrap;'+
+              'background:rgba(255,255,255,0.82);padding:1px 4px;border-radius:3px;'+
+              'margin-top:'+Math.round(r+6)+'px;box-shadow:0 1px 3px rgba(0,0,0,.2)">'+
+              a.asset.split(' ').slice(0,3).join(' ')+'</div>',
+        className:'', iconSize:[0,0]
+      }), interactive:false
+    }).addTo(_portMap2D);
+    _portMap2DLyrs.push(lbl);
+  });
+
+  // Downscaling web for selected asset
+  if (selectedAsset && hasGPS) {
+    var sel = (assetProfiles||[]).find(function(ap){return ap.meta.asset===selectedAsset;});
+    if (sel && sel.meta.lat != null) _drawDownscaleWeb2D(sel.meta);
+  }
+}
+
+function _drawDownscaleWeb2D(a) {
+  if (!_portMap2D || a.lat == null) return;
+  var entries = _getTop4Centroids(a.lat, a.lon);
+  var cols = ['#22c55e','#3b82f6','#f59e0b','#ec4899'];
+  entries.forEach(function(e, i) {
+    var line = L.polyline([[a.lat,a.lon],[e.lat,e.lon]], {
+      color:cols[i], weight:Math.max(1.5, e.pct/14),
+      dashArray:'7,4', opacity:0.75
+    }).addTo(_portMap2D)
+      .bindTooltip('<b>'+e.r+'</b><br>'+e.dist.toFixed(0)+' km · <b>'+e.pct.toFixed(1)+'%</b> weight', {sticky:true});
+    _portMap2DLyrs.push(line);
+
+    var dot = L.circleMarker([e.lat,e.lon], {
+      radius:5+e.pct/14, color:cols[i], fillColor:cols[i], fillOpacity:0.82, weight:2
+    }).addTo(_portMap2D)
+      .bindTooltip('<b>'+e.r+'</b> centroid<br>Weight: '+e.pct.toFixed(1)+'%', {direction:'top'});
+    _portMap2DLyrs.push(dot);
+  });
+}
+
+// ── 3D MapLibre terrain ────────────────────────────────────────────────────
+function _initPortMap3D() {
+  var container = document.getElementById('phys-port-3d-map');
+  if (!container || typeof maplibregl === 'undefined') return;
+  if (_portMap3D) { _portMap3D.resize(); return; }
+
+  _portMap3D = new maplibregl.Map({
+    container: container,
+    style: {
+      version: 8,
+      sources: {
+        'carto-dark': {
+          type: 'raster',
+          tiles: ['https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}.png'],
+          tileSize: 256,
+          attribution: '© CARTO © OpenStreetMap'
+        }
+      },
+      layers: [{ id: 'base', type: 'raster', source: 'carto-dark' }]
+    },
+    center: [20, 20], zoom: 2, pitch: 55, bearing: -18, antialias: true
+  });
+
+  _portMap3D.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+  _portMap3D.on('load', function() {
+    _portMap3DReady = true;
+
+    _portMap3D.addSource('risk-cols', { type:'geojson', data:{ type:'FeatureCollection', features:[] } });
+    _portMap3D.addSource('risk-pts',  { type:'geojson', data:{ type:'FeatureCollection', features:[] } });
+
+    // 3D extruded risk columns
+    _portMap3D.addLayer({
+      id: 'risk-extrude', type: 'fill-extrusion', source: 'risk-cols',
+      paint: {
+        'fill-extrusion-color':   ['get','color'],
+        'fill-extrusion-height':  ['get','height'],
+        'fill-extrusion-base':    0,
+        'fill-extrusion-opacity': 0.88
+      }
+    });
+
+    // Glow halo at base
+    _portMap3D.addLayer({
+      id: 'risk-halo', type: 'circle', source: 'risk-pts',
+      paint: {
+        'circle-radius':    ['get','radius'],
+        'circle-color':     ['get','color'],
+        'circle-opacity':   0.18,
+        'circle-blur':      0.6
+      }
+    });
+
+    // Labels
+    _portMap3D.addLayer({
+      id: 'risk-labels', type: 'symbol', source: 'risk-pts',
+      layout: {
+        'text-field': ['get','label'],
+        'text-size': 11,
+        'text-offset': [0,1.8],
+        'text-anchor': 'top',
+        'text-allow-overlap': false
+      },
+      paint: { 'text-color':'#ffffff', 'text-halo-color':'#000', 'text-halo-width':1.5 }
+    });
+
+    // Click popup
+    _portMap3D.on('click', 'risk-extrude', function(e) {
+      var p = e.features[0].properties;
+      new maplibregl.Popup({ offset:10 })
+        .setLngLat(e.lngLat)
+        .setHTML('<strong>'+p.asset+'</strong><br>Risk Score: <strong style="color:'+p.color+'">'+
+                 p.score+'</strong>/100<br>Ann. Loss: '+p.loss+'%')
+        .addTo(_portMap3D);
+    });
+    _portMap3D.on('mouseenter','risk-extrude',function(){_portMap3D.getCanvas().style.cursor='pointer';});
+    _portMap3D.on('mouseleave','risk-extrude',function(){_portMap3D.getCanvas().style.cursor='';});
+
+    // Populate with cached profiles
+    if (window._portAssetProfiles) _updatePortMap3D(window._portAssetProfiles);
+  });
+}
+
+function _updatePortMap3D(assetProfiles) {
+  if (!_portMap3D || !_portMap3DReady) return;
+  var features = [], ptFeatures = [];
+  var bounds   = null;
+
+  assetProfiles.forEach(function(ap) {
+    var a = ap.meta, prof = ap.prof;
+    if (a.lat == null || a.lon == null) return;
+    var col    = SEV_COL(prof.score / 20);
+    var height = Math.max(500, prof.score * 6000);  // visual scale in metres
+    var d      = 0.06;
+
+    features.push({
+      type:'Feature',
+      geometry:{ type:'Polygon', coordinates:[[
+        [a.lon-d,a.lat-d],[a.lon+d,a.lat-d],[a.lon+d,a.lat+d],[a.lon-d,a.lat+d],[a.lon-d,a.lat-d]
+      ]]},
+      properties:{
+        asset:a.asset, color:col, height:height,
+        score:prof.score.toFixed(0), loss:(prof.annual_loss_pct*100).toFixed(2)
+      }
+    });
+
+    ptFeatures.push({
+      type:'Feature',
+      geometry:{ type:'Point', coordinates:[a.lon,a.lat] },
+      properties:{
+        label: a.asset.split(' ').slice(0,3).join('\n') + '\n' + prof.score.toFixed(0),
+        color: col, radius: 20 + prof.score/4
+      }
+    });
+
+    bounds = bounds
+      ? [Math.min(bounds[0],a.lon-1),Math.min(bounds[1],a.lat-1),Math.max(bounds[2],a.lon+1),Math.max(bounds[3],a.lat+1)]
+      : [a.lon-1, a.lat-1, a.lon+1, a.lat+1];
+  });
+
+  _portMap3D.getSource('risk-cols').setData({ type:'FeatureCollection', features:features });
+  _portMap3D.getSource('risk-pts').setData({ type:'FeatureCollection', features:ptFeatures });
+  if (bounds) _portMap3D.fitBounds(bounds, { padding:80, pitch:55, bearing:-18, maxZoom:7, duration:800 });
+}
+
+// Animate 3D map through years
+function _animatePortMap3D(btn) {
+  if (_portAnim) { clearInterval(_portAnim); _portAnim=null; if(btn){btn.textContent='▶ Play 2026→2100';} return; }
+  var years = [2026,2030,2035,2040,2045,2050,2055,2060,2070,2080,2100];
+  var i = 0;
+  if (btn) btn.textContent = '⏹ Stop';
+  var lbl = document.getElementById('port3d-year-label');
+  _portAnim = setInterval(function() {
+    if (i >= years.length) {
+      clearInterval(_portAnim); _portAnim=null;
+      if (btn) btn.textContent = '▶ Play 2026→2100';
+      return;
+    }
+    var yr  = years[i];
+    var ssp = (el('phys-ssp')&&el('phys-ssp').value)||'ssp370';
+    var cid = co();
+    if (!cid || !HAZ[cid]) { clearInterval(_portAnim); _portAnim=null; return; }
+    var profiles = HAZ[cid].map(function(a){
+      var p = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, yr, a.commodity||COS[cid].sector||'Other');
+      return {meta:a, prof:p};
+    });
+    _updatePortMap3D(profiles);
+    if (lbl) lbl.textContent = yr;
+    i++;
+  }, 850);
+}
+
+// ── Downscaling SVG panel ─────────────────────────────────────────────────
+function _getTop4Centroids(lat, lon) {
+  return Object.keys(REGION_CENTROIDS).map(function(r) {
+    var c = REGION_CENTROIDS[r];
+    var dlat = lat-c[0], dlon = (lon-c[1])*Math.cos(lat*Math.PI/180);
+    var d2 = dlat*dlat + dlon*dlon + 1e-8;
+    return { r:r, lat:c[0], lon:c[1], dist:+(Math.sqrt(d2)*111).toFixed(1), w:1/d2 };
+  }).sort(function(a,b){return a.dist-b.dist;}).slice(0,4).map(function(e,_,arr){
+    var totW = arr.reduce(function(s,x){return s+x.w;},0);
+    e.pct = e.w/totW*100;
+    return e;
+  });
+}
+
+function _renderDownscalePanel(a, prof) {
+  var panel = document.getElementById('phys-ds-panel');
+  if (!panel) return;
+  if (a.lat == null || a.lon == null) {
+    panel.innerHTML = '<div style="text-align:center;padding:50px;color:var(--muted)">'+
+      '<div style="font-size:32px;margin-bottom:10px">📌</div>'+
+      '<strong>'+a.asset+'</strong> has no GPS coordinates — using regional centroid ('+a.region+').<br>'+
+      'Downscaling visualisation requires asset-level coordinates.</div>';
+    return;
+  }
+
+  var top4 = _getTop4Centroids(a.lat, a.lon);
+  var cols  = ['#22c55e','#3b82f6','#f59e0b','#ec4899'];
+
+  // SVG geographic sketch
+  var svgW = 640, svgH = 280;
+  var allLats = top4.map(function(e){return e.lat;}).concat([a.lat]);
+  var allLons = top4.map(function(e){return e.lon;}).concat([a.lon]);
+  var padLat = Math.max(2, (Math.max.apply(null,allLats)-Math.min.apply(null,allLats))*0.25+1);
+  var padLon = Math.max(3, (Math.max.apply(null,allLons)-Math.min.apply(null,allLons))*0.25+2);
+  var mnLt = Math.min.apply(null,allLats)-padLat, mxLt = Math.max.apply(null,allLats)+padLat;
+  var mnLn = Math.min.apply(null,allLons)-padLon, mxLn = Math.max.apply(null,allLons)+padLon;
+  var px = function(ln){return ((ln-mnLn)/(mxLn-mnLn))*(svgW-100)+50;};
+  var py = function(lt){return ((mxLt-lt)/(mxLt-mnLt))*(svgH-70)+35;};
+  var ax = px(a.lon), ay = py(a.lat);
+
+  var svg = '<rect width="'+svgW+'" height="'+svgH+'" fill="#0f172a" rx="6"/>';
+  // Subtle grid
+  for(var gi=0;gi<6;gi++){
+    var gx=50+gi*(svgW-100)/5, gy=35+gi*(svgH-70)/5;
+    svg+='<line x1="'+gx+'" y1="35" x2="'+gx+'" y2="'+(svgH-35)+'" stroke="#1e293b" stroke-width="1"/>';
+    svg+='<line x1="50" y1="'+gy+'" x2="'+(svgW-50)+'" y2="'+gy+'" stroke="#1e293b" stroke-width="1"/>';
+  }
+  // Gradient lines centroid → asset
+  top4.forEach(function(e,i){
+    var cx=px(e.lon), cy=py(e.lat);
+    var sw = Math.max(1.5, e.pct/14);
+    svg += '<defs><marker id="arr'+i+'" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">'+
+           '<path d="M0,0 L6,3 L0,6 Z" fill="'+cols[i]+'"/></marker></defs>';
+    svg += '<line x1="'+cx+'" y1="'+cy+'" x2="'+ax+'" y2="'+ay+'"'+
+           ' stroke="'+cols[i]+'" stroke-width="'+sw.toFixed(1)+'" stroke-dasharray="8,4"'+
+           ' opacity="0.78" marker-end="url(#arr'+i+')"/>';
+  });
+  // Centroid circles + labels
+  top4.forEach(function(e,i){
+    var cx=px(e.lon), cy=py(e.lat);
+    var r = 8 + e.pct/9;
+    svg += '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+cols[i]+'" stroke="#fff" stroke-width="1.5" opacity="0.9"/>';
+    svg += '<text x="'+cx+'" y="'+(cy-r-6)+'" text-anchor="middle" fill="'+cols[i]+'" font-size="9.5" font-weight="700">'+e.r+'</text>';
+    svg += '<text x="'+cx+'" y="'+(cy+r+13)+'" text-anchor="middle" fill="'+cols[i]+'" font-size="10">'+e.pct.toFixed(1)+'% · '+e.dist+'km</text>';
+  });
+  // Asset pin
+  svg += '<circle cx="'+ax+'" cy="'+ay+'" r="10" fill="#fff" stroke="#22c55e" stroke-width="3"/>';
+  svg += '<circle cx="'+ax+'" cy="'+ay+'" r="4" fill="#22c55e"/>';
+  svg += '<text x="'+ax+'" y="'+(ay+23)+'" text-anchor="middle" fill="#22c55e" font-size="10" font-weight="700">'+
+         a.asset.split(' ').slice(0,3).join(' ')+'</text>';
+  svg += '<text x="10" y="22" fill="#475569" font-size="9">25km NASA NEX-GDDP-CMIP6 grid → GPS bilinear downscaling to ('+a.lat.toFixed(3)+', '+a.lon.toFixed(3)+')</text>';
+  svg = '<svg viewBox="0 0 '+svgW+' '+svgH+'" style="width:100%;border-radius:6px 6px 0 0">'+svg+'</svg>';
+
+  // Weight bars
+  var bars = top4.map(function(e,i){
+    return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'+
+      '<div style="width:90px;font-size:11px;color:'+cols[i]+';text-align:right;font-weight:600">'+e.r+'</div>'+
+      '<div style="flex:1;height:16px;background:#1e293b;border-radius:3px;overflow:hidden">'+
+        '<div style="height:100%;width:'+e.pct.toFixed(0)+'%;background:'+cols[i]+';opacity:0.85"></div>'+
+      '</div>'+
+      '<div style="width:44px;font-size:11px;font-weight:700;color:'+cols[i]+'">'+e.pct.toFixed(1)+'%</div>'+
+      '<div style="width:55px;font-size:10px;color:#64748b">'+e.dist+' km</div>'+
+    '</div>';
+  }).join('');
+
+  // Before/after hazard table
+  var totW2 = top4.reduce(function(s,e){return s+e.w;},0);
+  var blended = {ws:0,rf:0,dr:0,ht:0};
+  top4.forEach(function(e){ var b=WRI_BASELINE[e.r]||WRI_BASELINE['global'],wn=e.w/totW2;
+    blended.ws+=(b.ws||0)*wn; blended.rf+=(b.rf||0)*wn; blended.dr+=(b.dr||0)*wn; blended.ht+=(b.ht||0)*wn; });
+  var near1 = WRI_BASELINE[top4[0].r]||WRI_BASELINE['global'];
+  var hazRows = [['Water Stress','ws'],['Riverine Flood','rf'],['Drought','dr'],['Heat Stress','ht']].map(function(hk){
+    var h=hk[0],k=hk[1], bef=(near1[k]||0).toFixed(3), aft=blended[k].toFixed(3);
+    var d = blended[k]-(near1[k]||0);
+    var dc = d>0.05?'#f87171':d<-0.05?'#34d399':'#94a3b8';
+    var ds = d>0.01?'▲ +'+d.toFixed(3):d<-0.01?'▼ '+d.toFixed(3):'≈ same';
+    return '<tr style="border-top:1px solid #1e293b">'+
+      '<td style="padding:5px 10px;font-size:11px;color:#94a3b8">'+h+'</td>'+
+      '<td style="padding:5px 10px;font-size:11px;text-align:center;font-weight:600;color:#f59e0b">'+bef+'</td>'+
+      '<td style="padding:5px 10px;font-size:11px;text-align:center;font-weight:600;color:#22c55e">'+aft+'</td>'+
+      '<td style="padding:5px 10px;font-size:11px;text-align:center;font-weight:700;color:'+dc+'">'+ds+'</td>'+
+    '</tr>';
+  }).join('');
+
+  panel.innerHTML =
+    '<div style="background:#0f172a;border-radius:8px;padding:14px;color:#e2e8f0">'+
+    '<div style="font-size:12px;font-weight:700;color:#64748b;margin-bottom:10px;text-transform:uppercase;letter-spacing:.5px">'+
+      '🔬 GPS Bilinear Interpolation · '+a.asset+
+    '</div>'+
+    svg+
+    '<div style="background:#111827;border-radius:0 0 6px 6px;padding:14px;border-top:1px solid #1e293b">'+
+    '<div style="font-size:10.5px;font-weight:700;color:#64748b;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px">Inverse-distance² weights</div>'+
+    bars+
+    '</div>'+
+    '<div style="margin-top:12px">'+
+    '<div style="font-size:10.5px;font-weight:700;color:#64748b;margin-bottom:6px;text-transform:uppercase;letter-spacing:.4px">'+
+      'Baseline shift: nearest centroid → 4-centroid GPS blend (WRI Aqueduct values)'+
+    '</div>'+
+    '<table style="width:100%;border-collapse:collapse;background:#111827;border-radius:6px;overflow:hidden">'+
+    '<thead><tr style="background:#1e293b">'+
+      '<th style="padding:6px 10px;font-size:10px;color:#64748b;text-align:left;font-weight:600">Hazard</th>'+
+      '<th style="padding:6px 10px;font-size:10px;color:#f59e0b;text-align:center;font-weight:600">Nearest centroid ('+top4[0].r+')</th>'+
+      '<th style="padding:6px 10px;font-size:10px;color:#22c55e;text-align:center;font-weight:600">GPS-blended (4 centroids)</th>'+
+      '<th style="padding:6px 10px;font-size:10px;color:#94a3b8;text-align:center;font-weight:600">Δ</th>'+
+    '</tr></thead><tbody>'+hazRows+'</tbody></table>'+
+    '</div>'+
+    '<div style="margin-top:10px;font-size:10px;color:#475569;line-height:1.6">'+
+      'The delta method: CRI assigns <em>each asset the weighted average of its 4 nearest regional WRI baselines</em>, '+
+      'weighting each centroid by 1/distance². '+
+      'This converts the 25km NASA NEX-GDDP-CMIP6 grid to site-specific precision without requiring a live geospatial API. '+
+      'Source: WRI Aqueduct 4.0 (2023). Method: IPCC AR6 WG1 statistical downscaling framework.'+
+    '</div>'+
+    '</div>';
 }
 
 /* ── INLINE HAZARD MAP (physical risk panel) ──────── */
@@ -3834,6 +4311,11 @@ function showAssetDetailFromProf(ap) {
   _hpm.region    = prof.region || a.region || 'global';
   _hpm.lat       = a.lat || null;
   _hpm.lon       = a.lon || null;
+
+  // Update portfolio map: highlight selected asset + draw downscale web
+  _updatePortMap2D(window._portAssetProfiles||[], a.asset);
+  // Switch downscale tab content to this asset (even if not currently on ds tab)
+  _renderDownscalePanel(a, prof);
 
   var curSsp = (el('phys-ssp') && el('phys-ssp').value) || 'ssp370';
 
@@ -4140,7 +4622,7 @@ function genPrompt(){
   var y30=run.years.find(function(y){return y.year===2030;}),y50=run.years.find(function(y){return y.year===2050;});
   var fmtMap={ic:'Investment Committee Memo',board:'Board Risk Briefing',esg:'ESG/TCFD Disclosure',pm:'Portfolio Manager Summary',tech:'Detailed Technical Analysis'};
   var fmt=fmtMap[el('rFmt').value];
-  var p='You are a senior climate risk analyst. Write a professional '+fmt+' based on CRI v0.2 model output.\n\n';
+  var p='You are a senior climate risk analyst. Write a professional '+fmt+' based on CRI v0.3 model output.\n\n';
   p+='COMPANY: '+cd.name+' ('+cd.sector+')\nActive scenario: '+run.label+'\n\n';
   if(el('iV').checked){p+='VALUATION\nEV ('+run.label+'): $'+run.ev+'B | EV (NZE): $'+nze.ev+'B | EV (CP): $'+cp_r.ev+'B\nNZE vs CP: '+pct(nze.ev,cp_r.ev)+'% EV impact\nShare price: $'+run.share_price+' | WACC: '+run.wacc+'%\n\n';}
   if(el('iP').checked){p+='PHYSICAL RISK\n';HAZ[cid].forEach(function(a){p+='  '+a.asset+' ('+a.region+'): loss 2030 '+a.loss_2030_pct+'%, 2050 '+a.loss_2050_pct+'%';var hbs=Object.entries(a.hazard_breakdown||{});if(hbs.length)p+=' | '+hbs.map(function(e){return e[0]+' '+e[1]+'% p.a.';}).join(', ');p+='\n';});p+='\n';}
@@ -5643,7 +6125,7 @@ function latLonToRegion(lat, lon) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   GPS SITE-SPECIFIC PHYSICS LAYER  (CRI v0.2)
+   GPS SITE-SPECIFIC PHYSICS LAYER  (CRI v0.3)
    ─────────────────────────────────────────────────────────────────────────
    Upgrades the engine from regional-bucket assessment to GPS site-specific
    hazard quantification. Given any lat/lon, we derive:
@@ -12934,7 +13416,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
       ['Sea Level Rise','IPCC AR6 Ch9 + NOAA proxy','IPCC AR6 WG1 Ch9'],
       ['Carbon Price Pathway','NGFS Phase 4 (2023)','NGFS 2023 / IEA WEO 2023'],
       ['Scope 3 Proxy Factors','GHG Protocol + EEIO (2022)','GHG Protocol Scope 3 Standard'],
-      ['Joint Loss Model','CRI v0.2 (compound risk)','IPCC AR6 WG2 Ch16'],
+      ['Joint Loss Model','CRI v0.3 (compound risk)','IPCC AR6 WG2 Ch16'],
       ['Energy Estimate','Sector emission intensity factors','IEA Energy Statistics 2023'],
     ].forEach(function(r){
       body += '<tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 8px;font-weight:700">'+r[0]+'</td><td style="padding:6px 8px;color:#2563eb">'+r[1]+'</td><td style="padding:6px 8px;font-family:monospace;font-size:9px;color:#7c3aed">'+r[2]+'</td></tr>';
@@ -13783,10 +14265,10 @@ function _rhBuildMethodology() {
     {layer:'Cyclone Intensity',        dataset:'IPCC AR6 WG1 Ch11.7',             version:'AR6 2021', method:'5%/°C intensity uplift on coastal regions in CYCLONE_SET; Cat 4/5 frequency scaling',        ipcc:'IPCC AR6 WG1 Ch11.7'},
     {layer:'Drought / Water Stress',   dataset:'WRI Aqueduct Water Risk Atlas',    version:'v4.0',  method:'Baseline water/drought scores scaled by Palmer Drought Index proxy from GMST warming',          ipcc:'IPCC AR6 WG1 Ch11.6'},
     {layer:'Landslide',                dataset:'IPCC AR6 WG2 Ch5 + SRTM DEM',     version:'AR6 2021', method:'Terrain susceptibility (LANDSLIDE_SET) × precipitation scaling × LULC cohesion factor',       ipcc:'IPCC AR6 WG2 Ch5.3'},
-    {layer:'Joint Loss Model',         dataset:'Derived',                          version:'CRI v0.2', method:'Joint production loss: 1 − Π(1 − lossᵢ) across all applicable hazards; compound risk non-linear', ipcc:'IPCC AR6 WG2 Ch16'},
+    {layer:'Joint Loss Model',         dataset:'Derived',                          version:'CRI v0.3', method:'Joint production loss: 1 − Π(1 − lossᵢ) across all applicable hazards; compound risk non-linear', ipcc:'IPCC AR6 WG2 Ch16'},
     {layer:'Carbon Price Pathway',     dataset:'NGFS Phase 4 (2023)',              version:'Phase 4', method:'SSP-mapped NGFS scenarios: SSP1-2.6→NZE2050 ($130/t), SSP2-4.5→Delayed ($90/t), SSP3-7.0→CurPol ($60/t)', ipcc:'NGFS 2023; IEA WEO'},
     {layer:'Scope 3 Proxy',            dataset:'GHG Protocol + EEIO factors',      version:'2022',  method:'Spend-based proxy: 380 tCO2e/$M for purchased goods; or direct import from emissions sheet',   ipcc:'GHG Protocol Scope 3 Standard'},
-    {layer:'Enterprise Value Impact',  dataset:'Derived (DCF)',                    version:'CRI v0.2', method:'Physical CaR capitalised to portfolio EV impact using WACC-adjusted discount model. Calibration layer documented for client review under NDA.',        ipcc:'TCFD Technical Supplement 2017'},
+    {layer:'Enterprise Value Impact',  dataset:'Derived (DCF)',                    version:'CRI v0.3', method:'Physical CaR capitalised to portfolio EV impact using WACC-adjusted discount model. Calibration layer documented for client review under NDA.',        ipcc:'TCFD Technical Supplement 2017'},
   ];
 
   return '<div style="font-size:11px;color:#6b7280;margin-bottom:14px">Complete methodology audit trail — submit to external auditors or regulatory bodies as supporting documentation.</div>'+
@@ -14404,7 +14886,7 @@ function pmRefreshPreview() {
   var coName  = cid && D.companies[cid] ? D.companies[cid].name : '';
   var expiry  = new Date(); expiry.setDate(expiry.getDate() + days);
   var expiryStr = expiry.toISOString().split('T')[0];
-  var filename  = (coName || 'Client').replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.2.html';
+  var filename  = (coName || 'Client').replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.3.html';
   document.getElementById('pm-filename').textContent        = filename;
   document.getElementById('pm-expiry').textContent          = expiryStr + ' (' + days + ' days)';
   document.getElementById('pm-key-preview').textContent     = akey || '(none set — file will open without key)';
@@ -14559,7 +15041,7 @@ function generatePilotPackage() {
   source = source.replace('</body>', autoInit + '</body>');
 
   /* Download */
-  var filename = resolvedClientName.replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.2.html';
+  var filename = resolvedClientName.replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.3.html';
   var blob = new Blob([source], {type:'text/html;charset=utf-8'});
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
@@ -14713,7 +15195,7 @@ function initPilotMode(cfg) {
       '<div style="font-size:13px;color:#4c1d95">Contact <strong>' + cfg.supportName + '</strong><br>' +
       '<a href="mailto:' + cfg.supportEmail + '" style="color:#7c3aed">' + cfg.supportEmail + '</a></div>' +
       '</div>' +
-      '<div style="font-size:11px;color:#9ca3af">CRI Climate Risk Intelligence · v0.2</div>' +
+      '<div style="font-size:11px;color:#9ca3af">CRI Climate Risk Intelligence · v0.3</div>' +
       '</div></div>';
   };
 
@@ -14788,7 +15270,7 @@ function initPilotMode(cfg) {
 
   /* 5. Update page title */
   var primaryName = cfg.primaryClientName || cfg.clientName;
-  document.title = primaryName + ' — CRI Climate Risk Analysis · Pilot v0.2';
+  document.title = primaryName + ' — CRI Climate Risk Analysis · v0.3';
 
   /* 6. Show pilot banner */
   var banner = el('pilot-banner');
