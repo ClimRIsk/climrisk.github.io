@@ -6036,12 +6036,29 @@ function buildAndLoadResults() {
     var cpRun   = D.companies[co_id].runs.current_policies;
     var nzeY30  = nzeRun.years.find(function(y){ return y.year === 2030; }) || nzeRun.years[0];
     var ccPctRaw = (nzeY30 && nzeY30.ebitda > 0) ? (nzeY30.carbon_cost / nzeY30.ebitda * 100) : 0;
-    /* Apply sector-based minimum transition risk floor when DCF has no carbon pricing.
-       Source: IEA NZE 2050 sector carbon cost estimates at $130/tCO2e NZE 2030. */
-    var _sFloor={'Cement':8,'Concrete':8,'Building Materials':6,'Steel':10,'Steel & Metals':10,
-      'Oil & Gas':15,'Coal':20,'Mining':5,'Chemicals':6,'Fertilisers':8,'Aluminium':7};
-    var _sf=0;
-    Object.keys(_sFloor).forEach(function(k){if(sector&&sector.toLowerCase().indexOf(k.toLowerCase())>=0)_sf=Math.max(_sf,_sFloor[k]);});
+    /* Sector minimum floors — applied only when the DCF model returns an
+       implausibly low carbon cost (e.g. missing emissions data, data entry error).
+       These are IEA-derived minimum carbon cost % of EBITDA under NZE 2030 at $130/tCO₂e.
+       With correct Scope 1 data or production volume entered, ccPctRaw will far exceed
+       these floors for hard-to-abate sectors.
+       Source: IEA Net Zero by 2050 (2023), IPCC AR6 WG3 Ch.11, World Steel Assoc. */
+    var _sFloor={
+      'Cement':28, 'Concrete':20, 'Building Materials':12,
+      'Steel & Metals':35, 'Steel':35, 'Metals':18,
+      'Aluminium':22,
+      'Oil & Gas':30, 'Coal':45,
+      'Chemicals':18, 'Specialty Chemicals':14, 'Fertilisers':25,
+      'Mining':10, 'Heavy Industry':20,
+      'Energy/Utilities':25, 'Utilities':20,
+      'Shipping':15, 'Aviation':20,
+      'Transport & Logistics':10,
+    };
+    var _sf = 0;
+    Object.keys(_sFloor).forEach(function(k){
+      if (sector && sector.toLowerCase().indexOf(k.toLowerCase()) >= 0)
+        _sf = Math.max(_sf, _sFloor[k]);
+    });
+    /* Use the higher of: (a) what the physics model computes, (b) the IEA sector minimum */
     var ccPct = Math.max(ccPctRaw, _sf);
     var transScore = Math.min(100, ccPct * 3);
     var transLabel = transScore >= 70 ? 'Critical' : transScore >= 50 ? 'High' : transScore >= 30 ? 'Elevated' : transScore >= 15 ? 'Moderate' : 'Low';
@@ -8983,24 +9000,50 @@ function _xlInjectToEngine() {
     // Also sum from asset-level if available
     if (!totS1) xd.assets.forEach(function(a){ totS1 += (a.s1||0); totS2 += (a.s2||0); });
   }
-  var wizS1mt = totS1 / 1e6 || Math.max(0.1, rev * 1.8);
-  var wizS2mt = totS2 / 1e6 || Math.max(0.05, wizS1mt * 0.3);
+  /* ── Emissions: same three-tier priority as wizard path ────────────────
+     Priority 1: Actual Scope 1/2 from Excel emissions sheet
+     Priority 2: Sector-specific intensity proxy (getSectorParams)
+     Note: production-volume method not yet in Excel template; Scope 1
+     column in the emissions sheet is the recommended path for accuracy. */
+  var _xlSp    = getSectorParams(sector);
+  var wizS1mt  = totS1 / 1e6;
+  var wizS2mt  = totS2 / 1e6;
+  if (wizS1mt <= 0) {
+    /* Sector-calibrated intensity proxy — same table as wizard */
+    wizS1mt = Math.max(0.1, rev * _xlSp.emIntensity);
+  }
+  if (wizS2mt <= 0) wizS2mt = Math.max(0.05, wizS1mt * 0.28);
 
+  /* ── buildYears: proper NGFS carbon price × sector emissions model ──────
+     Replaces the old 0.03×EBITDA stub that ignored emissions entirely.
+     Now uses the same formula as the wizard DCF path:
+       cc = (S1 + S2) × (1 − freeAlloc) × NGFS_price / 1000  ($B)
+     with sector-specific revenue/EBITDA CAGRs, emission decay, and
+     free allocation from the SECTOR_PARAMS table. */
   function buildYears(scenario) {
+    var raF = _xlSp.revAdj[scenario]    || 0.982;
+    var eaF = _xlSp.ebitdaAdj[scenario] || 0.974;
+    var edF = _xlSp.emDecay[scenario]   || 0.025;
+    var fa  = _xlSp.freeAlloc           || 0.10;
     var years = [];
-    var rAdj  = scenario==='cp' ? 1.020 : scenario==='dt' ? 0.995 : 0.975;
-    var eAdj  = scenario==='cp' ? 1.010 : scenario==='dt' ? 0.990 : 0.970;
     for (var yr = 2026; yr <= 2050; yr++) {
       var t  = yr - 2026;
-      var r  = rev    * Math.pow(rAdj, t);
-      var e  = ebitda * Math.pow(eAdj, t);
-      var cc = scenario==='nze' ? 0.03*ebitda*(1+t*0.08)
-             : scenario==='dt'  ? 0.01*ebitda*(1+t*0.12)
-             :                    0.005*ebitda*(1+t*0.05);
-      years.push({ year:yr, revenue:round1(r), ebitda:round1(e-cc*0.3),
-        fcf:round1((e-cc)*0.55), carbon_cost:round1(cc),
-        opex:round1(r-e), emissions_s1:round1(wizS1mt*(1-t*0.01)),
-        emissions_s2:round1(wizS2mt*(1-t*0.008)) });
+      var r  = rev    * Math.pow(raF, t);
+      var e  = ebitda * Math.pow(eaF, t);
+      var s1 = wizS1mt * Math.pow(1 - edF, t);
+      var s2 = wizS2mt * Math.pow(1 - edF * 0.7, t);
+      var cp_price = cpAt(scenario, yr);
+      var cc = round1((s1 + s2) * (1 - fa) * cp_price / 1000);
+      years.push({
+        year:        yr,
+        revenue:     round1(r),
+        ebitda:      round1(e - cc * 0.5),        /* 50% carbon cost pass-through */
+        fcf:         round1((e - cc) * 0.55),
+        carbon_cost: cc,
+        opex:        round1(r * _xlSp.opexPct),
+        emissions_s1:round1(s1),
+        emissions_s2:round1(s2)
+      });
     }
     return years;
   }
@@ -9141,12 +9184,22 @@ function _xlInjectToEngine() {
   /* Sector-based minimum transition risk: high-carbon sectors must have a floor
      carbon cost % even when Excel data has no carbon pricing modelled.
      Source: IEA NZE 2050 sector-level carbon cost estimates at $130/tCO2e (2030). */
+  /* Updated floors reflect IEA NZE 2030 carbon cost burden for each sector
+     at $130/tCO₂e, net of typical free allocation.
+     These are MINIMUM floors — proper Scope 1 data will produce higher values.
+     With the fixed NGFS carbon cost model above, these floors are now only
+     safety nets for edge cases (e.g. very low emissions data entered). */
   var _sectorTransFloor = {
-    'Cement':8,'Concrete':8,'Building Materials':6,
-    'Steel':10,'Steel & Metals':10,'Metals':7,
-    'Oil & Gas':15,'Oil and Gas':15,'Refining':12,
-    'Coal':20,'Mining':5,'Chemicals':6,'Fertilisers':8,
-    'Aluminium':7,'Glass':5,'Paper':4,'Shipping':6,'Aviation':10
+    'Cement':28, 'Concrete':20, 'Building Materials':12,
+    'Steel & Metals':35, 'Steel':35, 'Metals':18,
+    'Aluminium':22,
+    'Oil & Gas':30, 'Oil and Gas':30, 'Refining':25,
+    'Coal':45,
+    'Chemicals':18, 'Specialty Chemicals':14, 'Fertilisers':25,
+    'Mining':10, 'Heavy Industry':20,
+    'Energy/Utilities':25, 'Utilities':20,
+    'Shipping':15, 'Aviation':20,
+    'Transport & Logistics':10,
   };
   var _transFloor = 0;
   Object.keys(_sectorTransFloor).forEach(function(k){
