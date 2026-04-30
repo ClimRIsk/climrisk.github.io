@@ -1059,7 +1059,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           </div>
           <div>
             <label class="flbl"><span class="req-dot"></span>Primary sector</label>
-            <select class="finp" id="i-sector" onchange="toggleOtherSector()">
+            <select class="finp" id="i-sector" onchange="toggleOtherSector(); updateProdFields();">
               <option value="">Select sector...</option>
               <option value="Mining">Mining</option>
               <option value="Oil & Gas">Oil &amp; Gas</option>
@@ -1337,12 +1337,35 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
             </select>
           </div>
         </div>
+        <!-- Production volume panel — shown for manufacturing sectors -->
+        <div id="prod-vol-group" style="display:none;margin:10px 0 14px">
+          <div style="padding:9px 14px;background:rgba(2,195,154,0.08);border-radius:8px;border-left:3px solid #02C39A;margin-bottom:10px;display:flex;align-items:center;gap:10px">
+            <span style="font-size:13px">⚙️</span>
+            <span style="font-size:12px;font-weight:600;color:#028090">Manufacturing sector detected</span>
+            <span style="font-size:11px;color:var(--muted)">Enter production volume for physics-based emission estimation — up to 4× more accurate than the revenue proxy for heavy industry</span>
+          </div>
+          <div class="fgrp half">
+            <div>
+              <label class="flbl">Annual production volume <span class="opt-dot">recommended for manufacturing</span></label>
+              <input class="finp" id="i-prod-vol" type="number" min="0" step="0.1" placeholder="e.g. 14">
+              <div class="finp-hint" id="prod-vol-hint">Mt per year — from Annual Report or Sustainability Disclosure</div>
+            </div>
+            <div>
+              <label class="flbl">Product type</label>
+              <select class="finp" id="i-prod-type" onchange="updateProdEfHint()">
+                <option value="">Select product…</option>
+              </select>
+              <div class="finp-hint" id="prod-ef-hint">Emission factor will appear here</div>
+            </div>
+          </div>
+        </div>
+
         <div id="ghg-fields">
           <div class="fgrp third">
             <div>
-              <label class="flbl">Scope 1 total <span class="opt-dot">tCO₂e</span></label>
+              <label class="flbl">Scope 1 total <span class="opt-dot">tCO₂e · overrides production estimate</span></label>
               <input class="finp" id="i-s1" type="number" min="0" placeholder="e.g. 4500000">
-              <div class="finp-hint">Direct emissions from owned/controlled sources</div>
+              <div class="finp-hint">Direct emissions from owned/controlled sources — if entered, used instead of production estimate</div>
             </div>
             <div>
               <label class="flbl">Scope 2 total <span class="opt-dot">tCO₂e</span></label>
@@ -4459,6 +4482,114 @@ function getSectorParams(sector) {
   return SECTOR_PARAMS['_default'];
 }
 
+/* ── Product-based emission factors ────────────────────────────────────────
+   Sources: IEA Technology Perspectives 2023, IPCC AR6 WGIII Ch.11,
+   Global Cement & Concrete Association, World Steel Association, IAI, ICSG.
+   ef        = tCO2e per tonne (or MWh) of product — Scope 1 + direct Scope 2 combined
+   mtFactor  = MtCO2e emitted per [unit stated in 'unit'] — use this in calculations
+   s2frac    = share of total CO2e that is Scope 2 (used to split S1 vs S2 estimate)
+   Unit note: Mt→MtCO2e factor = ef; kt→MtCO2e factor = ef/1000; TWh→MtCO2e factor = ef
+   ──────────────────────────────────────────────────────────────────────── */
+var PRODUCT_EF = {
+  /* Cement & Minerals */
+  'Cement (clinker route)':  {ef:0.87, unit:'Mt cement/yr',    mtFactor:0.87,   s2frac:0.10, desc:'IEA/GCCA 2023 avg; rotary kiln, clinker-to-cement ratio 0.75'},
+  'Clinker only':            {ef:0.92, unit:'Mt clinker/yr',   mtFactor:0.92,   s2frac:0.08, desc:'Process + fuel CO₂; excludes finish grinding allowance'},
+  'Concrete (ready-mix)':    {ef:0.35, unit:'Mt concrete/yr',  mtFactor:0.35,   s2frac:0.20, desc:'Batching plant energy; cement fraction dominates total'},
+  'Glass':                   {ef:0.55, unit:'Mt glass/yr',     mtFactor:0.55,   s2frac:0.15, desc:'Float/container glass; IPCC AR6 WG3 Ch.11 benchmark'},
+  'Bricks & Ceramics':       {ef:0.45, unit:'Mt product/yr',   mtFactor:0.45,   s2frac:0.22, desc:'Kiln firing + indirect electricity'},
+  /* Steel & Metals */
+  'Steel (BF-BOF route)':    {ef:1.85, unit:'Mt crude steel/yr',mtFactor:1.85,  s2frac:0.12, desc:'Integrated steelworks; World Steel Association avg 2023'},
+  'Steel (EAF route)':       {ef:0.50, unit:'Mt crude steel/yr',mtFactor:0.50,  s2frac:0.40, desc:'Electric arc furnace; Scope 2 electricity dominates'},
+  'Aluminium (primary)':     {ef:11.5, unit:'Mt aluminium/yr', mtFactor:11.5,   s2frac:0.60, desc:'Hall-Héroult electrolysis; IAI 2023 world average'},
+  'Aluminium (secondary)':   {ef:0.60, unit:'Mt aluminium/yr', mtFactor:0.60,   s2frac:0.55, desc:'Recycled scrap route; ~20× lower than primary smelting'},
+  'Copper':                  {ef:3.50, unit:'kt copper/yr',    mtFactor:0.0035, s2frac:0.35, desc:'Mining + concentrating + smelting combined; ICSG avg'},
+  'Zinc & Lead':             {ef:2.20, unit:'kt product/yr',   mtFactor:0.0022, s2frac:0.30, desc:'Pyrometallurgical smelting route'},
+  /* Chemicals & Fertilisers */
+  'Ammonia (grey / SMR)':    {ef:2.10, unit:'Mt NH₃/yr',       mtFactor:2.10,   s2frac:0.08, desc:'Steam methane reforming + Haber-Bosch synthesis; IEA 2023'},
+  'Ammonia (blue / CCS)':    {ef:0.30, unit:'Mt NH₃/yr',       mtFactor:0.30,   s2frac:0.08, desc:'SMR + ~85% CO₂ capture; residual 0.3 tCO₂/t net'},
+  'Ethylene (crackers)':     {ef:1.50, unit:'Mt ethylene/yr',  mtFactor:1.50,   s2frac:0.18, desc:'Naphtha steam cracking; ICCA/IEA sector benchmark'},
+  'Urea':                    {ef:2.70, unit:'Mt urea/yr',       mtFactor:2.70,   s2frac:0.06, desc:'Includes process CO₂ released in Haber-Bosch synthesis'},
+  'Chlor-alkali':            {ef:1.00, unit:'Mt chlorine/yr',  mtFactor:1.00,   s2frac:0.65, desc:'Membrane electrolysis; Scope 2 electricity-dominated'},
+  /* Power generation (input = annual electricity output) */
+  'Power (coal-fired)':      {ef:0.85, unit:'TWh/yr',          mtFactor:0.85,   s2frac:0.00, desc:'Sub-critical pulverised coal; IEA ETP 2023 global avg'},
+  'Power (CCGT gas)':        {ef:0.42, unit:'TWh/yr',          mtFactor:0.42,   s2frac:0.00, desc:'Combined cycle gas turbine; best-practice benchmark'},
+  'Power (oil-fired)':       {ef:0.65, unit:'TWh/yr',          mtFactor:0.65,   s2frac:0.00, desc:'Heavy fuel oil / distillate plant'},
+  'Power (mixed fossil)':    {ef:0.55, unit:'TWh/yr',          mtFactor:0.55,   s2frac:0.00, desc:'Grid-average for mixed fossil generation fleet'},
+  /* Fossil fuels & extraction */
+  'Oil refining':            {ef:0.12, unit:'Mt crude/yr',     mtFactor:0.12,   s2frac:0.25, desc:'Refinery fuel use + H₂ production; IEA/API 2023 global avg'},
+  'LNG liquefaction':        {ef:0.25, unit:'Mt LNG/yr',       mtFactor:0.25,   s2frac:0.15, desc:'Compression & cooling energy; excludes upstream field emissions'},
+  'Coal mining':             {ef:0.015,unit:'Mt coal/yr',      mtFactor:0.015,  s2frac:0.30, desc:'Fugitive methane + mining diesel + auxiliary power; IEA 2023'},
+  /* Pulp & Paper */
+  'Pulp & Paper':            {ef:0.70, unit:'Mt paper/yr',     mtFactor:0.70,   s2frac:0.20, desc:'Kraft pulping + paper machine energy; CEPI European avg'},
+};
+
+/* Sector → default product (pre-fills dropdown when user selects sector) */
+var SECTOR_PRODUCT_DEFAULT = {
+  'Cement':            'Cement (clinker route)',
+  'Concrete':          'Concrete (ready-mix)',
+  'Building Materials':'Bricks & Ceramics',
+  'Steel & Metals':    'Steel (BF-BOF route)',
+  'Metals':            'Steel (BF-BOF route)',
+  'Aluminium':         'Aluminium (primary)',
+  'Chemicals':         'Ethylene (crackers)',
+  'Specialty Chemicals':'Ethylene (crackers)',
+  'Fertilisers':       'Ammonia (grey / SMR)',
+  'Coal':              'Coal mining',
+  'Oil & Gas':         'Oil refining',
+  'Energy/Utilities':  'Power (coal-fired)',
+  'Utilities':         'Power (mixed fossil)',
+  'Heavy Industry':    'Steel (BF-BOF route)',
+  'Mining':            'Copper',
+};
+
+/* Sectors that should show the production volume UI panel */
+var MANUFACTURING_SECTORS = Object.keys(SECTOR_PRODUCT_DEFAULT);
+
+function updateProdFields() {
+  var sector = (el('i-sector')||{}).value || '';
+  if (sector === 'Other') sector = (el('i-sector-other')||{}).value || '';
+  var grp = el('prod-vol-group');
+  if (!grp) return;
+  /* Populate dropdown once */
+  var sel = el('i-prod-type');
+  if (sel && sel.options.length <= 1) {
+    Object.keys(PRODUCT_EF).forEach(function(k) {
+      var o = document.createElement('option');
+      o.value = k; o.textContent = k; sel.appendChild(o);
+    });
+  }
+  /* Show panel for manufacturing sectors */
+  var isMfg = MANUFACTURING_SECTORS.indexOf(sector) >= 0 ||
+    MANUFACTURING_SECTORS.some(function(k){ return sector.toLowerCase().indexOf(k.toLowerCase()) >= 0 || k.toLowerCase().indexOf(sector.toLowerCase()) >= 0; });
+  grp.style.display = isMfg ? 'block' : 'none';
+  /* Pre-fill product type from sector default */
+  if (isMfg && sel) {
+    var def = SECTOR_PRODUCT_DEFAULT[sector];
+    if (!def) {
+      var sk = sector.toLowerCase();
+      for (var k in SECTOR_PRODUCT_DEFAULT) {
+        if (sk.indexOf(k.toLowerCase()) >= 0 || k.toLowerCase().indexOf(sk) >= 0) { def = SECTOR_PRODUCT_DEFAULT[k]; break; }
+      }
+    }
+    if (def && sel.value !== def) sel.value = def;
+    updateProdEfHint();
+  }
+}
+
+function updateProdEfHint() {
+  var sel = el('i-prod-type');
+  var hint = el('prod-ef-hint');
+  var volHint = el('prod-vol-hint');
+  if (!sel || !hint) return;
+  var pef = PRODUCT_EF[sel.value];
+  if (pef) {
+    hint.innerHTML = '<span style="color:#02C39A;font-weight:700">'+pef.ef+' tCO₂e/unit</span> &nbsp;·&nbsp; '+pef.desc;
+    if (volHint) volHint.textContent = 'Annual output in ' + pef.unit + ' — from Annual Report or Sustainability Disclosure';
+  } else {
+    hint.textContent = 'Select a product type above to see the emission factor';
+  }
+}
+
 /* NGFS Phase 4 carbon price schedule (USD/tCO2e) — used in all DCF paths */
 var NGFS_CP = {
   nze: {2025:45,2026:50,2028:90, 2030:130,2032:144,2034:158,2036:172,2038:186,2040:200,2045:225,2050:250},
@@ -5457,12 +5588,32 @@ function buildAndLoadResults() {
   var spNze   = shares > 0 ? nzeEq * 1000 / shares : 0;
   var spCp    = shares > 0 ? cpEq  * 1000 / shares : 0;
 
-  // Read emissions from wizard (tCO2e → MtCO2e); fall back to sector proxy
+  // ── Emission estimation: three-tier priority ────────────────────────────
+  // Priority 1 (MEASURED):          Actual Scope 1/2 entered in GHG fields
+  // Priority 2 (PRODUCTION-BASED):  Production volume × product emission factor
+  // Priority 3 (REVENUE PROXY):     Revenue × sector intensity (fallback only)
   var wizS1mt = (parseFloat((el('i-s1')||{}).value)||0) / 1e6;
   var wizS2mt = (parseFloat((el('i-s2')||{}).value)||0) / 1e6;
+  var _emSource = 'MEASURED';
   var _spEm = getSectorParams(sector);
-  /* Sector-calibrated emission intensity proxy (IEA/IPCC sector benchmarks) */
-  if (wizS1mt <= 0) wizS1mt = Math.max(0.01, rev * _spEm.emIntensity);
+
+  if (wizS1mt <= 0) {
+    /* Try production-based estimate */
+    var _prodVol  = parseFloat((el('i-prod-vol')||{}).value) || 0;
+    var _prodType = (el('i-prod-type')||{}).value || '';
+    var _pef      = PRODUCT_EF[_prodType];
+    if (_prodVol > 0 && _pef) {
+      /* mtFactor converts (user input unit) → MtCO2e total (S1+S2 combined) */
+      var _totalMtCO2 = _prodVol * _pef.mtFactor;
+      wizS1mt = _totalMtCO2 * (1 - _pef.s2frac);
+      wizS2mt = _totalMtCO2 * _pef.s2frac;
+      _emSource = 'PRODUCTION-BASED (' + _prodVol + ' ' + _pef.unit + ' × ' + _pef.ef + ' tCO₂e/unit)';
+    } else {
+      /* Revenue proxy fallback — flag clearly in any displayed output */
+      wizS1mt = Math.max(0.01, rev * _spEm.emIntensity);
+      _emSource = 'REVENUE PROXY (±40% accuracy — enter production volume or Scope 1 for better results)';
+    }
+  }
   if (wizS2mt <= 0) wizS2mt = Math.max(0.005, wizS1mt * 0.28);   /* Scope 2 ≈28% of Scope 1 */
 
   /* Emission-intensity WACC uplift — carbon-intensive sectors carry higher transition risk premium
@@ -5612,7 +5763,7 @@ function buildAndLoadResults() {
       label:       ratingLabel,
       composite:   composite,
       confidence:  'Medium',
-      sector_rank: wizAssets.length + ' asset(s) modelled · ' + sector + ' sector · GPS-resolved',
+      sector_rank: wizAssets.length + ' asset(s) · ' + sector + ' · ' + (_emSource.indexOf('PRODUCTION')>=0?'Production-based emissions':_emSource.indexOf('MEASURED')>=0?'Measured emissions':'Revenue proxy emissions — add production volume for accuracy'),
       summary:     name + ' receives a CRI Rating of ' + rating + ' (' + ratingLabel + '), computed from site-specific physical hazard assessment across ' + wizAssets.length + ' asset location(s), NGFS Phase 4 transition scenario modelling, and enterprise value sensitivity analysis under NZE 2050 vs Current Policies.',
       pillars: {
         physical:   { label: physLabel,  score: physScore,
@@ -5622,8 +5773,9 @@ function buildAndLoadResults() {
                       ]},
         transition: { label: transLabel, score: transScore,
                       drivers: [
-                        'Carbon cost 2030 (NZE): ' + ccPct.toFixed(1) + '% of EBITDA',
-                        'NZE 2050 scenario — NGFS Phase 4 carbon price path'
+                        'Carbon cost 2030 (NZE): ' + ccPct.toFixed(1) + '% of EBITDA → score ' + Math.round(transScore) + '/100',
+                        'Emission basis: ' + _emSource,
+                        'NZE 2050 scenario — NGFS Phase 4 carbon price path · S1 base: ' + wizS1mt.toFixed(2) + ' MtCO₂e · S2 base: ' + wizS2mt.toFixed(2) + ' MtCO₂e'
                       ]},
         financial:  { label: finLabel,   score: finScore,
                       drivers: [
