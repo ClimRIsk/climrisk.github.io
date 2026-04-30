@@ -4685,6 +4685,306 @@ function _hz_seismic(r,lat,lon){
     note:'Seismic zone '+sev.toFixed(1)+'/5 (not climate-sensitive)',applicable:sev>0.3};
 }
 
+/* ── Sector-specific hazard sensitivity profiles ────────────────────────────
+   Each sector entry maps hazard names → { lossMult, scoreMult, rationale }.
+   lossMult  : multiplier on the raw hazard loss fraction (1.0 = no change)
+   scoreMult : multiplier on severity score (default = lossMult if omitted)
+   rationale : shown in the physical risk breakdown panel
+   Sources: IPCC AR6 WG2, IEA Sectoral Reports, WRI Aqueduct sector papers,
+   CDP sector-specific physical risk questionnaires, TCFD sector guidance.
+   ────────────────────────────────────────────────────────────────────────── */
+var SECTOR_HAZARD_PROFILE = {
+  'Food & Beverage': {
+    /* Water is existential for F&B — brewing uses 3-7 L water per L product;
+       soft drinks, dairy, and spirits are equally water-intensive.
+       Source: CDP Water Security 2023; WRI Aqueduct Food sector paper */
+    'Water Stress':     {lossMult:2.8, scoreMult:2.2, rationale:'F&B processes use 3–7 L water/L product; restriction = immediate production halt'},
+    'Drought':          {lossMult:2.4, scoreMult:1.9, rationale:'Ingredient supply collapse: barley, hops, sugar cane, dairy all drought-sensitive'},
+    'Extreme Heat':     {lossMult:1.8, scoreMult:1.5, rationale:'Cold chain failure; fermentation disruption; consumer demand shift; worker safety'},
+    'Riverine Flood':   {lossMult:1.6, scoreMult:1.4, rationale:'Perishable ingredient storage at high loss risk vs durable goods facilities'},
+    'Tropical Cyclone': {lossMult:1.4, scoreMult:1.3, rationale:'Supply chain disruption; packaging/logistics vulnerability'},
+    'Wildfire':         {lossMult:1.3, scoreMult:1.1, rationale:'Smoke taint risk for wine, spirits, coffee; upstream agricultural loss'},
+    'Coastal Flood':    {lossMult:1.2, scoreMult:1.1, rationale:'Port logistics and cold storage exposure'},
+    'Storm Surge':      {lossMult:1.2, scoreMult:1.1},
+    'Landslide':        {lossMult:0.9, scoreMult:0.9},
+    'Sea Level Rise':   {lossMult:1.0, scoreMult:1.0},
+  },
+  'Agriculture': {
+    'Drought':          {lossMult:3.5, scoreMult:3.0, rationale:'Direct crop yield loss; soil moisture depletion; livestock mortality'},
+    'Extreme Heat':     {lossMult:3.0, scoreMult:2.5, rationale:'Heat >35°C reduces wheat yield ~6%/°C above threshold; livestock stress'},
+    'Water Stress':     {lossMult:3.0, scoreMult:2.5, rationale:'Irrigation demand; groundwater depletion; crop failure at critical growth stages'},
+    'Riverine Flood':   {lossMult:2.2, scoreMult:1.9, rationale:'Crop inundation, soil erosion, livestock losses, field equipment damage'},
+    'Tropical Cyclone': {lossMult:2.5, scoreMult:2.0, rationale:'Wind damage to standing crops; post-storm flooding; soil salinisation'},
+    'Wildfire':         {lossMult:1.8, scoreMult:1.6, rationale:'Pasture and crop loss; smoke damage; fencing and infrastructure'},
+    'Coastal Flood':    {lossMult:1.5, scoreMult:1.3, rationale:'Saltwater intrusion damages soil productivity long-term'},
+    'Sea Level Rise':   {lossMult:1.4, scoreMult:1.2, rationale:'Coastal agricultural land inundation; saline intrusion into aquifers'},
+    'Storm Surge':      {lossMult:1.8, scoreMult:1.5},
+    'Landslide':        {lossMult:1.2, scoreMult:1.1},
+  },
+  'Cement': {
+    /* Cement kilns are resilient to many hazards; quarrying operations
+       and logistics (clinker shipping) are more vulnerable. Water use
+       is significant but can be recycled; process is heat-intensive anyway.
+       Source: GCCA Climate Ambition Report 2023; IEA Cement Technology Roadmap */
+    'Water Stress':     {lossMult:0.65, scoreMult:0.75, rationale:'Kilns partially recycle process water; quarry dust suppression manageable'},
+    'Drought':          {lossMult:0.60, scoreMult:0.70, rationale:'Quarrying unaffected; paste water reducible; no crop/livestock dependency'},
+    'Extreme Heat':     {lossMult:0.80, scoreMult:0.85, rationale:'Kiln ops inherently high-temp; worker safety is main concern, not process'},
+    'Riverine Flood':   {lossMult:1.4,  scoreMult:1.3,  rationale:'Clinker stockpiles and raw material quarries vulnerable to flooding'},
+    'Tropical Cyclone': {lossMult:1.5,  scoreMult:1.4,  rationale:'Logistics disruption; clinker shipping; tall silo structure wind risk'},
+    'Coastal Flood':    {lossMult:1.2,  scoreMult:1.1},
+    'Sea Level Rise':   {lossMult:1.1,  scoreMult:1.0},
+    'Storm Surge':      {lossMult:1.3,  scoreMult:1.2},
+    'Wildfire':         {lossMult:0.5,  scoreMult:0.6,  rationale:'Stone/concrete structures largely fireproof; quarries are clearings'},
+    'Landslide':        {lossMult:1.3,  scoreMult:1.2,  rationale:'Quarry slope stability risk; road access disruption'},
+  },
+  'Steel & Metals': {
+    'Water Stress':     {lossMult:1.8, scoreMult:1.5, rationale:'Steel production uses ~95 L/tonne; cooling water restriction = furnace shutdown'},
+    'Extreme Heat':     {lossMult:1.4, scoreMult:1.2, rationale:'Cooling tower efficiency loss; worker safety heat limits; production rate cut'},
+    'Riverine Flood':   {lossMult:1.6, scoreMult:1.4, rationale:'Coking coal and ore stockpile loss; blast furnace flood damage is severe'},
+    'Tropical Cyclone': {lossMult:1.5, scoreMult:1.3, rationale:'Port terminal and raw material logistics disruption'},
+    'Drought':          {lossMult:1.4, scoreMult:1.2, rationale:'Cooling water shortage; hydropower input to EAF route at risk'},
+    'Coastal Flood':    {lossMult:1.4, scoreMult:1.2},
+    'Sea Level Rise':   {lossMult:1.3, scoreMult:1.1},
+    'Storm Surge':      {lossMult:1.4, scoreMult:1.2},
+    'Wildfire':         {lossMult:0.6, scoreMult:0.7},
+    'Landslide':        {lossMult:1.0, scoreMult:1.0},
+  },
+  'Aluminium': {
+    'Water Stress':     {lossMult:2.2, scoreMult:1.8, rationale:'Alumina refining uses large volumes of water; smelter cooling constrained'},
+    'Extreme Heat':     {lossMult:1.5, scoreMult:1.3, rationale:'Cooling system thermal efficiency; worker safety in pot rooms (>900°C ambient)'},
+    'Drought':          {lossMult:1.8, scoreMult:1.5, rationale:'Hydropower-dependent smelters face generation shortfall (Zambia, Norway risks)'},
+    'Riverine Flood':   {lossMult:1.4, scoreMult:1.2},
+    'Tropical Cyclone': {lossMult:1.3, scoreMult:1.2},
+    'Coastal Flood':    {lossMult:1.3, scoreMult:1.1},
+    'Sea Level Rise':   {lossMult:1.2, scoreMult:1.0},
+    'Storm Surge':      {lossMult:1.3, scoreMult:1.1},
+    'Wildfire':         {lossMult:0.5, scoreMult:0.6},
+    'Landslide':        {lossMult:0.9, scoreMult:0.9},
+  },
+  'Oil & Gas': {
+    'Tropical Cyclone': {lossMult:2.5, scoreMult:2.0, rationale:'Offshore platform evacuation; production shut-in; underwater pipeline damage'},
+    'Storm Surge':      {lossMult:2.2, scoreMult:1.9, rationale:'Onshore terminal and refinery flooding; coastal infrastructure damage'},
+    'Sea Level Rise':   {lossMult:2.0, scoreMult:1.8, rationale:'Coastal refinery and export terminal asset stranding risk'},
+    'Coastal Flood':    {lossMult:2.0, scoreMult:1.7},
+    'Water Stress':     {lossMult:1.5, scoreMult:1.3, rationale:'Refinery cooling water; enhanced oil recovery (EOR) water injection at risk'},
+    'Extreme Heat':     {lossMult:1.3, scoreMult:1.2, rationale:'Worker safety (WBGT limits); cooling system efficiency; distillation throughput'},
+    'Drought':          {lossMult:1.2, scoreMult:1.1},
+    'Riverine Flood':   {lossMult:1.4, scoreMult:1.2, rationale:'Inland pipeline and storage tank flooding'},
+    'Wildfire':         {lossMult:1.5, scoreMult:1.3, rationale:'Pipeline right-of-way fires; tank farm ignition risk'},
+    'Landslide':        {lossMult:1.3, scoreMult:1.2, rationale:'Pipeline geotechnical integrity; mountain route disruption'},
+  },
+  'Chemicals': {
+    'Extreme Heat':     {lossMult:1.6, scoreMult:1.4, rationale:'Exothermic reaction control more difficult; cooling load surge; product quality'},
+    'Riverine Flood':   {lossMult:2.0, scoreMult:1.8, rationale:'Hazmat containment failure; contamination liability; EPA/regulatory risk'},
+    'Coastal Flood':    {lossMult:1.8, scoreMult:1.6, rationale:'Tank farm inundation; spill risk; product loss and cleanup cost'},
+    'Storm Surge':      {lossMult:1.8, scoreMult:1.6},
+    'Water Stress':     {lossMult:1.7, scoreMult:1.5, rationale:'Process water for reaction cooling and solvent recovery'},
+    'Drought':          {lossMult:1.4, scoreMult:1.2},
+    'Tropical Cyclone': {lossMult:1.6, scoreMult:1.4},
+    'Sea Level Rise':   {lossMult:1.5, scoreMult:1.3},
+    'Wildfire':         {lossMult:1.4, scoreMult:1.3, rationale:'Flammable feedstock storage; safety zone clearance'},
+    'Landslide':        {lossMult:1.1, scoreMult:1.0},
+  },
+  'Pharmaceuticals': {
+    'Extreme Heat':     {lossMult:2.0, scoreMult:1.8, rationale:'Cold chain integrity failure; API degradation; cleanroom HVAC overload'},
+    'Riverine Flood':   {lossMult:2.5, scoreMult:2.0, rationale:'Sterile environment breach; GMP compliance loss; cleanroom rebuilding cost'},
+    'Water Stress':     {lossMult:1.8, scoreMult:1.5, rationale:'Purified water (PW) and water-for-injection (WFI) systems require high-purity feed'},
+    'Coastal Flood':    {lossMult:2.0, scoreMult:1.7},
+    'Storm Surge':      {lossMult:1.8, scoreMult:1.5},
+    'Drought':          {lossMult:1.5, scoreMult:1.3, rationale:'API botanical feedstock supply risk; process water pressure'},
+    'Tropical Cyclone': {lossMult:1.5, scoreMult:1.3, rationale:'Cold chain disruption; logistics and distribution risk'},
+    'Sea Level Rise':   {lossMult:1.4, scoreMult:1.2},
+    'Wildfire':         {lossMult:1.2, scoreMult:1.1},
+    'Landslide':        {lossMult:0.8, scoreMult:0.9},
+  },
+  'Real Estate': {
+    'Sea Level Rise':   {lossMult:3.0, scoreMult:2.5, rationale:'Permanent asset value erosion; insurance withdrawal; mortgage default cascade'},
+    'Coastal Flood':    {lossMult:2.5, scoreMult:2.2, rationale:'Property damage; habitability loss; flood premium pricing-out'},
+    'Storm Surge':      {lossMult:2.5, scoreMult:2.0},
+    'Riverine Flood':   {lossMult:2.0, scoreMult:1.8, rationale:'Basement flooding; structural damage; NFIP insurance payouts'},
+    'Extreme Heat':     {lossMult:1.5, scoreMult:1.3, rationale:'Cooling CAPEX; habitability thresholds (WBGT); green building discount shrinks'},
+    'Tropical Cyclone': {lossMult:1.6, scoreMult:1.4, rationale:'Roof damage; glazing failure; post-storm insurance premium surge'},
+    'Drought':          {lossMult:1.3, scoreMult:1.2, rationale:'Subsidence and foundation movement in clay soils'},
+    'Water Stress':     {lossMult:1.1, scoreMult:1.0},
+    'Wildfire':         {lossMult:1.8, scoreMult:1.5, rationale:'WUI (wildland-urban interface) properties; insurer retreat from California/Australia'},
+    'Landslide':        {lossMult:1.5, scoreMult:1.3},
+  },
+  'Energy/Utilities': {
+    'Extreme Heat':     {lossMult:2.0, scoreMult:1.8, rationale:'Thermal plant derating; cooling water temperature limits; T&D line sag losses'},
+    'Water Stress':     {lossMult:2.5, scoreMult:2.0, rationale:'Thermoelectric cooling requires 40-50 L/kWh; once-through systems shut at low flow'},
+    'Drought':          {lossMult:2.2, scoreMult:1.8, rationale:'Hydropower reservoir depletion (Rhine 2018, CA 2021); river-cooled plant limits'},
+    'Riverine Flood':   {lossMult:1.5, scoreMult:1.3, rationale:'Substation flooding; generator damage; restoration cost'},
+    'Tropical Cyclone': {lossMult:1.8, scoreMult:1.5, rationale:'Transmission tower collapse; widespread outage; substation damage'},
+    'Coastal Flood':    {lossMult:1.6, scoreMult:1.4},
+    'Sea Level Rise':   {lossMult:1.5, scoreMult:1.3, rationale:'Coastal power station site flooding risk; long-term asset relocation'},
+    'Storm Surge':      {lossMult:1.6, scoreMult:1.4},
+    'Wildfire':         {lossMult:1.5, scoreMult:1.3, rationale:'Grid ignition liability (PG&E precedent); forest-route line clearance costs'},
+    'Landslide':        {lossMult:1.3, scoreMult:1.2},
+  },
+  'Mining': {
+    'Drought':          {lossMult:2.0, scoreMult:1.8, rationale:'Mineral processing requires large water volumes; tailings management constrained'},
+    'Water Stress':     {lossMult:2.2, scoreMult:1.8, rationale:'Process water for flotation, leaching, dust suppression; community conflict risk'},
+    'Extreme Heat':     {lossMult:1.5, scoreMult:1.3, rationale:'Worker safety WBGT limits reduce productive hours/shift; equipment cooling'},
+    'Riverine Flood':   {lossMult:1.4, scoreMult:1.2, rationale:'Open pit flooding; tailings dam overtopping risk; haul road washout'},
+    'Wildfire':         {lossMult:1.3, scoreMult:1.2, rationale:'Remote site access roads; power line fires; evacuation of remote workforce'},
+    'Tropical Cyclone': {lossMult:1.3, scoreMult:1.2},
+    'Coastal Flood':    {lossMult:1.2, scoreMult:1.0},
+    'Sea Level Rise':   {lossMult:1.1, scoreMult:1.0},
+    'Storm Surge':      {lossMult:1.2, scoreMult:1.0},
+    'Landslide':        {lossMult:1.5, scoreMult:1.3, rationale:'Pit wall stability; waste dump geotechnical failure'},
+  },
+  'Transport & Logistics': {
+    'Extreme Heat':     {lossMult:1.6, scoreMult:1.4, rationale:'Rail buckling (Eurostar 2022); road softening; driver safety; refrigerated load risk'},
+    'Riverine Flood':   {lossMult:2.0, scoreMult:1.8, rationale:'Road/rail closures; port flooding; supply chain delay cascade'},
+    'Tropical Cyclone': {lossMult:2.0, scoreMult:1.8, rationale:'Port closure; shipping lane disruption; container terminal damage'},
+    'Sea Level Rise':   {lossMult:1.8, scoreMult:1.5, rationale:'Port infrastructure; coastal road permanent inundation'},
+    'Storm Surge':      {lossMult:2.0, scoreMult:1.7},
+    'Coastal Flood':    {lossMult:1.8, scoreMult:1.5},
+    'Drought':          {lossMult:1.8, scoreMult:1.5, rationale:'Low Rhine/Mississippi river levels disrupt bulk inland waterway shipping'},
+    'Water Stress':     {lossMult:1.0, scoreMult:1.0},
+    'Wildfire':         {lossMult:1.3, scoreMult:1.2, rationale:'Road/rail closures; evacuated zones; driver rerouting cost'},
+    'Landslide':        {lossMult:1.4, scoreMult:1.3},
+  },
+  'Shipping': {
+    'Tropical Cyclone': {lossMult:2.5, scoreMult:2.0, rationale:'Vessel routing disruption; port closure; cargo damage; hull stress'},
+    'Storm Surge':      {lossMult:2.0, scoreMult:1.8, rationale:'Port harbour flooding; mooring damage; tidal surge delay'},
+    'Sea Level Rise':   {lossMult:1.5, scoreMult:1.3, rationale:'Port infrastructure; loading gauge changes; quay wall adaptation cost'},
+    'Drought':          {lossMult:1.8, scoreMult:1.5, rationale:'River draft restrictions (Rhine 2018, 2022); inland barge substitution cost'},
+    'Extreme Heat':     {lossMult:1.2, scoreMult:1.1, rationale:'Crew safety; cold chain cargo integrity'},
+    'Coastal Flood':    {lossMult:1.3, scoreMult:1.1},
+    'Riverine Flood':   {lossMult:1.3, scoreMult:1.1},
+    'Water Stress':     {lossMult:1.0, scoreMult:1.0},
+    'Wildfire':         {lossMult:1.0, scoreMult:1.0},
+    'Landslide':        {lossMult:1.0, scoreMult:1.0},
+  },
+  'Technology': {
+    'Extreme Heat':     {lossMult:1.8, scoreMult:1.5, rationale:'Data centre PUE surge; chip fab cleanroom thermal control; cooling CAPEX'},
+    'Water Stress':     {lossMult:2.0, scoreMult:1.7, rationale:'Data centres use 1-5 L/kWh for cooling; semiconductor fabs use ultrapure water'},
+    'Riverine Flood':   {lossMult:1.5, scoreMult:1.3, rationale:'Data centre and fab flooding; server damage; data loss risk'},
+    'Tropical Cyclone': {lossMult:1.4, scoreMult:1.2, rationale:'Grid interruption; physical damage; internet cable disruption'},
+    'Drought':          {lossMult:1.5, scoreMult:1.3, rationale:'Data centre water cooling shortage (Phoenix, Las Vegas clusters at risk)'},
+    'Coastal Flood':    {lossMult:1.3, scoreMult:1.1},
+    'Sea Level Rise':   {lossMult:1.2, scoreMult:1.0},
+    'Storm Surge':      {lossMult:1.3, scoreMult:1.1},
+    'Wildfire':         {lossMult:1.2, scoreMult:1.1, rationale:'Grid disruption from wildfire; smoke particulates damage open-air cooling'},
+    'Landslide':        {lossMult:0.8, scoreMult:0.9},
+  },
+  'Financial Services': {
+    /* Offices/HQ have low direct physical risk; indirect via portfolio is separate */
+    'Extreme Heat':     {lossMult:0.5, scoreMult:0.6, rationale:'Office buildings with HVAC; staff WFH flexibility reduces operational risk'},
+    'Riverine Flood':   {lossMult:0.8, scoreMult:0.7, rationale:'Data centre and office building flood risk; BCM plans typically in place'},
+    'Sea Level Rise':   {lossMult:0.7, scoreMult:0.6},
+    'Coastal Flood':    {lossMult:0.7, scoreMult:0.6},
+    'Storm Surge':      {lossMult:0.7, scoreMult:0.6},
+    'Water Stress':     {lossMult:0.3, scoreMult:0.4},
+    'Drought':          {lossMult:0.3, scoreMult:0.4},
+    'Tropical Cyclone': {lossMult:0.8, scoreMult:0.7},
+    'Wildfire':         {lossMult:0.5, scoreMult:0.5},
+    'Landslide':        {lossMult:0.5, scoreMult:0.5},
+  },
+  'Retail': {
+    'Extreme Heat':     {lossMult:1.4, scoreMult:1.2, rationale:'Footfall decline on hot days; cooling costs; perishable spoilage (grocery)'},
+    'Riverine Flood':   {lossMult:1.8, scoreMult:1.5, rationale:'Store flooding; inventory loss; supply chain disruption; business interruption'},
+    'Tropical Cyclone': {lossMult:1.6, scoreMult:1.4, rationale:'Store damage; logistics disruption; post-storm trading loss'},
+    'Coastal Flood':    {lossMult:1.4, scoreMult:1.2},
+    'Storm Surge':      {lossMult:1.4, scoreMult:1.2},
+    'Drought':          {lossMult:1.1, scoreMult:1.0, rationale:'Consumer spending pressure; food retail supply chain'},
+    'Water Stress':     {lossMult:0.9, scoreMult:0.9},
+    'Sea Level Rise':   {lossMult:1.2, scoreMult:1.0},
+    'Wildfire':         {lossMult:1.2, scoreMult:1.1},
+    'Landslide':        {lossMult:0.8, scoreMult:0.8},
+  },
+  'Fertilisers': {
+    'Water Stress':     {lossMult:1.6, scoreMult:1.4, rationale:'Ammonia synthesis cooling; downstream agronomic effectiveness'},
+    'Drought':          {lossMult:1.5, scoreMult:1.3, rationale:'Agricultural customer demand destruction; crop failures reduce fertiliser use'},
+    'Extreme Heat':     {lossMult:1.4, scoreMult:1.2},
+    'Riverine Flood':   {lossMult:1.8, scoreMult:1.5, rationale:'Urea/ammonium nitrate storage flooding poses severe contamination liability'},
+    'Coastal Flood':    {lossMult:1.6, scoreMult:1.4},
+    'Storm Surge':      {lossMult:1.5, scoreMult:1.3},
+    'Sea Level Rise':   {lossMult:1.3, scoreMult:1.1},
+    'Tropical Cyclone': {lossMult:1.5, scoreMult:1.3},
+    'Wildfire':         {lossMult:1.2, scoreMult:1.1},
+    'Landslide':        {lossMult:1.0, scoreMult:1.0},
+  },
+};
+
+/* Sector alias resolution for SECTOR_HAZARD_PROFILE */
+function getSectorHazardProfile(sector) {
+  if (!sector) return null;
+  if (SECTOR_HAZARD_PROFILE[sector]) return SECTOR_HAZARD_PROFILE[sector];
+  var _aliases = {
+    'food':'Food & Beverage','beverage':'Food & Beverage','beer':'Food & Beverage',
+    'brewery':'Food & Beverage','brewing':'Food & Beverage','dairy':'Food & Beverage',
+    'spirits':'Food & Beverage','wine':'Food & Beverage','fmcg':'Food & Beverage',
+    'consumer staples':'Food & Beverage','soft drinks':'Food & Beverage',
+    'agri':'Agriculture','farm':'Agriculture','crop':'Agriculture','livestock':'Agriculture',
+    'cement':'Cement','concrete':'Cement','building materials':'Cement','bricks':'Cement',
+    'steel':'Steel & Metals','metals':'Steel & Metals',
+    'aluminium':'Aluminium','aluminum':'Aluminium','smelting':'Aluminium',
+    'oil and gas':'Oil & Gas','oil & gas':'Oil & Gas','upstream':'Oil & Gas','refin':'Oil & Gas',
+    'chemical':'Chemicals','specialty chemicals':'Chemicals',
+    'fertiliser':'Fertilisers','fertilizer':'Fertilisers','ammonia':'Fertilisers',
+    'pharma':'Pharmaceuticals','healthcare':'Pharmaceuticals','biotech':'Pharmaceuticals',
+    'real estate':'Real Estate','property':'Real Estate','reit':'Real Estate',
+    'utilities':'Energy/Utilities','energy':'Energy/Utilities','power':'Energy/Utilities',
+    'mining':'Mining','coal':'Mining',
+    'transport':'Transport & Logistics','logistics':'Transport & Logistics','freight':'Transport & Logistics',
+    'shipping':'Shipping','maritime':'Shipping',
+    'tech':'Technology','technology':'Technology','semiconductor':'Technology','data centre':'Technology',
+    'retail':'Retail','consumer goods':'Retail',
+    'bank':'Financial Services','banking':'Financial Services','insurance':'Financial Services',
+    'financial':'Financial Services',
+  };
+  var low = (sector||'').toLowerCase().trim();
+  for (var k in _aliases) {
+    if (low === k || low.indexOf(k) >= 0) return SECTOR_HAZARD_PROFILE[_aliases[k]] || null;
+  }
+  return null;
+}
+
+/* Sector-aware hazard assessment — wraps assessHazards() with sector-specific
+   loss multipliers applied post-GPS-pipeline. Call this wherever sector is known.
+   Existing assessHazards() calls (no sector context) remain unchanged. */
+function assessHazardsSector(region, lat, lon, ssp, year, sector) {
+  var base = assessHazards(region, lat, lon, ssp, year);
+  var profile = getSectorHazardProfile(sector);
+  if (!profile) return base;   /* no profile = pure location physics */
+
+  /* Apply sector multipliers to each hazard */
+  var hzs = base.hazards.map(function(h) {
+    var pm = profile[h.h];
+    if (!pm || !h.applicable) return h;
+    var lm  = pm.lossMult  || 1;
+    var sm  = pm.scoreMult || lm;
+    return {
+      h: h.h, applicable: h.applicable,
+      loss: Math.min(0.99, h.loss * lm),
+      sev:  Math.min(5.0,  h.sev  * sm),
+      _sectorNote: pm.rationale || '',
+      _baseLoss:   h.loss,   /* preserved for audit trail */
+      _baseSev:    h.sev,
+    };
+  });
+
+  /* Recompute joint loss and composite score */
+  var surv = 1;
+  hzs.forEach(function(h){ if(h.applicable) surv *= (1 - h.loss); });
+  var totalLoss = 1 - surv;
+  var app  = hzs.filter(function(h){ return h.applicable; });
+  var avgS = app.reduce(function(s,h){ return s + h.sev; }, 0) / (app.length || 1);
+  var score = Math.min(100, avgS * 20);
+  var top   = app.slice().sort(function(a,b){ return b.sev - a.sev; }).slice(0,3).map(function(h){ return h.h; });
+
+  return Object.assign({}, base, {
+    hazards:         hzs,
+    score:           Math.round(score * 10) / 10,
+    annual_loss_pct: Math.round(totalLoss * 10000) / 10000,
+    top_hazards:     top,
+    sector_adjusted: true,
+    sector:          sector,
+  });
+}
+
 // Main engine: assess all 10 hazards for an asset location
 // GPS path (lat/lon provided): full site-specific physics applied
 // Fallback path (no GPS):      regional bucket assessment (legacy)
@@ -5683,8 +5983,9 @@ function buildAndLoadResults() {
   }];
   D.hazards[co_id] = _wizHazSource.map(function(a) {
     var r = a.region || 'global';
-    var prof2030 = assessHazards(r, a.lat, a.lon, 'ssp370', 2030);
-    var prof2050 = assessHazards(r, a.lat, a.lon, 'ssp370', 2050);
+    /* Use sector-aware assessment — applies SECTOR_HAZARD_PROFILE multipliers */
+    var prof2030 = assessHazardsSector(r, a.lat, a.lon, 'ssp370', 2030, sector);
+    var prof2050 = assessHazardsSector(r, a.lat, a.lon, 'ssp370', 2050, sector);
     var hzBreakdown = {};
     prof2030.hazards.forEach(function(h){ if(h.applicable) hzBreakdown[h.h] = round1(h.loss*100); });
     return {
@@ -8780,8 +9081,10 @@ function _xlInjectToEngine() {
       }
       else if (lat > -45 && lat < -10 && lon > 110 && lon < 155) region = lat > -25 ? 'AU-QLD' : (lon < 135 ? 'AU-SA' : 'AU-NSW');
     }
-    var p30 = assessHazards(region, lat, lon, 'ssp370', 2030);
-    var p50 = assessHazards(region, lat, lon, 'ssp370', 2050);
+    /* Use sector-aware assessment for Excel-imported assets */
+    var _assetSector = a.sector || a.commodity || sector;
+    var p30 = assessHazardsSector(region, lat, lon, 'ssp370', 2030, _assetSector);
+    var p50 = assessHazardsSector(region, lat, lon, 'ssp370', 2050, _assetSector);
     var hzBk = {};
     p30.hazards.forEach(function(h){ if(h.applicable) hzBk[h.h] = round1(h.loss*100); });
     return {
