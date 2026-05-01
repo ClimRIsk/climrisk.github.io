@@ -3816,6 +3816,10 @@ function renderPh() {
     if (_portMap3D && _portMap3DReady) _updatePortMap3D(assetProfiles);
   }, 200);
 
+  // ── Populate Computation Trace (works for all load paths) ──────────────
+  // Always refresh trace to match current SSP/year selection
+  _ctrPopulateFromProfiles(assetProfiles, cd.name, cd.sector, ssp, yr);
+
   // Show detail for first asset by default
   if (assetProfiles.length) showAssetDetailFromProf(assetProfiles[0]);
 }
@@ -3865,62 +3869,159 @@ function _setPhysTab(tab) {
 }
 
 // ── 2D Portfolio map ──────────────────────────────────────────────────────
+// ── Hazard type colour palette (used on map markers + legend) ─────────────
+var HZ_COL = {
+  'Heat Stress':       '#ef4444',
+  'Riverine Flood':    '#3b82f6',
+  'Coastal Flood':     '#0ea5e9',
+  'Sea Level Rise':    '#06b6d4',
+  'Saltwater Intrusion':'#8b5cf6',
+  'Landslide':         '#84cc16',
+  'Wildfire':          '#f97316',
+  'Cyclone / TC':      '#a855f7',
+  'Drought':           '#f59e0b',
+  'Water Stress':      '#fb923c'
+};
+
 function _initPortMap2D(centerLat, centerLon) {
   var el2 = document.getElementById('phys-port-2d-map');
   if (!el2 || typeof L === 'undefined') return;
-  if (_portMap2D) { _portMap2D.setView([centerLat, centerLon], 3, {animate:false}); return; }
-  _portMap2D = L.map(el2, { zoomControl:true, attributionControl:false, scrollWheelZoom:true })
+  if (_portMap2D) {
+    _portMap2D.setView([centerLat, centerLon], 3, {animate:false});
+    setTimeout(function(){ _portMap2D.invalidateSize(); }, 100);
+    return;
+  }
+  _portMap2D = L.map(el2, { zoomControl:true, attributionControl:true, scrollWheelZoom:true })
     .setView([centerLat, centerLon], 3);
-  L.tileLayer('https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-    { maxZoom:18, subdomains:'abcd' }).addTo(_portMap2D);
-  L.control.attribution({ prefix:'© <a href="https://carto.com">CARTO</a> © OpenStreetMap' }).addTo(_portMap2D);
+  // Use OpenStreetMap tiles — reliable, no API key, CORS-safe
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19, subdomains:'abc',
+    attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  }).addTo(_portMap2D);
+  // Force size recalculation after container becomes visible
+  setTimeout(function(){ if(_portMap2D) _portMap2D.invalidateSize(); }, 200);
+  setTimeout(function(){ if(_portMap2D) _portMap2D.invalidateSize(); }, 800);
 }
 
 function _updatePortMap2D(assetProfiles, selectedAsset) {
   if (!_portMap2D) return;
   _portMap2DLyrs.forEach(function(l){ try{_portMap2D.removeLayer(l);}catch(e){} });
   _portMap2DLyrs = [];
+  _portMap2D.invalidateSize();
 
   var hasGPS = assetProfiles.some(function(ap){ return ap.meta.lat != null; });
+  var bounds = [];
 
   assetProfiles.forEach(function(ap) {
     var a = ap.meta, prof = ap.prof;
     if (a.lat == null || a.lon == null) return;
+    bounds.push([a.lat, a.lon]);
     var isSel = a.asset === selectedAsset;
-    var col   = SEV_COL(prof.score / 20);
-    var r     = 8 + prof.score / 8;
+    var score = prof.score || 0;
+    var col   = SEV_COL(score / 20);
+    var r     = 10 + score / 7;
 
+    // ── Outer glow ring for selected asset ─────────────────────────────
+    if (isSel) {
+      var glow = L.circleMarker([a.lat, a.lon], {
+        radius: r + 9, color: col, fillColor: col,
+        fillOpacity: 0.08, weight: 2, dashArray: '4,3', opacity: 0.6
+      }).addTo(_portMap2D);
+      _portMap2DLyrs.push(glow);
+    }
+
+    // ── Main risk score circle ─────────────────────────────────────────
     var circle = L.circleMarker([a.lat, a.lon], {
-      radius: r, color: col, fillColor: col,
-      fillOpacity: isSel ? 0.9 : 0.55,
-      weight: isSel ? 3.5 : 1.5
+      radius: r, color: '#fff', fillColor: col,
+      fillOpacity: isSel ? 0.92 : 0.72,
+      weight: isSel ? 3 : 1.5
     }).addTo(_portMap2D);
 
-    circle.bindTooltip(
-      '<div style="min-width:160px"><strong>' + a.asset + '</strong><br>' +
-      'Risk Score: <strong style="color:'+col+'">' + prof.score.toFixed(0) + '</strong>/100<br>' +
-      'Ann. Loss: <strong>' + (prof.annual_loss_pct*100).toFixed(2) + '%</strong><br>' +
-      'Top hazard: ' + (prof.top_hazards[0]||'—') + '</div>',
-      { direction:'top', sticky:false }
-    );
+    // ── Top-3 hazard dots orbiting the main circle ─────────────────────
+    var topHz = (prof.top_hazards || []).slice(0, 3);
+    var allHz = (prof.hazards || []).filter(function(h){ return h.applicable; })
+                .sort(function(a,b){ return (b.sev||0)-(a.sev||0); });
+    topHz.forEach(function(hz, i) {
+      var angle = (i * 120 - 60) * Math.PI / 180;
+      var offsetDeg = 0.014 * (r / 10);
+      var dotLat = a.lat + offsetDeg * Math.cos(angle);
+      var dotLon = a.lon + offsetDeg * Math.sin(angle) / Math.cos(a.lat * Math.PI / 180);
+      var hzCol  = HZ_COL[hz] || '#888';
+      var dot = L.circleMarker([dotLat, dotLon], {
+        radius: 5, color: '#fff', fillColor: hzCol,
+        fillOpacity: 0.95, weight: 1.5
+      }).addTo(_portMap2D)
+        .bindTooltip('<b style="color:'+hzCol+'">'+hz+'</b> — top hazard #'+(i+1), {direction:'top', sticky:true});
+      _portMap2DLyrs.push(dot);
+    });
+
+    // ── Rich tooltip with full hazard breakdown ───────────────────────
+    var sevLabel = score>=55?'High':score>=35?'Elevated':score>=20?'Moderate':'Low';
+    var hzRows = allHz.slice(0, 6).map(function(h) {
+      var hc = HZ_COL[h.h] || '#888';
+      var barW = Math.round((h.sev/5)*60);
+      return '<tr><td style="padding:2px 6px 2px 0;white-space:nowrap;color:#374151;font-size:11px">'+
+             '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+hc+';margin-right:4px;vertical-align:middle"></span>'+
+             h.h+'</td>'+
+             '<td style="padding:2px 0"><div style="background:#f3f4f6;border-radius:2px;width:64px;height:7px">'+
+             '<div style="background:'+hc+';width:'+barW+'px;height:7px;border-radius:2px"></div></div></td>'+
+             '<td style="padding:2px 0 2px 5px;font-size:10px;color:#6b7280">'+Math.round(h.sev*20)+'/100</td></tr>';
+    }).join('');
+
+    var tip = '<div style="min-width:220px;font-family:Calibri,sans-serif">'+
+      '<div style="font-weight:800;font-size:13px;color:#111;border-bottom:1px solid #e5e7eb;padding-bottom:5px;margin-bottom:6px">'+a.asset+'</div>'+
+      '<div style="display:flex;gap:10px;margin-bottom:8px">'+
+        '<div style="text-align:center"><div style="font-size:22px;font-weight:900;color:'+col+'">'+score.toFixed(0)+'</div><div style="font-size:9px;color:#6b7280;text-transform:uppercase">Risk Score</div></div>'+
+        '<div style="text-align:center"><div style="font-size:18px;font-weight:700;color:#374151">'+(prof.annual_loss_pct*100).toFixed(1)+'%</div><div style="font-size:9px;color:#6b7280;text-transform:uppercase">Ann. Loss</div></div>'+
+        '<div style="text-align:center"><div style="font-size:14px;font-weight:700;color:'+col+'">'+sevLabel+'</div><div style="font-size:9px;color:#6b7280;text-transform:uppercase">Severity</div></div>'+
+      '</div>'+
+      '<div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Hazard Breakdown</div>'+
+      '<table style="width:100%;border-collapse:collapse">'+hzRows+'</table>'+
+      '<div style="font-size:9px;color:#9ca3af;margin-top:6px;border-top:1px solid #f3f4f6;padding-top:4px">Click for full 10-hazard detail · '+a.region+'</div>'+
+    '</div>';
+
+    circle.bindTooltip(tip, { direction:'top', sticky:false, maxWidth:280 });
     circle.on('click', function(){
       var ap2 = (window._portAssetProfiles||[]).find(function(p){return p.meta.asset===a.asset;});
       if (ap2) showAssetDetailFromProf(ap2);
     });
     _portMap2DLyrs.push(circle);
 
-    // Asset name label
+    // ── Asset name label ──────────────────────────────────────────────
+    var nameHtml = '<div style="font-size:9.5px;font-weight:700;color:#111;white-space:nowrap;'+
+      'background:rgba(255,255,255,0.88);padding:1px 5px;border-radius:3px;'+
+      'margin-top:'+Math.round(r+8)+'px;box-shadow:0 1px 3px rgba(0,0,0,.18);border:1px solid '+col+'40">'+
+      a.asset.split(' ').slice(0,3).join(' ')+'</div>';
     var lbl = L.marker([a.lat, a.lon], {
-      icon: L.divIcon({
-        html: '<div style="font-size:9.5px;font-weight:700;color:#111;white-space:nowrap;'+
-              'background:rgba(255,255,255,0.82);padding:1px 4px;border-radius:3px;'+
-              'margin-top:'+Math.round(r+6)+'px;box-shadow:0 1px 3px rgba(0,0,0,.2)">'+
-              a.asset.split(' ').slice(0,3).join(' ')+'</div>',
-        className:'', iconSize:[0,0]
-      }), interactive:false
+      icon: L.divIcon({ html: nameHtml, className:'', iconSize:[0,0] }),
+      interactive:false
     }).addTo(_portMap2D);
     _portMap2DLyrs.push(lbl);
   });
+
+  // Fit map to all asset bounds if we have them
+  if (bounds.length === 1) {
+    _portMap2D.setView(bounds[0], 6);
+  } else if (bounds.length > 1) {
+    try { _portMap2D.fitBounds(bounds, { padding:[40,40], maxZoom:7, animate:false }); } catch(e){}
+  }
+
+  // Add hazard legend
+  if (!_portMap2D._hzLegend) {
+    var leg = L.control({ position:'bottomright' });
+    leg.onAdd = function() {
+      var div = L.DomUtil.create('div');
+      div.style.cssText = 'background:rgba(255,255,255,0.93);padding:7px 10px;border-radius:6px;font-size:10px;line-height:1.8;box-shadow:0 1px 5px rgba(0,0,0,.2);max-width:140px';
+      div.innerHTML = '<div style="font-weight:800;font-size:9px;text-transform:uppercase;color:#374151;margin-bottom:4px;letter-spacing:.05em">Hazard Types</div>' +
+        Object.entries(HZ_COL).map(function(e){
+          return '<div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+e[1]+';margin-right:5px;vertical-align:middle"></span>'+
+            '<span style="color:#374151">'+e[0].replace(' Stress','').replace('Cyclone / ','').replace('Saltwater ','Salt.')+'</span></div>';
+        }).join('');
+      return div;
+    };
+    leg.addTo(_portMap2D);
+    _portMap2D._hzLegend = leg;
+  }
 
   // Downscaling web for selected asset
   if (selectedAsset && hasGPS) {
@@ -5872,6 +5973,92 @@ function _ctrClear() {
   if (s) { s.className = 'ctr-status ready'; s.textContent = '● READY'; }
 }
 function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Populate trace from cached profiles (all paths: demo, Excel, RI report) ──
+/* Called by renderPh() so the Computation Trace always reflects the displayed SSP/year,
+   regardless of whether the company was loaded via wizard, Excel import, RI report, or
+   pre-computed demo data. */
+function _ctrPopulateFromProfiles(assetProfiles, companyName, sector, ssp, yr) {
+  if (!assetProfiles || !assetProfiles.length) return;
+  _ctrStart('CRI Analysis: ' + companyName);
+  _ctrLog('DATA INGESTION','📥','Company', (companyName||'—') + ' · ' + (sector||'—'), 'formula', 'CRI Engine v0.3');
+  _ctrLog('DATA INGESTION','📥','Assets', assetProfiles.length + ' GPS-resolved site(s)', 'result', 'Asset registry');
+  _ctrLog('DATA INGESTION','📥','Scenario', (ssp||'ssp370').toUpperCase() + ' · Horizon ' + yr, 'muted', 'IPCC AR6 / NGFS Phase 4');
+  _ctrLog('DATA INGESTION','📥','WRI Aqueduct 4.0', '80+ region baseline values loaded · flood, water stress, drought', 'muted', 'Kuzma et al. 2023');
+
+  assetProfiles.forEach(function(ap) {
+    var a = ap.meta, prof = ap.prof;
+    var assetLabel = a.asset || a.name || 'Asset';
+
+    // ── Site Physics ──
+    var physPhase = 'SITE PHYSICS · ' + assetLabel;
+    if (a.lat != null && a.lon != null) {
+      _ctrLog(physPhase,'🏔️','GPS coordinates', a.lat.toFixed(4)+'°N, '+a.lon.toFixed(4)+'°E', 'formula', 'ECMWF ERA5');
+      _ctrLog(physPhase,'🏔️','Method', 'IDW downscaling · 4 nearest REGION_CENTROIDS', 'muted', 'NASA NEX-GDDP-CMIP6');
+    }
+    var elev = a.elevation_m || REGION_ELEV[a.region] || 300;
+    _ctrLog(physPhase,'🏔️','Elevation', elev + ' m ASL', 'formula', 'Copernicus DEM 30m');
+    if (prof.lulc) _ctrLog(physPhase,'🏔️','Land Use (LULC)', prof.lulc, 'muted', 'NASA MODIS LULC');
+    _ctrLog(physPhase,'🏔️','Coastal', prof.is_coastal ? 'Yes — coastal hazards active (<80 km)' : 'No — >80 km from coast', prof.is_coastal ? 'warn' : 'muted', 'IPCC AR6 WG2');
+
+    // ── Hazard Assessment ──
+    var hazPhase = 'HAZARD ASSESSMENT · ' + assetLabel;
+    prof.hazards.forEach(function(h) {
+      if (!h.applicable) {
+        _ctrLog(hazPhase,'⚠️', h.h, 'NOT APPLICABLE at this location', 'muted', 'Site physics filter');
+        return;
+      }
+      var sevCls = h.sev >= 3.5 ? 'high' : h.sev >= 2.0 ? 'warn' : 'result';
+      var baseTxt = (h._baseSev != null) ? ' (base '+h._baseSev.toFixed(2)+' × sector ×'+( h._baseSev>0 ? (h.sev/h._baseSev).toFixed(2) : '1.00' )+')' : '';
+      _ctrLog(hazPhase,'⚡', h.h,
+        'sev = '+h.sev.toFixed(2)+baseTxt+' → score '+Math.round(h.sev*20)+'/100  ·  loss/yr = '+(h.loss*100).toFixed(2)+'%',
+        sevCls, 'IPCC AR6 WG2');
+    });
+
+    // ── Joint Probability ──
+    var jpPhase = 'JOINT PROBABILITY · ' + assetLabel;
+    var appHzs = prof.hazards.filter(function(h){ return h.applicable; });
+    var survParts = appHzs.map(function(h){ return '(1−'+(h.loss*100).toFixed(2)+'%)'; }).join(' × ');
+    _ctrLog(jpPhase,'📊','Formula',
+      'P(loss) = 1 − Π(1−pᵢ) across '+appHzs.length+' applicable hazards',
+      'formula','Actuarial joint loss model');
+    if (survParts.length <= 200)
+      _ctrLog(jpPhase,'📊','Survival product', survParts, 'formula', '');
+    _ctrLog(jpPhase,'📊','Annual production loss',
+      '1 − '+(((1-prof.annual_loss_pct)*100)).toFixed(2)+'% = '+(prof.annual_loss_pct*100).toFixed(2)+'% / yr',
+      'result','');
+    _ctrLog(jpPhase,'📊','Physical risk score',
+      'mean(severity) × 20 = '+(prof.score/20).toFixed(2)+' × 20 = '+prof.score.toFixed(1)+'/100',
+      prof.score>=55?'high':prof.score>=35?'warn':'result','');
+    _ctrLog(jpPhase,'📊','Top 3 hazards', prof.top_hazards.slice(0,3).join(' › '),
+      prof.score>=55?'high':'warn','');
+  });
+
+  // ── Climate Rating Composite (from RATINGS if available) ──
+  var cid = (typeof co === 'function') ? co() : null;
+  var rat = cid && typeof RATINGS !== 'undefined' && RATINGS[cid];
+  if (rat && rat.composite != null && rat.pillars) {
+    var physS  = rat.pillars.physical  ? rat.pillars.physical.score  : null;
+    var transS = rat.pillars.transition ? rat.pillars.transition.score : null;
+    var finS   = rat.pillars.financial  ? rat.pillars.financial.score  : null;
+    var ph3 = 'CLIMATE RATING COMPOSITE';
+    if (physS  != null) _ctrLog(ph3,'🏆','Physical pillar (35%)',  physS.toFixed(1)+' × 0.35 = '+(physS*0.35).toFixed(2),  'formula','IPCC AR6 WG2');
+    if (transS != null) _ctrLog(ph3,'🏆','Transition pillar (35%)',transS.toFixed(1)+' × 0.35 = '+(transS*0.35).toFixed(2),'formula','NGFS Phase 4');
+    if (finS   != null) _ctrLog(ph3,'🏆','Financial pillar (30%)', finS.toFixed(1)+' × 0.30 = '+(finS*0.30).toFixed(2),   'formula','CRI DCF Model');
+    _ctrLog(ph3,'🏆','Composite score', ''+rat.composite, 'result','');
+    _ctrLog(ph3,'🏆','→ CRI Rating',
+      rat.rating + ' (' + (rat.label||rat.rating) + ')  composite = ' + rat.composite,
+      rat.composite>=55?'high':rat.composite>=35?'warn':'result','CRI Engine v0.3');
+  } else {
+    // Estimate from physical scores only (transition / financial pillars not yet computed)
+    var avgPhys = assetProfiles.reduce(function(s,ap){ return s+ap.prof.score; },0) / (assetProfiles.length||1);
+    var ph3 = 'CLIMATE RATING (Physical Pillar)';
+    _ctrLog(ph3,'🏆','Physical score (mean)', avgPhys.toFixed(1)+'/100', 'result','IPCC AR6 WG2');
+    _ctrLog(ph3,'🏆','Note', 'Full composite (Transition + Financial pillars) computed on complete analysis run', 'muted','CRI Engine v0.3');
+  }
+
+  _ctrFlush();
+}
 
 // ── Instrumented downscaling: logs IDW step per asset ──────────────
 function _gpsWRIBaselineTraced(lat, lon, assetName) {
