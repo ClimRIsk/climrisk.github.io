@@ -698,6 +698,41 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 .val-calc{background:#f0fdf4;color:#16a34a;border:1px solid #bbf7d0;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:5px}
 .val-est{background:#fffbeb;color:#b45309;border:1px solid #fde68a;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:5px}
 .val-tpl{background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-size:10px;font-weight:700;padding:1px 6px;border-radius:6px;margin-left:5px}
+
+/* ── CRI Computation Trace ─────────────────────────── */
+#cri-trace-panel{margin-top:14px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;font-family:'JetBrains Mono','Fira Mono','Courier New',monospace}
+.ctr-head{display:flex;align-items:center;gap:10px;padding:9px 14px;background:#0f172a;border-bottom:1px solid #1e293b;cursor:pointer;user-select:none}
+.ctr-title{font-size:12px;font-weight:700;color:#7dd3fc;letter-spacing:.04em;flex:1}
+.ctr-status{font-size:10px;padding:2px 8px;border-radius:10px;font-weight:700;letter-spacing:.04em}
+.ctr-status.ready{background:#1e293b;color:#64748b}
+.ctr-status.running{background:#1e3a5f;color:#38bdf8;animation:ctr-pulse 1s infinite}
+.ctr-status.done{background:#14532d;color:#4ade80}
+.ctr-btn{background:none;border:1px solid #334155;color:#94a3b8;font-size:10px;padding:2px 8px;border-radius:4px;cursor:pointer;font-family:inherit}
+.ctr-btn:hover{border-color:#7dd3fc;color:#7dd3fc}
+@keyframes ctr-pulse{0%,100%{opacity:1}50%{opacity:.5}}
+.ctr-body{background:#0a0f1e;max-height:520px;overflow-y:auto;padding:10px 0}
+.ctr-body.collapsed{display:none}
+.ctr-phase{margin:0 10px 12px;border-radius:6px;overflow:hidden;opacity:0;transform:translateY(4px);transition:opacity .25s,transform .25s}
+.ctr-phase.visible{opacity:1;transform:none}
+.ctr-phase-head{display:flex;align-items:center;gap:8px;padding:6px 12px;background:#111827;border-bottom:1px solid #1e293b;cursor:pointer}
+.ctr-phase-icon{font-size:12px;width:20px;text-align:center}
+.ctr-phase-name{font-size:10px;font-weight:800;color:#e2e8f0;letter-spacing:.1em;text-transform:uppercase;flex:1}
+.ctr-phase-badge{font-size:10px;font-weight:700;padding:1px 7px;border-radius:8px}
+.ctr-phase-badge.ok{background:#14532d;color:#4ade80}
+.ctr-phase-badge.warn{background:#713f12;color:#fbbf24}
+.ctr-phase-badge.high{background:#7f1d1d;color:#f87171}
+.ctr-phase-badge.info{background:#1e3a5f;color:#7dd3fc}
+.ctr-phase-body{padding:8px 12px;display:flex;flex-direction:column;gap:4px}
+.ctr-line{display:flex;gap:10px;align-items:flex-start;padding:2px 0;border-bottom:1px solid #111827}
+.ctr-line:last-child{border-bottom:none}
+.ctr-key{font-size:10px;color:#64748b;min-width:110px;flex-shrink:0;padding-top:1px;letter-spacing:.02em}
+.ctr-val{font-size:10px;color:#e2e8f0;flex:1;word-break:break-all;line-height:1.5}
+.ctr-val.formula{color:#93c5fd}
+.ctr-val.result{color:#4ade80;font-weight:700}
+.ctr-val.warn{color:#fbbf24}
+.ctr-val.high{color:#f87171;font-weight:700}
+.ctr-val.muted{color:#475569}
+.ctr-src{font-size:9px;color:#334155;background:#0f172a;padding:1px 5px;border-radius:3px;margin-left:auto;flex-shrink:0;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -1659,6 +1694,17 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 
       <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. <strong>Physical risk score = mean applicable severity × 20 (0–100 scale)</strong> — the same formula used in the Supply Chain panel (Hazard Score) and in the physical pillar of the Climate Rating. The Climate Rating composite = physical × 35% + transition × 35% + financial × 30%; it is a portfolio-level three-pillar average and will naturally differ from individual asset scores. SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission. <strong>Spatial downscaling:</strong> NASA NEX-GDDP-CMIP6 provides climate projections at 0.25° (~25 km) resolution. The engine downscales to asset-level precision using GPS bilinear interpolation — the asset's WRI Aqueduct baseline is computed as the inverse-distance²-weighted mean of its nearest regional centroids (w&#7522; = 1/d²&#7522;, normalised). Only centroids contributing ≥1% weight influence the result; distant centroids are suppressed. This follows the IPCC AR6 WG1 statistical downscaling framework and avoids raw CMIP6 model mean-state bias by applying change signals (delta method) to the ERA5 observational baseline rather than using raw model output. Site-level physics (coastal distance, elevation lapse rate, urban heat island, slope factor, river proximity) are then applied on top of the interpolated baseline. See the 🔬 Downscaling tab in the Portfolio Map above for asset-level weight visualisation.</span></div>
 
+      <!-- ── CRI COMPUTATION TRACE ─────────────────────────────────────── -->
+      <div id="cri-trace-panel" style="display:none">
+        <div class="ctr-head" onclick="_ctrToggle()">
+          <span class="ctr-title">⚙️ CRI Computation Trace</span>
+          <span class="ctr-status ready" id="ctr-status">● READY</span>
+          <button class="ctr-btn" onclick="event.stopPropagation();_ctrClear()" title="Clear log">✕ Clear</button>
+          <button class="ctr-btn" id="ctr-toggle-btn" onclick="event.stopPropagation();_ctrToggle()">▲ Collapse</button>
+        </div>
+        <div class="ctr-body" id="ctr-body"></div>
+      </div>
+
       <!-- SSP scenario selector for physical panel -->
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
         <span style="font-size:12px;font-weight:600;color:var(--muted)">SSP Scenario:</span>
@@ -1858,7 +1904,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <div class="ph"><h1>Financial Disclosures</h1><p>Climate disclosure data points aligned to TCFD · IFRS S2 · EU CSRD ESRS E1</p></div>
       <div class="note">
         <strong>Professional Tier Feature</strong>
-        <span>Full TCFD, ISSB S2, and EU CSRD reports are generated from the CRI engine and available in the Professional plan ($2,500–$5,000/month). The preview below shows the structure and selected free data points.</span>
+        <span>Full TCFD, ISSB S2, and EU CSRD reports are generated by the CRI engine and available on request. Contact us to discuss scope and access. The preview below shows the structure and selected free data points.</span>
       </div>
 
       <!-- Framework tabs -->
@@ -5734,6 +5780,195 @@ function getSectorHazardProfile(sector) {
   return null;
 }
 
+// ══════════════════════════════════════════════════════════════════
+// CRI COMPUTATION TRACE — Live model explainability layer
+// ══════════════════════════════════════════════════════════════════
+var _criLog = [];        // accumulates trace entries during a run
+var _criLogRendered = 0; // how many have been flushed to DOM
+
+function _ctrLog(phase, icon, key, val, cls, src) {
+  // cls: 'formula'|'result'|'warn'|'high'|'muted'|''
+  _criLog.push({ phase: phase, icon: icon, key: key, val: val, cls: cls || '', src: src || '' });
+}
+
+function _ctrStart(label) {
+  _criLog = [];
+  _criLogRendered = 0;
+  var p = document.getElementById('cri-trace-panel');
+  var b = document.getElementById('ctr-body');
+  var s = document.getElementById('ctr-status');
+  if (!p) return;
+  p.style.display = '';
+  b.innerHTML = '';
+  b.classList.remove('collapsed');
+  document.getElementById('ctr-toggle-btn').textContent = '▲ Collapse';
+  s.className = 'ctr-status running';
+  s.textContent = '● COMPUTING — ' + label;
+}
+
+function _ctrFlush() {
+  // Render all queued entries grouped by phase with stagger animation
+  var b = document.getElementById('ctr-body');
+  var s = document.getElementById('ctr-status');
+  if (!b) return;
+  // Group by phase (preserving order)
+  var phases = [], phaseMap = {};
+  _criLog.forEach(function(e) {
+    if (!phaseMap[e.phase]) { phaseMap[e.phase] = { icon: e.icon, rows: [] }; phases.push(e.phase); }
+    phaseMap[e.phase].rows.push(e);
+  });
+  b.innerHTML = '';
+  var delay = 0;
+  phases.forEach(function(phase, pi) {
+    var pd = phaseMap[phase];
+    var div = document.createElement('div');
+    div.className = 'ctr-phase';
+    div.id = 'ctrp-' + pi;
+    // Determine badge
+    var hasHigh = pd.rows.some(function(r){ return r.cls === 'high'; });
+    var hasWarn = pd.rows.some(function(r){ return r.cls === 'warn'; });
+    var badgeCls = hasHigh ? 'high' : hasWarn ? 'warn' : 'ok';
+    var badgeTxt = hasHigh ? 'HIGH' : hasWarn ? 'ELEVATED' : 'OK';
+    // Build inner HTML
+    var html = '<div class="ctr-phase-head" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'flex\':\'none\'">';
+    html += '<span class="ctr-phase-icon">' + pd.icon + '</span>';
+    html += '<span class="ctr-phase-name">' + phase + '</span>';
+    html += '<span class="ctr-phase-badge ' + badgeCls + '">' + badgeTxt + '</span>';
+    html += '</div>';
+    html += '<div class="ctr-phase-body" style="display:flex;flex-direction:column;gap:4px">';
+    pd.rows.forEach(function(r) {
+      html += '<div class="ctr-line">';
+      html += '<span class="ctr-key">' + _escH(r.key) + '</span>';
+      html += '<span class="ctr-val ' + r.cls + '">' + _escH(r.val) + '</span>';
+      if (r.src) html += '<span class="ctr-src">' + _escH(r.src) + '</span>';
+      html += '</div>';
+    });
+    html += '</div>';
+    div.innerHTML = html;
+    b.appendChild(div);
+    setTimeout(function(d){ d.classList.add('visible'); }, delay, div);
+    delay += 120 + Math.min(pd.rows.length * 40, 300);
+  });
+  setTimeout(function() {
+    var s2 = document.getElementById('ctr-status');
+    if (s2) { s2.className = 'ctr-status done'; s2.textContent = '● COMPLETE — ' + _criLog.length + ' steps'; }
+  }, delay);
+}
+
+function _ctrToggle() {
+  var b = document.getElementById('ctr-body');
+  var btn = document.getElementById('ctr-toggle-btn');
+  if (!b) return;
+  var collapsed = b.classList.toggle('collapsed');
+  btn.textContent = collapsed ? '▼ Expand' : '▲ Collapse';
+}
+function _ctrClear() {
+  _criLog = [];
+  var b = document.getElementById('ctr-body');
+  var p = document.getElementById('cri-trace-panel');
+  var s = document.getElementById('ctr-status');
+  if (b) b.innerHTML = '';
+  if (p) p.style.display = 'none';
+  if (s) { s.className = 'ctr-status ready'; s.textContent = '● READY'; }
+}
+function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ── Instrumented downscaling: logs IDW step per asset ──────────────
+function _gpsWRIBaselineTraced(lat, lon, assetName) {
+  var entries = Object.keys(REGION_CENTROIDS).map(function(r) {
+    var c = REGION_CENTROIDS[r];
+    var dlat = lat - c[0], dlon = lon - c[1];
+    var cosFactor = Math.cos(lat * Math.PI / 180);
+    var dist2 = dlat * dlat + (dlon * cosFactor) * (dlon * cosFactor);
+    return { r: r, dist2: dist2 + 1e-8 };
+  });
+  entries.sort(function(a,b){ return a.dist2 - b.dist2; });
+  var nearest = entries.slice(0, 4);
+  var totalW = 0;
+  nearest.forEach(function(e){ e.w = 1 / e.dist2; totalW += e.w; });
+  nearest.forEach(function(e){ e.pct = (e.w / totalW * 100).toFixed(1); });
+
+  var phase = 'DOWNSCALING · ' + (assetName || (lat.toFixed(2)+'°,'+lon.toFixed(2)+'°'));
+  _ctrLog(phase,'🗺️','GPS coordinates', lat.toFixed(4)+'°N, '+lon.toFixed(4)+'°E','formula','ECMWF ERA5');
+  _ctrLog(phase,'🗺️','Method','Inverse-distance² weighting (IDW) · 4 nearest REGION_CENTROIDS','muted','NASA NEX-GDDP-CMIP6');
+  nearest.forEach(function(e, i){
+    var dist_km = (Math.sqrt(e.dist2) * 111).toFixed(0);
+    _ctrLog(phase,'🗺️','Centroid '+(i+1)+' ('+e.r+')','w = 1/'+dist_km+'km² = '+e.pct+'% weight','formula','WRI Aqueduct 4.0');
+  });
+
+  // call original and log result
+  var bl = _gpsWRIBaseline(lat, lon);
+  var suppressed = nearest.filter(function(e){ return parseFloat(e.pct) < 1.0; });
+  if (suppressed.length) {
+    _ctrLog(phase,'🗺️','Suppressed (<1% weight)',suppressed.map(function(e){return e.r+' ('+e.pct+'%)';}).join(', '),'muted','CRI filter rule');
+  }
+  if (bl.flood_risk != null) {
+    _ctrLog(phase,'🗺️','→ Baseline (flood_risk)','IDW blend = '+bl.flood_risk.toFixed(3),'result','WRI Aqueduct 4.0');
+  }
+  if (bl.water_stress != null) {
+    _ctrLog(phase,'🗺️','→ Baseline (water_stress)','IDW blend = '+bl.water_stress.toFixed(3),'result','WRI Aqueduct 4.0');
+  }
+  return bl;
+}
+
+function _assessAndTrace(assetName, region, lat, lon, ssp, year, sector, sp) {
+  // sp = site physics object {elevation_m, coastal_dist_km, river_prox, uhi_bonus, slope_factor}
+  var result = assessHazardsSector(region, lat, lon, ssp, year, sector);
+  var phase = 'HAZARD ASSESSMENT · ' + (assetName || region);
+
+  // Site physics phase
+  if (sp && sp.elevation_m != null) {
+    var physPhase = 'SITE PHYSICS · ' + (assetName || region);
+    _ctrLog(physPhase,'🏔️','Elevation',''+sp.elevation_m.toFixed(0)+' m ASL','formula','Copernicus DEM 30m');
+    _ctrLog(physPhase,'🏔️','Coastal distance',''+sp.coastal_dist_km.toFixed(0)+' km → coastal hazards '+(sp.coastal_dist_km<80?'ACTIVE':'suppressed')+'', sp.coastal_dist_km<80?'warn':'muted','IPCC AR6 WG2');
+    _ctrLog(physPhase,'🏔️','River proximity score',''+sp.river_prox.toFixed(2)+' → flood amplifier ×'+(1+sp.river_prox*0.4).toFixed(2),'formula','WRI Aqueduct');
+    if (sp.uhi_bonus > 0) _ctrLog(physPhase,'🏔️','Urban heat island','+'+sp.uhi_bonus.toFixed(1)+'°C → heat stress amplified','warn','NASA MODIS LULC');
+    _ctrLog(physPhase,'🏔️','Slope factor',''+sp.slope_factor.toFixed(2)+' → landslide '+(sp.slope_factor>1.2?'elevated':'not applicable'),'formula','SRTM DEM');
+  }
+
+  // Hazard scores phase
+  result.hazards.forEach(function(h) {
+    if (!h.applicable) {
+      _ctrLog(phase,'⚠️', h.h, 'NOT APPLICABLE at this location','muted','Site physics filter');
+      return;
+    }
+    var sevCls = h.sev >= 3.5 ? 'high' : h.sev >= 2.0 ? 'warn' : 'result';
+    var baseTxt = (h._baseSev != null) ? ' (base '+h._baseSev.toFixed(2)+' × sector ×'+((h.sev/h._baseSev)||1).toFixed(2)+')' : '';
+    _ctrLog(phase,'⚡',h.h,'sev = '+h.sev.toFixed(2)+baseTxt+' → score '+Math.round(h.sev*20)+'/100 · loss/yr = '+(h.loss*100).toFixed(2)+'%', sevCls,'IPCC AR6 WG2');
+  });
+
+  // Joint probability phase
+  var jpPhase = 'JOINT PROBABILITY · ' + (assetName || region);
+  var appHzs = result.hazards.filter(function(h){ return h.applicable; });
+  var survParts = appHzs.map(function(h){ return '(1−'+(h.loss*100).toFixed(2)+'%)'; }).join(' × ');
+  _ctrLog(jpPhase,'📊','Formula','P(loss) = 1 − Π(1−pᵢ) across '+appHzs.length+' applicable hazards','formula','Actuarial joint loss model');
+  _ctrLog(jpPhase,'📊','Survival product',survParts.substring(0, 180) + (survParts.length>180?'…':''),'formula','');
+  _ctrLog(jpPhase,'📊','Annual production loss','1 − '+((1-result.annual_loss_pct)*100).toFixed(2)+'% = '+(result.annual_loss_pct*100).toFixed(2)+'% / yr','result','');
+  _ctrLog(jpPhase,'📊','Physical risk score','mean(severity) × 20 = '+(result.score/20).toFixed(2)+' × 20 = '+result.score.toFixed(1)+'/100', result.score>=55?'high':result.score>=35?'warn':'result','');
+  _ctrLog(jpPhase,'📊','Top 3 hazards',result.top_hazards.join(' › '), result.score>=55?'high':'warn','');
+
+  return result;
+}
+
+function _ctrLogComposite(physScore, transScore, finScore, ccPct, evAtRisk, composite, rating, sector, wacc) {
+  var ph1 = 'TRANSITION RISK';
+  _ctrLog(ph1,'💰','Carbon cost (NZE 2030)','NGFS Phase 4 path → '+ccPct.toFixed(1)+'% of EBITDA','formula','NGFS Phase 4 / IEA NZE 2050');
+  _ctrLog(ph1,'💰','Sector floor check','max('+ccPct.toFixed(1)+'%, IEA floor for '+sector+') applied','muted','IEA Net Zero 2050');
+  _ctrLog(ph1,'💰','Transition score','min(100, '+ccPct.toFixed(1)+'% × 3) = '+transScore.toFixed(1)+'/100', transScore>=70?'high':transScore>=30?'warn':'result','NGFS Phase 4');
+  _ctrLog(ph1,'💰','WACC (sector pre-risk)',''+wacc.toFixed(1)+'% + climate uplift','formula','BloombergNEF / Damodaran 2024');
+
+  var ph2 = 'FINANCIAL IMPACT';
+  _ctrLog(ph2,'📈','EV delta (NZE vs CP)','(EV_CP − EV_NZE) / EV_CP = '+evAtRisk.toFixed(1)+'% at risk','formula','DCF model · NGFS Phase 4');
+  _ctrLog(ph2,'📈','Financial score','min(100, '+evAtRisk.toFixed(1)+'% × 1.3) = '+finScore.toFixed(1)+'/100', finScore>=70?'high':finScore>=45?'warn':'result','CRI Financial Model');
+
+  var ph3 = 'CLIMATE RATING COMPOSITE';
+  _ctrLog(ph3,'🏆','Physical pillar (35%)',''+physScore.toFixed(1)+' × 0.35 = '+(physScore*0.35).toFixed(2),'formula','IPCC AR6 WG2');
+  _ctrLog(ph3,'🏆','Transition pillar (35%)',''+transScore.toFixed(1)+' × 0.35 = '+(transScore*0.35).toFixed(2),'formula','NGFS Phase 4');
+  _ctrLog(ph3,'🏆','Financial pillar (30%)',''+finScore.toFixed(1)+' × 0.30 = '+(finScore*0.30).toFixed(2),'formula','CRI DCF Model');
+  _ctrLog(ph3,'🏆','Composite score',''+physScore.toFixed(1)+'×0.35 + '+transScore.toFixed(1)+'×0.35 + '+finScore.toFixed(1)+'×0.30 = '+composite,'result','');
+  _ctrLog(ph3,'🏆','→ CRI Rating',rating+' ('+(composite>=75?'Very High':composite>=55?'High':composite>=35?'Elevated':composite>=18?'Moderate':'Low')+' Climate Risk)  composite = '+composite, composite>=55?'high':composite>=35?'warn':'result','CRI Engine v0.3');
+}
+
 /* Sector-aware hazard assessment — wraps assessHazards() with sector-specific
    loss multipliers applied post-GPS-pipeline. Call this wherever sector is known.
    Existing assessHazards() calls (no sector context) remain unchanged. */
@@ -6882,6 +7117,14 @@ function buildAndLoadResults() {
   var name = el('i-name').value || 'Custom Company';
   var sector = el('i-sector').value || 'Other';
   if (sector === 'Other') sector = el('i-sector-other').value || 'Other';
+
+  // ── Initiate trace ──────────────────────────────
+  _ctrStart('CRI Analysis: ' + name);
+  _ctrLog('DATA INGESTION','📥','Company', name + ' · ' + sector, 'formula', 'User input');
+  _ctrLog('DATA INGESTION','📥','Assets', wizAssets.length + ' GPS-resolved site(s)', 'result', 'User input');
+  _ctrLog('DATA INGESTION','📥','Scenario','SSP2-4.5 (Delayed Transition) primary · SSP1-2.6 + SSP3-7.0 parallel','muted','IPCC AR6 / NGFS Phase 4');
+  _ctrLog('DATA INGESTION','📥','Emissions basis', 'Computing...', 'muted', 'CRI Engine');
+  _ctrLog('DATA INGESTION','📥','WRI Aqueduct 4.0','80+ region baseline values loaded · flood, water stress, drought','muted','Kuzma et al. 2023');
   var rev = parseFloat(el('i-rev').value) / 1000;  // convert USD M → USD B for display
   var ebitda = parseFloat(el('i-ebitda').value) / 1000;
   var debt = parseFloat(el('i-debt').value) / 1000;
@@ -7144,6 +7387,10 @@ function buildAndLoadResults() {
                       ]}
       }
     };
+
+    // ── Fire trace flush ──────────────────────────────
+    _ctrLogComposite(physScore, transScore, finScore, ccPct, evAtRisk, composite, rating, sector, nzeRun.wacc||8.5);
+    _ctrFlush();
   })();
 
   // Add company to selectors
@@ -7206,9 +7453,9 @@ var RATINGS = {
 
 var TIER_DATA = [
   { id:'free', name:'Free', price:'Free', cta:'Get your rating', ctaClass:'tier-cta-o', desc:'Instant A–E climate risk rating. No card required.', features:['A–E climate risk rating','Pillar risk labels (Physical/Transition/Financial)','Summary narrative','Sector ranking'] },
-  { id:'analyst', name:'Analyst', price:'$500–$1,500/mo', cta:'Start free trial', ctaClass:'tier-cta-p', desc:'Full multi-scenario DCF, asset-level breakdown, and data export.', featured:true, badge:'Most Popular', features:['Everything in Free','Full numeric scores + drivers','25-year financial trajectory','Asset-level physical risk','CSV/JSON export','REST API access'] },
-  { id:'professional', name:'Professional', price:'$2,500–$5,000/mo', cta:'Book a demo', ctaClass:'tier-cta-o', desc:'Disclosure reports + sensitivity analysis + priority support.', features:['Everything in Analyst','TCFD disclosure report (PDF)','IFRS S2 metrics table','EU CSRD E1 data points','Sensitivity / scenario tables','Priority email support'] },
-  { id:'enterprise', name:'Enterprise', price:'$50K–$150K/year', cta:'Contact us', ctaClass:'tier-cta-o', desc:'Full API, custom scenarios, portfolio aggregation + consultancy.', features:['Everything in Professional','Custom scenario builder','Portfolio-level aggregation','White-label API','Dedicated analyst retainer','SLA + SSO + audit trail'] }
+  { id:'analyst', name:'Analyst', price:'Contact for pricing', cta:'Book a demo', ctaClass:'tier-cta-p', desc:'Full multi-scenario DCF, asset-level breakdown, and data export.', featured:true, badge:'Most Popular', features:['Everything in Free','Full numeric scores + drivers','25-year financial trajectory','Asset-level physical risk','CSV/JSON export','REST API access'] },
+  { id:'professional', name:'Professional', price:'Contact for pricing', cta:'Book a demo', ctaClass:'tier-cta-o', desc:'Disclosure reports + sensitivity analysis + priority support.', features:['Everything in Analyst','TCFD disclosure report (PDF)','IFRS S2 metrics table','EU CSRD E1 data points','Sensitivity / scenario tables','Priority email support'] },
+  { id:'enterprise', name:'Enterprise', price:'Bespoke', cta:'Contact us', ctaClass:'tier-cta-o', desc:'Full API, custom scenarios, portfolio aggregation, white-label + consultancy.', features:['Everything in Professional','Custom scenario builder','Portfolio-level aggregation','White-label API','Dedicated analyst retainer','SLA + SSO + audit trail'] }
 ];
 
 function pillarFillClass(label) {
