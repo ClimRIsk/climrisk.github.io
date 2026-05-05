@@ -214,7 +214,7 @@ NZE_2050 = Scenario(
     horizon=(START, END),
     description="Front-loaded transition. Carbon price rises rapidly; "
                 "green commodities gain; fossil demand drops sharply.",
-    version="0.1.0",
+    version="0.3.0",
     carbon_prices=[CarbonPricePath(region="global", path=NZE_CARBON)],
     commodity_curves=_build_commodity_curves(NZE_DEMAND, PRICE_PATHS_NZE),
     hazards=HAZARDS_NZE,
@@ -228,7 +228,7 @@ DELAYED_TRANSITION = Scenario(
     horizon=(START, END),
     description="Policy lag until ~2030, then abrupt repricing. Higher "
                 "physical risk accumulates; higher risk premium.",
-    version="0.1.0",
+    version="0.3.0",
     carbon_prices=[CarbonPricePath(region="global", path=DELAYED_CARBON)],
     commodity_curves=_build_commodity_curves(DELAYED_DEMAND, PRICE_PATHS_DELAYED),
     hazards=HAZARDS_DELAYED,
@@ -242,7 +242,7 @@ CURRENT_POLICIES = Scenario(
     horizon=(START, END),
     description="Baseline 'hothouse' trajectory. Carbon price drifts up "
                 "slowly; physical risks dominate.",
-    version="0.1.0",
+    version="0.3.0",
     carbon_prices=[CarbonPricePath(region="global", path=CP_CARBON)],
     commodity_curves=_build_commodity_curves(CP_DEMAND, PRICE_PATHS_CP),
     hazards=HAZARDS_CP,

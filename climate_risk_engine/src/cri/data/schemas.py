@@ -243,7 +243,7 @@ class RunRequest(BaseModel):
     company_id: str
     # Optional per-run overrides (e.g., user slides carbon price)
     overrides: Dict[str, float] = Field(default_factory=dict)
-    model_version: str = "0.1.0"
+    model_version: str = "0.3.0"
 
 
 class YearResult(BaseModel):

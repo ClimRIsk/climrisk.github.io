@@ -220,7 +220,7 @@ def build_physical_report(
     ops_delayed: list[OperationalYear],
     ops_cp: list[OperationalYear],
     run_id: Optional[str] = None,
-    model_version: str = "0.2.0",
+    model_version: str = "0.3.0",
     input_hash: str = "",
     scenario_version: str = "",
 ) -> PhysicalRiskReport:

@@ -71,7 +71,7 @@ def run(
     company: Company,
     scenario: Scenario,
     baseline_npv: float | None = None,
-    model_version: str = "0.2.0",
+    model_version: str = "0.3.0",
 ) -> RunResults:
     """Run the full pipeline: scenario → operational → financial → valuation.
 
@@ -130,7 +130,7 @@ def run(
 def run_scoped(
     company: Company,
     scope: ReportScope = ReportScope.FULL_CRI,
-    model_version: str = "0.2.0",
+    model_version: str = "0.3.0",
 ) -> ScopedResult:
     """Run only the engine pillars required by the requested scope.
 
