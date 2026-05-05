@@ -1260,14 +1260,72 @@ footer{
               <div class="form-field">
                 <label>Primary Asset Region</label>
                 <select id="d-region">
-                  <option value="EU-NL">Netherlands / North Sea</option>
-                  <option value="AU-WA">Western Australia</option>
-                  <option value="US-TX">Texas, USA</option>
-                  <option value="IN-MH">India — Maharashtra</option>
-                  <option value="CN-SD">China — East Coast</option>
-                  <option value="ZA-WC">South Africa</option>
-                  <option value="BR-SP">Brazil</option>
-                  <option value="global">Global / Multiple</option>
+                  <optgroup label="── Europe ──────────────────">
+                    <option value="EU-NL">Netherlands / North Sea</option>
+                    <option value="EU-UK">United Kingdom — North Sea</option>
+                    <option value="EU-DE">Germany — Rhine Valley</option>
+                    <option value="EU-FR">France — Mediterranean</option>
+                    <option value="EU-IT">Italy — Mediterranean</option>
+                    <option value="EU-ES">Spain / Iberian Peninsula</option>
+                    <option value="EU-NO">Norway — North Sea</option>
+                    <option value="EU-PL">Poland — Central Europe</option>
+                    <option value="EU-SE">Sweden / Scandinavia</option>
+                    <option value="EU-CH">Switzerland — Alpine</option>
+                  </optgroup>
+                  <optgroup label="── North America ────────────">
+                    <option value="US-TX">Texas, USA</option>
+                    <option value="US-CA">California, USA</option>
+                    <option value="US-FL">Florida, USA</option>
+                    <option value="US-NY">Northeast USA</option>
+                    <option value="US-MN">Midwest USA</option>
+                    <option value="CA-AB">Canada — Alberta</option>
+                    <option value="CA-BC">Canada — British Columbia</option>
+                    <option value="MX">Mexico — Gulf Coast</option>
+                  </optgroup>
+                  <optgroup label="── Latin America ─────────────">
+                    <option value="BR-SP">Brazil — São Paulo / Southeast</option>
+                    <option value="BR-AM">Brazil — Amazon</option>
+                    <option value="CO">Colombia</option>
+                    <option value="CL">Chile — Atacama</option>
+                    <option value="AR">Argentina — Pampas</option>
+                    <option value="PE">Peru / Andes</option>
+                  </optgroup>
+                  <optgroup label="── Middle East & Africa ─────">
+                    <option value="AE">UAE / Gulf States</option>
+                    <option value="SA">Saudi Arabia</option>
+                    <option value="EG">Egypt / Nile Delta</option>
+                    <option value="NG">Nigeria — Niger Delta</option>
+                    <option value="ZA-WC">South Africa</option>
+                    <option value="KE">Kenya / East Africa</option>
+                    <option value="MA">Morocco / North Africa</option>
+                  </optgroup>
+                  <optgroup label="── South Asia ───────────────">
+                    <option value="IN-MH">India — Maharashtra</option>
+                    <option value="IN-GJ">India — Gujarat</option>
+                    <option value="IN-TN">India — Tamil Nadu</option>
+                    <option value="PK">Pakistan — Indus Plain</option>
+                    <option value="BD">Bangladesh — Bay of Bengal</option>
+                  </optgroup>
+                  <optgroup label="── East &amp; Southeast Asia ──">
+                    <option value="CN-SD">China — East Coast</option>
+                    <option value="CN-NW">China — Northwest</option>
+                    <option value="JP">Japan</option>
+                    <option value="KR">South Korea</option>
+                    <option value="SG">Singapore / Malaysia</option>
+                    <option value="VN">Vietnam — Mekong Delta</option>
+                    <option value="PH">Philippines</option>
+                    <option value="ID">Indonesia</option>
+                    <option value="TH">Thailand</option>
+                  </optgroup>
+                  <optgroup label="── Australia / Pacific ──────">
+                    <option value="AU-WA">Western Australia</option>
+                    <option value="AU-QLD">Australia — Queensland</option>
+                    <option value="AU-NSW">Australia — New South Wales</option>
+                    <option value="NZ">New Zealand</option>
+                  </optgroup>
+                  <optgroup label="── Global ───────────────────">
+                    <option value="global">Global / Multiple Regions</option>
+                  </optgroup>
                 </select>
               </div>
             </div>
@@ -1917,6 +1975,643 @@ var DEMO_DATA = {
     composite:46, rating:'B', ratingLabel:'Moderate Climate Risk',
     evar:'26.8%', evarNote:'NZE vs Current Policies',
     topHaz:'Riverine Flood · Drought · Heat Stress',
+  },
+  // ── Europe ──────────────────────────────────────────────────────────────
+  'EU-UK': {
+    region:'United Kingdom — North Sea',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'High',col:'var(--red)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Moderate',col:'var(--amber)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:52, physPct:'52%', physCol:'var(--amber)',
+    transLabel:'High', transScore:72, transPct:'72%', transCol:'var(--red)',
+    finLabel:'High', finScore:64, finPct:'64%', finCol:'var(--red)',
+    composite:64, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'44.3%', evarNote:'NZE vs Current Policies',
+    topHaz:'Coastal Flood · Sea Level Rise · Riverine Flood',
+  },
+  'EU-DE': {
+    region:'Germany — Rhine Valley',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'☀',name:'Drought',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:56, physPct:'56%', physCol:'var(--amber)',
+    transLabel:'High', transScore:70, transPct:'70%', transCol:'var(--red)',
+    finLabel:'Elevated', finScore:60, finPct:'60%', finCol:'var(--amber)',
+    composite:63, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'40.8%', evarNote:'NZE vs Current Policies',
+    topHaz:'Riverine Flood · Heat Stress · Drought',
+  },
+  'EU-FR': {
+    region:'France — Mediterranean',
+    hazards:[
+      {icon:'🔥',name:'Wildfire',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:60, physPct:'60%', physCol:'var(--amber)',
+    transLabel:'Moderate', transScore:38, transPct:'38%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:44, finPct:'44%', finCol:'var(--amber)',
+    composite:47, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'30.2%', evarNote:'NZE vs Current Policies',
+    topHaz:'Wildfire · Drought · Heat Stress',
+  },
+  'EU-IT': {
+    region:'Italy — Mediterranean',
+    hazards:[
+      {icon:'🔥',name:'Wildfire',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+    ],
+    physLabel:'High', physScore:68, physPct:'68%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:36, transPct:'36%', transCol:'var(--green)',
+    finLabel:'Elevated', finScore:50, finPct:'50%', finCol:'var(--amber)',
+    composite:53, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'33.7%', evarNote:'NZE vs Current Policies',
+    topHaz:'Wildfire · Drought · Heat Stress',
+  },
+  'EU-ES': {
+    region:'Spain / Iberian Peninsula',
+    hazards:[
+      {icon:'☀',name:'Drought',sev:'Critical',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'High',col:'var(--red)'},
+      {icon:'🔥',name:'Wildfire',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+    ],
+    physLabel:'High', physScore:74, physPct:'74%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:32, transPct:'32%', transCol:'var(--green)',
+    finLabel:'Elevated', finScore:52, finPct:'52%', finCol:'var(--amber)',
+    composite:55, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'34.1%', evarNote:'NZE vs Current Policies',
+    topHaz:'Drought · Water Stress · Wildfire',
+  },
+  'EU-NO': {
+    region:'Norway — North Sea',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'Moderate',col:'var(--amber)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Moderate',col:'var(--amber)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'Low',col:'var(--green)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Low',col:'var(--green)'},
+    ],
+    physLabel:'Low', physScore:22, physPct:'22%', physCol:'var(--green)',
+    transLabel:'High', transScore:76, transPct:'76%', transCol:'var(--red)',
+    finLabel:'High', finScore:70, finPct:'70%', finCol:'var(--red)',
+    composite:58, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'55.6%', evarNote:'NZE vs Current Policies — oil exposure',
+    topHaz:'Transition Risk (fossil fuels) · Coastal Flood · Riverine Flood',
+  },
+  'EU-PL': {
+    region:'Poland — Central Europe',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Moderate',col:'var(--amber)'},
+      {icon:'☀',name:'Drought',sev:'Moderate',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Moderate', physScore:38, physPct:'38%', physCol:'var(--amber)',
+    transLabel:'Critical', transScore:88, transPct:'88%', transCol:'var(--red)',
+    finLabel:'High', finScore:76, finPct:'76%', finCol:'var(--red)',
+    composite:71, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'62.4%', evarNote:'NZE vs Current Policies — coal exposure',
+    topHaz:'Transition Risk (coal economy) · Riverine Flood · Heat Stress',
+  },
+  'EU-SE': {
+    region:'Sweden / Scandinavia',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'Moderate',col:'var(--amber)'},
+      {icon:'🔥',name:'Wildfire',sev:'Moderate',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Low',col:'var(--green)'},
+      {icon:'💧',name:'Water Stress',sev:'Low',col:'var(--green)'},
+    ],
+    physLabel:'Low', physScore:24, physPct:'24%', physCol:'var(--green)',
+    transLabel:'Low', transScore:18, transPct:'18%', transCol:'var(--green)',
+    finLabel:'Low', finScore:20, finPct:'20%', finCol:'var(--green)',
+    composite:21, rating:'B', ratingLabel:'Moderate Climate Risk',
+    evar:'14.2%', evarNote:'NZE vs Current Policies',
+    topHaz:'Riverine Flood · Wildfire · Heat Stress',
+  },
+  'EU-CH': {
+    region:'Switzerland — Alpine',
+    hazards:[
+      {icon:'🏔',name:'Glacier Retreat',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'⛰',name:'Landslide',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:50, physPct:'50%', physCol:'var(--amber)',
+    transLabel:'Low', transScore:22, transPct:'22%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:34, finPct:'34%', finCol:'var(--amber)',
+    composite:36, rating:'B', ratingLabel:'Moderate Climate Risk',
+    evar:'20.8%', evarNote:'NZE vs Current Policies',
+    topHaz:'Glacier Retreat · Riverine Flood · Landslide',
+  },
+  // ── North America ────────────────────────────────────────────────────────
+  'US-CA': {
+    region:'California, USA',
+    hazards:[
+      {icon:'🔥',name:'Wildfire',sev:'Critical',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:78, physPct:'78%', physCol:'var(--red)',
+    transLabel:'High', transScore:68, transPct:'68%', transCol:'var(--red)',
+    finLabel:'High', finScore:72, finPct:'72%', finCol:'var(--red)',
+    composite:73, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'56.3%', evarNote:'NZE vs Current Policies',
+    topHaz:'Wildfire · Drought · Water Stress',
+  },
+  'US-FL': {
+    region:'Florida, USA',
+    hazards:[
+      {icon:'🌀',name:'Hurricane / Cyclone',sev:'Critical',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Critical',col:'var(--red)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+    ],
+    physLabel:'Critical', physScore:86, physPct:'86%', physCol:'var(--red)',
+    transLabel:'Elevated', transScore:55, transPct:'55%', transCol:'var(--amber)',
+    finLabel:'High', finScore:74, finPct:'74%', finCol:'var(--red)',
+    composite:73, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'61.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Hurricane · Coastal Flood · Sea Level Rise',
+  },
+  'US-NY': {
+    region:'Northeast USA',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Moderate',col:'var(--amber)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:48, physPct:'48%', physCol:'var(--amber)',
+    transLabel:'Elevated', transScore:58, transPct:'58%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:54, finPct:'54%', finCol:'var(--amber)',
+    composite:54, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'38.7%', evarNote:'NZE vs Current Policies',
+    topHaz:'Coastal Flood · Sea Level Rise · Heat Stress',
+  },
+  'US-MN': {
+    region:'Midwest USA',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'☀',name:'Drought',sev:'Moderate',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Low',col:'var(--green)'},
+    ],
+    physLabel:'Moderate', physScore:42, physPct:'42%', physCol:'var(--amber)',
+    transLabel:'High', transScore:70, transPct:'70%', transCol:'var(--red)',
+    finLabel:'Elevated', finScore:62, finPct:'62%', finCol:'var(--red)',
+    composite:60, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'44.1%', evarNote:'NZE vs Current Policies',
+    topHaz:'Riverine Flood · Heat Stress · Drought',
+  },
+  'CA-AB': {
+    region:'Canada — Alberta',
+    hazards:[
+      {icon:'🔥',name:'Wildfire',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:58, physPct:'58%', physCol:'var(--amber)',
+    transLabel:'Critical', transScore:84, transPct:'84%', transCol:'var(--red)',
+    finLabel:'High', finScore:78, finPct:'78%', finCol:'var(--red)',
+    composite:75, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'63.8%', evarNote:'NZE vs Current Policies — oil sands exposure',
+    topHaz:'Wildfire · Drought · Transition Risk (oil sands)',
+  },
+  'CA-BC': {
+    region:'Canada — British Columbia',
+    hazards:[
+      {icon:'🔥',name:'Wildfire',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Moderate',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:55, physPct:'55%', physCol:'var(--amber)',
+    transLabel:'Moderate', transScore:34, transPct:'34%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:44, finPct:'44%', finCol:'var(--amber)',
+    composite:45, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'28.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Wildfire · Heat Stress · Coastal Flood',
+  },
+  'MX': {
+    region:'Mexico — Gulf Coast',
+    hazards:[
+      {icon:'🌀',name:'Hurricane / Cyclone',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:66, physPct:'66%', physCol:'var(--red)',
+    transLabel:'Elevated', transScore:58, transPct:'58%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:60, finPct:'60%', finCol:'var(--amber)',
+    composite:62, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'44.6%', evarNote:'NZE vs Current Policies',
+    topHaz:'Hurricane · Heat Stress · Drought',
+  },
+  // ── Latin America ────────────────────────────────────────────────────────
+  'BR-AM': {
+    region:'Brazil — Amazon',
+    hazards:[
+      {icon:'🔥',name:'Wildfire / Deforestation',sev:'Critical',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:80, physPct:'80%', physCol:'var(--red)',
+    transLabel:'Low', transScore:18, transPct:'18%', transCol:'var(--green)',
+    finLabel:'Elevated', finScore:50, finPct:'50%', finCol:'var(--amber)',
+    composite:52, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'31.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Wildfire · Drought · Heat Stress',
+  },
+  'CO': {
+    region:'Colombia',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'⛰',name:'Landslide',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:58, physPct:'58%', physCol:'var(--amber)',
+    transLabel:'Low', transScore:24, transPct:'24%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:40, finPct:'40%', finCol:'var(--amber)',
+    composite:42, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'26.3%', evarNote:'NZE vs Current Policies',
+    topHaz:'Riverine Flood · Landslide · Heat Stress',
+  },
+  'CL': {
+    region:'Chile — Atacama',
+    hazards:[
+      {icon:'☀',name:'Drought',sev:'Critical',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'Critical',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'⛰',name:'Landslide',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:76, physPct:'76%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:30, transPct:'30%', transCol:'var(--green)',
+    finLabel:'Elevated', finScore:52, finPct:'52%', finCol:'var(--amber)',
+    composite:55, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'35.6%', evarNote:'NZE vs Current Policies',
+    topHaz:'Drought · Water Stress · Heat Stress',
+  },
+  'AR': {
+    region:'Argentina — Pampas',
+    hazards:[
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:56, physPct:'56%', physCol:'var(--amber)',
+    transLabel:'Moderate', transScore:32, transPct:'32%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:44, finPct:'44%', finCol:'var(--amber)',
+    composite:45, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'28.9%', evarNote:'NZE vs Current Policies',
+    topHaz:'Drought · Riverine Flood · Heat Stress',
+  },
+  'PE': {
+    region:'Peru / Andes',
+    hazards:[
+      {icon:'🏔',name:'Glacier Retreat',sev:'Critical',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'High',col:'var(--red)'},
+      {icon:'⛰',name:'Landslide',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:72, physPct:'72%', physCol:'var(--red)',
+    transLabel:'Low', transScore:20, transPct:'20%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:44, finPct:'44%', finCol:'var(--amber)',
+    composite:48, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'30.2%', evarNote:'NZE vs Current Policies',
+    topHaz:'Glacier Retreat · Water Stress · Landslide',
+  },
+  // ── Middle East & Africa ─────────────────────────────────────────────────
+  'AE': {
+    region:'UAE / Gulf States',
+    hazards:[
+      {icon:'🌡',name:'Heat Stress',sev:'Critical',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'Critical',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'Critical',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:78, physPct:'78%', physCol:'var(--red)',
+    transLabel:'Critical', transScore:90, transPct:'90%', transCol:'var(--red)',
+    finLabel:'Critical', finScore:86, finPct:'86%', finCol:'var(--red)',
+    composite:85, rating:'E', ratingLabel:'Critical Climate Risk',
+    evar:'74.2%', evarNote:'NZE vs Current Policies — hydrocarbon dependence',
+    topHaz:'Heat Stress · Water Stress · Transition Risk (oil & gas)',
+  },
+  'SA': {
+    region:'Saudi Arabia',
+    hazards:[
+      {icon:'🌡',name:'Heat Stress',sev:'Critical',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'Critical',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'Critical',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Low',col:'var(--green)'},
+    ],
+    physLabel:'High', physScore:74, physPct:'74%', physCol:'var(--red)',
+    transLabel:'Critical', transScore:92, transPct:'92%', transCol:'var(--red)',
+    finLabel:'Critical', finScore:88, finPct:'88%', finCol:'var(--red)',
+    composite:86, rating:'E', ratingLabel:'Critical Climate Risk',
+    evar:'78.4%', evarNote:'NZE vs Current Policies — oil revenue',
+    topHaz:'Transition Risk (oil revenue) · Heat Stress · Water Stress',
+  },
+  'EG': {
+    region:'Egypt / Nile Delta',
+    hazards:[
+      {icon:'📈',name:'Sea Level Rise',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'High',col:'var(--red)'},
+    ],
+    physLabel:'High', physScore:76, physPct:'76%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:36, transPct:'36%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:56, finPct:'56%', finCol:'var(--amber)',
+    composite:60, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'40.8%', evarNote:'NZE vs Current Policies',
+    topHaz:'Sea Level Rise · Heat Stress · Water Stress',
+  },
+  'NG': {
+    region:'Nigeria — Niger Delta',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'High',col:'var(--red)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:72, physPct:'72%', physCol:'var(--red)',
+    transLabel:'High', transScore:68, transPct:'68%', transCol:'var(--red)',
+    finLabel:'High', finScore:66, finPct:'66%', finCol:'var(--red)',
+    composite:69, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'52.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Coastal Flood · Riverine Flood · Sea Level Rise',
+  },
+  'KE': {
+    region:'Kenya / East Africa',
+    hazards:[
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'High',col:'var(--red)'},
+    ],
+    physLabel:'High', physScore:66, physPct:'66%', physCol:'var(--red)',
+    transLabel:'Low', transScore:16, transPct:'16%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:38, finPct:'38%', finCol:'var(--amber)',
+    composite:42, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'24.6%', evarNote:'NZE vs Current Policies',
+    topHaz:'Drought · Water Stress · Heat Stress',
+  },
+  'MA': {
+    region:'Morocco / North Africa',
+    hazards:[
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🔥',name:'Wildfire',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:68, physPct:'68%', physCol:'var(--red)',
+    transLabel:'Low', transScore:22, transPct:'22%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:42, finPct:'42%', finCol:'var(--amber)',
+    composite:46, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'28.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Drought · Water Stress · Heat Stress',
+  },
+  // ── South Asia ───────────────────────────────────────────────────────────
+  'IN-GJ': {
+    region:'India — Gujarat',
+    hazards:[
+      {icon:'🌀',name:'Cyclone',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:74, physPct:'74%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:38, transPct:'38%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:54, finPct:'54%', finCol:'var(--amber)',
+    composite:58, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'38.9%', evarNote:'NZE vs Current Policies',
+    topHaz:'Cyclone · Drought · Heat Stress',
+  },
+  'IN-TN': {
+    region:'India — Tamil Nadu',
+    hazards:[
+      {icon:'🌀',name:'Cyclone',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:72, physPct:'72%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:36, transPct:'36%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:52, finPct:'52%', finCol:'var(--amber)',
+    composite:56, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'36.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Cyclone · Heat Stress · Coastal Flood',
+  },
+  'PK': {
+    region:'Pakistan — Indus Plain',
+    hazards:[
+      {icon:'🌡',name:'Heat Stress',sev:'Critical',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Critical',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🏔',name:'Glacier Melt',sev:'High',col:'var(--red)'},
+    ],
+    physLabel:'Critical', physScore:88, physPct:'88%', physCol:'var(--red)',
+    transLabel:'Low', transScore:18, transPct:'18%', transCol:'var(--green)',
+    finLabel:'Elevated', finScore:52, finPct:'52%', finCol:'var(--amber)',
+    composite:58, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'36.8%', evarNote:'NZE vs Current Policies',
+    topHaz:'Heat Stress · Riverine Flood · Glacier Melt',
+  },
+  'BD': {
+    region:'Bangladesh — Bay of Bengal',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'Critical',col:'var(--red)'},
+      {icon:'🌀',name:'Cyclone',sev:'Critical',col:'var(--red)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'Critical',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Critical',col:'var(--red)'},
+    ],
+    physLabel:'Critical', physScore:94, physPct:'94%', physCol:'var(--red)',
+    transLabel:'Low', transScore:14, transPct:'14%', transCol:'var(--green)',
+    finLabel:'High', finScore:64, finPct:'64%', finCol:'var(--red)',
+    composite:62, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'44.6%', evarNote:'NZE vs Current Policies',
+    topHaz:'Coastal Flood · Cyclone · Sea Level Rise',
+  },
+  // ── East & Southeast Asia ────────────────────────────────────────────────
+  'CN-NW': {
+    region:'China — Northwest',
+    hazards:[
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🏔',name:'Glacier Retreat',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:66, physPct:'66%', physCol:'var(--red)',
+    transLabel:'High', transScore:72, transPct:'72%', transCol:'var(--red)',
+    finLabel:'High', finScore:68, finPct:'68%', finCol:'var(--red)',
+    composite:69, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'52.1%', evarNote:'NZE vs Current Policies',
+    topHaz:'Drought · Water Stress · Heat Stress',
+  },
+  'JP': {
+    region:'Japan',
+    hazards:[
+      {icon:'🌀',name:'Typhoon / Cyclone',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:62, physPct:'62%', physCol:'var(--amber)',
+    transLabel:'Elevated', transScore:60, transPct:'60%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:58, finPct:'58%', finCol:'var(--amber)',
+    composite:60, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'42.8%', evarNote:'NZE vs Current Policies',
+    topHaz:'Typhoon · Coastal Flood · Heat Stress',
+  },
+  'KR': {
+    region:'South Korea',
+    hazards:[
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌀',name:'Typhoon',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'Elevated', physScore:56, physPct:'56%', physCol:'var(--amber)',
+    transLabel:'High', transScore:72, transPct:'72%', transCol:'var(--red)',
+    finLabel:'High', finScore:64, finPct:'64%', finCol:'var(--red)',
+    composite:65, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'48.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Heat Stress · Transition Risk (coal power) · Typhoon',
+  },
+  'SG': {
+    region:'Singapore / Malaysia',
+    hazards:[
+      {icon:'📈',name:'Sea Level Rise',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'High',col:'var(--red)'},
+      {icon:'💧',name:'Water Stress',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:68, physPct:'68%', physCol:'var(--red)',
+    transLabel:'Elevated', transScore:60, transPct:'60%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:58, finPct:'58%', finCol:'var(--amber)',
+    composite:62, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'44.2%', evarNote:'NZE vs Current Policies',
+    topHaz:'Sea Level Rise · Coastal Flood · Heat Stress',
+  },
+  'VN': {
+    region:'Vietnam — Mekong Delta',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'Critical',col:'var(--red)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'Critical',col:'var(--red)'},
+      {icon:'🌀',name:'Typhoon',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Saltwater Intrusion',sev:'High',col:'var(--red)'},
+    ],
+    physLabel:'Critical', physScore:88, physPct:'88%', physCol:'var(--red)',
+    transLabel:'Moderate', transScore:34, transPct:'34%', transCol:'var(--amber)',
+    finLabel:'High', finScore:64, finPct:'64%', finCol:'var(--red)',
+    composite:67, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'50.6%', evarNote:'NZE vs Current Policies',
+    topHaz:'Riverine Flood · Sea Level Rise · Typhoon',
+  },
+  'PH': {
+    region:'Philippines',
+    hazards:[
+      {icon:'🌀',name:'Typhoon / Cyclone',sev:'Critical',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'High',col:'var(--red)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'Critical', physScore:84, physPct:'84%', physCol:'var(--red)',
+    transLabel:'Low', transScore:20, transPct:'20%', transCol:'var(--green)',
+    finLabel:'Elevated', finScore:54, finPct:'54%', finCol:'var(--amber)',
+    composite:57, rating:'C', ratingLabel:'Elevated Climate Risk',
+    evar:'38.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Typhoon · Coastal Flood · Sea Level Rise',
+  },
+  'ID': {
+    region:'Indonesia',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'High',col:'var(--red)'},
+      {icon:'📈',name:'Sea Level Rise',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:70, physPct:'70%', physCol:'var(--red)',
+    transLabel:'Elevated', transScore:58, transPct:'58%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:60, finPct:'60%', finCol:'var(--amber)',
+    composite:63, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'46.2%', evarNote:'NZE vs Current Policies',
+    topHaz:'Coastal Flood · Sea Level Rise · Heat Stress',
+  },
+  'TH': {
+    region:'Thailand',
+    hazards:[
+      {icon:'🌊',name:'Riverine Flood',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'💧',name:'Water Stress',sev:'Moderate',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:66, physPct:'66%', physCol:'var(--red)',
+    transLabel:'Elevated', transScore:56, transPct:'56%', transCol:'var(--amber)',
+    finLabel:'Elevated', finScore:58, finPct:'58%', finCol:'var(--amber)',
+    composite:61, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'43.2%', evarNote:'NZE vs Current Policies',
+    topHaz:'Riverine Flood · Heat Stress · Coastal Flood',
+  },
+  // ── Australia / Pacific ──────────────────────────────────────────────────
+  'AU-QLD': {
+    region:'Australia — Queensland',
+    hazards:[
+      {icon:'🌀',name:'Cyclone',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:70, physPct:'70%', physCol:'var(--red)',
+    transLabel:'High', transScore:68, transPct:'68%', transCol:'var(--red)',
+    finLabel:'High', finScore:64, finPct:'64%', finCol:'var(--red)',
+    composite:68, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'52.6%', evarNote:'NZE vs Current Policies',
+    topHaz:'Cyclone · Heat Stress · Riverine Flood',
+  },
+  'AU-NSW': {
+    region:'Australia — New South Wales',
+    hazards:[
+      {icon:'🔥',name:'Wildfire',sev:'Critical',col:'var(--red)'},
+      {icon:'☀',name:'Drought',sev:'High',col:'var(--red)'},
+      {icon:'🌡',name:'Heat Stress',sev:'High',col:'var(--red)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+    ],
+    physLabel:'High', physScore:76, physPct:'76%', physCol:'var(--red)',
+    transLabel:'High', transScore:70, transPct:'70%', transCol:'var(--red)',
+    finLabel:'High', finScore:66, finPct:'66%', finCol:'var(--red)',
+    composite:71, rating:'D', ratingLabel:'High Climate Risk',
+    evar:'54.8%', evarNote:'NZE vs Current Policies',
+    topHaz:'Wildfire · Drought · Heat Stress',
+  },
+  'NZ': {
+    region:'New Zealand',
+    hazards:[
+      {icon:'🌊',name:'Coastal Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'🌊',name:'Riverine Flood',sev:'Elevated',col:'var(--amber)'},
+      {icon:'☀',name:'Drought',sev:'Moderate',col:'var(--amber)'},
+      {icon:'🌡',name:'Heat Stress',sev:'Low',col:'var(--green)'},
+    ],
+    physLabel:'Moderate', physScore:44, physPct:'44%', physCol:'var(--amber)',
+    transLabel:'Low', transScore:22, transPct:'22%', transCol:'var(--green)',
+    finLabel:'Moderate', finScore:34, finPct:'34%', finCol:'var(--amber)',
+    composite:34, rating:'B', ratingLabel:'Moderate Climate Risk',
+    evar:'20.4%', evarNote:'NZE vs Current Policies',
+    topHaz:'Coastal Flood · Riverine Flood · Drought',
   },
   'global': {
     region:'Multiple Regions',
