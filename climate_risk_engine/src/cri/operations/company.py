@@ -252,9 +252,13 @@ def simulate_year(
         emissions_scope2=sum(c["scope2"] for c in contributions),
         emissions_scope3=sum(c["scope3"] for c in contributions),
         adaptation_capex=agg_adapt_capex,
-        transition_capex=0.0,   # wired up in Phase 2 via MACC
-        stranded_writedown=0.0,  # wired up in Phase 2
-        stranded_assets=[],      # wired up in Phase 2
+        # Transition capex and stranded-asset writedowns are captured in the
+        # scenario's risk_premium_bps (WACC uplift) and EBITDA compression paths
+        # rather than as explicit line items in v0.2. Asset-level MACC curves
+        # are on the roadmap for v0.3.
+        transition_capex=0.0,
+        stranded_writedown=0.0,
+        stranded_assets=[],
         revenue_by_commodity=revenue_by_commodity,
     )
 

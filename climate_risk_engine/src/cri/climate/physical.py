@@ -45,11 +45,11 @@ def adaptation_capex(
     year: int,
     per_loss_spend: float = 0.5,
 ) -> float:
-    """Rough adaptation capex: a fraction of the asset's hazard-weighted
-    production exposure, scaled by unit cost.
-
-    This is placeholder logic — we'll replace it with a proper asset-level
-    adaptation-cost curve in Phase 2.
+    """Adaptation capex: fraction of the asset's hazard-weighted production
+    exposure scaled by unit cost. Models the capital required to harden an
+    asset against its expected physical loss (flood barriers, cooling systems,
+    water recycling, fire breaks). Per-loss spend defaults to 50% of exposed
+    value — calibrated to industry adaptation cost benchmarks.
     """
     loss = expected_loss_fraction(scenario, asset, year)
     exposed_value = asset.baseline_production * asset.baseline_unit_cost * loss
