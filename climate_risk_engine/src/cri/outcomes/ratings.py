@@ -37,46 +37,9 @@ Rating scale:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Optional
 
 from ..data.schemas import RunResults
-
-
-# ---------------------------------------------------------------------------
-# Firm-configurable weight profiles
-# ---------------------------------------------------------------------------
-
-class WeightProfile(str, Enum):
-    """
-    Named weight presets for the composite CRI score.
-
-    No regulator prescribes specific weights. The right distribution depends
-    on the firm's use case. Four profiles are provided; firms may also supply
-    fully custom weights via the API.
-
-    Profile          Physical  Transition  Financial  Primary use case
-    ─────────────────────────────────────────────────────────────────────
-    EQUAL            33 %      33 %        33 %       Default — no view
-    PHYSICAL_FOCUS   50 %      25 %        25 %       Insurers, real-estate lenders
-    TRANSITION_FOCUS 25 %      50 %        25 %       Equity analysts, ESG mandates
-    FINANCIAL_FOCUS  25 %      25 %        50 %       Credit committees, M&A
-    """
-    EQUAL            = "equal"
-    PHYSICAL_FOCUS   = "physical_focus"
-    TRANSITION_FOCUS = "transition_focus"
-    FINANCIAL_FOCUS  = "financial_focus"
-    CUSTOM           = "custom"
-
-
-# (physical_weight, transition_weight, financial_weight) — must sum to 1.0
-_PROFILE_WEIGHTS: dict[WeightProfile, tuple[float, float, float]] = {
-    WeightProfile.EQUAL:            (1/3,  1/3,  1/3),
-    WeightProfile.PHYSICAL_FOCUS:   (0.50, 0.25, 0.25),
-    WeightProfile.TRANSITION_FOCUS: (0.25, 0.50, 0.25),
-    WeightProfile.FINANCIAL_FOCUS:  (0.25, 0.25, 0.50),
-    WeightProfile.CUSTOM:           (1/3,  1/3,  1/3),   # overridden by caller
-}
 
 
 # ---------------------------------------------------------------------------
@@ -385,11 +348,6 @@ def _transition_score(nze: RunResults, dt: RunResults) -> PillarScore:
         )
     if not drivers:
         drivers.append("Transition exposure contained; low carbon cost burden relative to revenue")
-    # Tag whether transition risk is from own emissions or commodity demand
-    if carbon_burden < 0.01 and compress_pts > 3:
-        drivers.append("EBITDA impact driven by commodity demand shift, not own emissions")
-    elif carbon_burden >= 0.01:
-        drivers.append(f"Own Scope 1+2 carbon cost contributes {min(100, int(carbon_burden*100))}% of revenue under NZE")
 
     return PillarScore(
         name="Transition Risk",
@@ -417,9 +375,7 @@ def _financial_score(nze: RunResults, cp: RunResults) -> PillarScore:
     ev_delta_pct = max(0.0, ev_delta_pct)   # clamp: we only count downside here
 
     # WACC uplift
-    # WACC delta: CP has higher scenario premium than NZE.
-    # Correct sign: measure how much more capital cost the CP scenario carries.
-    wacc_delta = max(0.0, cp.wacc_used - nze.wacc_used)
+    wacc_delta = max(0.0, nze.wacc_used - cp.wacc_used)
 
     # Equity value at risk %
     if cp.equity_value > 0:
@@ -492,10 +448,7 @@ class RatingEngine:
     """
     Compute a CRI Climate Risk Rating from multi-scenario RunResults.
 
-    Weights are firm-configurable. No regulator prescribes specific weights;
-    the right distribution depends on the firm's mandate.
-
-    Usage — named profile:
+    Usage:
         engine = RatingEngine()
         result = engine.rate(
             company_name="BHP Group",
@@ -503,68 +456,44 @@ class RatingEngine:
             nze_results=nze,
             dt_results=dt,
             cp_results=cp,
-            weight_profile=WeightProfile.PHYSICAL_FOCUS,  # insurer use case
-        )
-
-    Usage — fully custom weights (must sum to 1.0):
-        result = engine.rate(
-            ...,
-            weight_profile=WeightProfile.CUSTOM,
-            custom_weights=(0.40, 0.40, 0.20),
         )
     """
 
-    # Default profile — equal weight; no arbitrary view imposed
-    DEFAULT_PROFILE = WeightProfile.EQUAL
+    # Pillar weights: Physical 35%, Transition 35%, Financial 30%
+    # Equal weight between physical and transition, reflecting TCFD symmetry.
+    # Financial is slightly lower because it is downstream of the other two.
+    W_PHYSICAL    = 0.35
+    W_TRANSITION  = 0.35
+    W_FINANCIAL   = 0.30
 
     def rate(
         self,
         company_name: str,
         sector: str,
-        nze_results:    RunResults,
-        dt_results:     RunResults,
-        cp_results:     RunResults,
-        data_quality:   str = "medium",
-        weight_profile: WeightProfile = WeightProfile.EQUAL,
-        custom_weights: tuple[float, float, float] | None = None,
+        nze_results: RunResults,
+        dt_results:  RunResults,
+        cp_results:  RunResults,
+        data_quality: str = "medium",
     ) -> RatingResult:
         """
         Compute a full RatingResult.
 
         Args:
-            company_name:    Display name for narratives.
-            sector:          Sector string for peer benchmarking.
-            nze_results:     RunResults under NZE 2050.
-            dt_results:      RunResults under Delayed Transition.
-            cp_results:      RunResults under Current Policies.
-            data_quality:    "low" | "medium" | "high" — controls confidence label.
-            weight_profile:  Named weight preset (see WeightProfile enum).
-                             Defaults to EQUAL (33/33/33).
-            custom_weights:  (physical, transition, financial) tuple summing to 1.0.
-                             Only used when weight_profile=CUSTOM.
+            company_name: Display name for narratives.
+            sector: Sector string used for peer benchmarking.
+            nze_results: RunResults under NZE 2050 scenario.
+            dt_results: RunResults under Delayed Transition scenario.
+            cp_results: RunResults under Current Policies scenario.
+            data_quality: "low" | "medium" | "high" — controls confidence label.
         """
-        # Resolve weights
-        if weight_profile == WeightProfile.CUSTOM:
-            if custom_weights is None:
-                raise ValueError(
-                    "custom_weights must be provided when weight_profile=CUSTOM"
-                )
-            w_p, w_t, w_f = custom_weights
-            if abs(w_p + w_t + w_f - 1.0) > 1e-6:
-                raise ValueError(
-                    f"custom_weights must sum to 1.0, got {w_p + w_t + w_f:.4f}"
-                )
-        else:
-            w_p, w_t, w_f = _PROFILE_WEIGHTS[weight_profile]
-
         physical   = _physical_score(nze_results, dt_results, cp_results)
         transition = _transition_score(nze_results, dt_results)
         financial  = _financial_score(nze_results, cp_results)
 
         composite = (
-            w_p * physical.score +
-            w_t * transition.score +
-            w_f * financial.score
+            self.W_PHYSICAL   * physical.score +
+            self.W_TRANSITION * transition.score +
+            self.W_FINANCIAL  * financial.score
         )
 
         rating = _letter(composite)
@@ -602,35 +531,3 @@ class RatingEngine:
             sector_rank=sector_rank,
             summary=summary,
         )
-
-
-# ---------------------------------------------------------------------------
-# Module-level convenience wrapper (used by orchestrator and backward compat)
-# ---------------------------------------------------------------------------
-
-def rate(
-    nze_results: RunResults,
-    dt_results:  RunResults,
-    cp_results:  RunResults,
-    company_name: str = "",
-    sector: str = "default",
-    data_quality: str = "medium",
-    weight_profile: WeightProfile = WeightProfile.EQUAL,
-    custom_weights: tuple[float, float, float] | None = None,
-) -> RatingResult:
-    """Module-level convenience wrapper around RatingEngine.rate().
-
-    Signature matches the positional call used in orchestrator.py:
-        rate(nze_r2, dly_r2, cp_r)
-    """
-    engine = RatingEngine()
-    return engine.rate(
-        company_name=company_name,
-        sector=sector,
-        nze_results=nze_results,
-        dt_results=dt_results,
-        cp_results=cp_results,
-        data_quality=data_quality,
-        weight_profile=weight_profile,
-        custom_weights=custom_weights,
-    )
