@@ -35,7 +35,7 @@ from .schemas import (
 app = FastAPI(
     title="Climate Risk Intelligence API",
     description="REST API for climate financial risk modelling",
-    version="0.1.0",
+    version="0.3.0",
 )
 
 # Add CORS middleware (allow all origins for dev)
@@ -60,7 +60,7 @@ COMPANY_REGISTRY = get_all_companies()
 @app.get("/health", response_model=HealthResponse)
 def health() -> HealthResponse:
     """Health check endpoint."""
-    return HealthResponse(status="ok", version="0.1.0")
+    return HealthResponse(status="ok", version="0.3.0")
 
 
 @app.get("/scenarios", response_model=list[ScenarioResponse])
