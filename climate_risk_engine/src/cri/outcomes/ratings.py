@@ -24,7 +24,7 @@ Three pillar scores (0–100, higher = worse risk) feed into the composite:
     - WACC uplift from scenario risk premium.
     - Equity value at risk under tail scenario.
 
-Composite = 0.30 × P + 0.40 × T + 0.30 × F  (weights reflect TCFD emphasis)
+Composite = 0.35 × P + 0.35 × T + 0.30 × F  (weights reflect TCFD emphasis)
 
 Rating scale:
   A  → composite ≤ 20   (Low risk, well-aligned or minimal exposure)
@@ -37,9 +37,46 @@ Rating scale:
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import Optional
 
 from ..data.schemas import RunResults
+
+
+# ---------------------------------------------------------------------------
+# Firm-configurable weight profiles
+# ---------------------------------------------------------------------------
+
+class WeightProfile(str, Enum):
+    """
+    Named weight presets for the composite CRI score.
+
+    No regulator prescribes specific weights. The right distribution depends
+    on the firm's use case. Four profiles are provided; firms may also supply
+    fully custom weights via the API.
+
+    Profile          Physical  Transition  Financial  Primary use case
+    ─────────────────────────────────────────────────────────────────────
+    EQUAL            33 %      33 %        33 %       Default — no view
+    PHYSICAL_FOCUS   50 %      25 %        25 %       Insurers, real-estate lenders
+    TRANSITION_FOCUS 25 %      50 %        25 %       Equity analysts, ESG mandates
+    FINANCIAL_FOCUS  25 %      25 %        50 %       Credit committees, M&A
+    """
+    EQUAL            = "equal"
+    PHYSICAL_FOCUS   = "physical_focus"
+    TRANSITION_FOCUS = "transition_focus"
+    FINANCIAL_FOCUS  = "financial_focus"
+    CUSTOM           = "custom"
+
+
+# (physical_weight, transition_weight, financial_weight) — must sum to 1.0
+_PROFILE_WEIGHTS: dict[WeightProfile, tuple[float, float, float]] = {
+    WeightProfile.EQUAL:            (1/3,  1/3,  1/3),
+    WeightProfile.PHYSICAL_FOCUS:   (0.50, 0.25, 0.25),
+    WeightProfile.TRANSITION_FOCUS: (0.25, 0.50, 0.25),
+    WeightProfile.FINANCIAL_FOCUS:  (0.25, 0.25, 0.50),
+    WeightProfile.CUSTOM:           (1/3,  1/3,  1/3),   # overridden by caller
+}
 
 
 # ---------------------------------------------------------------------------
@@ -277,51 +314,82 @@ def _physical_score(
 
 def _transition_score(nze: RunResults, dt: RunResults) -> PillarScore:
     """
-    Transition risk based on EBITDA compression and carbon cost burden
-    under the most demanding (NZE 2050) scenario.
+    Transition risk score — three components, all normalised to revenue not EBITDA.
+
+    Using revenue as the denominator (not EBITDA) is critical: EBITDA can be
+    zero or negative under NZE compression, which would silence every component
+    and produce a spurious Transition score of 0 for companies with real carbon
+    exposure. Revenue is always a positive, stable denominator.
+
+    Components
+    ----------
+    carbon_burden   Carbon cost as % of revenue at 2030 under NZE (0–50 pts).
+                    Captures absolute carbon cost load regardless of EBITDA level.
+
+    ebitda_compress EBITDA compression 2026→2035 under NZE as % of baseline
+                    revenue — avoids division by zero when EBITDA ≤ 0 (0–35 pts).
+
+    rev_decline     Revenue decline 2026→2040 under NZE, capturing demand-shift
+                    and stranded-asset effects on the top line (0–15 pts).
     """
-    # EBITDA in 2030 vs 2026 under NZE
+
     def yr(r: RunResults, year: int):
         return next((y for y in r.years if y.year == year), None)
 
-    base_ebitda = yr(nze, 2026)
-    nze_2030    = yr(nze, 2030)
-    nze_2035    = yr(nze, 2035)
+    base   = yr(nze, 2026)
+    y2030  = yr(nze, 2030)
+    y2035  = yr(nze, 2035)
+    y2040  = yr(nze, 2040)
 
-    # Carbon cost as % of EBITDA by 2030
-    carbon_pct_2030 = 0.0
-    if nze_2030 and nze_2030.ebitda > 0:
-        carbon_pct_2030 = nze_2030.carbon_cost / nze_2030.ebitda
+    base_rev = base.revenue if base and base.revenue > 0 else 1.0
 
-    # EBITDA compression 2026 → 2035
-    compression = 0.0
-    if base_ebitda and base_ebitda.ebitda > 0 and nze_2035:
-        compression = max(0.0, (base_ebitda.ebitda - nze_2035.ebitda) / base_ebitda.ebitda)
+    # ── Component 1: carbon cost burden (revenue-denominated) ─────────────────
+    carbon_burden = 0.0
+    if y2030 and y2030.carbon_cost > 0:
+        carbon_burden = y2030.carbon_cost / max(y2030.revenue, base_rev)
+    # Score: 5% carbon/revenue → ~10 pts; 30%+ → 50 pts
+    carbon_pts = min(50.0, carbon_burden * 167.0)
 
-    # Revenue trajectory: slope of revenue 2026→2040 under NZE
-    rev_decline = 0.0
-    y_2040 = yr(nze, 2040)
-    if base_ebitda and y_2040 and base_ebitda.revenue > 0:
-        rev_decline = max(0.0, (base_ebitda.revenue - y_2040.revenue) / base_ebitda.revenue)
+    # ── Component 2: EBITDA compression vs baseline revenue ───────────────────
+    # Using base_rev in denominator (not base EBITDA) keeps this non-zero even
+    # when a company starts with low margins or when EBITDA turns negative.
+    compress_pts = 0.0
+    if base and y2035 is not None:
+        ebitda_drop = (base.ebitda - y2035.ebitda) if base.ebitda > y2035.ebitda else 0.0
+        compress_frac = ebitda_drop / base_rev   # absolute EBITDA drop / revenue
+        compress_pts = min(35.0, compress_frac * 175.0)
 
-    # Combine: carbon_pct_2030 (0→50%+) maps 0→50 on score;
-    #          compression (0→80%+) maps 0→40; rev_decline 0→10
-    score = (
-        min(50.0, carbon_pct_2030 * 100.0) +
-        min(40.0, compression * 50.0) +
-        min(10.0, rev_decline * 20.0)
-    )
-    score = min(100.0, score)
+    # ── Component 3: revenue decline (demand shift / stranded assets) ─────────
+    rev_decline_pts = 0.0
+    if y2040 and base_rev > 0:
+        rev_drop = max(0.0, base_rev - y2040.revenue)
+        rev_decline_pts = min(15.0, (rev_drop / base_rev) * 30.0)
 
+    score = min(100.0, carbon_pts + compress_pts + rev_decline_pts)
+
+    # ── Drivers ───────────────────────────────────────────────────────────────
     drivers: list[str] = []
-    if carbon_pct_2030 > 0.2:
-        drivers.append(f"Carbon cost {carbon_pct_2030*100:.0f}% of EBITDA by 2030 (NZE)")
-    if compression > 0.15:
-        drivers.append(f"EBITDA compression {compression*100:.0f}% by 2035 under NZE")
-    if rev_decline > 0.10:
-        drivers.append(f"Revenue decline {rev_decline*100:.0f}% by 2040 under NZE")
+    if carbon_burden > 0.05:
+        drivers.append(
+            f"Carbon cost {carbon_burden*100:.1f}% of revenue by 2030 (NZE)"
+        )
+    if compress_pts > 5.0 and base and y2035 is not None:
+        ebitda_drop_pct = ((base.ebitda - y2035.ebitda) / base_rev) * 100
+        drivers.append(
+            f"EBITDA down {ebitda_drop_pct:.0f}% of revenue by 2035 under NZE"
+        )
+    if rev_decline_pts > 3.0 and y2040:
+        rev_drop_pct = ((base_rev - y2040.revenue) / base_rev) * 100
+        drivers.append(
+            f"Revenue decline {rev_drop_pct:.0f}% by 2040 under NZE (demand shift)"
+        )
     if not drivers:
-        drivers.append("Transition exposure contained; low carbon cost burden")
+        drivers.append("Transition exposure contained; low carbon cost burden relative to revenue")
+    # Tag whether transition risk is from own emissions or commodity demand
+    if carbon_burden < 0.01 and compress_pts > 3:
+        drivers.append("EBITDA impact driven by commodity demand shift, not own emissions")
+    elif carbon_burden >= 0.01:
+        drivers.append(f"Own Scope 1+2 carbon cost contributes {min(100, int(carbon_burden*100))}% of revenue under NZE")
 
     return PillarScore(
         name="Transition Risk",
@@ -349,7 +417,9 @@ def _financial_score(nze: RunResults, cp: RunResults) -> PillarScore:
     ev_delta_pct = max(0.0, ev_delta_pct)   # clamp: we only count downside here
 
     # WACC uplift
-    wacc_delta = max(0.0, nze.wacc_used - cp.wacc_used)
+    # WACC delta: CP has higher scenario premium than NZE.
+    # Correct sign: measure how much more capital cost the CP scenario carries.
+    wacc_delta = max(0.0, cp.wacc_used - nze.wacc_used)
 
     # Equity value at risk %
     if cp.equity_value > 0:
@@ -422,7 +492,10 @@ class RatingEngine:
     """
     Compute a CRI Climate Risk Rating from multi-scenario RunResults.
 
-    Usage:
+    Weights are firm-configurable. No regulator prescribes specific weights;
+    the right distribution depends on the firm's mandate.
+
+    Usage — named profile:
         engine = RatingEngine()
         result = engine.rate(
             company_name="BHP Group",
@@ -430,42 +503,68 @@ class RatingEngine:
             nze_results=nze,
             dt_results=dt,
             cp_results=cp,
+            weight_profile=WeightProfile.PHYSICAL_FOCUS,  # insurer use case
+        )
+
+    Usage — fully custom weights (must sum to 1.0):
+        result = engine.rate(
+            ...,
+            weight_profile=WeightProfile.CUSTOM,
+            custom_weights=(0.40, 0.40, 0.20),
         )
     """
 
-    # Pillar weights: Physical 30%, Transition 40%, Financial 30%
-    W_PHYSICAL    = 0.30
-    W_TRANSITION  = 0.40
-    W_FINANCIAL   = 0.30
+    # Default profile — equal weight; no arbitrary view imposed
+    DEFAULT_PROFILE = WeightProfile.EQUAL
 
     def rate(
         self,
         company_name: str,
         sector: str,
-        nze_results: RunResults,
-        dt_results:  RunResults,
-        cp_results:  RunResults,
-        data_quality: str = "medium",
+        nze_results:    RunResults,
+        dt_results:     RunResults,
+        cp_results:     RunResults,
+        data_quality:   str = "medium",
+        weight_profile: WeightProfile = WeightProfile.EQUAL,
+        custom_weights: tuple[float, float, float] | None = None,
     ) -> RatingResult:
         """
         Compute a full RatingResult.
 
         Args:
-            company_name: Display name for narratives.
-            sector: Sector string used for peer benchmarking.
-            nze_results: RunResults under NZE 2050 scenario.
-            dt_results: RunResults under Delayed Transition scenario.
-            cp_results: RunResults under Current Policies scenario.
-            data_quality: "low" | "medium" | "high" — controls confidence label.
+            company_name:    Display name for narratives.
+            sector:          Sector string for peer benchmarking.
+            nze_results:     RunResults under NZE 2050.
+            dt_results:      RunResults under Delayed Transition.
+            cp_results:      RunResults under Current Policies.
+            data_quality:    "low" | "medium" | "high" — controls confidence label.
+            weight_profile:  Named weight preset (see WeightProfile enum).
+                             Defaults to EQUAL (33/33/33).
+            custom_weights:  (physical, transition, financial) tuple summing to 1.0.
+                             Only used when weight_profile=CUSTOM.
         """
+        # Resolve weights
+        if weight_profile == WeightProfile.CUSTOM:
+            if custom_weights is None:
+                raise ValueError(
+                    "custom_weights must be provided when weight_profile=CUSTOM"
+                )
+            w_p, w_t, w_f = custom_weights
+            if abs(w_p + w_t + w_f - 1.0) > 1e-6:
+                raise ValueError(
+                    f"custom_weights must sum to 1.0, got {w_p + w_t + w_f:.4f}"
+                )
+        else:
+            w_p, w_t, w_f = _PROFILE_WEIGHTS[weight_profile]
+
         physical   = _physical_score(nze_results, dt_results, cp_results)
         transition = _transition_score(nze_results, dt_results)
         financial  = _financial_score(nze_results, cp_results)
 
         composite = (
-            self.W_PHYSICAL   * physical.score +
-            self.W_TRANSITION * transition.score +
-            self.W_FINANCIAL  * financial.score
+            w_p * physical.score +
+            w_t * transition.score +
+            w_f * financial.score
         )
 
         rating = _letter(composite)
@@ -503,3 +602,35 @@ class RatingEngine:
             sector_rank=sector_rank,
             summary=summary,
         )
+
+
+# ---------------------------------------------------------------------------
+# Module-level convenience wrapper (used by orchestrator and backward compat)
+# ---------------------------------------------------------------------------
+
+def rate(
+    nze_results: RunResults,
+    dt_results:  RunResults,
+    cp_results:  RunResults,
+    company_name: str = "",
+    sector: str = "default",
+    data_quality: str = "medium",
+    weight_profile: WeightProfile = WeightProfile.EQUAL,
+    custom_weights: tuple[float, float, float] | None = None,
+) -> RatingResult:
+    """Module-level convenience wrapper around RatingEngine.rate().
+
+    Signature matches the positional call used in orchestrator.py:
+        rate(nze_r2, dly_r2, cp_r)
+    """
+    engine = RatingEngine()
+    return engine.rate(
+        company_name=company_name,
+        sector=sector,
+        nze_results=nze_results,
+        dt_results=dt_results,
+        cp_results=cp_results,
+        data_quality=data_quality,
+        weight_profile=weight_profile,
+        custom_weights=custom_weights,
+    )
