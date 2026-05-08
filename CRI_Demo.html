@@ -1720,6 +1720,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           <option value="2050" selected>2050</option>
         </select>
         <button class="btn-secondary" onclick="_physDownloadAuditTrail()" style="font-size:11px;padding:5px 12px;margin-left:6px" title="Download Excel audit trail with per-hazard scores and source citations for regulatory submission">📋 Download Audit Trail</button>
+        <button onclick="downloadPhysicalRiskReport()" style="font-size:12px;padding:6px 16px;margin-left:6px;background:#0f766e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700" title="Download standalone Physical Climate Hazard Report — no financial data required">📄 Physical Risk Report</button>
       </div>
 
       <div class="tc"><div class="tc-head" id="phys-head">Asset Hazard Profile</div><div id="phys-tbl"></div></div>
@@ -3019,6 +3020,237 @@ function _physDownloadAuditTrail() {
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(method), 'Methodology');
 
   XLSX.writeFile(wb, 'ClimRisk_PhysicalRisk_AuditTrail_' + new Date().toISOString().slice(0,10) + '.xlsx');
+}
+
+/* ── Standalone Physical Climate Hazard Report ─────────────────────────────
+   Generates a clean, self-contained HTML report covering only physical risk.
+   No financial data, no transition risk, no emissions required.
+   Suitable for real-estate lenders, insurers, infrastructure due diligence.
+   ──────────────────────────────────────────────────────────────────────── */
+function downloadPhysicalRiskReport() {
+  var cid = co ? co() : null;
+  var hList = cid && D && D.hazards && D.hazards[cid] ? D.hazards[cid] : null;
+  if (!hList || !hList.length) { alert('No assets loaded. Complete Company Setup first, then return to Physical Risk.'); return; }
+
+  var ssp    = (document.getElementById('phys-ssp')||{}).value || 'ssp370';
+  var yr     = +((document.getElementById('phys-yr')||{}).value || 2050);
+  var coObj  = (D.companies && D.companies[cid]) || {};
+  var coName = coObj.name || 'Company';
+  var sector = coObj.sector || '';
+  var ts     = new Date().toLocaleDateString('en-GB', {year:'numeric',month:'long',day:'numeric'});
+  var sspLabel = {ssp126:'SSP1-2.6 — Net Zero 2050 (~0.85°C)',ssp245:'SSP2-4.5 — Delayed Transition (~1.35°C)',ssp370:'SSP3-7.0 — Current Policies (~1.70°C)',ssp585:'SSP5-8.5 — Hot House (~2.00°C)'}[ssp]||ssp;
+  var _auditCoSector = sector || 'Other';
+
+  var HAZARD_NAMES = ['Heat Stress','Riverine Flood','Coastal Flood','Sea Level Rise','Saltwater Intrusion','Landslide','Wildfire','Cyclone','Drought','Water Stress'];
+  var HAZARD_ICONS = {'Heat Stress':'🌡','Riverine Flood':'🌊','Coastal Flood':'🏖','Sea Level Rise':'📈','Saltwater Intrusion':'🧂','Landslide':'⛰','Wildfire':'🔥','Cyclone':'🌀','Drought':'☀','Water Stress':'💧'};
+
+  // ── Assess all assets ──────────────────────────────────────────────────
+  var assetResults = hList.map(function(a) {
+    var prof = { score:0, annual_loss_pct:0, top_hazards:[], hazards:[], gps_resolved:false, elevation_m:0, coastal_dist_km:0 };
+    try { prof = assessHazardsSector(a.region||'global', a.lat||null, a.lon||null, ssp, yr, a.commodity||_auditCoSector); } catch(e){}
+    return { asset:a, prof:prof };
+  });
+
+  // ── Portfolio-level aggregates ─────────────────────────────────────────
+  var scores = assetResults.map(function(r){ return r.prof.score; });
+  var portfolioScore = scores.length ? Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length * 10)/10 : 0;
+  var portfolioLabel = portfolioScore >= 80 ? 'Critical' : portfolioScore >= 60 ? 'High' : portfolioScore >= 40 ? 'Elevated' : portfolioScore >= 20 ? 'Moderate' : 'Low';
+  var labelColour = {Critical:'#b91c1c',High:'#c2410c',Elevated:'#b45309',Moderate:'#1d4ed8',Low:'#15803d'}[portfolioLabel]||'#374151';
+
+  // ── Hazard frequency across portfolio ─────────────────────────────────
+  var hazardTotals = {};
+  assetResults.forEach(function(r) {
+    (r.prof.top_hazards||[]).forEach(function(h){ hazardTotals[h] = (hazardTotals[h]||0)+1; });
+  });
+  var topPortfolioHazards = Object.keys(hazardTotals).sort(function(a,b){return hazardTotals[b]-hazardTotals[a];}).slice(0,5);
+
+  // ── Score bar helper ───────────────────────────────────────────────────
+  function scoreBar(score) {
+    var c = score>=80?'#b91c1c':score>=60?'#c2410c':score>=40?'#b45309':score>=20?'#1d4ed8':'#15803d';
+    return '<div style="display:flex;align-items:center;gap:8px"><div style="flex:1;background:#f3f4f6;border-radius:4px;height:8px"><div style="width:'+Math.min(score,100)+'%;height:8px;border-radius:4px;background:'+c+'"></div></div><span style="font-size:12px;font-weight:700;color:'+c+';min-width:32px">'+Math.round(score)+'</span></div>';
+  }
+
+  // ── Asset detail rows ─────────────────────────────────────────────────
+  var assetRows = assetResults.map(function(r) {
+    var a = r.asset; var p = r.prof;
+    var applicable = (p.hazards||[]).filter(function(h){return h.applicable;});
+    var hazardCells = HAZARD_NAMES.map(function(hname) {
+      var hz = (p.hazards||[]).find(function(x){return x.h===hname;});
+      if (!hz || !hz.applicable) return '<td style="text-align:center;color:#9ca3af;font-size:11px">—</td>';
+      var sev = +(hz.sev||0).toFixed(1);
+      var c = sev>=4?'#b91c1c':sev>=3?'#c2410c':sev>=2?'#b45309':sev>=1?'#1d4ed8':'#15803d';
+      return '<td style="text-align:center;font-weight:700;color:'+c+';font-size:12px">'+sev+'</td>';
+    }).join('');
+    return '<tr style="border-bottom:1px solid #f3f4f6">'+
+      '<td style="padding:10px 12px;font-weight:600;color:#111827;font-size:13px">'+
+        (a.asset||a.name||'Asset')+'<br><span style="font-size:11px;color:#6b7280;font-weight:400">'+
+        (a.region||'')+(a.lat?(' · '+parseFloat(a.lat).toFixed(2)+'°, '+parseFloat(a.lon).toFixed(2)+'°'):'')+'</span></td>'+
+      '<td style="padding:10px 12px;font-size:12px">'+scoreBar(p.score)+'</td>'+
+      '<td style="padding:10px 12px;text-align:center;font-size:12px;color:#374151">'+((p.annual_loss_pct||0)*100).toFixed(2)+'%</td>'+
+      '<td style="padding:10px 12px;font-size:11px;color:#6b7280">'+(p.top_hazards||[]).slice(0,3).join(', ')+'</td>'+
+      '<td style="padding:10px 12px;text-align:center;font-size:12px">'+applicable.length+'/10</td>'+
+      hazardCells+
+    '</tr>';
+  }).join('');
+
+  // ── Narrative ─────────────────────────────────────────────────────────
+  var worstAsset = assetResults.reduce(function(best,r){ return r.prof.score>best.prof.score?r:best; }, assetResults[0]);
+  var wa = worstAsset.asset; var wp = worstAsset.prof;
+  var narrative = coName + ' is assessed as facing <strong>' + portfolioLabel.toLowerCase() + ' physical climate risk</strong> (portfolio score ' + portfolioScore + '/100) under the ' + sspLabel + ' scenario at the ' + yr + ' horizon. ' +
+    'The portfolio covers ' + hList.length + ' asset' + (hList.length>1?'s':'') + (sector?' in the '+sector+' sector':'') + '. ' +
+    (topPortfolioHazards.length ? 'The dominant physical risk drivers across the portfolio are ' + topPortfolioHazards.slice(0,3).join(', ') + '. ' : '') +
+    'The highest-risk asset is <strong>' + (wa.asset||wa.name||'Asset 1') + '</strong> (score ' + Math.round(wp.score) + '/100' + (wp.top_hazards&&wp.top_hazards.length ? ', primary hazard: ' + wp.top_hazards[0] : '') + '). ' +
+    'GPS-resolved site modifiers (elevation, coastal distance, terrain slope, urban heat island) are applied where coordinates are available. ' +
+    'This assessment covers all 10 acute and chronic physical hazard categories identified by IPCC AR6 WG1 Chapter 11 and WGII Chapters 3–4 as financially material. ' +
+    'It does not include transition risk (carbon pricing, commodity demand shift) or financial valuation. For a full three-pillar CRI assessment, see the Climate Rating panel.';
+
+  // ── Build HTML ─────────────────────────────────────────────────────────
+  var hazardHeaderCols = HAZARD_NAMES.map(function(h){ return '<th style="padding:8px 4px;text-align:center;font-size:10px;color:#6b7280;letter-spacing:.03em;border-bottom:1px solid #e5e7eb;min-width:44px">'+HAZARD_ICONS[h]+'<br>'+h.replace(' ',' ')+'</th>'; }).join('');
+
+  var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'+
+    '<title>Physical Climate Hazard Report — '+coName+'</title>'+
+    '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<style>'+
+      'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:0;color:#111827;background:#fff}'+
+      '@media print{body{font-size:11px}.no-print{display:none!important}@page{margin:18mm 16mm}}'+
+      '.page{max-width:1100px;margin:0 auto;padding:32px 24px}'+
+      'table{width:100%;border-collapse:collapse}th{background:#f9fafb;font-size:11px;font-weight:700;text-align:left;padding:8px 12px;border-bottom:2px solid #e5e7eb;letter-spacing:.04em;text-transform:uppercase;color:#6b7280}'+
+      'td{padding:8px 12px;vertical-align:middle}'+
+      'tr:hover{background:#fafafa}'+
+      '.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}'+
+      '.section{margin:28px 0}'+
+      'h2{font-size:15px;font-weight:800;color:#111827;margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid #e5e7eb;letter-spacing:-.01em}'+
+      '.cover-score{font-size:64px;font-weight:900;line-height:1;color:'+labelColour+'}'+
+      '.sev-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;margin:8px 0}'+
+      '.sev-dot{width:10px;height:10px;border-radius:50%;display:inline-block}'+
+    '</style></head><body>'+
+
+    '<div class="page">'+
+    // Cover
+    '<div style="border-bottom:3px solid '+labelColour+';padding-bottom:24px;margin-bottom:28px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px">'+
+        '<div>'+
+          '<div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Physical Climate Hazard Report</div>'+
+          '<div style="font-size:28px;font-weight:900;color:#111827;margin-bottom:4px">'+coName+'</div>'+
+          (sector?'<div style="font-size:14px;color:#6b7280;margin-bottom:8px">'+sector+'</div>':'')+
+          '<div style="font-size:12px;color:#9ca3af">Generated '+ts+' · CRI Engine v0.3 · Scenario: '+sspLabel+'</div>'+
+        '</div>'+
+        '<div style="text-align:right">'+
+          '<div class="cover-score">'+portfolioScore+'</div>'+
+          '<div style="font-size:13px;font-weight:700;color:'+labelColour+'">'+portfolioLabel+' Physical Risk</div>'+
+          '<div style="font-size:11px;color:#9ca3af">Portfolio mean score (0–100)</div>'+
+        '</div>'+
+      '</div>'+
+      // Summary badges
+      '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">'+
+        '<span class="badge" style="background:#f0fdf4;color:#166534">'+hList.length+' Asset'+(hList.length>1?'s':'')+'</span>'+
+        '<span class="badge" style="background:#eff6ff;color:#1e40af">'+sspLabel.split('—')[0].trim()+'</span>'+
+        '<span class="badge" style="background:#faf5ff;color:#6d28d9">Horizon: '+yr+'</span>'+
+        '<span class="badge" style="background:#fff7ed;color:#9a3412">10 Hazard Categories</span>'+
+        '<span class="badge" style="background:#f9fafb;color:#374151">IPCC AR6 · WRI Aqueduct · ERA5</span>'+
+        '<span style="background:none;color:#9ca3af;font-size:11px;padding:3px 8px;align-self:center">Physical only — no transition or financial data required</span>'+
+      '</div>'+
+    '</div>'+
+
+    // Narrative
+    '<div class="section">'+
+      '<h2>📋 Executive Summary</h2>'+
+      '<p style="font-size:13px;line-height:1.7;color:#374151;margin:0">'+narrative+'</p>'+
+    '</div>'+
+
+    // Top hazards across portfolio
+    (topPortfolioHazards.length ? '<div class="section">'+
+      '<h2>⚠ Dominant Portfolio Hazards</h2>'+
+      '<div style="display:flex;gap:12px;flex-wrap:wrap">'+
+      topPortfolioHazards.map(function(h,i){
+        var c = ['#b91c1c','#c2410c','#b45309','#1d4ed8','#15803d'][i]||'#374151';
+        return '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 18px;min-width:120px;text-align:center">'+
+          '<div style="font-size:22px">'+HAZARD_ICONS[h]+'</div>'+
+          '<div style="font-size:13px;font-weight:700;color:'+c+';margin-top:4px">'+h+'</div>'+
+          '<div style="font-size:11px;color:#9ca3af;margin-top:2px">'+hazardTotals[h]+' asset'+(hazardTotals[h]>1?'s':'')+'</div>'+
+        '</div>';
+      }).join('')+
+      '</div></div>' : '')+
+
+    // Score thresholds
+    '<div class="section">'+
+      '<h2>📊 Score Scale</h2>'+
+      '<div class="sev-legend">'+
+        '<span><span class="sev-dot" style="background:#15803d"></span> Low (0–19) — minor exposure</span>'+
+        '<span><span class="sev-dot" style="background:#1d4ed8"></span> Moderate (20–39) — adaptation warranted</span>'+
+        '<span><span class="sev-dot" style="background:#b45309"></span> Elevated (40–59) — material impact likely</span>'+
+        '<span><span class="sev-dot" style="background:#c2410c"></span> High (60–79) — potential stranding risk</span>'+
+        '<span><span class="sev-dot" style="background:#b91c1c"></span> Critical (80–100) — severe impairment</span>'+
+      '</div>'+
+      '<div class="sev-legend" style="margin-top:4px">Severity scores: 0 = not applicable / negligible · 1 = Low · 2 = Moderate · 3 = Elevated · 4 = High · 5 = Critical</div>'+
+    '</div>'+
+
+    // Asset detail table
+    '<div class="section">'+
+      '<h2>🏭 Asset-Level Hazard Assessment</h2>'+
+      '<div style="overflow-x:auto">'+
+      '<table>'+
+        '<thead><tr>'+
+          '<th style="min-width:160px">Asset</th>'+
+          '<th style="min-width:120px">Physical Score</th>'+
+          '<th style="text-align:center;min-width:70px">Ann. Loss</th>'+
+          '<th style="min-width:120px">Top Hazards</th>'+
+          '<th style="text-align:center;min-width:60px">Applicable</th>'+
+          hazardHeaderCols+
+        '</tr></thead>'+
+        '<tbody>'+assetRows+'</tbody>'+
+      '</table>'+
+      '</div>'+
+      '<p style="font-size:11px;color:#9ca3af;margin-top:8px">Severity on 0–5 scale. Annual loss = joint probability across applicable hazards. — = not applicable (non-coastal, flat terrain, etc.)</p>'+
+    '</div>'+
+
+    // Data sources
+    '<div class="section">'+
+      '<h2>📚 Data Sources & Methodology</h2>'+
+      '<table>'+
+        '<thead><tr><th>Hazard</th><th>Primary Source</th><th>IPCC AR6 Ref</th><th>Methodology</th></tr></thead>'+
+        '<tbody>'+
+          [['Heat Stress','NASA NEX-GDDP-CMIP6 / ERA5','WG1 Ch.11.3','WBGT labour productivity loss; Clausius-Clapeyron frequency scaling'],
+           ['Riverine Flood','WRI Aqueduct 4.0 (2023)','WG1 Ch.11.4','7%/°C precip intensity scaling; river basin calibration'],
+           ['Coastal Flood','WRI Aqueduct Coastal v1.0','WG2 Ch.3, WG1 Ch.9','Storm surge + SLR; SRTM 30m elevation proxy'],
+           ['Sea Level Rise','IPCC AR6 Ch.9; NOAA tide gauges','WG1 Ch.9','RCP-to-SSP crosswalk; coastal amplification by latitude'],
+           ['Saltwater Intrusion','WRI Aqueduct 4.0; SLR proxy','WG2 Ch.4','Coastal elevation + SLR; freshwater lens depletion'],
+           ['Landslide','SRTM/Copernicus DEM 30m','WG2 Ch.5','Slope × precipitation × land cover modifier'],
+           ['Wildfire','Canadian FWI; NASA FIRMS','WG2 Ch.12','Fire weather index × vegetation × aridity; SSP scaling'],
+           ['Cyclone','IBTrACS v4; Knutson et al. (2020)','WG1 Ch.11.7','Track density × intensification; coastal exposure'],
+           ['Drought','PDSI scaling; IPCC AR6','WG1 Ch.11.6','Palmer Drought Severity Index; SSP precipitation deficit'],
+           ['Water Stress','WRI Aqueduct 4.0','WG2 Ch.4','Annual withdrawal/availability ratio; SSP demand elasticity'],
+          ].map(function(r){return '<tr style="border-bottom:1px solid #f3f4f6"><td style="font-weight:600;font-size:12px">'+HAZARD_ICONS[r[0]]||'·'+' '+r[0]+'</td><td style="font-size:12px">'+r[1]+'</td><td style="font-size:11px;color:#6b7280">'+r[2]+'</td><td style="font-size:11px;color:#6b7280">'+r[3]+'</td></tr>';}).join('')+
+        '</tbody>'+
+      '</table>'+
+    '</div>'+
+
+    // Disclaimer
+    '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-top:24px;font-size:11px;color:#6b7280;line-height:1.6">'+
+      '<strong style="color:#374151">⚠ Scope & Limitations</strong> — This report covers physical climate hazard assessment only. '+
+      'Transition risk (carbon pricing, commodity demand shift) and financial valuation are excluded. '+
+      'Hazard scores are parameterised regional estimates calibrated from WRI Aqueduct 4.0 and IPCC AR6 impact functions; they are not real-time geospatial observations. '+
+      'GPS-resolved site modifiers are applied where coordinates are available. '+
+      'This output is suitable for TCFD physical risk disclosure, IFRS S2, CSRD ESRS E1, ECB climate stress testing, and EBA Pillar 3 ESG risk disclosure. '+
+      'Review by a qualified risk professional is recommended before regulatory submission. '+
+      'CRI Engine v0.3 · '+ts+
+    '</div>'+
+
+    '</div>'+  // .page
+    // Print button
+    '<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px">'+
+      '<button onclick="window.print()" style="background:#0f766e;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)">🖨 Print / Save PDF</button>'+
+    '</div>'+
+    '</body></html>';
+
+  // ── Download as HTML file ─────────────────────────────────────────────
+  var blob = new Blob([html], {type:'text/html'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'PhysicalHazardReport_' + coName.replace(/[^a-zA-Z0-9]/g,'_') + '_' + yr + '_' + ssp.toUpperCase() + '.html';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('📄 Physical Risk Report downloaded — open in browser and use Print → Save as PDF');
 }
 
 function downloadLoanTemplate() {
