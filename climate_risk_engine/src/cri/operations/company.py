@@ -229,6 +229,13 @@ def simulate_year(
     agg_physical = sum(c["physical_loss_cost"] for c in contributions)
     agg_adapt_capex = sum(c["adaptation_capex"] for c in contributions)
 
+    # Transition capex — computed from abatement module using company-level
+    # Scope 1+2 baseline emissions and the scenario's carbon price path.
+    total_s1s2 = sum(c["scope1"] + c["scope2"] for c in contributions)
+    agg_transition_capex = compute_transition_capex(
+        scenario.family, year, total_s1s2, drivers.carbon_price
+    )
+
     revenue_by_commodity: dict[str, float] = {}
     for c in contributions:
         revenue_by_commodity[c["commodity"]] = (
@@ -252,11 +259,9 @@ def simulate_year(
         emissions_scope2=sum(c["scope2"] for c in contributions),
         emissions_scope3=sum(c["scope3"] for c in contributions),
         adaptation_capex=agg_adapt_capex,
-        # Transition capex and stranded-asset writedowns are captured in the
-        # scenario's risk_premium_bps (WACC uplift) and EBITDA compression paths
-        # rather than as explicit line items in v0.2. Asset-level MACC curves
-        # are on the roadmap for v0.3.
-        transition_capex=0.0,
+        # Transition capex: computed from abatement module (scenario-driven MACC).
+        # Asset-level MACC curves with sector calibration are on the roadmap for v0.4.
+        transition_capex=agg_transition_capex,
         stranded_writedown=0.0,
         stranded_assets=[],
         revenue_by_commodity=revenue_by_commodity,
