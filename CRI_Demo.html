@@ -3243,7 +3243,7 @@ async function downloadPhysicalRiskReport() {
         '<span class="badge" style="background:#eff6ff;color:#1e40af">'+sspLabel.split('—')[0].trim()+'</span>'+
         '<span class="badge" style="background:#faf5ff;color:#6d28d9">Horizon: '+yr+'</span>'+
         '<span class="badge" style="background:#fff7ed;color:#9a3412">10 Hazard Categories</span>'+
-        '<span class="badge" style="background:#f9fafb;color:#374151">IPCC AR6 · WRI Aqueduct · ERA5</span>'+
+        '<span class="badge" style="background:#f9fafb;color:#374151">IPCC AR6 · WRI Aqueduct 4.0 (parameterised)</span>'+
         '<span style="color:#9ca3af;font-size:11px;padding:3px 8px;align-self:center">Physical only — no transition or financial data required</span>'+
       '</div>'+
     '</div>'+
@@ -4944,7 +4944,7 @@ function showAssetDetailFromProf(ap) {
     '<div class="cc-title" style="display:flex;align-items:center;justify-content:space-between">'+
       '<span>🌡 Meteorological Baseline &amp; Projection</span>'+
       '<span id="'+mpId+'-badge" style="font-size:11px;font-weight:400;color:var(--accent)">'+
-        (a.lat!=null ? '⏳ Fetching live ERA5…' : '⚪ Static baseline (no GPS)' )+
+        (a.lat!=null ? '⏳ Loading regional baseline…' : '⚪ Static baseline (no GPS)' )+
       '</span>'+
     '</div>'+
     '<div style="font-size:11px;color:var(--muted);margin-bottom:10px;margin-top:2px">'+
