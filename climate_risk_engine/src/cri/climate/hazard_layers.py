@@ -712,7 +712,7 @@ def _heat_stress(region: str, ssp: SSPScenario, year: int,
     adjusted_baseline = live_severity_base * heat_factor
     severity = min(5.0, adjusted_baseline * met_mult * (1 + warming * 0.35))
     prob = min(0.95, base_prob * freq_mult * heat_factor)
-    loss = min(0.08, max(0.0, (severity - 2.0) * 0.008))
+    loss = min(0.010, max(0.0, (severity - 2.0) * 0.0008))  # recal v0.3: ÷10 vs v0.2
 
     w30 = ssp.regional_warming(2030, region)
     w50 = ssp.regional_warming(2050, region)
@@ -773,7 +773,7 @@ def _flood_riverine(region: str, ssp: SSPScenario, year: int, lulc: str,
     pv_idx = precip_variability_index(region)
     severity = min(5.0, adjusted_baseline * precip_change * runoff_mult * (0.7 + 0.3 * pv_idx))
     prob = min(0.90, adjusted_baseline / 5.0 * precip_change * 0.25)
-    loss = min(0.10, max(0.0, (severity - 1.5) * 0.018))
+    loss = min(0.015, max(0.0, (severity - 1.5) * 0.0015))  # recal v0.3
 
     # Trend lines always use IPCC trajectory (live data is single-year point estimate)
     w30 = ssp.regional_warming(2030, region); w50 = ssp.regional_warming(2050, region)
@@ -834,7 +834,7 @@ def _flood_coastal(region: str, ssp: SSPScenario, year: int,
     # Apply coastal proximity as a continuous exposure weight
     severity = min(5.0, baseline * slr_amplifier * coastal_factor)
     prob = min(0.80, baseline / 5.0 * slr_amplifier * coastal_factor * 0.20)
-    loss = min(0.15, max(0.0, (severity - 1.0) * 0.022))
+    loss = min(0.020, max(0.0, (severity - 1.0) * 0.0020))  # recal v0.3
 
     slr30 = ssp.slr(2030, region); slr50 = ssp.slr(2050, region)
 
@@ -872,7 +872,7 @@ def _sea_level_rise(region: str, ssp: SSPScenario, year: int,
     elev_factor = max(0.1, 1 - elevation_m / 20.0)   # 0.75 at 5m, 0.25 at 15m
     severity = min(5.0, slr * 5 * elev_factor * 2.0 * coastal_factor)
     prob = min(0.70, severity / 5.0 * 0.30)
-    loss = min(0.12, severity * 0.018 * elev_factor)
+    loss = min(0.015, severity * 0.0018 * elev_factor)  # recal v0.3
 
     slr30 = ssp.slr(2030, region); slr50 = ssp.slr(2050, region)
 
@@ -912,7 +912,7 @@ def _saltwater_intrusion(region: str, ssp: SSPScenario, year: int,
     elev_factor = max(0.0, 1 - elevation_m / 15.0)
     severity = min(5.0, (slr * 4 + water_stress * 0.5) * elev_factor * coastal_factor)
     prob = min(0.60, severity / 5.0 * 0.20)
-    loss = min(0.06, severity * 0.008)
+    loss = min(0.008, severity * 0.0008)  # recal v0.3
 
     slr30 = ssp.slr(2030, region); slr50 = ssp.slr(2050, region)
 
@@ -946,7 +946,7 @@ def _landslide(region: str, ssp: SSPScenario, year: int,
     elev_factor = min(2.0, 1 + elevation_m / 3000)
     severity = min(5.0, base_severity * precip_change * cover_factor * elev_factor * 0.85)
     prob = min(0.40, severity / 5.0 * 0.15)
-    loss = min(0.08, max(0.0, (severity - 1.5) * 0.012))
+    loss = min(0.010, max(0.0, (severity - 1.5) * 0.0010))  # recal v0.3
 
     w30 = ssp.regional_warming(2030, region); w50 = ssp.regional_warming(2050, region)
     pc30 = 1 + PRECIP_CHANGE_PCT_PER_DEG_C * w30 / 100
@@ -979,7 +979,7 @@ def _wildfire(region: str, ssp: SSPScenario, year: int, lulc: str) -> HazardScor
     # Calibrated: NASA FIRMS + IPCC AR6 WG2 Ch12 — wildfire disrupts industrial
     # operations 1–3% annually in fire-prone regions (hardened infra, firebreaks).
     # Coefficient 0.010; cap 10% (severe multi-week event in worst-case).
-    loss = min(0.10, max(0.0, (severity - 2.0) * 0.010))
+    loss = min(0.010, max(0.0, (severity - 2.0) * 0.0008))  # recal v0.3
 
     w30 = ssp.regional_warming(2030, region); w50 = ssp.regional_warming(2050, region)
     fwi30 = 1 + WILDFIRE_INDEX_PCT_PER_DEG_C * w30 / 100
@@ -1028,7 +1028,7 @@ def _cyclone(region: str, ssp: SSPScenario, year: int, is_coastal: bool) -> Haza
     # Expected annual production loss = hit probability × fraction lost per event.
     # Fraction lost per hit scales with intensity: ~30–35% of annual output
     # during a severe cyclone shutdown (1–4 weeks).  Knutson et al. 2020.
-    loss = min(0.20, prob * intensity_change * 0.35)
+    loss = min(0.08, prob * intensity_change * 0.10)  # recal v0.3: hit×loss per event
 
     w30 = ssp.regional_warming(2030, region); w50 = ssp.regional_warming(2050, region)
     ic30 = 1 + CYCLONE_INTENSITY_PCT_PER_DEG_C * w30 / 100
@@ -1069,7 +1069,7 @@ def _drought(region: str, ssp: SSPScenario, year: int) -> HazardScore:
     prob = min(0.80, base_drought_prob * drought_mult)
     # Calibrated: WRI Aqueduct 4.0 + IPCC AR6 Ch11.6 — drought reduces water-
     # dependent industrial output 1–4% annually in high-stress regions.
-    loss = min(0.12, max(0.0, (severity - 2.0) * 0.015))
+    loss = min(0.015, max(0.0, (severity - 2.0) * 0.0012))  # recal v0.3
 
     w30 = ssp.regional_warming(2030, region); w50 = ssp.regional_warming(2050, region)
     dm30 = 1 + w30 * 0.22 + w30**2 * 0.04
@@ -1107,7 +1107,7 @@ def _water_stress(region: str, ssp: SSPScenario, year: int,
     stress_mult = 1 + warming * 0.15
     severity = min(5.0, adjusted_baseline * stress_mult)
     prob = min(0.95, severity / 5.0 * 0.55)
-    loss = min(0.10, max(0.0, (severity - 2.5) * 0.015))
+    loss = min(0.012, max(0.0, (severity - 2.5) * 0.0012))  # recal v0.3
 
     w30 = ssp.regional_warming(2030, region); w50 = ssp.regional_warming(2050, region)
 
