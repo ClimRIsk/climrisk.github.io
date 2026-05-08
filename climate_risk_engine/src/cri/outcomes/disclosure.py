@@ -432,12 +432,12 @@ def generate_tcfd(
         "identification_process": (
             f"Climate-related risks for {ctx['name']} are identified annually through the CRI engine. "
             f"For {ctx['n_assets']} assets across {ctx['asset_regions']}, the engine integrates "
-            f"WRI Aqueduct 4.0 (water/flood/drought), NASA NEX-GDDP CMIP6 (heat stress, precipitation), "
+            f"WRI Aqueduct 4.0 regional baseline statistics (water/flood/drought), NASA NEX-GDDP-CMIP6 regional statistics (heat stress, precipitation), "
             f"NGFS Phase 4 (carbon prices), and IEA WEO 2023 (demand curves). "
             f"{ctx['risk_focus']}"
         ),
         "assessment_methodology": {
-            "physical_risk": "WRI Aqueduct 4.0 + NASA NEX-GDDP CMIP6 regional proxies; joint hazard aggregation",
+            "physical_risk": "WRI Aqueduct 4.0 regional baseline statistics + NASA NEX-GDDP-CMIP6 regional proxies; sub-grid elevation & coastal downscaling; joint hazard aggregation (independent-events)",
             "transition_risk": "NGFS Phase 4 carbon price paths + IEA WEO demand scenarios",
             "financial_risk": "Climate-adjusted DCF with scenario risk premium on WACC",
             "horizon": "2026–2050 (annual)",
@@ -446,7 +446,8 @@ def generate_tcfd(
             "carbon_cost_2030_usd_m_nze": carbon_cost_2030_m,
             "physical_loss_cost_2030_usd_m_nze": physical_loss_2030_m,
             "ebitda_compression_2030_pct_nze": compression_2030_pct,
-            "wacc_uplift_nze_vs_cp_pp": round((nze.wacc_used - cp.wacc_used) * 100, 2),
+            # CP has higher WACC than NZE (higher scenario premium); delta = CP − NZE.
+            "wacc_uplift_cp_vs_nze_pp": round((cp.wacc_used - nze.wacc_used) * 100, 2),
             # Per-hazard breakdown — shows individual hazard dollar contributions
             "physical_loss_by_hazard_2030_usd_m_nze": (
                 {k: round(v, 1) for k, v in sorted(
@@ -529,10 +530,10 @@ def generate_tcfd(
         company_name=company.name,
         reporting_year=reporting_year,
         data_sources=[
-            "WRI Aqueduct 4.0",
-            "NGFS Phase 4 (2023)",
-            "NASA NEX-GDDP / IPCC AR6",
-            "IEA World Energy Outlook 2023 (via OWID)",
+            "WRI Aqueduct 4.0 (regional baseline statistics — parameterised lookup, not live API)",
+            "NGFS Phase 4 (2023) carbon price and demand pathways",
+            "NASA NEX-GDDP-CMIP6 / IPCC AR6 (regional warming statistics — parameterised)",
+            "IEA World Energy Outlook 2023 demand curves",
             "Company-provided financial data",
         ],
         caveats=caveats,
@@ -681,7 +682,9 @@ def generate_issb(
         company_name=company.name,
         reporting_year=reporting_year,
         data_sources=[
-            "WRI Aqueduct 4.0", "NGFS Phase 4", "NASA NEX-GDDP",
+            "WRI Aqueduct 4.0 (regional baseline statistics — parameterised)",
+            "NGFS Phase 4 carbon price and demand pathways",
+            "NASA NEX-GDDP-CMIP6 (regional statistics — parameterised)",
             "IEA WEO 2023", "GHG Protocol",
         ],
         caveats=caveats,
@@ -874,7 +877,9 @@ def generate_csrd(
         company_name=company.name,
         reporting_year=reporting_year,
         data_sources=[
-            "WRI Aqueduct 4.0", "NGFS Phase 4", "NASA NEX-GDDP",
+            "WRI Aqueduct 4.0 (regional baseline statistics — parameterised)",
+            "NGFS Phase 4 carbon price and demand pathways",
+            "NASA NEX-GDDP-CMIP6 (regional statistics — parameterised)",
             "IEA WEO 2023", "GHG Protocol", "ESRS E1 Framework",
         ],
         caveats=caveats,
@@ -1115,9 +1120,9 @@ def generate_brsr(
         company_name=company.name,
         reporting_year=reporting_year,
         data_sources=[
-            "WRI Aqueduct 4.0",
-            "NGFS Phase 4 (2023)",
-            "NASA NEX-GDDP / IPCC AR6",
+            "WRI Aqueduct 4.0 (regional baseline statistics — parameterised lookup, not live API)",
+            "NGFS Phase 4 (2023) carbon price and demand pathways",
+            "NASA NEX-GDDP-CMIP6 / IPCC AR6 (regional statistics — parameterised)",
             "SEBI BRSR Framework (Jul 2023)",
             "India CCTS / BEE PAT Scheme references",
             "GHG Protocol Corporate Standard",
