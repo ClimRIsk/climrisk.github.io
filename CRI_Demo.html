@@ -3104,15 +3104,28 @@ function downloadPhysicalRiskReport() {
     'This assessment covers all 10 acute and chronic physical hazard categories identified by IPCC AR6 WG1 Chapter 11 and WGII Chapters 3–4 as financially material. ' +
     'It does not include transition risk (carbon pricing, commodity demand shift) or financial valuation. For a full three-pillar CRI assessment, see the Climate Rating panel.';
 
+  // ── GPS marker data for Leaflet maps ────────────────────────────────────
+  var gpsAssets = assetResults.filter(function(r){ return r.asset.lat!=null && r.asset.lon!=null; });
+  var markerData = gpsAssets.map(function(r,i){
+    var a=r.asset, p=r.prof;
+    var c=p.score>=80?'#b91c1c':p.score>=60?'#c2410c':p.score>=40?'#b45309':p.score>=20?'#1d4ed8':'#15803d';
+    return {idx:i,lat:a.lat,lon:a.lon,name:(a.asset||a.name||'Asset').replace(/'/g,'&#39;'),score:Math.round(p.score),color:c,region:(a.region||''),commodity:(a.commodity||'')};
+  });
+  var hasMap = markerData.length > 0;
+
   // ── Build HTML ─────────────────────────────────────────────────────────
   var hazardHeaderCols = HAZARD_NAMES.map(function(h){ return '<th style="padding:8px 4px;text-align:center;font-size:10px;color:#6b7280;letter-spacing:.03em;border-bottom:1px solid #e5e7eb;min-width:44px">'+HAZARD_ICONS[h]+'<br>'+h.replace(' ',' ')+'</th>'; }).join('');
 
   var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'+
     '<title>Physical Climate Hazard Report — '+coName+'</title>'+
     '<meta name="viewport" content="width=device-width,initial-scale=1">'+
+    '<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>'+
     '<style>'+
       'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:0;color:#111827;background:#fff}'+
-      '@media print{body{font-size:11px}.no-print{display:none!important}@page{margin:18mm 16mm}}'+
+      '@media print{body{font-size:11px}.no-print{display:none!important}@page{margin:18mm 16mm}.map-wrap{break-inside:avoid;page-break-inside:avoid}.leaflet-control-zoom,.leaflet-control-attribution{display:none!important}}'+
+      '.asset-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:18px;margin-bottom:18px;break-inside:avoid;page-break-inside:avoid}'+
+      '.amap{height:220px;border-radius:7px;border:1px solid #e5e7eb;margin-top:12px;overflow:hidden;position:relative;z-index:0}'+
+      '.pfmap{height:420px;border-radius:8px;border:1.5px solid #e5e7eb;overflow:hidden;position:relative;z-index:0;margin-bottom:8px}'+
       '.page{max-width:1100px;margin:0 auto;padding:32px 24px}'+
       'table{width:100%;border-collapse:collapse}th{background:#f9fafb;font-size:11px;font-weight:700;text-align:left;padding:8px 12px;border-bottom:2px solid #e5e7eb;letter-spacing:.04em;text-transform:uppercase;color:#6b7280}'+
       'td{padding:8px 12px;vertical-align:middle}'+
@@ -3157,6 +3170,15 @@ function downloadPhysicalRiskReport() {
       '<h2>📋 Executive Summary</h2>'+
       '<p style="font-size:13px;line-height:1.7;color:#374151;margin:0">'+narrative+'</p>'+
     '</div>'+
+
+    // Portfolio location map (GPS assets only)
+    (hasMap ? '<div class="section map-wrap">'+
+      '<h2>🗺 Asset Location Map</h2>'+
+      '<div id="phr-pfmap" class="pfmap"></div>'+
+      '<div style="font-size:11px;color:#9ca3af">'+gpsAssets.length+' GPS-resolved asset'+(gpsAssets.length!==1?'s':'')+' · Circle colour & number = physical risk score (0–100) · '+
+        (gpsAssets.length < assetResults.length ? (assetResults.length-gpsAssets.length)+' regional asset'+(assetResults.length-gpsAssets.length!==1?'s':'')+' without GPS not shown — add coordinates in Company Setup for site-specific placement. ' : '')+
+        'Open in browser · wait ~3 s for tiles · then Print → Save as PDF.</div>'+
+    '</div>' : '')+
 
     // Top hazards across portfolio
     (topPortfolioHazards.length ? '<div class="section">'+
@@ -3204,6 +3226,29 @@ function downloadPhysicalRiskReport() {
       '<p style="font-size:11px;color:#9ca3af;margin-top:8px">Severity on 0–5 scale. Annual loss = joint probability across applicable hazards. — = not applicable (non-coastal, flat terrain, etc.)</p>'+
     '</div>'+
 
+    // Per-asset map cards (GPS assets only)
+    (hasMap ? '<div class="section"><h2>📍 Asset-Level Location Maps</h2>'+
+      gpsAssets.map(function(r,i){
+        var a=r.asset, p=r.prof;
+        var c=p.score>=80?'#b91c1c':p.score>=60?'#c2410c':p.score>=40?'#b45309':p.score>=20?'#1d4ed8':'#15803d';
+        var lbl=p.score>=80?'Critical':p.score>=60?'High':p.score>=40?'Elevated':p.score>=20?'Moderate':'Low';
+        return '<div class="asset-card">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">'+
+            '<div>'+
+              '<div style="font-size:16px;font-weight:800;color:#111827">'+(a.asset||a.name||'Asset')+'</div>'+
+              '<div style="font-size:12px;color:#6b7280;margin-top:2px">'+(a.region||'')+(a.lat?' · '+parseFloat(a.lat).toFixed(4)+'°, '+parseFloat(a.lon).toFixed(4)+'°':'')+(a.commodity?' · '+a.commodity:'')+'</div>'+
+            '</div>'+
+            '<div style="text-align:right">'+
+              '<div style="font-size:32px;font-weight:900;color:'+c+'">'+Math.round(p.score)+'</div>'+
+              '<div style="font-size:11px;font-weight:700;color:'+c+'">'+lbl+' Physical Risk</div>'+
+            '</div>'+
+          '</div>'+
+          '<div style="font-size:12px;margin-top:8px;color:#374151">Annual loss est.: <strong>'+((p.annual_loss_pct||0)*100).toFixed(2)+'%</strong> &nbsp;·&nbsp; Top hazards: <strong>'+(p.top_hazards||[]).slice(0,3).join(', ')+'</strong></div>'+
+          '<div id="amap-'+i+'" class="amap"></div>'+
+        '</div>';
+      }).join('')+
+    '</div>' : '')+
+
     // Data sources
     '<div class="section">'+
       '<h2>📚 Data Sources & Methodology</h2>'+
@@ -3220,7 +3265,7 @@ function downloadPhysicalRiskReport() {
            ['Cyclone','IBTrACS v4; Knutson et al. (2020)','WG1 Ch.11.7','Track density × intensification; coastal exposure'],
            ['Drought','PDSI scaling; IPCC AR6','WG1 Ch.11.6','Palmer Drought Severity Index; SSP precipitation deficit'],
            ['Water Stress','WRI Aqueduct 4.0','WG2 Ch.4','Annual withdrawal/availability ratio; SSP demand elasticity'],
-          ].map(function(r){return '<tr style="border-bottom:1px solid #f3f4f6"><td style="font-weight:600;font-size:12px">'+HAZARD_ICONS[r[0]]||'·'+' '+r[0]+'</td><td style="font-size:12px">'+r[1]+'</td><td style="font-size:11px;color:#6b7280">'+r[2]+'</td><td style="font-size:11px;color:#6b7280">'+r[3]+'</td></tr>';}).join('')+
+          ].map(function(r){return '<tr style="border-bottom:1px solid #f3f4f6"><td style="font-weight:600;font-size:12px">'+(HAZARD_ICONS[r[0]]||'·')+' '+r[0]+'</td><td style="font-size:12px">'+r[1]+'</td><td style="font-size:11px;color:#6b7280">'+r[2]+'</td><td style="font-size:11px;color:#6b7280">'+r[3]+'</td></tr>';}).join('')+
         '</tbody>'+
       '</table>'+
     '</div>'+
@@ -3241,6 +3286,33 @@ function downloadPhysicalRiskReport() {
     '<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px">'+
       '<button onclick="window.print()" style="background:#0f766e;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)">🖨 Print / Save PDF</button>'+
     '</div>'+
+    (hasMap ?
+      '<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"><\/script>'+
+      '<script>'+
+        'var _md='+JSON.stringify(markerData)+';'+
+        'document.addEventListener("DOMContentLoaded",function(){'+
+          // Portfolio map
+          '  var pm=L.map("phr-pfmap",{scrollWheelZoom:false});'+
+          '  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:"© OpenStreetMap"}).addTo(pm);'+
+          '  var bnds=_md.map(function(m){return [m.lat,m.lon];});'+
+          '  _md.forEach(function(m){'+
+          '    var ic=L.divIcon({className:"",html:"<div style=\"width:36px;height:36px;background:"+m.color+";border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35)\">"+m.score+"</div>",iconSize:[36,36],iconAnchor:[18,18]});'+
+          '    L.marker([m.lat,m.lon],{icon:ic}).addTo(pm).bindPopup("<b>"+m.name+"</b><br>Score: "+m.score+"/100<br>"+m.region+(m.commodity?"<br>"+m.commodity:""));'+
+          '  });'+
+          '  if(bnds.length===1)pm.setView(bnds[0],8);else pm.fitBounds(bnds,{padding:[50,50]});'+
+          // Per-asset mini maps
+          '  _md.forEach(function(m,i){'+
+          '    var el=document.getElementById("amap-"+i);'+
+          '    if(!el)return;'+
+          '    var am=L.map(el,{scrollWheelZoom:false,zoomControl:false,attributionControl:false});'+
+          '    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(am);'+
+          '    am.setView([m.lat,m.lon],7);'+
+          '    var ic=L.divIcon({className:"",html:"<div style=\"width:30px;height:30px;background:"+m.color+";border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35)\">"+m.score+"</div>",iconSize:[30,30],iconAnchor:[15,15]});'+
+          '    L.marker([m.lat,m.lon],{icon:ic}).addTo(am);'+
+          '  });'+
+        '});'+
+      '<\/script>'
+    : '')+
     '</body></html>';
 
   // ── Download as HTML file ─────────────────────────────────────────────
