@@ -3064,6 +3064,102 @@ async function downloadPhysicalRiskReport() {
   });
   var topPortfolioHazards = Object.keys(hazardTotals).sort(function(a,b){return hazardTotals[b]-hazardTotals[a];}).slice(0,5);
 
+  // ── GPS markers ────────────────────────────────────────────────────────
+  var gpsAssets = assetResults.filter(function(r){ return r.asset.lat!=null && r.asset.lon!=null; });
+  var markerData = gpsAssets.map(function(r,i){
+    var a=r.asset, p=r.prof;
+    var c=p.score>=80?'#b91c1c':p.score>=60?'#c2410c':p.score>=40?'#b45309':p.score>=20?'#1d4ed8':'#15803d';
+    return {idx:i,lat:+a.lat,lon:+a.lon,name:(a.asset||a.name||'Asset'),score:Math.round(p.score),color:c,region:a.region||'',commodity:a.commodity||''};
+  });
+  var hasMap = markerData.length > 0;
+
+  // ── Canvas tile map generator (runs in climrisk.io context, saves as PNG data URL) ──
+  function _mercY(lat){ return (1 - Math.log(Math.tan(lat*Math.PI/180) + 1/Math.cos(lat*Math.PI/180))/Math.PI)/2; }
+
+  async function _renderMap(W, H, cLat, cLon, zoom, mkrs) {
+    var TILE=256, n=Math.pow(2,zoom);
+    function tX(lon){ return (lon+180)/360*n; }
+    function tY(lat){ return _mercY(lat)*n; }
+    function toPixel(lat,lon){ return { px:(tX(lon)-tX(cLon))*TILE+W/2, py:(tY(lat)-tY(cLat))*TILE+H/2 }; }
+
+    var canvas = document.createElement('canvas');
+    canvas.width=W; canvas.height=H;
+    var ctx=canvas.getContext('2d');
+    ctx.fillStyle='#d1d5db'; ctx.fillRect(0,0,W,H);
+
+    var txMin=Math.floor(tX(cLon)-W/2/TILE)-1, txMax=Math.ceil(tX(cLon)+W/2/TILE)+1;
+    var tyMin=Math.floor(tY(cLat)-H/2/TILE)-1, tyMax=Math.ceil(tY(cLat)+H/2/TILE)+1;
+
+    var tps=[];
+    for(var ty=tyMin;ty<=tyMax;ty++){for(var tx=txMin;tx<=txMax;tx++){
+      (function(tx,ty){
+        var sub=['a','b','c'][Math.abs(tx+ty)%3];
+        var url='https://'+sub+'.tile.openstreetmap.org/'+zoom+'/'+tx+'/'+ty+'.png';
+        var px=(tX(tx)-tX(cLon))*TILE+W/2, py=(tY(ty)-tY(cLat))*TILE+H/2;
+        // pixel position: tile tx,ty starts at (tx/n * 360 - 180)
+        var tpx=(tx-tX(cLon))*TILE+W/2, tpy=(ty-tY(cLat))*TILE+H/2;
+        tps.push(new Promise(function(res){
+          var img=new Image(); img.crossOrigin='anonymous';
+          img.onload=function(){ ctx.drawImage(img,Math.round(tpx),Math.round(tpy),TILE,TILE); res(); };
+          img.onerror=res; img.src=url;
+        }));
+      })(tx,ty);
+    }}
+    await Promise.all(tps);
+
+    // Draw markers
+    mkrs.forEach(function(m){
+      var p=toPixel(m.lat,m.lon);
+      if(p.px<-30||p.px>W+30||p.py<-30||p.py>H+30) return;
+      // Shadow
+      ctx.beginPath(); ctx.arc(p.px+2,p.py+2,18,0,2*Math.PI);
+      ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.fill();
+      // Circle
+      ctx.beginPath(); ctx.arc(p.px,p.py,18,0,2*Math.PI);
+      ctx.fillStyle=m.color; ctx.fill();
+      ctx.lineWidth=3; ctx.strokeStyle='#fff'; ctx.stroke();
+      // Score
+      ctx.fillStyle='#fff'; ctx.font='bold 13px Arial, sans-serif';
+      ctx.textAlign='center'; ctx.textBaseline='middle';
+      ctx.fillText(m.score,p.px,p.py);
+      // Name label
+      if(mkrs.length<8){
+        var nm=m.name.length>16?m.name.slice(0,15)+'…':m.name;
+        ctx.font='10px Arial, sans-serif';
+        ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillText(nm,p.px+1,p.py+30);
+        ctx.fillStyle='#fff'; ctx.fillText(nm,p.px,p.py+29);
+      }
+    });
+    return canvas.toDataURL('image/png');
+  }
+
+  function _fitZoom(lats,lons,W,H){
+    if(lats.length===1) return {cLat:lats[0],cLon:lons[0],zoom:7};
+    var minLat=Math.min.apply(null,lats),maxLat=Math.max.apply(null,lats);
+    var minLon=Math.min.apply(null,lons),maxLon=Math.max.apply(null,lons);
+    var cLat=(minLat+maxLat)/2, cLon=(minLon+maxLon)/2;
+    var TILE=256,z,n,rX,rY;
+    for(z=10;z>=1;z--){
+      n=Math.pow(2,z);
+      rX=Math.abs(((maxLon+180)/360-(minLon+180)/360)*n)*TILE;
+      rY=Math.abs((_mercY(minLat)-_mercY(maxLat))*n)*TILE;
+      if(rX<W*0.75&&rY<H*0.75) return {cLat:cLat,cLon:cLon,zoom:z};
+    }
+    return {cLat:cLat,cLon:cLon,zoom:1};
+  }
+
+  // ── Generate map images ────────────────────────────────────────────────
+  var _pfMapImg='', _assetMapImgs=[];
+  if(hasMap){
+    var lats=markerData.map(function(m){return m.lat;});
+    var lons=markerData.map(function(m){return m.lon;});
+    var pf=_fitZoom(lats,lons,800,400);
+    try{ _pfMapImg=await _renderMap(800,400,pf.cLat,pf.cLon,pf.zoom,markerData); }catch(e){}
+    for(var _i=0;_i<markerData.length;_i++){
+      try{ _assetMapImgs.push(await _renderMap(800,220,markerData[_i].lat,markerData[_i].lon,7,[markerData[_i]])); }catch(e){ _assetMapImgs.push(''); }
+    }
+  }
+
   // ── Score bar helper ───────────────────────────────────────────────────
   function scoreBar(score) {
     var c = score>=80?'#b91c1c':score>=60?'#c2410c':score>=40?'#b45309':score>=20?'#1d4ed8':'#15803d';
@@ -3104,51 +3200,26 @@ async function downloadPhysicalRiskReport() {
     'This assessment covers all 10 acute and chronic physical hazard categories identified by IPCC AR6 WG1 Chapter 11 and WGII Chapters 3–4 as financially material. ' +
     'It does not include transition risk (carbon pricing, commodity demand shift) or financial valuation. For a full three-pillar CRI assessment, see the Climate Rating panel.';
 
-  // ── GPS marker data for Leaflet maps ────────────────────────────────────
-  var gpsAssets = assetResults.filter(function(r){ return r.asset.lat!=null && r.asset.lon!=null; });
-  var markerData = gpsAssets.map(function(r,i){
-    var a=r.asset, p=r.prof;
-    var c=p.score>=80?'#b91c1c':p.score>=60?'#c2410c':p.score>=40?'#b45309':p.score>=20?'#1d4ed8':'#15803d';
-    return {idx:i,lat:a.lat,lon:a.lon,name:(a.asset||a.name||'Asset').replace(/'/g,'&#39;'),score:Math.round(p.score),color:c,region:(a.region||''),commodity:(a.commodity||'')};
-  });
-  var hasMap = markerData.length > 0;
-
-  // ── Fetch Leaflet inline so report works from file:// ────────────────────
-  var _leafletJs = '', _leafletCss = '';
-  if (hasMap) {
-    try {
-      var _resps = await Promise.all([
-        fetch('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'),
-        fetch('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css')
-      ]);
-      _leafletJs  = (await _resps[0].text()).replace(/<\/script>/gi, '<\\/script>');
-      _leafletCss = (await _resps[1].text()).replace(/<\/style>/gi, '<\\/style>');
-    } catch(e) { hasMap = false; }
-  }
-
   // ── Build HTML ─────────────────────────────────────────────────────────
-  var hazardHeaderCols = HAZARD_NAMES.map(function(h){ return '<th style="padding:8px 4px;text-align:center;font-size:10px;color:#6b7280;letter-spacing:.03em;border-bottom:1px solid #e5e7eb;min-width:44px">'+HAZARD_ICONS[h]+'<br>'+h.replace(' ',' ')+'</th>'; }).join('');
+  var hazardHeaderCols = HAZARD_NAMES.map(function(h){ return '<th style="padding:8px 4px;text-align:center;font-size:10px;color:#6b7280;letter-spacing:.03em;border-bottom:1px solid #e5e7eb;min-width:44px">'+HAZARD_ICONS[h]+'<br>'+h.replace(' ',' ')+'</th>'; }).join('');
 
   var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'+
     '<title>Physical Climate Hazard Report — '+coName+'</title>'+
     '<meta name="viewport" content="width=device-width,initial-scale=1">'+
-    (hasMap && _leafletCss ? '<style>'+_leafletCss+'<\/style>' : '')+
     '<style>'+
       'body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;margin:0;padding:0;color:#111827;background:#fff}'+
-      '@media print{body{font-size:11px}.no-print{display:none!important}@page{margin:18mm 16mm}.map-wrap{break-inside:avoid;page-break-inside:avoid}.leaflet-control-zoom,.leaflet-control-attribution{display:none!important}}'+
-      '.asset-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:18px;margin-bottom:18px;break-inside:avoid;page-break-inside:avoid}'+
-      '.amap{height:220px;border-radius:7px;border:1px solid #e5e7eb;margin-top:12px;overflow:hidden;position:relative;z-index:0}'+
-      '.pfmap{height:420px;border-radius:8px;border:1.5px solid #e5e7eb;overflow:hidden;position:relative;z-index:0;margin-bottom:8px}'+
+      '@media print{body{font-size:11px}.no-print{display:none!important}@page{margin:18mm 16mm;size:A4}.map-wrap{break-inside:avoid;page-break-inside:avoid}.asset-card{break-inside:avoid;page-break-inside:avoid}}'+
       '.page{max-width:1100px;margin:0 auto;padding:32px 24px}'+
       'table{width:100%;border-collapse:collapse}th{background:#f9fafb;font-size:11px;font-weight:700;text-align:left;padding:8px 12px;border-bottom:2px solid #e5e7eb;letter-spacing:.04em;text-transform:uppercase;color:#6b7280}'+
       'td{padding:8px 12px;vertical-align:middle}'+
-      'tr:hover{background:#fafafa}'+
       '.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700}'+
       '.section{margin:28px 0}'+
       'h2{font-size:15px;font-weight:800;color:#111827;margin:0 0 12px;padding-bottom:8px;border-bottom:2px solid #e5e7eb;letter-spacing:-.01em}'+
       '.cover-score{font-size:64px;font-weight:900;line-height:1;color:'+labelColour+'}'+
       '.sev-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;margin:8px 0}'+
       '.sev-dot{width:10px;height:10px;border-radius:50%;display:inline-block}'+
+      '.asset-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:10px;padding:18px;margin-bottom:18px}'+
+      '.map-img{width:100%;border-radius:7px;border:1px solid #e5e7eb;display:block}'+
     '</style></head><body>'+
 
     '<div class="page">'+
@@ -3167,33 +3238,34 @@ async function downloadPhysicalRiskReport() {
           '<div style="font-size:11px;color:#9ca3af">Portfolio mean score (0–100)</div>'+
         '</div>'+
       '</div>'+
-      // Summary badges
       '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">'+
         '<span class="badge" style="background:#f0fdf4;color:#166534">'+hList.length+' Asset'+(hList.length>1?'s':'')+'</span>'+
         '<span class="badge" style="background:#eff6ff;color:#1e40af">'+sspLabel.split('—')[0].trim()+'</span>'+
         '<span class="badge" style="background:#faf5ff;color:#6d28d9">Horizon: '+yr+'</span>'+
         '<span class="badge" style="background:#fff7ed;color:#9a3412">10 Hazard Categories</span>'+
         '<span class="badge" style="background:#f9fafb;color:#374151">IPCC AR6 · WRI Aqueduct · ERA5</span>'+
-        '<span style="background:none;color:#9ca3af;font-size:11px;padding:3px 8px;align-self:center">Physical only — no transition or financial data required</span>'+
+        '<span style="color:#9ca3af;font-size:11px;padding:3px 8px;align-self:center">Physical only — no transition or financial data required</span>'+
       '</div>'+
     '</div>'+
 
-    // Narrative
+    // Executive summary
     '<div class="section">'+
       '<h2>📋 Executive Summary</h2>'+
       '<p style="font-size:13px;line-height:1.7;color:#374151;margin:0">'+narrative+'</p>'+
     '</div>'+
 
-    // Portfolio location map (GPS assets only)
-    (hasMap ? '<div class="section map-wrap">'+
-      '<h2>🗺 Asset Location Map</h2>'+
-      '<div id="phr-pfmap" class="pfmap"></div>'+
-      '<div style="font-size:11px;color:#9ca3af">'+gpsAssets.length+' GPS-resolved asset'+(gpsAssets.length!==1?'s':'')+' · Circle colour & number = physical risk score (0–100) · '+
-        (gpsAssets.length < assetResults.length ? (assetResults.length-gpsAssets.length)+' regional asset'+(assetResults.length-gpsAssets.length!==1?'s':'')+' without GPS not shown — add coordinates in Company Setup for site-specific placement. ' : '')+
-        'Open in browser · wait ~3 s for tiles · then Print → Save as PDF.</div>'+
-    '</div>' : '')+
+    // Portfolio map
+    (hasMap && _pfMapImg ?
+      '<div class="section map-wrap">'+
+        '<h2>🗺 Asset Location Map</h2>'+
+        '<img src="'+_pfMapImg+'" class="map-img" alt="Portfolio asset map">'+
+        '<div style="font-size:11px;color:#9ca3af;margin-top:6px">'+gpsAssets.length+' GPS-resolved asset'+(gpsAssets.length!==1?'s':'')+
+          (gpsAssets.length < assetResults.length ? ' · '+(assetResults.length-gpsAssets.length)+' regional asset'+(assetResults.length-gpsAssets.length!==1?'s':'')+' without GPS not shown' : '')+
+          ' · Map tiles © OpenStreetMap contributors</div>'+
+      '</div>'
+    : '')+
 
-    // Top hazards across portfolio
+    // Top hazards
     (topPortfolioHazards.length ? '<div class="section">'+
       '<h2>⚠ Dominant Portfolio Hazards</h2>'+
       '<div style="display:flex;gap:12px;flex-wrap:wrap">'+
@@ -3207,24 +3279,22 @@ async function downloadPhysicalRiskReport() {
       }).join('')+
       '</div></div>' : '')+
 
-    // Score thresholds
+    // Score scale
     '<div class="section">'+
       '<h2>📊 Score Scale</h2>'+
       '<div class="sev-legend">'+
-        '<span><span class="sev-dot" style="background:#15803d"></span> Low (0–19) — minor exposure</span>'+
-        '<span><span class="sev-dot" style="background:#1d4ed8"></span> Moderate (20–39) — adaptation warranted</span>'+
-        '<span><span class="sev-dot" style="background:#b45309"></span> Elevated (40–59) — material impact likely</span>'+
-        '<span><span class="sev-dot" style="background:#c2410c"></span> High (60–79) — potential stranding risk</span>'+
-        '<span><span class="sev-dot" style="background:#b91c1c"></span> Critical (80–100) — severe impairment</span>'+
+        '<span><span class="sev-dot" style="background:#15803d"></span> Low (0–19)</span>'+
+        '<span><span class="sev-dot" style="background:#1d4ed8"></span> Moderate (20–39)</span>'+
+        '<span><span class="sev-dot" style="background:#b45309"></span> Elevated (40–59)</span>'+
+        '<span><span class="sev-dot" style="background:#c2410c"></span> High (60–79)</span>'+
+        '<span><span class="sev-dot" style="background:#b91c1c"></span> Critical (80–100)</span>'+
       '</div>'+
-      '<div class="sev-legend" style="margin-top:4px">Severity scores: 0 = not applicable / negligible · 1 = Low · 2 = Moderate · 3 = Elevated · 4 = High · 5 = Critical</div>'+
     '</div>'+
 
-    // Asset detail table
+    // Asset table
     '<div class="section">'+
       '<h2>🏭 Asset-Level Hazard Assessment</h2>'+
-      '<div style="overflow-x:auto">'+
-      '<table>'+
+      '<div style="overflow-x:auto"><table>'+
         '<thead><tr>'+
           '<th style="min-width:160px">Asset</th>'+
           '<th style="min-width:120px">Physical Score</th>'+
@@ -3234,33 +3304,36 @@ async function downloadPhysicalRiskReport() {
           hazardHeaderCols+
         '</tr></thead>'+
         '<tbody>'+assetRows+'</tbody>'+
-      '</table>'+
-      '</div>'+
-      '<p style="font-size:11px;color:#9ca3af;margin-top:8px">Severity on 0–5 scale. Annual loss = joint probability across applicable hazards. — = not applicable (non-coastal, flat terrain, etc.)</p>'+
+      '</table></div>'+
+      '<p style="font-size:11px;color:#9ca3af;margin-top:8px">Severity on 0–5 scale. — = not applicable (non-coastal, flat terrain, etc.)</p>'+
     '</div>'+
 
-    // Per-asset map cards (GPS assets only)
-    (hasMap ? '<div class="section"><h2>📍 Asset-Level Location Maps</h2>'+
+    // Per-asset map cards
+    (hasMap ?
+      '<div class="section"><h2>📍 Asset-Level Location Maps</h2>'+
       gpsAssets.map(function(r,i){
         var a=r.asset, p=r.prof;
         var c=p.score>=80?'#b91c1c':p.score>=60?'#c2410c':p.score>=40?'#b45309':p.score>=20?'#1d4ed8':'#15803d';
         var lbl=p.score>=80?'Critical':p.score>=60?'High':p.score>=40?'Elevated':p.score>=20?'Moderate':'Low';
         return '<div class="asset-card">'+
-          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">'+
+          '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:10px">'+
             '<div>'+
               '<div style="font-size:16px;font-weight:800;color:#111827">'+(a.asset||a.name||'Asset')+'</div>'+
-              '<div style="font-size:12px;color:#6b7280;margin-top:2px">'+(a.region||'')+(a.lat?' · '+parseFloat(a.lat).toFixed(4)+'°, '+parseFloat(a.lon).toFixed(4)+'°':'')+(a.commodity?' · '+a.commodity:'')+'</div>'+
+              '<div style="font-size:12px;color:#6b7280;margin-top:2px">'+(a.region||'')+' · '+parseFloat(a.lat).toFixed(4)+'°, '+parseFloat(a.lon).toFixed(4)+'°'+(a.commodity?' · '+a.commodity:'')+'</div>'+
+              '<div style="font-size:12px;margin-top:6px;color:#374151">Annual loss est.: <strong>'+((p.annual_loss_pct||0)*100).toFixed(2)+'%</strong> &nbsp;·&nbsp; Top hazards: <strong>'+(p.top_hazards||[]).slice(0,3).join(', ')+'</strong></div>'+
             '</div>'+
-            '<div style="text-align:right">'+
-              '<div style="font-size:32px;font-weight:900;color:'+c+'">'+Math.round(p.score)+'</div>'+
+            '<div style="text-align:right;flex-shrink:0">'+
+              '<div style="font-size:36px;font-weight:900;color:'+c+';line-height:1">'+Math.round(p.score)+'</div>'+
               '<div style="font-size:11px;font-weight:700;color:'+c+'">'+lbl+' Physical Risk</div>'+
             '</div>'+
           '</div>'+
-          '<div style="font-size:12px;margin-top:8px;color:#374151">Annual loss est.: <strong>'+((p.annual_loss_pct||0)*100).toFixed(2)+'%</strong> &nbsp;·&nbsp; Top hazards: <strong>'+(p.top_hazards||[]).slice(0,3).join(', ')+'</strong></div>'+
-          '<div id="amap-'+i+'" class="amap"></div>'+
+          (_assetMapImgs[i] ? '<img src="'+_assetMapImgs[i]+'" class="map-img" alt="'+((a.asset||a.name||'Asset').replace(/"/g,''))+' location map">' : '<div style="height:120px;background:#f3f4f6;border-radius:7px;display:flex;align-items:center;justify-content:center;color:#9ca3af;font-size:12px">No GPS data</div>')+
         '</div>';
       }).join('')+
-    '</div>' : '')+
+      (gpsAssets.length < assetResults.length ?
+        '<p style="font-size:11px;color:#9ca3af">'+( assetResults.length-gpsAssets.length)+' asset'+(assetResults.length-gpsAssets.length!==1?'s':'')+' without GPS coordinates not shown. Add lat/lon in Company Setup for site-specific maps.</p>' : '')+
+      '</div>'
+    : '')+
 
     // Data sources
     '<div class="section">'+
@@ -3279,65 +3352,34 @@ async function downloadPhysicalRiskReport() {
            ['Drought','PDSI scaling; IPCC AR6','WG1 Ch.11.6','Palmer Drought Severity Index; SSP precipitation deficit'],
            ['Water Stress','WRI Aqueduct 4.0','WG2 Ch.4','Annual withdrawal/availability ratio; SSP demand elasticity'],
           ].map(function(r){return '<tr style="border-bottom:1px solid #f3f4f6"><td style="font-weight:600;font-size:12px">'+(HAZARD_ICONS[r[0]]||'·')+' '+r[0]+'</td><td style="font-size:12px">'+r[1]+'</td><td style="font-size:11px;color:#6b7280">'+r[2]+'</td><td style="font-size:11px;color:#6b7280">'+r[3]+'</td></tr>';}).join('')+
-        '</tbody>'+
-      '</table>'+
+        '</tbody></table>'+
     '</div>'+
 
     // Disclaimer
     '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:16px;margin-top:24px;font-size:11px;color:#6b7280;line-height:1.6">'+
       '<strong style="color:#374151">⚠ Scope & Limitations</strong> — This report covers physical climate hazard assessment only. '+
-      'Transition risk (carbon pricing, commodity demand shift) and financial valuation are excluded. '+
-      'Hazard scores are parameterised regional estimates calibrated from WRI Aqueduct 4.0 and IPCC AR6 impact functions; they are not real-time geospatial observations. '+
+      'Transition risk and financial valuation are excluded. Hazard scores are parameterised regional estimates calibrated from WRI Aqueduct 4.0 and IPCC AR6 impact functions; they are not real-time geospatial observations. '+
       'GPS-resolved site modifiers are applied where coordinates are available. '+
-      'This output is suitable for TCFD physical risk disclosure, IFRS S2, CSRD ESRS E1, ECB climate stress testing, and EBA Pillar 3 ESG risk disclosure. '+
+      'Suitable for TCFD, IFRS S2, CSRD ESRS E1, ECB climate stress testing, and EBA Pillar 3 ESG disclosure. '+
       'Review by a qualified risk professional is recommended before regulatory submission. '+
       'CRI Engine v0.3 · '+ts+
     '</div>'+
 
-    '</div>'+  // .page
-    // Print button
-    '<div class="no-print" style="position:fixed;bottom:20px;right:20px;display:flex;gap:8px">'+
+    '</div>'+
+    '<div class="no-print" style="position:fixed;bottom:20px;right:20px">'+
       '<button onclick="window.print()" style="background:#0f766e;color:#fff;border:none;padding:10px 20px;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.2)">🖨 Print / Save PDF</button>'+
     '</div>'+
-    (hasMap && _leafletJs ?
-      '<script>'+
-        _leafletJs+
-        ';(function(){'+
-          'var _md='+JSON.stringify(markerData)+';'+
-          // Portfolio map
-          'var pm=L.map("phr-pfmap",{scrollWheelZoom:false});'+
-          'L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18,attribution:"© OpenStreetMap"}).addTo(pm);'+
-          'var bnds=_md.map(function(m){return [m.lat,m.lon];});'+
-          '_md.forEach(function(m){'+
-          '  var ic=L.divIcon({className:"",html:"<div style=\\"width:36px;height:36px;background:"+m.color+";border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;box-shadow:0 2px 8px rgba(0,0,0,.35)\\">"+m.score+"</div>",iconSize:[36,36],iconAnchor:[18,18]});'+
-          '  L.marker([m.lat,m.lon],{icon:ic}).addTo(pm).bindPopup("<b>"+m.name+"</b><br>Score: "+m.score+"/100<br>"+m.region+(m.commodity?"<br>"+m.commodity:""));'+
-          '});'+
-          'if(bnds.length===1)pm.setView(bnds[0],8);else pm.fitBounds(bnds,{padding:[50,50]});'+
-          // Per-asset mini maps
-          '_md.forEach(function(m,i){'+
-          '  var el=document.getElementById("amap-"+i);'+
-          '  if(!el)return;'+
-          '  var am=L.map(el,{scrollWheelZoom:false,zoomControl:false,attributionControl:false});'+
-          '  L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",{maxZoom:18}).addTo(am);'+
-          '  am.setView([m.lat,m.lon],7);'+
-          '  var ic=L.divIcon({className:"",html:"<div style=\\"width:30px;height:30px;background:"+m.color+";border:3px solid #fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.35)\\">"+m.score+"</div>",iconSize:[30,30],iconAnchor:[15,15]});'+
-          '  L.marker([m.lat,m.lon],{icon:ic}).addTo(am);'+
-          '});'+
-        '})();'+
-      '<\/script>'
-    : '')+
     '</body></html>';
 
-  // ── Download as HTML file ─────────────────────────────────────────────
+  // ── Download ─────────────────────────────────────────────────────────
   var blob = new Blob([html], {type:'text/html'});
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'PhysicalHazardReport_' + coName.replace(/[^a-zA-Z0-9]/g,'_') + '_' + yr + '_' + ssp.toUpperCase() + '.html';
   a.click();
   URL.revokeObjectURL(a.href);
-  toast('📄 Physical Risk Report downloaded — open in browser and use Print → Save as PDF');
+  toast('📄 Physical Risk Report downloaded — open in browser, maps are embedded as images');
 }
-
 function downloadLoanTemplate() {
   var wb = XLSX.utils.book_new();
   var data = [
