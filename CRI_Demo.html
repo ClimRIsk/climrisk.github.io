@@ -3121,8 +3121,8 @@ async function downloadPhysicalRiskReport() {
         fetch('https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'),
         fetch('https://unpkg.com/leaflet@1.9.4/dist/leaflet.css')
       ]);
-      _leafletJs  = await _resps[0].text();
-      _leafletCss = await _resps[1].text();
+      _leafletJs  = (await _resps[0].text()).replace(/<\/script>/gi, '<\\/script>');
+      _leafletCss = (await _resps[1].text()).replace(/<\/style>/gi, '<\\/style>');
     } catch(e) { hasMap = false; }
   }
 
