@@ -122,7 +122,11 @@ def _asset_contribution(
     try:
         hazard_profile = _HAZARD_ENGINE.assess(
             asset.id, asset.name, asset.region, year,
-            ssp=ssp_id, _depth=1,   # _depth=1 skips recursive critical_year/peak sub-calls
+            ssp=ssp_id,
+            lat=asset.lat,
+            lon=asset.lon,
+            equipment_type=asset.equipment_type,
+            _depth=1,   # _depth=1 skips recursive critical_year/peak sub-calls
         )
         # Per-hazard dollar cost = foregone_volume_from_hazard × margin
         physical_loss_by_hazard: dict[str, float] = {}

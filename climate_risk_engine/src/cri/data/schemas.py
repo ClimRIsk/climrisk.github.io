@@ -189,6 +189,17 @@ class Asset(BaseModel):
     # Fraction of unit cost attributable to energy (proxy for carbon exposure)
     energy_cost_share: float = 0.3
 
+    # ── GIS coordinates (decimal degrees, WGS-84) ────────────────────────────
+    # When provided, PhysicalHazardEngine uses real spatial data (elevation,
+    # coastal distance, terrain) instead of region-code lookup tables.
+    # Source: operator-provided or geocoded from asset name/region centroid.
+    lat: Optional[float] = None     # latitude  (positive = North)
+    lon: Optional[float] = None     # longitude (positive = East)
+
+    # Equipment type — drives hazard sensitivity multipliers
+    # e.g. "open_pit_mine", "wind_farm", "lng_terminal", "pipeline", "solar_farm"
+    equipment_type: Optional[str] = None
+
 
 class SegmentBaseline(BaseModel):
     """Per-commodity baseline used when we don't yet have asset-level data."""
