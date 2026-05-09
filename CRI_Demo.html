@@ -5624,6 +5624,38 @@ var WILDFIRE_SET = new Set([
   'ID-KI','ID','MY'
 ]);
 
+/* ── v0.4 region sets for expanded 25-hazard library ─────────────────────── */
+var COLD_SET = new Set(['CA-AB','CA-QC','MN-01','CN-NM','US-WY','NO','SE','FI']);
+var PERMAFROST_SET = new Set(['CA-QC','CA-AB','MN-01']);
+var DUST_STORM_SET = new Set(['AU-SA','AU-WA','AU-NT','MN-01','CN-NM','ZA','CL-02','US-TX','US-OK','IN-MH']);
+var HAIL_SET = new Set(['AU-QLD','AU-NSW','AU-VIC','US-TX','US-OK','US-WY','ZA','IN-MH','BR-PA']);
+var ETC_SET = new Set(['GB-ENG','NL-NH','CA-QC','AU-VIC','AU-NSW','ZA','US-WY','CL-02']); // extratropical cyclone
+var TORNADO_SET = new Set(['US-TX','US-OK','AU-QLD']);
+var AVALANCHE_SET = new Set(['CL-02','PE-01','CA-AB','US-WY','MN-01']);
+var GLOF_SET = new Set(['CL-02','PE-01','CA-AB','IN-MH','MN-01']);
+var MARINE_HW_SET = new Set(['AU-WA','AU-QLD','AU-SA','ZA','ID-KI','IN-MH','GB-ENG']);
+var SUBSIDENCE_SET = new Set(['NL-NH','ID-KI','CN-NM','AU-QLD','IN-MH','MN-01','US-TX','US-OK']);
+/* Mean winter temperature (°C) for icing / freeze-thaw physics */
+var MEAN_WINTER_T = {'CA-AB':-12,'CA-QC':-14,'MN-01':-20,'CN-NM':-15,'US-WY':-8,'GB-ENG':4,'NL-NH':3,'AU-WA':14,'AU-QLD':20,'AU-SA':8,'ZA':8,'CL-02':-2,'PE-01':-5,'global':-3};
+/* Cold-region baseline probabilities */
+var COLD_BASE_PROB = {'CA-AB':0.65,'CA-QC':0.60,'MN-01':0.70,'CN-NM':0.55,'US-WY':0.45,'NO':0.55,'SE':0.45,'FI':0.60};
+/* ETC (extratropical cyclone) baseline severity */
+var ETC_BASE = {'GB-ENG':3.2,'NL-NH':3.0,'CA-QC':2.5,'AU-VIC':2.0,'AU-NSW':1.8,'ZA':1.5,'US-WY':1.8,'CL-02':2.2};
+/* Subsidence baseline severity */
+var SUBS_BASE = {'NL-NH':4.5,'ID-KI':3.5,'CN-NM':2.5,'AU-QLD':1.5,'IN-MH':2.0,'MN-01':2.0,'US-TX':1.8,'US-OK':1.5};
+/* Tornado baseline severity */
+var TORNADO_BASE = {'US-TX':4.0,'US-OK':4.5,'AU-QLD':0.8};
+/* GLOF baseline severity */
+var GLOF_BASE = {'PE-01':3.5,'CL-02':2.8,'CA-AB':2.0,'IN-MH':2.5,'MN-01':1.8};
+/* Marine heatwave baseline severity */
+var MHW_BASE = {'AU-WA':3.5,'AU-QLD':3.0,'AU-SA':2.0,'ZA':2.0,'ID-KI':2.5,'IN-MH':2.2,'GB-ENG':1.5};
+/* Dust storm baseline severity */
+var DUST_BASE = {'AU-SA':3.0,'AU-WA':2.2,'AU-NT':2.5,'MN-01':3.5,'CN-NM':3.2,'ZA':1.5,'CL-02':1.8,'US-TX':2.0,'US-OK':1.8,'IN-MH':1.5};
+/* Hail baseline severity */
+var HAIL_BASE = {'AU-QLD':2.8,'AU-NSW':2.5,'AU-VIC':2.0,'US-TX':3.5,'US-OK':3.2,'US-WY':2.5,'ZA':2.2,'IN-MH':1.8,'BR-PA':1.5};
+/* Permafrost baseline severity */
+var PERM_BASE = {'CA-QC':2.5,'CA-AB':1.0,'MN-01':3.0};
+
 var REGION_ELEV = {
   // Australia
   'AU-WA':400,'AU-QLD':200,'AU-SA':180,'AU-NSW':350,'AU-VIC':240,'AU-NT':200,'AU-TAS':600,
@@ -5977,6 +6009,136 @@ function _hz_cyc(r,ssp,yr,isc,lat,lon){
 }
 function _hz_drt(r,ssp,yr){var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).dr,w=regW(ssp,yr,r),dm=1+w*0.22+w*w*0.04,sev=Math.min(5,bl*dm),p=Math.min(0.80,sev/5*0.30),ls=Math.min(0.015,Math.max(0,(sev-2)*0.0012)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),d3=1+w3*0.22+w3*w3*0.04,d5=1+w5*0.22+w5*w5*0.04;return{h:'Drought',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*d3),t50:Math.min(5,bl*d5),src:'WRI Aqueduct 4.0 + IPCC AR6 Ch11.6',note:'Drought mult '+dm.toFixed(2)+'× at '+w.toFixed(2)+'°C',applicable:true};}
 function _hz_wat(r,ssp,yr){var bl=(WRI_BASELINE[r]||WRI_BASELINE.global).ws,w=regW(ssp,yr,r),sm=1+w*0.15,sev=Math.min(5,bl*sm),p=Math.min(0.95,sev/5*0.55),ls=Math.min(0.012,Math.max(0,(sev-2.5)*0.0012)),w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);return{h:'Water Stress',sev:sev,prob:p,loss:ls,t30:Math.min(5,bl*(1+w3*0.15)),t50:Math.min(5,bl*(1+w5*0.15)),src:'WRI Aqueduct 4.0 + IPCC AR6 WG2 Ch4',note:'Baseline '+bl.toFixed(1)+'/5; mult '+sm.toFixed(2)+'×',applicable:true};}
+
+/* ── New v0.4 hazard functions (15 additional physical climate hazards) ────── */
+
+/* 11. Extreme Cold — cold waves and severe frost (IPCC AR6 Ch11.3) */
+function _hz_cold(r,ssp,yr,el){
+  el=el||300;
+  if(!COLD_SET.has(r)&&el<1500)return{h:'Extreme Cold',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch11.3',note:'Not applicable — region/elevation outside cold-hazard zone',applicable:false};
+  var bp=COLD_BASE_PROB[r]||0.30,w=regW(ssp,yr,r),cr=Math.max(0.20,1-w*0.07),prob=Math.min(0.80,bp*cr);
+  var ef=Math.min(1.5,1+Math.max(0,el-500)/5000),sb=bp/0.70*3.0,sev=Math.min(5,sb*ef*Math.max(0.5,1-w*0.10)),ls=Math.min(0.010,Math.max(0,(sev-1.5)*0.0012));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Extreme Cold',sev:sev,prob:prob,loss:ls,t30:Math.min(5,sb*ef*Math.max(0.5,1-w3*0.10)),t50:Math.min(5,sb*ef*Math.max(0.5,1-w5*0.10)),src:'IPCC AR6 Ch11.3; Overland et al 2021 (Arctic amplification)',note:'Cold reduction ×'+cr.toFixed(2)+' at +'+w.toFixed(2)+'°C; elev ×'+ef.toFixed(2),applicable:true};}
+
+/* 12. Blade/Infrastructure Icing — freeze-thaw band physics (IEA Wind Task 19) */
+function _hz_icing(r,ssp,yr,el){
+  el=el||300;
+  var noIce=new Set(['AU-WA','AU-QLD','AU-SA','AU-NSW','AU-NT','IN-MH','ID-KI','BR-PA','PE-01','ZA','CL-02']);
+  if(noIce.has(r))return{h:'Blade Icing',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IEA Wind Task 19',note:'Not applicable — region too warm for blade icing',applicable:false};
+  var ICING_PROB={'CA-AB':0.55,'CA-QC':0.50,'MN-01':0.40,'CN-NM':0.35,'US-WY':0.45,'GB-ENG':0.20,'NL-NH':0.15};
+  var mwt0=MEAN_WINTER_T[r]||(-5),w=regW(ssp,yr,r),mwt=mwt0+w;
+  var dc=-5,ds=8,ie=Math.exp(-0.5*Math.pow((mwt-dc)/ds,2));
+  var ef=Math.min(1.6,1+Math.max(0,el-400)/2000),bp=ICING_PROB[r]||0.25;
+  var prob=Math.min(0.85,bp*ie*ef),sev=Math.min(5,ie*4.0*ef),ls=Math.min(0.015,Math.max(0,prob*0.022));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  var ie3=Math.exp(-0.5*Math.pow((mwt0+w3-dc)/ds,2))*ef,ie5=Math.exp(-0.5*Math.pow((mwt0+w5-dc)/ds,2))*ef;
+  return{h:'Blade Icing',sev:sev,prob:prob,loss:ls,t30:Math.min(5,ie3*4.0),t50:Math.min(5,ie5*4.0),src:'IEA Wind Task 19 (2021); Rissanen et al 2022; IPCC AR6 Ch11.3',note:'Winter T '+mwt0.toFixed(1)+'°C+'+w.toFixed(2)+'°C='+mwt.toFixed(1)+'°C; icing exposure '+ie.toFixed(3),applicable:true};}
+
+/* 13. Extratropical Cyclone — mid-latitude storms (IPCC AR6 Ch11.7) */
+function _hz_etc(r,ssp,yr,el){
+  el=el||300;
+  if(!ETC_SET.has(r))return{h:'Extratropical Cyclone',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch11.7',note:'Not applicable — region outside mid-latitude storm track',applicable:false};
+  var bl=ETC_BASE[r]||1.5,w=regW(ssp,yr,r),im=1+w*0.05,sev=Math.min(5,bl*im),prob=Math.min(0.90,bl/5*0.60*im),ls=Math.min(0.040,Math.max(0,(sev-1.5)*0.010));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Extratropical Cyclone',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*(1+w3*0.05)),t50:Math.min(5,bl*(1+w5*0.05)),src:'IPCC AR6 Ch11.7; ERA5/Copernicus C3S; Zappa et al 2013',note:'ETC baseline '+bl.toFixed(2)+'; intensity ×'+im.toFixed(3)+' at +'+w.toFixed(2)+'°C',applicable:true};}
+
+/* 14. Flash Flood — intense convective precipitation (Clausius-Clapeyron +7%/°C) */
+function _hz_flash(r,ssp,yr,el){
+  el=el||300;
+  var rb=(WRI_BASELINE[r]||WRI_BASELINE.global).rf,w=regW(ssp,yr,r),ep=1+w*0.07;
+  var lulc=REGION_LULC[r]||'grassland',rm=RUNOFF_LULC[lulc]||1.0,ed=Math.max(0.4,1-el/3000);
+  var sev=Math.min(5,rb*ep*rm*ed),prob=Math.min(0.80,rb/5*ep*0.30),ls=Math.min(0.012,Math.max(0,(sev-1.0)*0.0014));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Flash Flood',sev:sev,prob:prob,loss:ls,t30:Math.min(5,rb*(1+w3*0.07)*rm*ed),t50:Math.min(5,rb*(1+w5*0.07)*rm*ed),src:'IPCC AR6 Ch11.4 Box 11.1 (C-C); WRI Aqueduct; Westra et al 2014',note:'Riverine proxy '+rb.toFixed(2)+'; CC precip ×'+ep.toFixed(3)+'; runoff ×'+rm.toFixed(1)+' ('+lulc+')',applicable:true};}
+
+/* 15. Permafrost Thaw — Arctic ground instability (IPCC AR6 Ch9.5.2) */
+function _hz_permafrost(r,ssp,yr){
+  if(!PERMAFROST_SET.has(r))return{h:'Permafrost Thaw',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch9.5.2; AMAP 2021',note:'Not applicable — region outside mapped permafrost zone',applicable:false};
+  var bl=PERM_BASE[r]||1.5,w=regW(ssp,yr,r)*2.5,sev=Math.min(5,bl*(1+w*0.30)),prob=Math.min(0.90,bl/5*(1+w*0.20)),ls=Math.min(0.020,Math.max(0,(sev-1.0)*0.0030));
+  var w3=regW(ssp,2030,r)*2.5,w5=regW(ssp,2050,r)*2.5;
+  return{h:'Permafrost Thaw',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*(1+w3*0.30)),t50:Math.min(5,bl*(1+w5*0.30)),src:'IPCC AR6 Ch9.5.2; AMAP 2021; Hjort et al 2022',note:'Arctic-amplified warming ×2.5; baseline '+bl.toFixed(2)+'/5',applicable:true};}
+
+/* 16. Dust Storm — aeolian transport in arid/semi-arid zones (WMO SDS-WAS) */
+function _hz_dust(r,ssp,yr){
+  if(!DUST_STORM_SET.has(r))return{h:'Dust Storm',sev:0,prob:0,loss:0,t30:0,t50:0,src:'WMO SDS-WAS',note:'Not applicable — region outside dust-storm-prone zone',applicable:false};
+  var bl=DUST_BASE[r]||1.5,w=regW(ssp,yr,r),da=1+w*0.08,sev=Math.min(5,bl*da),prob=Math.min(0.85,bl/5*da*0.55),ls=Math.min(0.008,Math.max(0,(sev-1.5)*0.0010));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Dust Storm',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*(1+w3*0.08)),t50:Math.min(5,bl*(1+w5*0.08)),src:'WMO SDS-WAS; Ginoux et al 2012; IPCC AR6 Ch8.2',note:'Dust baseline '+bl.toFixed(2)+'; dryland expansion ×'+da.toFixed(3)+' at +'+w.toFixed(2)+'°C',applicable:true};}
+
+/* 17. Hail — large hail from convective storms (IPCC AR6 Ch11.7) */
+function _hz_hail(r,ssp,yr){
+  if(!HAIL_SET.has(r))return{h:'Hail',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch11.7',note:'Not applicable — region not in mapped hail-prone zone',applicable:false};
+  var bl=HAIL_BASE[r]||1.5,w=regW(ssp,yr,r),lm=1+w*0.03,sev=Math.min(5,bl*lm),prob=Math.min(0.70,bl/5*0.45*lm),ls=Math.min(0.010,Math.max(0,(sev-1.5)*0.0010));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Hail',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*(1+w3*0.03)),t50:Math.min(5,bl*(1+w5*0.03)),src:'IPCC AR6 Ch11.7; Prein & Holland 2018; Allen et al 2020',note:'Hail baseline '+bl.toFixed(2)+'; large-hail mult ×'+lm.toFixed(3)+' at +'+w.toFixed(2)+'°C',applicable:true};}
+
+/* 18. Lightning — direct strikes + wildfire ignition (+12%/°C; Romps et al 2014) */
+function _hz_lightning(r,ssp,yr){
+  var LD={'BR-PA':4.5,'ID-KI':3.5,'IN-MH':3.0,'AU-NT':2.5,'AU-QLD':2.0,'ZA':2.0,'US-TX':1.8,'US-OK':1.6,'AU-WA':1.0,'CA-AB':0.8,'GB-ENG':0.4,'NL-NH':0.3,'MN-01':0.6};
+  var bd=LD[r]||1.0,w=regW(ssp,yr,r),fm=1+w*0.12,sev=Math.min(5,bd/4.5*4.0*fm),prob=Math.min(0.95,bd/4.5*0.60*fm),ls=Math.min(0.005,Math.max(0,(sev-1.0)*0.0005));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Lightning',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bd/4.5*4.0*(1+w3*0.12)),t50:Math.min(5,bd/4.5*4.0*(1+w5*0.12)),src:'Romps et al 2014 (Science, +12%/°C); TRMM/LIS; IPCC AR6 Ch11.7',note:'Flash density '+bd.toFixed(1)+' fl/km²/yr; freq ×'+fm.toFixed(3)+' at +'+w.toFixed(2)+'°C',applicable:true};}
+
+/* 19. Subsidence — ground sinking from extraction, peat, groundwater (Cigna & Tapete 2021) */
+function _hz_subs(r,ssp,yr){
+  if(!SUBSIDENCE_SET.has(r))return{h:'Subsidence',sev:0,prob:0,loss:0,t30:0,t50:0,src:'Cigna & Tapete 2021',note:'Not applicable — region not flagged for significant subsidence risk',applicable:false};
+  var bl=SUBS_BASE[r]||1.5,w=regW(ssp,yr,r),da=1+w*0.05,sev=Math.min(5,bl*da),prob=Math.min(0.85,bl/5*0.70*da),ls=Math.min(0.010,Math.max(0,(sev-1.0)*0.0014));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Subsidence',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*(1+w3*0.05)),t50:Math.min(5,bl*(1+w5*0.05)),src:'Cigna & Tapete 2021 InSAR; WRI; Sentinel-1; IPCC AR6 Ch4',note:'Subsidence baseline '+bl.toFixed(2)+'/5; drought amplifier ×'+da.toFixed(3),applicable:true};}
+
+/* 20. Freeze-Thaw Cycle — infrastructure cracking, pipe burst (IPCC AR6 Ch12.4) */
+function _hz_ft(r,ssp,yr,el){
+  el=el||300;
+  var noFT=new Set(['AU-QLD','AU-NT','IN-MH','ID-KI','BR-PA']);
+  if(noFT.has(r)&&el<2000)return{h:'Freeze-Thaw Cycle',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch12.4',note:'Not applicable — region too warm for freeze-thaw cycling',applicable:false};
+  var mwt0=MEAN_WINTER_T[r]||(-3),w=regW(ssp,yr,r),mwt=mwt0+w;
+  var dc=0,ds=6,fte=Math.exp(-0.5*Math.pow((mwt-dc)/ds,2));
+  var sev=Math.min(5,fte*4.5),prob=Math.min(0.90,fte*0.75),ls=Math.min(0.008,Math.max(0,fte*0.008));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  var ft3=Math.exp(-0.5*Math.pow((mwt0+w3-dc)/ds,2)),ft5=Math.exp(-0.5*Math.pow((mwt0+w5-dc)/ds,2));
+  return{h:'Freeze-Thaw Cycle',sev:sev,prob:prob,loss:ls,t30:Math.min(5,ft3*4.5),t50:Math.min(5,ft5*4.5),src:'IPCC AR6 Ch12.4; ASCE; Groisman et al 2006',note:'Winter T '+mwt0+'°C+'+w.toFixed(2)+'°C='+mwt.toFixed(1)+'°C; FT exposure '+fte.toFixed(3)+' (band 0°C±6°C)',applicable:true};}
+
+/* 21. Compound Flood — simultaneous riverine + coastal surge (Zscheischler 2020) */
+function _hz_compound(r,ssp,yr,isc,el){
+  el=el||300;
+  if(!isc||el>60)return{h:'Compound Flood',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch11.4+9; Ward et al 2018',note:'Not applicable — inland or elevation >60m',applicable:false};
+  var b=WRI_BASELINE[r]||WRI_BASELINE.global,rb=b.rf,cb=b.cf||0.5,w=regW(ssp,yr,r);
+  var ca=1.30,bs=Math.sqrt(rb*Math.max(cb,0.1))*ca,slr=Math.max(0,20+w*8),sfm=1+slr/100*0.8;
+  var sev=Math.min(5,bs*sfm),prob=Math.min(0.80,sev/5*0.35),ls=Math.min(0.025,Math.max(0,(sev-1.5)*0.0045));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),slr3=Math.max(0,20+w3*8),slr5=Math.max(0,20+w5*8);
+  return{h:'Compound Flood',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bs*(1+slr3/100*0.8)),t50:Math.min(5,bs*(1+slr5/100*0.8)),src:'IPCC AR6 Ch11.4+9; Zscheischler et al 2020; Ward et al 2018',note:'River+Coastal compound (×'+ca+' amplifier); SLR ~'+slr.toFixed(0)+'cm; coastal',applicable:true};}
+
+/* 22. Avalanche — snow avalanche in mountain terrain (IPCC SROCC Ch2) */
+function _hz_avl(r,ssp,yr,el){
+  el=el||300;
+  var AVL_BASE={'CL-02':3.2,'PE-01':2.8,'CA-AB':2.5,'US-WY':2.2,'MN-01':2.0};
+  if(!AVALANCHE_SET.has(r)||el<800)return{h:'Avalanche',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC SROCC Ch2; SLF/WSL',note:'Not applicable — region not in avalanche zone or elevation <800m',applicable:false};
+  var bl=AVL_BASE[r]||1.5,w=regW(ssp,yr,r),ef=Math.min(1.5,el/1500),wm=1+w*0.05,sev=Math.min(5,bl*ef*wm),prob=Math.min(0.70,bl/5*ef*0.40*wm),ls=Math.min(0.015,Math.max(0,(sev-1.0)*0.0018));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Avalanche',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*ef*(1+w3*0.05)),t50:Math.min(5,bl*ef*(1+w5*0.05)),src:'IPCC SROCC Ch2; Hock et al 2019; SLF/WSL Avalanche Atlas',note:'Avalanche baseline '+bl.toFixed(2)+'; elev ×'+ef.toFixed(2)+'; wet-avl mult ×'+wm.toFixed(3),applicable:true};}
+
+/* 23. Marine Heatwave — anomalous SST (Oliver et al 2021; doubles per 0.5°C ocean warming) */
+function _hz_mhw(r,ssp,yr,isc){
+  if(!MARINE_HW_SET.has(r)||!isc)return{h:'Marine Heatwave',sev:0,prob:0,loss:0,t30:0,t50:0,src:'Oliver et al 2021; IPCC SROCC',note:'Not applicable — region not coastal or not in MHW zone',applicable:false};
+  var bl=MHW_BASE[r]||1.5,w=regW(ssp,yr,r),ow=w*0.65,fm=Math.min(Math.pow(2,ow/0.5),3.0),sev=Math.min(5,bl*fm),prob=Math.min(0.95,bl/5*fm*0.50),ls=Math.min(0.010,Math.max(0,(sev-1.5)*0.0014));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r),fm3=Math.min(Math.pow(2,w3*0.65/0.5),3),fm5=Math.min(Math.pow(2,w5*0.65/0.5),3);
+  return{h:'Marine Heatwave',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*fm3),t50:Math.min(5,bl*fm5),src:'Oliver et al 2021; Frölicher et al 2018 Nature; IPCC SROCC Ch6',note:'Ocean warming '+ow.toFixed(2)+'°C; MHW freq ×'+fm.toFixed(2)+' (doubles per 0.5°C)',applicable:true};}
+
+/* 24. GLOF — Glacial Lake Outburst Flood (+15%/°C glacier retreat; IPCC SROCC) */
+function _hz_glof(r,ssp,yr){
+  if(!GLOF_SET.has(r))return{h:'GLOF',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC SROCC Ch2.3; Emmer et al 2022',note:'Not applicable — region not in GLOF-susceptible zone',applicable:false};
+  var bl=GLOF_BASE[r]||1.5,w=regW(ssp,yr,r),gl=1+w*0.15,sev=Math.min(5,bl*gl),prob=Math.min(0.15,bl/5*0.08*gl),ls=Math.min(0.018,Math.max(0,(sev-1.5)*0.0035));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'GLOF',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*(1+w3*0.15)),t50:Math.min(5,bl*(1+w5*0.15)),src:'IPCC SROCC Ch2.3; Emmer et al 2022; Veh et al 2020',note:'GLOF baseline '+bl.toFixed(2)+'; glacier-lake growth ×'+gl.toFixed(3)+' at +'+w.toFixed(2)+'°C',applicable:true};}
+
+/* 25. Tornado — rotating convective winds in tornado-prone zones (NOAA SPC; IPCC AR6 Ch11.7) */
+function _hz_tornado(r,ssp,yr){
+  if(!TORNADO_SET.has(r))return{h:'Tornado',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch11.7; NOAA SPC',note:'Not applicable — region not in tornado-susceptible zone',applicable:false};
+  var bl=TORNADO_BASE[r]||1.0,w=regW(ssp,yr,r),cm=1+w*0.02,sev=Math.min(5,bl*cm),prob=Math.min(0.80,bl/5*0.55*cm),ls=Math.min(0.012,Math.max(0,(sev-1.0)*0.0018));
+  var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
+  return{h:'Tornado',sev:sev,prob:prob,loss:ls,t30:Math.min(5,bl*(1+w3*0.02)),t50:Math.min(5,bl*(1+w5*0.02)),src:'IPCC AR6 Ch11.7; Tippett et al 2016; NOAA SPC 1950-2024',note:'Tornado baseline '+bl.toFixed(2)+'; CAPE mult ×'+cm.toFixed(3)+' at +'+w.toFixed(2)+'°C',applicable:true};}
+
 /* Seismic hazard — static (not climate-driven); based on USGS/GEM Global Seismic Hazard Atlas
    Severity is a fixed baseline by seismic zone; t30/t50 unchanged (not climate-sensitive) */
 var _SEISMIC_ZONE = {
@@ -6620,6 +6782,7 @@ function assessHazards(region, lat, lon, ssp, year) {
      is computed separately below and returned as seismic_footnote for
      informational purposes in the enterprise risk management appendix only. */
   var hzs = [
+    /* ── Core 10 (original) ───────────────────────────────────────────── */
     _hz_heat(region,ssp,year),
     _hz_rflood(region,ssp,year),
     _hz_cflood(region,ssp,year,siteIsc),
@@ -6630,6 +6793,22 @@ function assessHazards(region, lat, lon, ssp, year) {
     _hz_cyc(region,ssp,year,siteIsc,lat,lon),
     _hz_drt(region,ssp,year),
     _hz_wat(region,ssp,year),
+    /* ── New 15 (v0.4) — full global hazard library ────────────────────── */
+    _hz_cold(region,ssp,year,siteElev),
+    _hz_icing(region,ssp,year,siteElev),
+    _hz_etc(region,ssp,year,siteElev),
+    _hz_flash(region,ssp,year,siteElev),
+    _hz_permafrost(region,ssp,year),
+    _hz_dust(region,ssp,year),
+    _hz_hail(region,ssp,year),
+    _hz_lightning(region,ssp,year),
+    _hz_subs(region,ssp,year),
+    _hz_ft(region,ssp,year,siteElev),
+    _hz_compound(region,ssp,year,siteIsc,siteElev),
+    _hz_avl(region,ssp,year,siteElev),
+    _hz_mhw(region,ssp,year,siteIsc),
+    _hz_glof(region,ssp,year),
+    _hz_tornado(region,ssp,year),
   ];
   /* Seismic data computed for non-climate ERM reference only — NOT included in
      climate scores, climate CaR, or any regulatory climate disclosure output */
@@ -8971,16 +9150,33 @@ var _hpm = {
 
 /* Per-hazard colour accent used for the trajectory chart */
 var HZ_ACCENT = {
-  'Heat Stress':        '#ef4444',
-  'Riverine Flood':     '#3b82f6',
-  'Coastal Flood':      '#06b6d4',
-  'Sea Level Rise':     '#0ea5e9',
-  'Saltwater Intrusion':'#6366f1',
-  'Landslide':          '#78716c',
-  'Wildfire':           '#f97316',
-  'Cyclone':            '#8b5cf6',
-  'Drought':            '#f59e0b',
-  'Water Stress':       '#14b8a6',
+  /* Core 10 */
+  'Heat Stress':           '#ef4444',
+  'Riverine Flood':        '#3b82f6',
+  'Coastal Flood':         '#06b6d4',
+  'Sea Level Rise':        '#0ea5e9',
+  'Saltwater Intrusion':   '#6366f1',
+  'Landslide':             '#78716c',
+  'Wildfire':              '#f97316',
+  'Cyclone':               '#8b5cf6',
+  'Drought':               '#f59e0b',
+  'Water Stress':          '#14b8a6',
+  /* New 15 (v0.4) */
+  'Extreme Cold':          '#93c5fd',
+  'Blade Icing':           '#bfdbfe',
+  'Extratropical Cyclone': '#a78bfa',
+  'Flash Flood':           '#60a5fa',
+  'Permafrost Thaw':       '#6b7280',
+  'Dust Storm':            '#d97706',
+  'Hail':                  '#7dd3fc',
+  'Lightning':             '#fde047',
+  'Subsidence':            '#92400e',
+  'Freeze-Thaw Cycle':     '#cbd5e1',
+  'Compound Flood':        '#1d4ed8',
+  'Avalanche':             '#e2e8f0',
+  'Marine Heatwave':       '#f43f5e',
+  'GLOF':                  '#064e3b',
+  'Tornado':               '#7c3aed',
   /* Note: 'Seismic / Earthquake' is intentionally omitted — it is a geophysical
      hazard, not a climate hazard, and must not appear in TCFD/IFRS S2/CSRD outputs. */
 };
@@ -8990,16 +9186,33 @@ function computeHzScore(region, hzType, ssp, year) {
   var isc = COASTAL_SET.has(region);
   var elv = REGION_ELEV[region] || 300;
   switch (hzType) {
-    case 'Heat Stress':         return _hz_heat(region,ssp,year);
-    case 'Riverine Flood':      return _hz_rflood(region,ssp,year);
-    case 'Coastal Flood':       return _hz_cflood(region,ssp,year,isc);
-    case 'Sea Level Rise':      return _hz_slr(region,ssp,year,isc,elv);
-    case 'Saltwater Intrusion': return _hz_swi(region,ssp,year,isc,elv);
-    case 'Landslide':           return _hz_slide(region,ssp,year,elv);
-    case 'Wildfire':            return _hz_fire(region,ssp,year);
-    case 'Cyclone':             return _hz_cyc(region,ssp,year,isc);
-    case 'Drought':             return _hz_drt(region,ssp,year);
-    case 'Water Stress':        return _hz_wat(region,ssp,year);
+    /* Core 10 */
+    case 'Heat Stress':           return _hz_heat(region,ssp,year);
+    case 'Riverine Flood':        return _hz_rflood(region,ssp,year);
+    case 'Coastal Flood':         return _hz_cflood(region,ssp,year,isc);
+    case 'Sea Level Rise':        return _hz_slr(region,ssp,year,isc,elv);
+    case 'Saltwater Intrusion':   return _hz_swi(region,ssp,year,isc,elv);
+    case 'Landslide':             return _hz_slide(region,ssp,year,elv);
+    case 'Wildfire':              return _hz_fire(region,ssp,year);
+    case 'Cyclone':               return _hz_cyc(region,ssp,year,isc);
+    case 'Drought':               return _hz_drt(region,ssp,year);
+    case 'Water Stress':          return _hz_wat(region,ssp,year);
+    /* New 15 (v0.4) */
+    case 'Extreme Cold':          return _hz_cold(region,ssp,year,elv);
+    case 'Blade Icing':           return _hz_icing(region,ssp,year,elv);
+    case 'Extratropical Cyclone': return _hz_etc(region,ssp,year,elv);
+    case 'Flash Flood':           return _hz_flash(region,ssp,year,elv);
+    case 'Permafrost Thaw':       return _hz_permafrost(region,ssp,year);
+    case 'Dust Storm':            return _hz_dust(region,ssp,year);
+    case 'Hail':                  return _hz_hail(region,ssp,year);
+    case 'Lightning':             return _hz_lightning(region,ssp,year);
+    case 'Subsidence':            return _hz_subs(region,ssp,year);
+    case 'Freeze-Thaw Cycle':     return _hz_ft(region,ssp,year,elv);
+    case 'Compound Flood':        return _hz_compound(region,ssp,year,isc,elv);
+    case 'Avalanche':             return _hz_avl(region,ssp,year,elv);
+    case 'Marine Heatwave':       return _hz_mhw(region,ssp,year,isc);
+    case 'GLOF':                  return _hz_glof(region,ssp,year);
+    case 'Tornado':               return _hz_tornado(region,ssp,year);
     /* Seismic intentionally excluded from climate dispatch — use _hz_seismic() directly for ERM purposes only */
     default: return {applicable:false,sev:0,prob:0,loss:0,src:'N/A',note:'Unknown hazard'};
   }
