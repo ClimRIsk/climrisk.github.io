@@ -140,6 +140,29 @@ def _asset_contribution(
         physical_loss_cost = undisrupted_volume * loss * margin_per_unit
         physical_loss_by_hazard = {"combined": round(physical_loss_cost, 2)}
 
+    # ── Stranded asset detection ──────────────────────────────────────────────
+    # An asset is stranded when commodity price < full unit cost of production.
+    # Full unit cost = operating unit_cost + carbon compliance cost per unit.
+    # When stranded, a one-off book-value writedown is triggered in that year.
+    # Writedown proxy = baseline_revenue × (1 / assumed 20y asset life × 15y remaining).
+    # This is a v0.3 approximation; Phase 2 will use actual remaining book value.
+    scope1_per_unit = asset.emissions.scope1_intensity  # tCO2 / unit
+    carbon_cost_per_unit = (
+        scope1_per_unit
+        * asset.emissions.carbon_price_coverage
+        * (1 - asset.emissions.free_allocation)
+        * drivers.carbon_price
+    )
+    full_unit_cost = unit_cost + carbon_cost_per_unit
+    is_stranded = price > 0 and price < full_unit_cost
+    # Writedown: only trigger once (when price first drops below breakeven).
+    # Here we compute the potential writedown; orchestrator sums across assets.
+    stranded_writedown = 0.0
+    if is_stranded:
+        baseline_revenue = asset.baseline_production * asset.baseline_unit_cost
+        remaining_value_frac = 0.75  # assume 15y remaining of a 20y asset life
+        stranded_writedown = baseline_revenue * remaining_value_frac
+
     return {
         "commodity": asset.commodity.value,
         "revenue": revenue,
@@ -151,6 +174,9 @@ def _asset_contribution(
         "scope2": s2,
         "scope3": s3,
         "adaptation_capex": adaptation_capex(scenario, asset, year),
+        "stranded_writedown": stranded_writedown,
+        "is_stranded": is_stranded,
+        "asset_name": asset.name,
     }
 
 
@@ -195,6 +221,9 @@ def _segment_contribution(
         "scope2": s2,
         "scope3": s3,
         "adaptation_capex": 0.0,
+        "stranded_writedown": 0.0,     # segments have no breakeven detection
+        "is_stranded": False,
+        "asset_name": segment.commodity.value,
     }
 
 
@@ -228,6 +257,10 @@ def simulate_year(
     agg_carbon_cost = sum(c["carbon_cost"] for c in contributions)
     agg_physical = sum(c["physical_loss_cost"] for c in contributions)
     agg_adapt_capex = sum(c["adaptation_capex"] for c in contributions)
+    agg_stranded_writedown = sum(c.get("stranded_writedown", 0.0) for c in contributions)
+    stranded_asset_names = [
+        c["asset_name"] for c in contributions if c.get("is_stranded", False)
+    ]
 
     # Transition capex — computed from abatement module using company-level
     # Scope 1+2 baseline emissions and the scenario's carbon price path.
@@ -262,8 +295,10 @@ def simulate_year(
         # Transition capex: computed from abatement module (scenario-driven MACC).
         # Asset-level MACC curves with sector calibration are on the roadmap for v0.4.
         transition_capex=agg_transition_capex,
-        stranded_writedown=0.0,
-        stranded_assets=[],
+        # Stranded assets: assets where commodity price < full unit cost of production.
+        # Writedown = remaining book value proxy (75% of baseline revenue, v0.3 approx).
+        stranded_writedown=agg_stranded_writedown,
+        stranded_assets=stranded_asset_names,
         revenue_by_commodity=revenue_by_commodity,
     )
 

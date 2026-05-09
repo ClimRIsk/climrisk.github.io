@@ -79,7 +79,13 @@ def run(
     For modular scope-based runs, use run_scoped().
     """
     ops = simulate(company, scenario)
-    year_results: list[YearResult] = [compute_year(company, o) for o in ops]
+    # Thread prev_revenue so working-capital change is computed for each year
+    year_results: list[YearResult] = []
+    prev_rev: float | None = None
+    for o in ops:
+        yr = compute_year(company, o, prev_revenue=prev_rev)
+        year_results.append(yr)
+        prev_rev = o.revenue
 
     wacc = climate_adjusted_wacc(company, scenario)
     dcf = value(company, year_results, wacc)
@@ -207,9 +213,15 @@ def run_scoped(
             ("delayed", dly_scenario, ops_dly),
             ("cp",      cp_scenario,  ops_cp),
         ]:
-            year_results: list[YearResult] = [compute_year(company, o) for o in ops]
+            # Thread prev_revenue for working capital change
+            yrs: list[YearResult] = []
+            prev_rev2: float | None = None
+            for o in ops:
+                yr = compute_year(company, o, prev_revenue=prev_rev2)
+                yrs.append(yr)
+                prev_rev2 = o.revenue
             wacc = climate_adjusted_wacc(company, scenario)
-            dcf = value(company, year_results, wacc)
+            dcf = value(company, yrs, wacc)
             valuation[label] = run(company, scenario, model_version=model_version)
         result.valuation_results = valuation
 

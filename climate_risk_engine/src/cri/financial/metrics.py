@@ -38,15 +38,17 @@ def climate_adjusted_wacc(company: Company, scenario: Scenario) -> ClimateWACC:
 def compute_year(
     company: Company,
     op: OperationalYear,
+    prev_revenue: float | None = None,
 ) -> YearResult:
     """Turn an OperationalYear into a fully-populated YearResult.
 
     Key choices (and departures from V2):
       - EBITDA is *derived* (revenue - opex - carbon - physical), not margin×revenue.
       - Capex is split into maintenance (a function of baseline capex) +
-        adaptation (from physical module) + transition (Phase 2: MACC).
+        adaptation (from physical module) + transition (MACC-based, live in v0.3).
       - Tax is applied to EBIT, not to (EBITDA - carbon).
-      - Working-capital change scales with revenue growth (simple 10% assumption).
+      - Working-capital change: 10% of ΔRevenue (requires prev_revenue from caller).
+        Pass prev_revenue=None for the first year (wc_change=0 assumed).
     """
     fin = company.financials
 
@@ -65,8 +67,12 @@ def compute_year(
     adaptation_capex = op.adaptation_capex
     transition_capex = op.transition_capex
 
-    # Working-capital change proxy: 10% of ΔRevenue. Computed upstream; here 0.
-    wc_change = 0.0
+    # Working-capital change: 10% of revenue growth/decline.
+    # Positive ΔRev → WC investment (cash outflow); negative → WC release (cash inflow).
+    if prev_revenue is not None:
+        wc_change = 0.10 * (op.revenue - prev_revenue)
+    else:
+        wc_change = 0.0
 
     fcf = (
         nopat
@@ -99,4 +105,6 @@ def compute_year(
             "scope_3": op.emissions_scope3,
         },
         physical_loss_by_hazard=op.physical_loss_by_hazard,
+        stranded_writedown=op.stranded_writedown,
+        stranded_assets=op.stranded_assets,
     )
