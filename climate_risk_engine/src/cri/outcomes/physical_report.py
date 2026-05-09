@@ -165,27 +165,46 @@ def _build_narrative(
     """Generate a TCFD-aligned one-paragraph physical risk narrative."""
     # Dominant hazard label mapping
     hazard_labels = {
-        "heat_stress":         "heat stress",
-        "flood_riverine":      "riverine flooding",
-        "flood_coastal":       "coastal flooding",
-        "sea_level_rise":      "sea-level rise",
-        "saltwater_intrusion": "saltwater intrusion",
-        "landslide":           "landslides",
-        "wildfire":            "wildfire",
-        "cyclone":             "tropical cyclones",
-        "drought":             "drought",
-        "water_stress":        "water stress",
-        "combined":            "compounding climate hazards",
+        # Core 10
+        "heat_stress":            "heat stress",
+        "flood_riverine":         "riverine flooding",
+        "flood_coastal":          "coastal flooding",
+        "sea_level_rise":         "sea-level rise",
+        "saltwater_intrusion":    "saltwater intrusion",
+        "landslide":              "landslides",
+        "wildfire":               "wildfire",
+        "cyclone":                "tropical cyclones",
+        "drought":                "drought",
+        "water_stress":           "water stress",
+        # New 15 (v0.4)
+        "extreme_cold":           "extreme cold and frost",
+        "blade_icing":            "blade and infrastructure icing",
+        "extratropical_cyclone":  "extratropical cyclones",
+        "flash_flood":            "flash flooding",
+        "permafrost_thaw":        "permafrost thaw",
+        "dust_storm":             "dust storms",
+        "hail":                   "large hail",
+        "lightning":              "lightning",
+        "subsidence":             "ground subsidence",
+        "freeze_thaw_cycle":      "freeze-thaw cycling",
+        "compound_flood":         "compound flooding",
+        "avalanche":              "avalanche",
+        "marine_heatwave":        "marine heatwaves",
+        "glof":                   "glacial lake outburst floods",
+        "tornado":                "tornadoes",
+        "combined":               "compounding climate hazards",
     }
     hazard_str = hazard_labels.get(peak_hazard, peak_hazard.replace("_", " "))
 
-    # Format dollar figures
+    # Format dollar figures — inputs are in USD millions (matching revenue scale)
     def fmt_usd(v: float) -> str:
-        if v >= 1e9:
-            return f"USD {v/1e9:.1f}B"
-        if v >= 1e6:
-            return f"USD {v/1e6:.1f}M"
-        return f"USD {v:,.0f}"
+        if v >= 1_000:                 # >= $1B
+            return f"USD {v/1_000:.1f}B"
+        if v >= 1:                     # >= $1M
+            return f"USD {v:.0f}M"
+        if v >= 0.001:                 # >= $1K
+            return f"USD {v*1_000:.0f}K"
+        return f"USD {v*1_000_000:,.0f}"
 
     # List top hazards at 2035
     top_hazards = sorted(hazard_2035.items(), key=lambda x: x[1], reverse=True)[:3]

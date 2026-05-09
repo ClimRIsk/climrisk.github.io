@@ -1,7 +1,7 @@
 """
-CRI Multi-Hazard Physical Risk Engine.
+CRI Multi-Hazard Physical Risk Engine — v0.4 (25 hazards).
 
-Derives 9 physical climate hazard scores for an asset location using:
+Derives 25 physical climate hazard scores for an asset location using:
   1. NASA NEX-GDDP-CMIP6 (heat stress, precipitation)
   2. WRI Aqueduct 4.0 (water stress, riverine/coastal flood, drought)
   3. IPCC AR6 / NOAA (sea level rise, coastal flood)
@@ -10,19 +10,43 @@ Derives 9 physical climate hazard scores for an asset location using:
   6. NASA FIRMS + IPCC AR6 (wildfire weather index)
   7. IPCC AR6 + FAO AQUASTAT (saltwater intrusion)
   8. LULC context from NASA MODIS/HLS proxy (land cover type)
+  9. IEA Wind Task 19 + Rissanen 2022 (blade icing)
+ 10. IPCC AR6 Ch11 + NOAA (cold extremes, extratropical cyclone, hail, tornado)
+ 11. UNDRR DesInventar + IPCC (landslide, GLOF, avalanche, subsidence)
+ 12. NOAA / Copernicus MCS (flash flood, compound flood, lightning)
+ 13. Permafrost IPCC + AMAP (permafrost thaw, freeze-thaw cycle)
+ 14. WMO / ESA CCI (dust storm, marine heatwave)
 
-All nine hazards
-----------------
-  1. HEAT_STRESS        — extreme heat days, WBGT index, livestock/labour impact
-  2. FLOOD_RIVERINE     — fluvial flooding (heavy precip + river systems)
-  3. FLOOD_COASTAL      — storm surge + sea level rise + cyclone compound events
-  4. SEA_LEVEL_RISE     — chronic inundation risk for coastal/low-elevation assets
-  5. SALTWATER_INTRUSION— saline water table / aquifer intrusion (coastal + SLR)
-  6. LANDSLIDE          — slope instability from extreme precip + terrain
-  7. WILDFIRE           — fire weather index, vegetation fuel load
-  8. CYCLONE            — tropical cyclone wind + surge (latitude-gated)
-  9. DROUGHT            — meteorological + hydrological drought intensity
- 10. WATER_STRESS       — chronic freshwater scarcity for operations
+All 25 hazards
+--------------
+ Core 10 (original):
+  1. HEAT_STRESS         — extreme heat days, WBGT index, livestock/labour impact
+  2. FLOOD_RIVERINE      — fluvial flooding (heavy precip + river systems)
+  3. FLOOD_COASTAL       — storm surge + sea level rise + cyclone compound events
+  4. SEA_LEVEL_RISE      — chronic inundation risk for coastal/low-elevation assets
+  5. SALTWATER_INTRUSION — saline water table / aquifer intrusion (coastal + SLR)
+  6. LANDSLIDE           — slope instability from extreme precip + terrain
+  7. WILDFIRE            — fire weather index, vegetation fuel load
+  8. CYCLONE             — tropical cyclone wind + surge (latitude-gated)
+  9. DROUGHT             — meteorological + hydrological drought intensity
+ 10. WATER_STRESS        — chronic freshwater scarcity for operations
+
+ New 15 (v0.4):
+ 11. EXTREME_COLD        — cold waves, frost damage, sub-zero operational disruption
+ 12. BLADE_ICING         — wind turbine / transmission line icing (freeze-thaw band)
+ 13. EXTRATROPICAL_CYCLONE — mid-latitude storm systems (wind, storm surge, flooding)
+ 14. FLASH_FLOOD         — rapid-onset flooding from intense convective precipitation
+ 15. PERMAFROST_THAW     — ground stability loss in Arctic/subarctic (infrastructure)
+ 16. DUST_STORM          — haboob / aeolian transport (equipment, visibility, health)
+ 17. HAIL                — large hail impact (crop damage, equipment, PV panels)
+ 18. LIGHTNING           — direct strikes + wildfire ignition from lightning
+ 19. SUBSIDENCE          — ground sinking from extraction, clay shrinkage, groundwater
+ 20. FREEZE_THAW_CYCLE   — repeated freeze-thaw: infrastructure cracking, pipe burst
+ 21. COMPOUND_FLOOD      — simultaneous riverine + coastal flooding (non-additive)
+ 22. AVALANCHE           — snow avalanche in mountain terrain
+ 23. MARINE_HEATWAVE     — anomalously warm ocean: marine operations, aquaculture
+ 24. GLOF                — glacial lake outburst flood (high-energy debris flows)
+ 25. TORNADO             — rotating convective winds (US/AU tornado-prone zones)
 
 Output per hazard per year
 --------------------------
@@ -167,6 +191,111 @@ WILDFIRE_REGIONS: set[str] = {
     "ZA", "CL-02",
     "CN-NM",   # Inner Mongolia grassland fires
     "MN-01",   # Mongolian steppe fires
+}
+
+# ---------------------------------------------------------------------------
+# Additional region sets for v0.4 expanded hazard library
+# ---------------------------------------------------------------------------
+
+# Extreme cold / severe frost (cold winters → operational disruption)
+COLD_REGIONS: set[str] = {
+    "CA-AB", "CA-QC",   # Canadian prairies / Quebec
+    "MN-01",             # Mongolia (continental extreme cold)
+    "CN-NM",             # Inner Mongolia
+    "US-WY",             # Wyoming highlands
+}
+
+# Permafrost ground coverage (continuous / discontinuous permafrost zones)
+# Source: IPA Global Permafrost Zonation Map; AMAP 2021
+PERMAFROST_REGIONS: set[str] = {
+    "CA-QC",   # Northern Quebec — widespread discontinuous permafrost
+    "CA-AB",   # Northern Alberta fringe — sporadic permafrost
+    "MN-01",   # Siberian-adjacent Mongolia — widespread permafrost
+}
+
+# Dust-storm-prone regions (semi-arid, arid with high wind erosion potential)
+# Source: WMO SDS-WAS; Ginoux et al 2012 MODIS dust source inventory
+DUST_STORM_REGIONS: set[str] = {
+    "AU-SA", "AU-WA", "AU-NT",   # Australian interior red-dust events
+    "MN-01",                      # Mongolian / Gobi dust — dzud corollary
+    "CN-NM",                      # Inner Mongolia Gobi dust transport
+    "ZA",                         # Karoo / Namib dust events
+    "CL-02",                      # Atacama aeolian transport
+    "US-TX", "US-OK",             # Texas/Oklahoma Dust Bowl analog
+    "IN-MH",                      # Thar desert fringe dust
+}
+
+# Hail-prone regions (large convective hail; supercell storms)
+# Source: IPCC AR6 Ch11.7; Prein & Holland 2018; AONB / NOAA SPC
+HAIL_REGIONS: set[str] = {
+    "AU-QLD", "AU-NSW", "AU-VIC",   # Australian Hail Belt (SE Australia)
+    "US-TX", "US-OK", "US-WY",      # Great Plains Hail Alley
+    "ZA",                            # South Africa highveld (summer convection)
+    "IN-MH",                         # Indian subcontinent pre-monsoon hail
+    "BR-PA",                         # Amazonian MCS convective hail
+}
+
+# Extratropical cyclone (mid-latitude storm) exposure
+# Source: IPCC AR6 Ch11.7; Zappa et al 2013; Mölter et al 2016
+EXTRATROPICAL_CYCLONE_REGIONS: set[str] = {
+    "GB-ENG", "NL-NH",         # North-Atlantic storm track
+    "CA-QC",                    # Canadian Maritime / Nor'easter
+    "AU-VIC", "AU-NSW",         # Southern Ocean extra-tropical storm track
+    "ZA",                       # Cape Town extratropical cyclones
+    "US-WY",                    # Northern Plains blizzard/extratropical systems
+    "CL-02",                    # Chilean extratropical low-pressure systems
+}
+
+# Tornado-prone regions (rotating convective mesocyclones)
+# Source: NOAA SPC; Allen & Tippett 2015; Geerts 2018
+TORNADO_REGIONS: set[str] = {
+    "US-TX", "US-OK",    # US Tornado Alley — world's highest tornado frequency
+    "AU-QLD",             # Australian tornado events (significantly lower freq than US)
+}
+
+# Avalanche-prone (steep terrain + seasonal snowpack)
+# Source: UNDRR DesInventar; SLF / WSL Avalanche Atlas
+AVALANCHE_REGIONS: set[str] = {
+    "CL-02",   # Andes (operational mining routes)
+    "PE-01",   # Tropical Andes (glaciated terrain)
+    "CA-AB",   # Canadian Rockies
+    "US-WY",   # Wyoming / Rocky Mountain cordillera
+    "MN-01",   # Mongolian Altai mountains
+}
+
+# GLOF (Glacial Lake Outburst Flood) — glacier retreat accelerates risk
+# Source: IPCC SROCC Ch2; Emmer et al 2022; Veh et al 2020
+GLOF_REGIONS: set[str] = {
+    "CL-02",   # Andean glaciers (rapidly retreating)
+    "PE-01",   # Tropical Andes — GLOF events documented (Huaraz 1941 etc.)
+    "CA-AB",   # Rocky Mountain glaciers (Columbia Icefield drainage)
+    "IN-MH",   # Himalayan fringes (downstream flooding)
+    "MN-01",   # Altai mountains (Mongolian glacial lakes)
+}
+
+# Marine heatwave (anomalously warm sea surface temperature)
+# Source: Oliver et al 2021; Hobday et al 2018; NOAA CoralWatch
+MARINE_HEATWAVE_REGIONS: set[str] = {
+    "AU-WA",    # SE Indian Ocean — most intense MHW hotspot globally
+    "AU-QLD",   # Coral Sea / Great Barrier Reef bleaching
+    "AU-SA",    # Southern Ocean / Spencer Gulf
+    "ZA",       # SE Atlantic / Agulhas current
+    "ID-KI",    # Coral Triangle — thermally sensitive
+    "IN-MH",    # Arabian Sea MHW events
+    "GB-ENG",   # North Sea anomalous warming
+}
+
+# Subsidence-prone (ground sinking: extraction, peat/clay, groundwater depletion)
+# Source: Cigna & Tapete 2021; WRI; InSAR monitoring datasets
+SUBSIDENCE_REGIONS: set[str] = {
+    "NL-NH",    # Peat soils + below sea-level (worst in world: -10 cm/yr)
+    "ID-KI",    # Borneo peat + Jakarta groundwater depletion
+    "CN-NM",    # Coal extraction subsidence (Inner Mongolia coalfield)
+    "AU-QLD",   # Queensland coal mine subsidence
+    "IN-MH",    # Groundwater extraction depletion (Marathwada)
+    "MN-01",    # Mongolian mining operations
+    "US-TX",    # Texas oil/gas extraction (Houston subsidence)
+    "US-OK",    # Oklahoma induced seismicity + subsidence
 }
 
 
@@ -635,7 +764,7 @@ class HazardScore:
 
 @dataclass
 class AssetHazardProfile:
-    """Full 9-hazard profile for one asset under one SSP scenario."""
+    """Full 25-hazard profile for one asset under one SSP scenario (v0.4)."""
 
     asset_id: str
     asset_name: str
@@ -1126,13 +1255,805 @@ def _water_stress(region: str, ssp: SSPScenario, year: int,
     )
 
 
+# ===========================================================================
+# New v0.4 Hazard Functions — 15 additional physical climate hazards
+# ===========================================================================
+
+def _extreme_cold(region: str, ssp: SSPScenario, year: int,
+                  elevation_m: float = 300) -> HazardScore:
+    """
+    Extreme cold waves and severe frost events disrupting outdoor operations.
+
+    Warming globally reduces cold-snap frequency, but the effect is non-linear:
+    Arctic amplification can paradoxically increase cold-air-outbreak frequency
+    at mid-latitudes via weakened polar vortex (Overland et al 2021). High-
+    elevation assets remain exposed even as global mean warms.
+
+    Sources: IPCC AR6 Ch11.3; WMO Cold Wave Guidance; Overland et al 2021.
+    """
+    _COLD_BASELINE: dict[str, float] = {
+        "CA-AB": 0.65, "CA-QC": 0.60, "MN-01": 0.70,
+        "CN-NM": 0.55, "US-WY": 0.45,
+    }
+    # Not applicable for warm regions below 1500m elevation
+    if region not in COLD_REGIONS and elevation_m < 1500:
+        return HazardScore(
+            hazard="extreme_cold", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC AR6 Ch11.3", applicable=False,
+            notes="Region/elevation outside cold-hazard zone",
+        )
+
+    warming = ssp.regional_warming(year, region)
+    # Warming reduces cold-snap frequency ~7% per °C of mean warming
+    cold_reduction = max(0.20, 1.0 - warming * 0.07)
+    base_prob = _COLD_BASELINE.get(region, 0.30)
+    prob = min(0.80, base_prob * cold_reduction)
+
+    # Elevation amplifies severity (lapse rate ~0.65°C/100m)
+    elev_factor = min(1.5, 1.0 + max(0.0, elevation_m - 500) / 5000)
+    sev_base = base_prob / 0.70 * 3.0  # normalise to 0–5 scale
+    severity = min(5.0, sev_base * elev_factor * max(0.5, 1.0 - warming * 0.10))
+    loss = min(0.010, max(0.0, (severity - 1.5) * 0.0012))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="extreme_cold",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, sev_base * elev_factor * max(0.5, 1.0 - w30 * 0.10)), 2),
+        trend_2050=round(min(5.0, sev_base * elev_factor * max(0.5, 1.0 - w50 * 0.10)), 2),
+        data_source="IPCC AR6 Ch11.3 (cold extremes); Overland et al 2021 (Arctic amplification); WMO",
+        notes=f"Cold reduction {cold_reduction:.2f}× at +{warming:.2f}°C; elevation factor {elev_factor:.2f}×",
+    )
+
+
+def _blade_icing(region: str, ssp: SSPScenario, year: int,
+                 elevation_m: float = 300) -> HazardScore:
+    """
+    Wind turbine blade and overhead-line icing.
+
+    Icing is maximum in the 'glaze-ice band': mean winter temperature −10°C to 0°C
+    with liquid water present (freezing rain, rime, fog). This creates an asymmetric
+    climate response: warming INCREASES icing risk in very cold continental regions
+    (Siberia, Mongolia) by shifting temperatures into the danger band, while
+    DECREASING it in milder cold regions (Scandinavia, UK) already near 0°C.
+    Modelled as a Gaussian exposure function centred on −5°C mean winter temperature.
+
+    Sources: IEA Wind Task 19 (2021); Rissanen et al 2022; Dobesch et al 2003;
+             IPCC AR6 Ch11.3.
+    """
+    # Mean winter 2-m temperature proxy (°C) — historical normal, pre-warming
+    _MEAN_WINTER_T: dict[str, float] = {
+        "CA-AB": -12.0, "CA-QC": -14.0, "MN-01": -20.0,
+        "CN-NM": -15.0, "US-WY": -8.0, "GB-ENG": 4.0,
+        "NL-NH": 3.0, "AU-WA": 14.0, "AU-QLD": 20.0,
+    }
+    _ICING_BASE_PROB: dict[str, float] = {
+        "CA-AB": 0.55, "CA-QC": 0.50, "MN-01": 0.40,
+        "CN-NM": 0.35, "US-WY": 0.45, "GB-ENG": 0.20, "NL-NH": 0.15,
+    }
+    _NO_ICING = {"AU-WA", "AU-QLD", "AU-SA", "AU-NSW", "AU-NT",
+                 "IN-MH", "ID-KI", "BR-PA", "PE-01", "ZA", "CL-02"}
+    if region in _NO_ICING:
+        return HazardScore(
+            hazard="blade_icing", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IEA Wind Task 19", applicable=False,
+            notes="Region too warm for blade-icing hazard",
+        )
+
+    warming = ssp.regional_warming(year, region)
+    mean_winter_t_now = _MEAN_WINTER_T.get(region, -5.0) + warming
+    danger_center, danger_std = -5.0, 8.0
+
+    def _icing_exposure(t: float) -> float:
+        return math.exp(-0.5 * ((t - danger_center) / danger_std) ** 2)
+
+    ie = _icing_exposure(mean_winter_t_now)
+    elev_factor = min(1.6, 1.0 + max(0.0, elevation_m - 400) / 2000)
+    base_prob = _ICING_BASE_PROB.get(region, 0.25)
+    prob = min(0.85, base_prob * ie * elev_factor)
+    severity = min(5.0, ie * 4.0 * elev_factor)
+    loss = min(0.015, max(0.0, prob * 0.022))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    mwt0 = _MEAN_WINTER_T.get(region, -5.0)
+    ie30 = _icing_exposure(mwt0 + w30) * elev_factor
+    ie50 = _icing_exposure(mwt0 + w50) * elev_factor
+    return HazardScore(
+        hazard="blade_icing",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, ie30 * 4.0), 2),
+        trend_2050=round(min(5.0, ie50 * 4.0), 2),
+        data_source="IEA Wind Task 19 (2021); Rissanen et al 2022; IPCC AR6 Ch11.3",
+        notes=(
+            f"Winter T {mwt0:.1f}°C + {warming:.2f}°C warming = {mean_winter_t_now:.1f}°C; "
+            f"icing exposure {ie:.3f} (danger band {danger_center}°C±{danger_std}°C); "
+            f"elevation factor {elev_factor:.2f}×"
+        ),
+    )
+
+
+def _extratropical_cyclone(region: str, ssp: SSPScenario, year: int,
+                           elevation_m: float = 300) -> HazardScore:
+    """
+    Mid-latitude (extratropical) cyclone — wind, storm surge, extreme precipitation.
+
+    Unlike tropical cyclones, extratropical cyclones are not latitude-gated.
+    IPCC AR6 projects: poleward shift of storm tracks (~0.5°/°C), potential
+    intensification of the strongest events. Net risk change is region-dependent.
+    Coastal assets face compound flood risk from extratropical surge.
+
+    Sources: IPCC AR6 Ch11.7; Zappa et al 2013; Mölter et al 2016;
+             ERA5 reanalysis (Copernicus C3S).
+    """
+    _ETC_BASELINE: dict[str, float] = {
+        "GB-ENG": 3.2, "NL-NH": 3.0, "CA-QC": 2.5,
+        "AU-VIC": 2.0, "AU-NSW": 1.8, "ZA": 1.5,
+        "US-WY": 1.8, "CL-02": 2.2,
+    }
+    if region not in EXTRATROPICAL_CYCLONE_REGIONS:
+        return HazardScore(
+            hazard="extratropical_cyclone", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC AR6 Ch11.7", applicable=False,
+            notes="Region outside extratropical storm-track exposure zone",
+        )
+
+    baseline = _ETC_BASELINE.get(region, 1.5)
+    warming = ssp.regional_warming(year, region)
+    # Poleward storm track shift may modestly intensify storms at mid-latitudes
+    # Net effect: ~5% intensity increase per °C for strongest events (IPCC AR6)
+    intensity_mult = 1.0 + warming * 0.05
+    severity = min(5.0, baseline * intensity_mult)
+    prob = min(0.90, baseline / 5.0 * 0.60 * intensity_mult)
+    loss = min(0.040, max(0.0, (severity - 1.5) * 0.010))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="extratropical_cyclone",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * (1 + w30 * 0.05)), 2),
+        trend_2050=round(min(5.0, baseline * (1 + w50 * 0.05)), 2),
+        data_source="IPCC AR6 Ch11.7; ERA5/Copernicus C3S; Zappa et al 2013",
+        notes=f"ETC baseline {baseline:.2f}; intensity mult {intensity_mult:.3f}× at +{warming:.2f}°C",
+    )
+
+
+def _flash_flood(region: str, ssp: SSPScenario, year: int, lulc: str,
+                 elevation_m: float = 300) -> HazardScore:
+    """
+    Flash flood: rapid-onset flooding from intense convective precipitation.
+
+    Distinct from riverine flood — driven by short-duration extreme precipitation
+    (minutes to hours) overwhelming drainage capacity. Clausius-Clapeyron scaling
+    predicts ~7% increase in extreme hourly precipitation per °C of warming.
+    High-imperviousness LULC (urban, bare rock) amplifies runoff.
+
+    Sources: IPCC AR6 Ch11.4; Westra et al 2014; NOAA Atlas 14.
+    """
+    # Flash flood probability derived from WRI riverine baseline (proxy)
+    riverine_base = WRI_BASELINE.get(region, WRI_BASELINE["global"])["riverine_flood"]
+    warming = ssp.regional_warming(year, region)
+
+    # Extreme precipitation scaling: +7% per °C (Clausius-Clapeyron; IPCC AR6 Box 11.1)
+    extreme_precip_mult = (1 + warming * 0.07)
+    # High-imperviousness LULC increases runoff velocity
+    runoff_mult = RUNOFF_BY_LULC.get(lulc, 1.0)
+    # Low-elevation terrain is more susceptible (valley accumulation)
+    elev_discount = max(0.4, 1.0 - elevation_m / 3000)
+
+    severity = min(5.0, riverine_base * extreme_precip_mult * runoff_mult * elev_discount)
+    prob = min(0.80, riverine_base / 5.0 * extreme_precip_mult * 0.30)
+    loss = min(0.012, max(0.0, (severity - 1.0) * 0.0014))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="flash_flood",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, riverine_base * (1 + w30 * 0.07) * runoff_mult * elev_discount), 2),
+        trend_2050=round(min(5.0, riverine_base * (1 + w50 * 0.07) * runoff_mult * elev_discount), 2),
+        data_source="IPCC AR6 Ch11.4 Box 11.1 (Clausius-Clapeyron); WRI Aqueduct; Westra et al 2014",
+        notes=(
+            f"Riverine proxy {riverine_base:.2f}; CC extreme precip mult {extreme_precip_mult:.3f}×; "
+            f"runoff {runoff_mult:.1f}× (LULC: {lulc}); elevation discount {elev_discount:.2f}×"
+        ),
+    )
+
+
+def _permafrost_thaw(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+    """
+    Permafrost thaw — ground instability for infrastructure in Arctic/subarctic.
+
+    Thawing permafrost causes subsidence, bearing-capacity loss, and pipeline/
+    foundation failure. Arctic warming is 2–4× global mean rate (Arctic amplification).
+    IPCC AR6 projects 25% reduction in near-surface permafrost area by 2100 under SSP5-8.5.
+    Active-layer deepening causes progressive infrastructure damage.
+
+    Sources: IPCC AR6 Ch9.5.2; AMAP 2021 (Arctic Monitoring); Hjort et al 2022.
+    """
+    if region not in PERMAFROST_REGIONS:
+        return HazardScore(
+            hazard="permafrost_thaw", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC AR6 Ch9.5.2; AMAP 2021", applicable=False,
+            notes="Region not within mapped permafrost zone",
+        )
+
+    _PERM_BASELINE: dict[str, float] = {
+        "CA-QC": 2.5,    # Widespread discontinuous permafrost
+        "CA-AB": 1.0,    # Sporadic permafrost (northern fringes only)
+        "MN-01": 3.0,    # Continental Mongolia — extensive permafrost
+    }
+    baseline = _PERM_BASELINE.get(region, 1.5)
+    # Arctic warming amplification factor ~3×
+    warming = ssp.regional_warming(year, region) * 2.5
+    severity = min(5.0, baseline * (1 + warming * 0.30))
+    prob = min(0.90, baseline / 5.0 * (1 + warming * 0.20))
+    # Progressive damage — loss increases non-linearly with warming
+    loss = min(0.020, max(0.0, (severity - 1.0) * 0.0030))
+
+    w30 = ssp.regional_warming(2030, region) * 2.5
+    w50 = ssp.regional_warming(2050, region) * 2.5
+    return HazardScore(
+        hazard="permafrost_thaw",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * (1 + w30 * 0.30)), 2),
+        trend_2050=round(min(5.0, baseline * (1 + w50 * 0.30)), 2),
+        data_source="IPCC AR6 Ch9.5.2; AMAP 2021 Permafrost Atlas; Hjort et al 2022",
+        notes=(
+            f"Baseline coverage {baseline:.2f}/5; Arctic-amplified warming "
+            f"{warming:.2f}°C (2.5× global mean); progressive active-layer deepening"
+        ),
+    )
+
+
+def _dust_storm(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+    """
+    Dust storm / haboob / aeolian transport hazard.
+
+    Impacts: equipment abrasion, PV panel soiling (−30 to −50% output), visibility
+    reduction, respiratory health, supply-chain disruption. Dryland expansion
+    under warming (IPCC AR6 Ch8) amplifies dust generation. Some regions show
+    frequency increases (MENA, Mongolia), others mixed signals.
+
+    Sources: WMO SDS-WAS; Ginoux et al 2012; IPCC AR6 Ch8.2; Middleton 2017.
+    """
+    if region not in DUST_STORM_REGIONS:
+        return HazardScore(
+            hazard="dust_storm", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="WMO SDS-WAS", applicable=False,
+            notes="Region outside dust-storm-prone arid/semi-arid zone",
+        )
+
+    _DUST_BASELINE: dict[str, float] = {
+        "AU-SA": 3.0, "AU-WA": 2.2, "AU-NT": 2.5,
+        "MN-01": 3.5, "CN-NM": 3.2,
+        "ZA": 1.5, "CL-02": 1.8,
+        "US-TX": 2.0, "US-OK": 1.8,
+        "IN-MH": 1.5,
+    }
+    baseline = _DUST_BASELINE.get(region, 1.5)
+    warming = ssp.regional_warming(year, region)
+    # Dryland expansion ~ +4% per °C warming (IPCC AR6 Ch8)
+    drought_amplifier = 1.0 + warming * 0.08
+    severity = min(5.0, baseline * drought_amplifier)
+    prob = min(0.85, baseline / 5.0 * drought_amplifier * 0.55)
+    loss = min(0.008, max(0.0, (severity - 1.5) * 0.0010))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="dust_storm",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * (1 + w30 * 0.08)), 2),
+        trend_2050=round(min(5.0, baseline * (1 + w50 * 0.08)), 2),
+        data_source="WMO SDS-WAS; Ginoux et al 2012 MODIS dust inventory; IPCC AR6 Ch8.2",
+        notes=f"Dust baseline {baseline:.2f}; dryland expansion amplifier {drought_amplifier:.3f}× at +{warming:.2f}°C",
+    )
+
+
+def _hail(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+    """
+    Large hail impact (crop damage, equipment, solar panels, vehicles).
+
+    Hail frequency-intensity relationship with warming is uncertain. IPCC AR6:
+    overall number of hail days may decrease, but frequency of large hail (>2cm)
+    may increase due to stronger convective instability. Net risk: stable to slightly
+    elevated for assets vulnerable to large hail (PV arrays, crops, structures).
+
+    Sources: IPCC AR6 Ch11.7; Prein & Holland 2018; Allen et al 2020.
+    """
+    if region not in HAIL_REGIONS:
+        return HazardScore(
+            hazard="hail", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC AR6 Ch11.7", applicable=False,
+            notes="Region not in mapped hail-prone zone",
+        )
+
+    _HAIL_BASELINE: dict[str, float] = {
+        "AU-QLD": 2.8, "AU-NSW": 2.5, "AU-VIC": 2.0,
+        "US-TX": 3.5, "US-OK": 3.2, "US-WY": 2.5,
+        "ZA": 2.2, "IN-MH": 1.8, "BR-PA": 1.5,
+    }
+    baseline = _HAIL_BASELINE.get(region, 1.5)
+    warming = ssp.regional_warming(year, region)
+    # Large hail frequency increases ~+5% per °C (convective instability)
+    # but total hail days slightly decrease; net for large hail: +3%/°C
+    large_hail_mult = 1.0 + warming * 0.03
+    severity = min(5.0, baseline * large_hail_mult)
+    prob = min(0.70, baseline / 5.0 * 0.45 * large_hail_mult)
+    loss = min(0.010, max(0.0, (severity - 1.5) * 0.0010))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="hail",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * (1 + w30 * 0.03)), 2),
+        trend_2050=round(min(5.0, baseline * (1 + w50 * 0.03)), 2),
+        data_source="IPCC AR6 Ch11.7; Prein & Holland 2018; Allen et al 2020 (HAIL-CAESAR)",
+        notes=f"Hail baseline {baseline:.2f}; large-hail mult {large_hail_mult:.3f}× at +{warming:.2f}°C",
+    )
+
+
+def _lightning(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+    """
+    Lightning strike hazard — direct equipment damage and wildfire ignition.
+
+    Lightning flash rate increases ~12% per °C of warming (Romps et al 2014).
+    Direct damage to structures, electrical equipment, and control systems.
+    Lightning is also a primary wildfire ignition source; in drier conditions
+    under warming, a larger fraction of ignitions result in fires.
+
+    Sources: Romps et al 2014 (Science); IPCC AR6 Ch11.7; Thornton et al 2017.
+    """
+    # Lightning density baseline by region (flashes/km²/yr — TRMM/LIS proxy)
+    _LIGHTNING_DENSITY: dict[str, float] = {
+        "BR-PA": 4.5,   # Amazon — world's highest lightning density
+        "ID-KI": 3.5,   # Maritime Continent
+        "IN-MH": 3.0,   # Indian monsoon belt
+        "AU-NT": 2.5,   # Darwin — high thunderstorm frequency
+        "AU-QLD": 2.0,  # Queensland storm belt
+        "ZA": 2.0,      # Southern Africa highveld
+        "US-TX": 1.8,   # Gulf Coast convection
+        "US-OK": 1.6,   # Great Plains
+        "AU-WA": 1.0,
+        "CA-AB": 0.8,
+        "GB-ENG": 0.4,
+        "NL-NH": 0.3,
+        "MN-01": 0.6,
+        "global": 1.0,
+    }
+    baseline_density = _LIGHTNING_DENSITY.get(region, _LIGHTNING_DENSITY["global"])
+    warming = ssp.regional_warming(year, region)
+    # +12% per °C (Romps et al 2014)
+    flash_mult = 1.0 + warming * 0.12
+    severity = min(5.0, baseline_density / 4.5 * 4.0 * flash_mult)
+    prob = min(0.95, baseline_density / 4.5 * 0.60 * flash_mult)
+    loss = min(0.005, max(0.0, (severity - 1.0) * 0.0005))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="lightning",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline_density / 4.5 * 4.0 * (1 + w30 * 0.12)), 2),
+        trend_2050=round(min(5.0, baseline_density / 4.5 * 4.0 * (1 + w50 * 0.12)), 2),
+        data_source="Romps et al 2014 (Science +12%/°C); TRMM/LIS lightning density; IPCC AR6 Ch11.7",
+        notes=f"Flash density {baseline_density:.1f} fl/km²/yr; flash mult {flash_mult:.3f}× at +{warming:.2f}°C",
+    )
+
+
+def _subsidence(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+    """
+    Ground subsidence — sinking from groundwater extraction, peat oxidation,
+    coal/mineral extraction, and clay shrinkage from drought drying.
+
+    Climate link: drought intensification drives increased groundwater extraction
+    (demand) and accelerates peat oxidation and clay desiccation.
+    Extraction subsidence is largely anthropogenic but climate-amplified.
+
+    Sources: Cigna & Tapete 2021; WRI; InSAR Sentinel-1; IPCC AR6 Ch4.
+    """
+    if region not in SUBSIDENCE_REGIONS:
+        return HazardScore(
+            hazard="subsidence", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="Cigna & Tapete 2021; WRI", applicable=False,
+            notes="Region not flagged for significant subsidence risk",
+        )
+
+    _SUBS_BASELINE: dict[str, float] = {
+        "NL-NH": 4.5,    # Peat soils; −10 cm/yr observed (Cigna)
+        "ID-KI": 3.5,    # Jakarta groundwater depletion + peat
+        "CN-NM": 2.5,    # Coal mine subsidence
+        "AU-QLD": 1.5,   # Mine subsidence
+        "IN-MH": 2.0,    # Groundwater extraction
+        "MN-01": 2.0,    # Mining + permafrost-adjacent
+        "US-TX": 1.8,    # Houston subsidence (oil/gas)
+        "US-OK": 1.5,    # Induced subsidence
+    }
+    baseline = _SUBS_BASELINE.get(region, 1.5)
+    warming = ssp.regional_warming(year, region)
+    # Drought-driven groundwater demand increases ~5% per °C
+    drought_amp = 1.0 + warming * 0.05
+    severity = min(5.0, baseline * drought_amp)
+    prob = min(0.85, baseline / 5.0 * 0.70 * drought_amp)
+    loss = min(0.010, max(0.0, (severity - 1.0) * 0.0014))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="subsidence",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * (1 + w30 * 0.05)), 2),
+        trend_2050=round(min(5.0, baseline * (1 + w50 * 0.05)), 2),
+        data_source="Cigna & Tapete 2021 InSAR; WRI; Sentinel-1 ground motion; IPCC AR6 Ch4 (groundwater)",
+        notes=f"Subsidence baseline {baseline:.2f}/5; drought amplifier {drought_amp:.3f}× at +{warming:.2f}°C",
+    )
+
+
+def _freeze_thaw_cycle(region: str, ssp: SSPScenario, year: int,
+                       elevation_m: float = 300) -> HazardScore:
+    """
+    Freeze-thaw cycle infrastructure damage — pipe bursting, concrete cracking,
+    road pavement heaving, bridge-deck damage.
+
+    Warming may INCREASE freeze-thaw cycles at currently cold sites by pushing
+    temperatures from "always frozen" into the cycling zone. At currently mild
+    cold sites (near 0°C mean winter T), warming reduces cycling frequency.
+    This is the same 'danger band' logic as blade icing but applied to infrastructure.
+
+    Sources: IPCC AR6 Ch12.4; ASCE infrastructure resilience; Groisman et al 2006.
+    """
+    _MEAN_WINTER_T: dict[str, float] = {
+        "CA-AB": -12.0, "CA-QC": -14.0, "MN-01": -20.0,
+        "CN-NM": -15.0, "US-WY": -8.0, "GB-ENG": 4.0,
+        "NL-NH": 3.0, "AU-WA": 14.0, "AU-QLD": 20.0,
+        "AU-SA": 8.0, "ZA": 8.0, "CL-02": -2.0,
+        "PE-01": -5.0,  # High Andes
+    }
+    _NO_FT = {"AU-QLD", "AU-NT", "IN-MH", "ID-KI", "BR-PA"}
+    if region in _NO_FT and elevation_m < 2000:
+        return HazardScore(
+            hazard="freeze_thaw_cycle", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC AR6 Ch12.4", applicable=False,
+            notes="Region too warm for freeze-thaw cycling",
+        )
+
+    warming = ssp.regional_warming(year, region)
+    mwt = _MEAN_WINTER_T.get(region, -3.0) + warming
+    # Freeze-thaw cycles peak near 0°C mean winter T
+    danger_center, danger_std = 0.0, 6.0
+    ft_exposure = math.exp(-0.5 * ((mwt - danger_center) / danger_std) ** 2)
+    severity = min(5.0, ft_exposure * 4.5)
+    prob = min(0.90, ft_exposure * 0.75)
+    loss = min(0.008, max(0.0, ft_exposure * 0.0080))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    mwt0 = _MEAN_WINTER_T.get(region, -3.0)
+    ft30 = math.exp(-0.5 * ((mwt0 + w30 - danger_center) / danger_std) ** 2)
+    ft50 = math.exp(-0.5 * ((mwt0 + w50 - danger_center) / danger_std) ** 2)
+    return HazardScore(
+        hazard="freeze_thaw_cycle",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, ft30 * 4.5), 2),
+        trend_2050=round(min(5.0, ft50 * 4.5), 2),
+        data_source="IPCC AR6 Ch12.4; ASCE; Groisman et al 2006; WMO lapse-rate",
+        notes=(
+            f"Mean winter T {mwt0:.1f}°C + {warming:.2f}°C warming = {mwt:.1f}°C; "
+            f"FT exposure {ft_exposure:.3f} (danger band {danger_center}°C±{danger_std}°C)"
+        ),
+    )
+
+
+def _compound_flood(region: str, ssp: SSPScenario, year: int,
+                    is_coastal: bool, elevation_m: float,
+                    coastal_factor: float = 1.0) -> HazardScore:
+    """
+    Compound flood — simultaneous or sequential riverine + coastal storm surge,
+    amplified by sea level rise.
+
+    Compound events are non-additive: joint probability is lower than the product
+    of individual probabilities, but damage severity is higher than either alone.
+    IPCC AR6: compound flooding frequency will increase significantly in low-lying
+    coastal delta regions as both SLR and extreme precipitation intensify.
+
+    Sources: IPCC AR6 Ch11.4+9; Zscheischler et al 2020 (compound events);
+             Ward et al 2018 (global compound flood risk).
+    """
+    if elevation_m > 60 or coastal_factor < 0.15:
+        return HazardScore(
+            hazard="compound_flood", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC AR6 Ch11.4; Ward et al 2018", applicable=False,
+            notes=f"Elevation {elevation_m:.0f}m or coastal_factor {coastal_factor:.2f} too low for compound flood",
+        )
+
+    wri = WRI_BASELINE.get(region, WRI_BASELINE["global"])
+    riverine_base = wri["riverine_flood"]
+    coastal_base = wri["coastal_flood"]
+    warming = ssp.regional_warming(year, region)
+
+    # Compound severity > either individual event; model as geometric mean × amplifier
+    compound_amplifier = 1.30  # 30% severity uplift for co-occurrence
+    base_severity = math.sqrt(riverine_base * max(coastal_base, 0.1)) * compound_amplifier
+    slr_cm = max(0, 20 + warming * 8)   # SLR proxy (cm) — raises compound frequency
+    slr_freq_mult = 1 + slr_cm / 100 * 0.8
+    severity = min(5.0, base_severity * slr_freq_mult * coastal_factor)
+    prob = min(0.80, severity / 5.0 * 0.35 * coastal_factor)
+    loss = min(0.025, max(0.0, (severity - 1.5) * 0.0045))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    slr30 = max(0, 20 + w30 * 8)
+    slr50 = max(0, 20 + w50 * 8)
+    return HazardScore(
+        hazard="compound_flood",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, base_severity * (1 + slr30 / 100 * 0.8) * coastal_factor), 2),
+        trend_2050=round(min(5.0, base_severity * (1 + slr50 / 100 * 0.8) * coastal_factor), 2),
+        data_source="IPCC AR6 Ch11.4+9; Zscheischler et al 2020; Ward et al 2018 compound flood",
+        notes=(
+            f"Riverine {riverine_base:.2f} + Coastal {coastal_base:.2f} base; "
+            f"compound amplifier {compound_amplifier}×; SLR proxy {slr_cm:.0f}cm; "
+            f"coastal factor {coastal_factor:.2f}"
+        ),
+    )
+
+
+def _avalanche(region: str, ssp: SSPScenario, year: int,
+               elevation_m: float = 300) -> HazardScore:
+    """
+    Snow avalanche risk for mountain-terrain assets and access infrastructure.
+
+    Climate link: warming alters snowpack characteristics (wetter, heavier snow
+    → increased wet-slab avalanche risk) and accelerates snow-season shortening.
+    Some research suggests warming increases wet avalanche frequency while
+    decreasing dry-slab frequency. Net risk for operational assets: stable to
+    slightly elevated in near-term, declining long-term as snowpack diminishes.
+
+    Sources: Hock et al 2019 (IPCC SROCC Ch2); Sinickas et al 2016;
+             SLF/WSL Avalanche Atlas; Techel et al 2020.
+    """
+    if region not in AVALANCHE_REGIONS or elevation_m < 800:
+        return HazardScore(
+            hazard="avalanche", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC SROCC Ch2; SLF/WSL", applicable=False,
+            notes="Region not in avalanche zone or elevation < 800m",
+        )
+
+    _AVL_BASELINE: dict[str, float] = {
+        "CL-02": 3.2,  # High Andes mining routes
+        "PE-01": 2.8,  # Tropical Andes (rapidly losing glacial bonding)
+        "CA-AB": 2.5,  # Columbia/Rockies
+        "US-WY": 2.2,  # Wyoming ranges
+        "MN-01": 2.0,  # Altai mountains
+    }
+    baseline = _AVL_BASELINE.get(region, 1.5)
+    warming = ssp.regional_warming(year, region)
+    # Near-term: wet avalanche frequency +10%/°C; long-term snowpack loss −15%/°C
+    # Net near-2050 effect: stable to slight decline
+    elev_factor = min(1.5, elevation_m / 1500)
+    wet_avl_mult = 1.0 + warming * 0.05   # net of wet-avl increase and snowpack loss
+    severity = min(5.0, baseline * elev_factor * wet_avl_mult)
+    prob = min(0.70, baseline / 5.0 * elev_factor * 0.40 * wet_avl_mult)
+    loss = min(0.015, max(0.0, (severity - 1.0) * 0.0018))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="avalanche",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * elev_factor * (1 + w30 * 0.05)), 2),
+        trend_2050=round(min(5.0, baseline * elev_factor * (1 + w50 * 0.05)), 2),
+        data_source="IPCC SROCC Ch2; Hock et al 2019; SLF/WSL Avalanche Atlas; Sinickas et al 2016",
+        notes=f"Avalanche baseline {baseline:.2f}; elevation factor {elev_factor:.2f}×; wet-avl mult {wet_avl_mult:.3f}×",
+    )
+
+
+def _marine_heatwave(region: str, ssp: SSPScenario, year: int,
+                     is_coastal: bool, coastal_factor: float = 1.0) -> HazardScore:
+    """
+    Marine heatwave (MHW) — anomalously warm sea surface temperature events.
+
+    Impacts marine operations, aquaculture, port infrastructure cooling, desalination
+    intake temperatures, and coral bleaching (affecting fisheries/biodiversity).
+    MHW frequency has doubled since 1982; under SSP3-7.0, events that are now
+    'extreme' will become 'permanent conditions' by 2100.
+
+    Sources: Oliver et al 2021 (MHW review); Hobday et al 2018; IPCC SROCC Ch6;
+             Frölicher et al 2018 (Nature).
+    """
+    if region not in MARINE_HEATWAVE_REGIONS or (not is_coastal and coastal_factor < 0.20):
+        return HazardScore(
+            hazard="marine_heatwave", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="Oliver et al 2021; IPCC SROCC", applicable=False,
+            notes="Region not coastal or not in MHW-elevated zone",
+        )
+
+    _MHW_BASELINE: dict[str, float] = {
+        "AU-WA": 3.5,   # SE Indian Ocean — most intense MHW hotspot
+        "AU-QLD": 3.0,  # GBR bleaching events
+        "AU-SA": 2.0,   # Southern Ocean / Spencer Gulf
+        "ZA": 2.0,      # Agulhas current MHW
+        "ID-KI": 2.5,   # Coral Triangle thermal sensitivity
+        "IN-MH": 2.2,   # Arabian Sea warming
+        "GB-ENG": 1.5,  # North Sea anomalous warming
+    }
+    baseline = _MHW_BASELINE.get(region, 1.5)
+    warming = ssp.regional_warming(year, region)
+    # MHW frequency scales non-linearly: frequency doubles per 0.5°C of ocean warming
+    # Ocean warms at ~0.65× land rate
+    ocean_warming = warming * 0.65
+    mhw_freq_mult = 2.0 ** (ocean_warming / 0.5)   # doubling per 0.5°C ocean warming
+    severity = min(5.0, baseline * min(mhw_freq_mult, 3.0) * coastal_factor)
+    prob = min(0.95, baseline / 5.0 * min(mhw_freq_mult, 3.0) * 0.50 * coastal_factor)
+    loss = min(0.010, max(0.0, (severity - 1.5) * 0.0014))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    fm30 = 2.0 ** (w30 * 0.65 / 0.5)
+    fm50 = 2.0 ** (w50 * 0.65 / 0.5)
+    return HazardScore(
+        hazard="marine_heatwave",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * min(fm30, 3.0) * coastal_factor), 2),
+        trend_2050=round(min(5.0, baseline * min(fm50, 3.0) * coastal_factor), 2),
+        data_source="Oliver et al 2021; Frölicher et al 2018 Nature; IPCC SROCC Ch6; Hobday et al 2018",
+        notes=(
+            f"MHW baseline {baseline:.2f}; ocean warming {ocean_warming:.2f}°C; "
+            f"MHW freq mult {mhw_freq_mult:.2f}× (doubles per 0.5°C ocean warming)"
+        ),
+    )
+
+
+def _glof(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+    """
+    Glacial Lake Outburst Flood (GLOF) — high-energy debris flows from sudden
+    moraine dam failure or ice-dam release of glacial lakes.
+
+    GLOF risk INCREASES with warming as glacier retreat creates new and larger
+    glacial lakes. Pro-glacial lake area has increased 51% since 1990 globally
+    (IPCC SROCC). Downstream assets in valley corridors face catastrophic,
+    low-probability, extreme-impact events.
+
+    Sources: IPCC SROCC Ch2.3; Emmer et al 2022; Veh et al 2020;
+             Richardson & Reynolds 2000; Carrivick & Tweed 2016.
+    """
+    if region not in GLOF_REGIONS:
+        return HazardScore(
+            hazard="glof", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC SROCC Ch2.3; Emmer et al 2022", applicable=False,
+            notes="Region not in mapped GLOF-susceptible zone",
+        )
+
+    _GLOF_BASELINE: dict[str, float] = {
+        "PE-01": 3.5,   # Tropical Andes — highest historical GLOF frequency
+        "CL-02": 2.8,   # Southern Andes — active glacier retreat
+        "CA-AB": 2.0,   # Rocky Mountain glacier systems
+        "IN-MH": 2.5,   # Himalayan fringes (downstream)
+        "MN-01": 1.8,   # Altai glacial lakes (growing)
+    }
+    baseline = _GLOF_BASELINE.get(region, 1.5)
+    warming = ssp.regional_warming(year, region)
+    # GLOF risk increases with glacier retreat (~+15%/°C as new lakes form)
+    glacial_lake_growth = 1.0 + warming * 0.15
+    severity = min(5.0, baseline * glacial_lake_growth)
+    # GLOF probability remains low but rising (low-frequency, high-consequence)
+    prob = min(0.15, baseline / 5.0 * 0.08 * glacial_lake_growth)
+    loss = min(0.018, max(0.0, (severity - 1.5) * 0.0035))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="glof",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * (1 + w30 * 0.15)), 2),
+        trend_2050=round(min(5.0, baseline * (1 + w50 * 0.15)), 2),
+        data_source="IPCC SROCC Ch2.3; Emmer et al 2022; Veh et al 2020; Carrivick & Tweed 2016",
+        notes=(
+            f"GLOF baseline {baseline:.2f}; glacial lake growth factor {glacial_lake_growth:.3f}× "
+            f"at +{warming:.2f}°C warming (IPCC SROCC +51% lake area since 1990)"
+        ),
+    )
+
+
+def _tornado(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+    """
+    Tornado — rotating convective winds (EF-scale events).
+
+    Strong constraint: tornadoes require specific atmospheric instability conditions
+    (CAPE + wind shear). IPCC AR6: modest frequency changes uncertain, but poleward
+    expansion of tornado-prone zones possible. Some studies project US tornado alley
+    shift eastward. Impacts are highly localised but extremely destructive.
+
+    Sources: IPCC AR6 Ch11.7; Tippett et al 2016; Allen & Tippett 2015;
+             NOAA SPC 1950-2024 climatology.
+    """
+    if region not in TORNADO_REGIONS:
+        return HazardScore(
+            hazard="tornado", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IPCC AR6 Ch11.7; NOAA SPC", applicable=False,
+            notes="Region not in mapped tornado-susceptible zone",
+        )
+
+    _TORNADO_BASELINE: dict[str, float] = {
+        "US-TX": 4.0,    # 150+ tornadoes/yr in Texas historically
+        "US-OK": 4.5,    # Oklahoma — highest tornado density globally
+        "AU-QLD": 0.8,   # Rare but documented Australian tornadoes
+    }
+    baseline = _TORNADO_BASELINE.get(region, 1.0)
+    warming = ssp.regional_warming(year, region)
+    # CAPE increases with warming (~+7%/°C); wind shear changes uncertain
+    # Net tornado risk signal uncertain; assume modest +2%/°C
+    cape_mult = 1.0 + warming * 0.02
+    severity = min(5.0, baseline * cape_mult)
+    prob = min(0.80, baseline / 5.0 * 0.55 * cape_mult)
+    loss = min(0.012, max(0.0, (severity - 1.0) * 0.0018))
+
+    w30 = ssp.regional_warming(2030, region)
+    w50 = ssp.regional_warming(2050, region)
+    return HazardScore(
+        hazard="tornado",
+        annual_probability=round(prob, 4),
+        severity_index=round(severity, 2),
+        production_loss_pct=round(loss, 4),
+        trend_2030=round(min(5.0, baseline * (1 + w30 * 0.02)), 2),
+        trend_2050=round(min(5.0, baseline * (1 + w50 * 0.02)), 2),
+        data_source="IPCC AR6 Ch11.7; Tippett et al 2016; NOAA SPC 1950-2024 climatology",
+        notes=f"Tornado baseline {baseline:.2f}; CAPE mult {cape_mult:.3f}× at +{warming:.2f}°C",
+    )
+
+
 # ---------------------------------------------------------------------------
 # Main assessment engine
 # ---------------------------------------------------------------------------
 
 class PhysicalHazardEngine:
     """
-    Compute full 9-hazard physical risk profile for an asset.
+    Compute full 25-hazard physical risk profile for an asset (v0.4).
 
     Usage:
         engine = PhysicalHazardEngine()
@@ -1253,24 +2174,41 @@ class PhysicalHazardEngine:
                 "steps 1-4 applied using lookup-table baseline."
             )
 
-        # Compute all 10 hazards with sub-grid downscaling applied
+        # Compute all 25 hazards with sub-grid downscaling applied
         hazards: dict[str, HazardScore] = {
-            "heat_stress":          _heat_stress(region, scenario, year,
-                                        heat_factor=sg["heat_factor"],
-                                        live_warming_c=live_warming_c,
-                                        live_baseline_t2m_max_c=live_baseline_t2m_max_c),
-            "flood_riverine":       _flood_riverine(region, scenario, year, lulc,
-                                        flood_factor=sg["flood_factor"],
-                                        live_precip_delta_pct=live_precip_delta_pct),
-            "flood_coastal":        _flood_coastal(region, scenario, year, is_coastal, elevation, coastal_factor),
-            "sea_level_rise":       _sea_level_rise(region, scenario, year, is_coastal, elevation, coastal_factor),
-            "saltwater_intrusion":  _saltwater_intrusion(region, scenario, year, is_coastal, elevation, coastal_factor),
-            "landslide":            _landslide(region, scenario, year, elevation, lulc),
-            "wildfire":             _wildfire(region, scenario, year, lulc),
-            "cyclone":              _cyclone(region, scenario, year, is_coastal),
-            "drought":              _drought(region, scenario, year),
-            "water_stress":         _water_stress(region, scenario, year,
-                                        water_stress_factor=sg["water_stress_factor"]),
+            # ── Core 10 (original) ────────────────────────────────────────────
+            "heat_stress":            _heat_stress(region, scenario, year,
+                                          heat_factor=sg["heat_factor"],
+                                          live_warming_c=live_warming_c,
+                                          live_baseline_t2m_max_c=live_baseline_t2m_max_c),
+            "flood_riverine":         _flood_riverine(region, scenario, year, lulc,
+                                          flood_factor=sg["flood_factor"],
+                                          live_precip_delta_pct=live_precip_delta_pct),
+            "flood_coastal":          _flood_coastal(region, scenario, year, is_coastal, elevation, coastal_factor),
+            "sea_level_rise":         _sea_level_rise(region, scenario, year, is_coastal, elevation, coastal_factor),
+            "saltwater_intrusion":    _saltwater_intrusion(region, scenario, year, is_coastal, elevation, coastal_factor),
+            "landslide":              _landslide(region, scenario, year, elevation, lulc),
+            "wildfire":               _wildfire(region, scenario, year, lulc),
+            "cyclone":                _cyclone(region, scenario, year, is_coastal),
+            "drought":                _drought(region, scenario, year),
+            "water_stress":           _water_stress(region, scenario, year,
+                                          water_stress_factor=sg["water_stress_factor"]),
+            # ── New 15 (v0.4) ────────────────────────────────────────────────
+            "extreme_cold":           _extreme_cold(region, scenario, year, elevation_m=elevation),
+            "blade_icing":            _blade_icing(region, scenario, year, elevation_m=elevation),
+            "extratropical_cyclone":  _extratropical_cyclone(region, scenario, year, elevation_m=elevation),
+            "flash_flood":            _flash_flood(region, scenario, year, lulc, elevation_m=elevation),
+            "permafrost_thaw":        _permafrost_thaw(region, scenario, year),
+            "dust_storm":             _dust_storm(region, scenario, year),
+            "hail":                   _hail(region, scenario, year),
+            "lightning":              _lightning(region, scenario, year),
+            "subsidence":             _subsidence(region, scenario, year),
+            "freeze_thaw_cycle":      _freeze_thaw_cycle(region, scenario, year, elevation_m=elevation),
+            "compound_flood":         _compound_flood(region, scenario, year, is_coastal, elevation, coastal_factor),
+            "avalanche":              _avalanche(region, scenario, year, elevation_m=elevation),
+            "marine_heatwave":        _marine_heatwave(region, scenario, year, is_coastal, coastal_factor),
+            "glof":                   _glof(region, scenario, year),
+            "tornado":                _tornado(region, scenario, year),
         }
 
         # Restore original warming method (avoid polluting shared scenario object)
