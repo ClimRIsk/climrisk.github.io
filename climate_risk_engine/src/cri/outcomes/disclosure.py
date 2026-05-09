@@ -487,8 +487,17 @@ def generate_tcfd(
             "scope_1_2030_cp":  emission_sum(cp,  2030, "scope1"),
         },
         "carbon_intensity": {
-            "description": "tCO2e per USD million revenue",
-            "baseline_2026": None,   # to be populated from company data
+            "description": "tCO2e per USD million revenue (Scope 1+2 combined)",
+            # Emissions are stored in MtCO2e; ×1e6 converts to tCO2e for standard intensity unit
+            "baseline_2026": (
+                round(
+                    (
+                        (emission_sum(cp, 2026, "scope1") or 0.0)
+                        + (emission_sum(cp, 2026, "scope2") or 0.0)
+                    ) * 1_000_000 / max((yr(cp, 2026).revenue if yr(cp, 2026) else 1.0), 1.0),
+                    1,
+                )
+            ),
         },
         "targets": [
             {
@@ -584,6 +593,18 @@ def generate_issb(
             "scope_1_tco2e": round(cp_2026.emissions_by_scope.get("scope_1", 0), 0) if cp_2026 else None,
             "scope_2_location_tco2e": round(cp_2026.emissions_by_scope.get("scope_2", 0), 0) if cp_2026 else None,
             "scope_3_tco2e": round(cp_2026.emissions_by_scope.get("scope_3", 0), 0) if cp_2026 else None,
+            # Carbon intensity: (S1 + S2) / revenue — tCO2e per USD million revenue
+            # Emissions stored in MtCO2e; ×1e6 converts to tCO2e for standard intensity unit
+            "carbon_intensity_tco2e_per_usdm_revenue": (
+                round(
+                    (
+                        cp_2026.emissions_by_scope.get("scope_1", 0.0)
+                        + cp_2026.emissions_by_scope.get("scope_2", 0.0)
+                    ) * 1_000_000 / max(cp_2026.revenue, 1.0),
+                    1,
+                )
+                if cp_2026 else None
+            ),
             "ghg_protocol_alignment": "GHG Protocol Corporate Accounting and Reporting Standard",
             "methodology_notes": "Asset-level intensity factors applied to production volumes",
         },

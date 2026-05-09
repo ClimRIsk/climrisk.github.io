@@ -21,10 +21,14 @@ from ..scenarios import (
     NZE_2050,
 )
 from .schemas import (
+    AssetInput,
     CompanyResponse,
     DisclosureRequest,
     DisclosureResponse,
+    HazardYearOut,
     HealthResponse,
+    PhysicalHazardReportResponse,
+    PhysicalReportRequest,
     PhysicalRiskOut,
     PhysicalYearOut,
     RatingRequest,
@@ -384,7 +388,7 @@ def rate_company(request: RatingRequest) -> RatingResponse:
 
     Runs the company under all three canonical scenarios internally.
     """
-    from ..outcomes.ratings import RatingEngine
+    from ..outcomes.ratings import RatingEngine, WeightProfile
     from ..outcomes.tiers import Tier, TierGate
 
     if request.company_id.lower() not in COMPANY_REGISTRY:
@@ -392,6 +396,34 @@ def rate_company(request: RatingRequest) -> RatingResponse:
             status_code=404,
             detail=f"Company '{request.company_id}' not found.",
         )
+
+    # Validate weight_profile
+    try:
+        wp = WeightProfile(request.weight_profile.lower())
+    except ValueError:
+        valid = [p.value for p in WeightProfile]
+        raise HTTPException(
+            status_code=422,
+            detail=f"Invalid weight_profile '{request.weight_profile}'. "
+                   f"Choose from: {valid}",
+        )
+
+    # Validate custom_weights when CUSTOM profile selected
+    custom_weights_tuple = None
+    if wp == WeightProfile.CUSTOM:
+        if not request.custom_weights or len(request.custom_weights) != 3:
+            raise HTTPException(
+                status_code=422,
+                detail="custom_weights must be a list of 3 floats [physical, transition, financial] "
+                       "summing to 1.0 when weight_profile='custom'.",
+            )
+        w = request.custom_weights
+        if abs(sum(w) - 1.0) > 1e-4:
+            raise HTTPException(
+                status_code=422,
+                detail=f"custom_weights must sum to 1.0, got {sum(w):.4f}.",
+            )
+        custom_weights_tuple = (w[0], w[1], w[2])
 
     company = COMPANY_REGISTRY[request.company_id.lower()]
     tier = Tier.from_str(request.tier)
@@ -409,7 +441,21 @@ def rate_company(request: RatingRequest) -> RatingResponse:
         dt_results=dt_results,
         cp_results=cp_results,
         data_quality=company.data_quality,
+        weight_profile=wp,
+        custom_weights=custom_weights_tuple,
     )
+
+    # Determine actual weights applied (for transparency in response)
+    from ..outcomes.ratings import _PROFILE_WEIGHTS
+    if wp == WeightProfile.CUSTOM and custom_weights_tuple:
+        w_p, w_t, w_f = custom_weights_tuple
+    else:
+        w_p, w_t, w_f = _PROFILE_WEIGHTS[wp]
+    weights_applied = {
+        "physical":   round(w_p, 4),
+        "transition": round(w_t, 4),
+        "financial":  round(w_f, 4),
+    }
 
     gate = TierGate(tier)
     show_scores = gate.features.pillar_scores
@@ -440,6 +486,8 @@ def rate_company(request: RatingRequest) -> RatingResponse:
             "Unlock full scores, asset-level breakdown, and TCFD/ISSB S2 reports "
             "with CRI Analyst or Professional."
         ),
+        weight_profile_used=wp.value,
+        weights_applied=weights_applied,
     )
 
 
@@ -537,6 +585,177 @@ def generate_csrd_report(request: DisclosureRequest) -> DisclosureResponse:
 
     report = generate_csrd(company, nze, dt, cp, reporting_year=request.reporting_year)
     return DisclosureResponse(**report.to_dict())
+
+
+@app.post("/reports/physical", response_model=PhysicalHazardReportResponse)
+def generate_physical_report(request: PhysicalReportRequest) -> PhysicalHazardReportResponse:
+    """
+    Generate a standalone Physical Climate Hazard Report.
+
+    This endpoint requires **no financial data** (no EBITDA, WACC, or net debt).
+    It is designed for clients who need asset-level physical climate risk assessment
+    without a full transition or valuation analysis — e.g. real estate lenders,
+    infrastructure operators, insurers, or due-diligence teams assessing a single site.
+
+    Accepts EITHER:
+    - `company_id` — runs against a registered seed company.
+    - `asset`      — accepts a single inline asset definition (any region, any commodity).
+
+    Returns:
+    - Physical risk score (0–100) and label (Low → Critical)
+    - 25-year production loss trajectory under NZE, Delayed Transition, and Current Policies
+    - Per-hazard loss breakdown at 2035
+    - Adaptation capex requirement (cumulative, 25-year)
+    - TCFD-aligned narrative summary
+    - Data sources and methodology caveats
+
+    No carbon pricing. No DCF. No transition risk. Pure physical hazard output.
+    Available from the Analyst tier and above.
+    """
+    from datetime import datetime, timezone
+    from ..data.schemas import (
+        Asset, Commodity, Company, EmissionsProfile, Financials,
+    )
+    from ..outcomes.physical_report import build_physical_report
+    from ..operations.company import simulate
+
+    # ── 1. Resolve company ────────────────────────────────────────────────────
+    if request.company_id:
+        # Use registered company
+        cid = request.company_id.lower()
+        if cid not in COMPANY_REGISTRY:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Company '{request.company_id}' not found. "
+                       f"Available: {list(COMPANY_REGISTRY)}. "
+                       f"To run on a custom asset, omit company_id and supply an 'asset' object."
+            )
+        company = COMPANY_REGISTRY[cid]
+
+    elif request.asset:
+        # Build a minimal Company wrapper around the inline asset
+        a = request.asset
+        try:
+            commodity = Commodity(a.commodity.lower())
+        except ValueError:
+            valid = [c.value for c in Commodity]
+            raise HTTPException(
+                status_code=422,
+                detail=f"Unknown commodity '{a.commodity}'. Valid values: {valid}"
+            )
+
+        company = Company(
+            id=a.id,
+            name=request.company_name or a.name,
+            sector="Custom",
+            hq_region=a.region,
+            financials=Financials(
+                # Physical report only — use production × unit cost as proxy revenue
+                # Financial fields not used in physical calculations.
+                revenue=a.baseline_production * a.baseline_unit_cost,
+                ebitda=a.baseline_production * a.baseline_unit_cost * 0.40,
+                capex=a.baseline_production * a.baseline_unit_cost * 0.10,
+                maintenance_capex_share=0.60,
+                tax_rate=0.28,
+                wacc_base=0.08,
+                net_debt=0.0,
+                shares_outstanding=100.0,
+                market_cap=a.carrying_value * 3.0,
+            ),
+            assets=[Asset(
+                id=a.id,
+                name=a.name,
+                commodity=commodity,
+                region=a.region,
+                baseline_production=a.baseline_production,
+                production_unit=a.production_unit,
+                baseline_unit_cost=a.baseline_unit_cost,
+                energy_cost_share=a.energy_cost_share,
+                carrying_value=a.carrying_value,
+                remaining_life_years=a.remaining_life_years,
+                emissions=EmissionsProfile(
+                    # Emissions not required for physical-only report
+                    scope1_intensity=0.0,
+                    scope2_intensity=0.0,
+                    scope3_intensity=0.0,
+                    carbon_price_coverage=0.0,
+                    free_allocation=0.0,
+                ),
+            )],
+            exposure_weight=0.5,
+            transition_weight=0.5,
+            data_quality="medium",
+        )
+    else:
+        raise HTTPException(
+            status_code=422,
+            detail="Supply either 'company_id' (registered company) or "
+                   "'asset' (inline asset definition). Both are absent."
+        )
+
+    # ── 2. Run physical simulation for all three scenarios ────────────────────
+    ops_nze = simulate(company, NZE_2050)
+    ops_dly = simulate(company, DELAYED_TRANSITION)
+    ops_cp  = simulate(company, CURRENT_POLICIES)
+
+    # ── 3. Build report ───────────────────────────────────────────────────────
+    report = build_physical_report(
+        company=company,
+        ops_nze=ops_nze,
+        ops_delayed=ops_dly,
+        ops_cp=ops_cp,
+    )
+
+    # ── 4. Convert to response ────────────────────────────────────────────────
+    def _years(year_list) -> list[HazardYearOut]:
+        return [
+            HazardYearOut(
+                year=y.year,
+                physical_loss_cost=y.physical_loss_cost,
+                adaptation_capex=y.adaptation_capex,
+                physical_loss_by_hazard=y.physical_loss_by_hazard,
+                total_loss_fraction=y.total_loss_fraction,
+            )
+            for y in year_list
+        ]
+
+    return PhysicalHazardReportResponse(
+        company_id=company.id,
+        company_name=company.name,
+        run_id=report.run_id,
+        model_version=report.model_version,
+        generated_at=datetime.now(timezone.utc).isoformat(),
+        physical_score=report.physical_score,
+        physical_label=report.physical_label,
+        peak_loss_year=report.peak_loss_year,
+        peak_loss_usd=report.peak_loss_usd,
+        peak_loss_hazard=report.peak_loss_hazard,
+        total_adaptation_capex_nze=report.total_adaptation_capex_nze,
+        total_adaptation_capex_cp=report.total_adaptation_capex_cp,
+        hazard_breakdown_2035=report.hazard_breakdown_2035,
+        narrative=report.narrative,
+        years_nze=_years(report.years_nze),
+        years_delayed=_years(report.years_delayed),
+        years_cp=_years(report.years_cp),
+        data_sources=[
+            "IPCC AR6 (2021) — warming trajectories and hazard intensity projections",
+            "WRI Aqueduct 4.0 (methodology) — water stress and flood risk regional baselines",
+            "NGFS Phase 4 (2023) — climate scenario pathways (NZE, Delayed Transition, Current Policies)",
+            "ERA5 / Copernicus Climate Data Store — temperature and precipitation baselines",
+            "CRI Engine v0.3.0 — asset-level hazard simulation",
+        ],
+        caveats=[
+            "Physical loss costs are in USD millions, consistent with asset carrying values.",
+            "Hazard paths are parameterised regional estimates; they do not incorporate "
+            "site-specific GPS-resolved data unless a premium connector is active.",
+            "This report does not constitute a financial valuation or insurance assessment.",
+            "Adaptation capex estimates are indicative; actual costs depend on asset design "
+            "and local engineering factors.",
+            "Emissions data is not required for this report. Transition and carbon cost "
+            "analysis is excluded. For full CRI assessment use POST /runs/scoped?scope=full_cri.",
+        ],
+        scenario_set="NGFS Phase 4",
+    )
 
 
 @app.get("/connectors/status")

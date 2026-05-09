@@ -270,6 +270,9 @@ class YearResult(BaseModel):
     # Keys: heat_stress, flood_riverine, flood_coastal, sea_level_rise,
     #       saltwater_intrusion, landslide, wildfire, cyclone, drought, water_stress
     physical_loss_by_hazard: Dict[str, float] = Field(default_factory=dict)
+    # Stranded asset fields — populated by operations/company.py breakeven test
+    stranded_writedown: float = 0.0
+    stranded_assets: List[str] = Field(default_factory=list)
 
 
 class RunResults(BaseModel):
