@@ -57,6 +57,8 @@ CRI_TEST_CO = Company(
                 carbon_price_coverage=0.7,
                 free_allocation=0.10,
             ),
+            lat=-22.3, lon=118.6,          # Pilbara, WA — near Newman
+            equipment_type="open_pit_mine",
         ),
         Asset(
             id="tc_copper_cl",
@@ -76,6 +78,8 @@ CRI_TEST_CO = Company(
                 carbon_price_coverage=0.6,
                 free_allocation=0.0,
             ),
+            lat=-23.5, lon=-68.0,          # Atacama Desert, Region II, Chile
+            equipment_type="open_pit_mine",
         ),
         Asset(
             id="tc_aluminium_ca",
@@ -95,6 +99,8 @@ CRI_TEST_CO = Company(
                 carbon_price_coverage=0.8,
                 free_allocation=0.2,
             ),
+            lat=48.4, lon=-71.1,           # Saguenay–Lac-Saint-Jean, Québec
+            equipment_type="aluminium_smelter",
         ),
     ],
     exposure_weight=0.4,
@@ -143,6 +149,8 @@ SHELL = Company(
                 carbon_price_coverage=0.15,
                 free_allocation=0.0,
             ),
+            lat=31.8, lon=-102.5,          # Midland Basin, West Texas
+            equipment_type="oil_well",
         ),
         # LNG Australia - Prelude FLNG + onshore projects
         Asset(
@@ -163,6 +171,8 @@ SHELL = Company(
                 carbon_price_coverage=0.10,
                 free_allocation=0.0,
             ),
+            lat=-14.3, lon=127.1,          # Browse Basin / Prelude FLNG, WA offshore
+            equipment_type="lng_terminal",
         ),
     ],
     exposure_weight=0.35,
@@ -211,6 +221,8 @@ BHP = Company(
                 carbon_price_coverage=0.65,
                 free_allocation=0.08,
             ),
+            lat=-22.3, lon=118.6,          # Mount Whaleback / Newman area, Pilbara WA
+            equipment_type="open_pit_mine",
         ),
         # Olympic Dam (Australia) - copper & uranium
         Asset(
@@ -231,6 +243,8 @@ BHP = Company(
                 carbon_price_coverage=0.60,
                 free_allocation=0.05,
             ),
+            lat=-30.44, lon=136.88,        # Olympic Dam, Roxby Downs, South Australia
+            equipment_type="underground_mine",
         ),
         # Queensland Coal (Australia) - metallurgical + thermal
         Asset(
@@ -251,6 +265,8 @@ BHP = Company(
                 carbon_price_coverage=0.40,
                 free_allocation=0.0,
             ),
+            lat=-22.0, lon=148.3,          # Bowen Basin, Queensland (Blackwater/Goonyella)
+            equipment_type="open_pit_mine",
         ),
         # Nickel West (Australia) - emerging battery metals
         Asset(
@@ -271,6 +287,8 @@ BHP = Company(
                 carbon_price_coverage=0.60,
                 free_allocation=0.06,
             ),
+            lat=-27.9, lon=121.7,          # Kambalda / Kalgoorlie–Boulder, WA
+            equipment_type="processing_plant",
         ),
     ],
     exposure_weight=0.30,
@@ -319,6 +337,8 @@ RIO_TINTO = Company(
                 carbon_price_coverage=0.65,
                 free_allocation=0.08,
             ),
+            lat=-22.5, lon=117.8,          # Tom Price / Paraburdoo area, Pilbara WA
+            equipment_type="open_pit_mine",
         ),
         # Oyu Tolgoi (Mongolia) - copper-gold mine
         Asset(
@@ -339,6 +359,8 @@ RIO_TINTO = Company(
                 carbon_price_coverage=0.25,  # limited carbon market coverage
                 free_allocation=0.0,
             ),
+            lat=43.0, lon=106.8,           # Omnogovi Province, southern Mongolia
+            equipment_type="underground_mine",
         ),
         # Aluminium (Pacific) - smelters & refineries
         Asset(
@@ -359,6 +381,8 @@ RIO_TINTO = Company(
                 carbon_price_coverage=0.75,
                 free_allocation=0.15,       # some renewable power PPAs
             ),
+            lat=-23.9, lon=151.4,          # Boyne Island Smelter, Gladstone QLD
+            equipment_type="aluminium_smelter",
         ),
         # Diamonds & Minerals (Argyle, Diavik, etc.)
         Asset(
@@ -379,6 +403,8 @@ RIO_TINTO = Company(
                 carbon_price_coverage=0.60,
                 free_allocation=0.05,
             ),
+            lat=-16.7, lon=128.4,          # Argyle Diamond Mine, East Kimberley WA
+            equipment_type="open_pit_mine",
         ),
     ],
     exposure_weight=0.28,

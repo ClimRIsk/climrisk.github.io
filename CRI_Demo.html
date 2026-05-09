@@ -1656,10 +1656,11 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 
     <!-- PHYSICAL RISK -->
     <div id="p-physical" class="panel">
-      <div class="ph"><h1>Physical Climate Risk Hazards</h1><p>10-hazard SSP/IPCC AR6 asset-level assessment · NASA LULC · WRI Aqueduct · SRTM elevation</p></div>
+      <div class="ph"><h1>Physical Climate Risk Hazards</h1><p>25-hazard SSP/IPCC AR6 asset-level assessment · GIS lat/lon resolver · Equipment sensitivity matrix · NASA LULC · WRI Aqueduct · SRTM elevation</p></div>
 
-      <!-- 10-hazard icon grid -->
+      <!-- 25-hazard icon grid -->
       <div class="ht-grid" style="grid-template-columns:repeat(5,1fr)">
+        <!-- Core 10 -->
         <div class="ht"><div class="ht-icon">🌡</div><div class="ht-name">Heat Stress</div><div class="ht-desc">WBGT · labour loss</div></div>
         <div class="ht"><div class="ht-icon">🌊</div><div class="ht-name">Riverine Flood</div><div class="ht-desc">Clausius-Clapeyron precip</div></div>
         <div class="ht"><div class="ht-icon">🏖</div><div class="ht-name">Coastal Flood</div><div class="ht-desc">Storm surge + SLR</div></div>
@@ -1670,6 +1671,25 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         <div class="ht"><div class="ht-icon">🌀</div><div class="ht-name">Cyclone</div><div class="ht-desc">IBTRACS · Knutson 2020</div></div>
         <div class="ht"><div class="ht-icon">☀</div><div class="ht-name">Drought</div><div class="ht-desc">PDSI scaling · IPCC</div></div>
         <div class="ht"><div class="ht-icon">💧</div><div class="ht-name">Water Stress</div><div class="ht-desc">WRI Aqueduct 4.0</div></div>
+        <!-- New 15 (v0.4) — badge indicates GIS-resolved -->
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🥶</div><div class="ht-name">Extreme Cold</div><div class="ht-desc">Cold waves · frost disruption</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🧊</div><div class="ht-name">Blade Icing</div><div class="ht-desc">IEA Wind Task 19 · ERA5 MWT</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌪</div><div class="ht-name">Extratropical Cyclone</div><div class="ht-desc">Mid-lat storm systems</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">⚡</div><div class="ht-name">Flash Flood</div><div class="ht-desc">Convective precipitation</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🏔</div><div class="ht-name">Permafrost Thaw</div><div class="ht-desc">NSIDC · Arctic amplification</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌬</div><div class="ht-name">Dust Storm</div><div class="ht-desc">WMO SDS-WAS · Köppen</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌨</div><div class="ht-name">Hail</div><div class="ht-desc">CAPE instability · IPCC AR6</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌩</div><div class="ht-name">Lightning</div><div class="ht-desc">Romps et al 2014 scaling</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🪨</div><div class="ht-name">Subsidence</div><div class="ht-desc">Groundwater · clay shrinkage</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🧱</div><div class="ht-name">Freeze-Thaw Cycle</div><div class="ht-desc">Infrastructure cracking</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌧</div><div class="ht-name">Compound Flood</div><div class="ht-desc">Joint riverine+coastal 1.3×</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🏔</div><div class="ht-name">Avalanche</div><div class="ht-desc">Elevation &gt;800m · wet-snow</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🐠</div><div class="ht-name">Marine Heatwave</div><div class="ht-desc">Oliver et al 2021 · SST</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🏔</div><div class="ht-name">GLOF</div><div class="ht-desc">Glacial lake outburst</div></div>
+        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌪</div><div class="ht-name">Tornado</div><div class="ht-desc">CAPE · Tornado Alley</div></div>
+      </div>
+      <div style="font-size:10px;color:#7c3aed;margin:-4px 0 12px;padding:5px 10px;background:#f5f3ff;border-radius:5px;border-left:3px solid #7c3aed">
+        <strong>v0.4 — 25 IPCC AR6 Hazards:</strong> Core 10 (original) + 15 new (purple border) including equipment-specific hazards (blade icing for wind turbines, permafrost for pipelines). GIS resolver uses real lat/lon → elevation, coastal distance, Köppen zone, permafrost extent, ERA5 winter temperatures.
       </div>
 
       <!-- IPCC AR6 alignment banner -->
@@ -4112,7 +4132,7 @@ function renderPh() {
       '<td style="min-width:90px"><div class="rb"><div class="rf" style="width:'+Math.min(prof.score,100)+'%;background:'+bc+'"></div></div></td>'+
       '</tr>';
   });
-  el('phys-tbl').innerHTML = '<table><thead><tr><th>Asset</th><th>Top Hazards</th><th>Risk Score</th><th>Ann. Loss</th><th>Warming</th><th>Severity</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><div style="font-size:11px;color:var(--muted);margin-top:6px">↑ Click any row for full 10-hazard breakdown</div>';
+  el('phys-tbl').innerHTML = '<table><thead><tr><th>Asset</th><th>Top Hazards</th><th>Risk Score</th><th>Ann. Loss</th><th>Warming</th><th>Severity</th></tr></thead><tbody>'+rows.join('')+'</tbody></table><div style="font-size:11px;color:var(--muted);margin-top:6px">↑ Click any row for full 25-hazard breakdown · GIS coordinates active when lat/lon set</div>';
 
   // Bar chart
   mk('hazC', { type:'bar',
@@ -4336,7 +4356,7 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
       '</div>'+
       '<div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Hazard Breakdown</div>'+
       '<table style="width:100%;border-collapse:collapse">'+hzRows+'</table>'+
-      '<div style="font-size:9px;color:#9ca3af;margin-top:6px;border-top:1px solid #f3f4f6;padding-top:4px">Click for full 10-hazard detail · '+a.region+'</div>'+
+      '<div style="font-size:9px;color:#9ca3af;margin-top:6px;border-top:1px solid #f3f4f6;padding-top:4px">Click for full 25-hazard breakdown · '+a.region+(a.lat!=null?' · GPS ✓':' · region approx')+'</div>'+
     '</div>';
 
     circle.bindTooltip(tip, { direction:'top', sticky:false, maxWidth:280 });
@@ -4365,17 +4385,80 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
     try { _portMap2D.fitBounds(bounds, { padding:[40,40], maxZoom:7, animate:false }); } catch(e){}
   }
 
-  // Add hazard legend
+  // ── Risk score legend (bottom-left) ────────────────────────────────────
+  if (!_portMap2D._scoreLegend) {
+    var scoreLeg = L.control({ position:'bottomleft' });
+    scoreLeg.onAdd = function() {
+      var div = L.DomUtil.create('div');
+      div.style.cssText = 'background:rgba(255,255,255,0.94);padding:7px 10px;border-radius:6px;font-size:10px;line-height:1.9;box-shadow:0 1px 5px rgba(0,0,0,.2);min-width:120px';
+      div.innerHTML =
+        '<div style="font-weight:800;font-size:9px;text-transform:uppercase;color:#374151;margin-bottom:5px;letter-spacing:.05em">Risk Score</div>'+
+        '<div><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#16a34a;margin-right:5px;vertical-align:middle"></span><span style="color:#374151">Low  (0–20)</span></div>'+
+        '<div><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#ca8a04;margin-right:5px;vertical-align:middle"></span><span style="color:#374151">Moderate (20–35)</span></div>'+
+        '<div><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#b45309;margin-right:5px;vertical-align:middle"></span><span style="color:#374151">Elevated (35–55)</span></div>'+
+        '<div><span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:#b91c1c;margin-right:5px;vertical-align:middle"></span><span style="color:#374151">High  (55+)</span></div>'+
+        '<div style="font-size:8px;color:#9ca3af;margin-top:4px;border-top:1px solid #f3f4f6;padding-top:3px">Circle size ∝ risk score<br>25 IPCC AR6 hazards · GIS resolver</div>';
+      return div;
+    };
+    scoreLeg.addTo(_portMap2D);
+    _portMap2D._scoreLegend = scoreLeg;
+  }
+
+  // ── Scenario toggle control (top-right on map) ────────────────────────
+  if (!_portMap2D._sspCtrl) {
+    var sspCtrl = L.control({ position:'topright' });
+    sspCtrl.onAdd = function() {
+      var div = L.DomUtil.create('div');
+      div.style.cssText = 'background:rgba(255,255,255,0.95);padding:6px 8px;border-radius:6px;font-size:10px;box-shadow:0 1px 5px rgba(0,0,0,.2);cursor:default;z-index:1000';
+      div.innerHTML = '<div style="font-weight:800;font-size:9px;text-transform:uppercase;color:#374151;margin-bottom:5px;letter-spacing:.05em">Scenario</div>'+
+        [['ssp126','NZE 2050','#16a34a'],['ssp245','Delayed','#ca8a04'],['ssp370','Curr. Policies','#b91c1c'],['ssp585','Hot House','#7c3aed']].map(function(s){
+          var isSel = (el('phys-ssp')&&el('phys-ssp').value===s[0]);
+          return '<div onclick="(function(){var sel=document.getElementById(\'phys-ssp\');if(sel){sel.value=\''+s[0]+'\';renderPh();}})()" style="cursor:pointer;padding:3px 6px;margin-bottom:2px;border-radius:4px;border:1.5px solid '+(isSel?s[2]:'transparent')+';background:'+(isSel?s[2]+'18':'transparent')+';color:'+(isSel?s[2]:'#374151')+';font-weight:'+(isSel?'700':'400')+'">'+s[1]+'</div>';
+        }).join('');
+      L.DomEvent.disableClickPropagation(div);
+      return div;
+    };
+    sspCtrl.addTo(_portMap2D);
+    _portMap2D._sspCtrl = sspCtrl;
+  } else {
+    // Refresh SSP toggle highlight on re-render
+    _portMap2D.removeControl(_portMap2D._sspCtrl);
+    _portMap2D._sspCtrl = null;
+    // Re-add on next tick (allows clean re-init)
+    setTimeout(function(){
+      if(_portMap2D && !_portMap2D._sspCtrl) {
+        var sspCtrl2 = L.control({ position:'topright' });
+        sspCtrl2.onAdd = function() {
+          var div = L.DomUtil.create('div');
+          div.style.cssText = 'background:rgba(255,255,255,0.95);padding:6px 8px;border-radius:6px;font-size:10px;box-shadow:0 1px 5px rgba(0,0,0,.2);cursor:default;z-index:1000';
+          var curSsp = el('phys-ssp') ? el('phys-ssp').value : 'ssp370';
+          div.innerHTML = '<div style="font-weight:800;font-size:9px;text-transform:uppercase;color:#374151;margin-bottom:5px;letter-spacing:.05em">Scenario</div>'+
+            [['ssp126','NZE 2050','#16a34a'],['ssp245','Delayed','#ca8a04'],['ssp370','Curr. Policies','#b91c1c'],['ssp585','Hot House','#7c3aed']].map(function(s){
+              var isSel = (curSsp===s[0]);
+              return '<div onclick="(function(){var sel=document.getElementById(\'phys-ssp\');if(sel){sel.value=\''+s[0]+'\';renderPh();}})()" style="cursor:pointer;padding:3px 6px;margin-bottom:2px;border-radius:4px;border:1.5px solid '+(isSel?s[2]:'transparent')+';background:'+(isSel?s[2]+'18':'transparent')+';color:'+(isSel?s[2]:'#374151')+';font-weight:'+(isSel?'700':'400')+'">'+s[1]+'</div>';
+            }).join('');
+          L.DomEvent.disableClickPropagation(div);
+          return div;
+        };
+        sspCtrl2.addTo(_portMap2D);
+        _portMap2D._sspCtrl = sspCtrl2;
+      }
+    }, 50);
+  }
+
+  // ── Hazard type legend (bottom-right) — keep for reference ──────────────
   if (!_portMap2D._hzLegend) {
     var leg = L.control({ position:'bottomright' });
     leg.onAdd = function() {
       var div = L.DomUtil.create('div');
-      div.style.cssText = 'background:rgba(255,255,255,0.93);padding:7px 10px;border-radius:6px;font-size:10px;line-height:1.8;box-shadow:0 1px 5px rgba(0,0,0,.2);max-width:140px';
-      div.innerHTML = '<div style="font-weight:800;font-size:9px;text-transform:uppercase;color:#374151;margin-bottom:4px;letter-spacing:.05em">Hazard Types</div>' +
-        Object.entries(HZ_COL).map(function(e){
+      div.style.cssText = 'background:rgba(255,255,255,0.93);padding:7px 10px;border-radius:6px;font-size:10px;line-height:1.8;box-shadow:0 1px 5px rgba(0,0,0,.2);max-width:140px;max-height:200px;overflow-y:auto';
+      var TOP_HZ = ['Heat Stress','Flood','Cyclone','Wildfire','Water Stress','Drought','Hail','Icing','Permafrost','Dust Storm'];
+      div.innerHTML = '<div style="font-weight:800;font-size:9px;text-transform:uppercase;color:#374151;margin-bottom:4px;letter-spacing:.05em">Top Hazard Types</div>' +
+        Object.entries(HZ_COL).filter(function(e){return TOP_HZ.indexOf(e[0])>=0;}).map(function(e){
           return '<div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:'+e[1]+';margin-right:5px;vertical-align:middle"></span>'+
             '<span style="color:#374151">'+e[0].replace(' Stress','').replace('Cyclone / ','').replace('Saltwater ','Salt.')+'</span></div>';
-        }).join('');
+        }).join('') +
+        '<div style="font-size:8px;color:#9ca3af;margin-top:4px;border-top:1px solid #f0f0f0;padding-top:3px">25 hazards modelled · click asset</div>';
       return div;
     };
     leg.addTo(_portMap2D);

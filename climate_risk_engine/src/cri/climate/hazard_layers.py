@@ -1126,12 +1126,19 @@ def _wildfire(region: str, ssp: SSPScenario, year: int, lulc: str) -> HazardScor
     )
 
 
-def _cyclone(region: str, ssp: SSPScenario, year: int, is_coastal: bool) -> HazardScore:
+def _cyclone(region: str, ssp: SSPScenario, year: int, is_coastal: bool,
+             is_cyclone_belt_override: bool | None = None) -> HazardScore:
     """
     Tropical cyclone / hurricane intensity and track frequency.
     Source: IBTRACS historical + IPCC AR6 Ch11.7; Knutson et al. 2020.
+
+    is_cyclone_belt_override: when provided from GIS resolver (IBTrACS track density),
+    allows the engine to enable cyclone risk even for region codes not in CYCLONE_REGIONS.
     """
-    if not (region in CYCLONE_REGIONS and is_coastal):
+    # GIS override: real lat/lon cyclone belt detection takes precedence
+    in_belt = is_cyclone_belt_override if is_cyclone_belt_override is not None \
+        else (region in CYCLONE_REGIONS)
+    if not (in_belt and is_coastal):
         return HazardScore(
             hazard="cyclone", annual_probability=0.0, severity_index=0.0,
             production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
@@ -1311,7 +1318,8 @@ def _extreme_cold(region: str, ssp: SSPScenario, year: int,
 
 
 def _blade_icing(region: str, ssp: SSPScenario, year: int,
-                 elevation_m: float = 300) -> HazardScore:
+                 elevation_m: float = 300,
+                 mean_winter_temp_override: float | None = None) -> HazardScore:
     """
     Wind turbine blade and overhead-line icing.
 
@@ -1321,6 +1329,9 @@ def _blade_icing(region: str, ssp: SSPScenario, year: int,
     (Siberia, Mongolia) by shifting temperatures into the danger band, while
     DECREASING it in milder cold regions (Scandinavia, UK) already near 0°C.
     Modelled as a Gaussian exposure function centred on −5°C mean winter temperature.
+
+    mean_winter_temp_override: when provided from GIS resolver (ERA5 2°×2° grid),
+    replaces the region-code lookup table for more accurate temperature input.
 
     Sources: IEA Wind Task 19 (2021); Rissanen et al 2022; Dobesch et al 2003;
              IPCC AR6 Ch11.3.
@@ -1337,16 +1348,31 @@ def _blade_icing(region: str, ssp: SSPScenario, year: int,
     }
     _NO_ICING = {"AU-WA", "AU-QLD", "AU-SA", "AU-NSW", "AU-NT",
                  "IN-MH", "ID-KI", "BR-PA", "PE-01", "ZA", "CL-02"}
-    if region in _NO_ICING:
+    # Only skip based on region code when no GIS override provides a cold MWT
+    if region in _NO_ICING and mean_winter_temp_override is None:
         return HazardScore(
             hazard="blade_icing", annual_probability=0.0, severity_index=0.0,
             production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
             data_source="IEA Wind Task 19", applicable=False,
             notes="Region too warm for blade-icing hazard",
         )
+    # GIS resolver provides ERA5 mean winter T → use if available
+    baseline_mwt = (
+        mean_winter_temp_override
+        if mean_winter_temp_override is not None
+        else _MEAN_WINTER_T.get(region, -5.0)
+    )
+    # Warm-region shortcut: if GIS confirms warm baseline, skip immediately
+    if baseline_mwt > 8.0:
+        return HazardScore(
+            hazard="blade_icing", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IEA Wind Task 19 / GIS ERA5", applicable=False,
+            notes=f"GIS mean winter T {baseline_mwt:.1f}°C — too warm for icing",
+        )
 
     warming = ssp.regional_warming(year, region)
-    mean_winter_t_now = _MEAN_WINTER_T.get(region, -5.0) + warming
+    mean_winter_t_now = baseline_mwt + warming
     danger_center, danger_std = -5.0, 8.0
 
     def _icing_exposure(t: float) -> float:
@@ -1473,7 +1499,8 @@ def _flash_flood(region: str, ssp: SSPScenario, year: int, lulc: str,
     )
 
 
-def _permafrost_thaw(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+def _permafrost_thaw(region: str, ssp: SSPScenario, year: int,
+                    is_permafrost_override: bool | None = None) -> HazardScore:
     """
     Permafrost thaw — ground instability for infrastructure in Arctic/subarctic.
 
@@ -1482,9 +1509,15 @@ def _permafrost_thaw(region: str, ssp: SSPScenario, year: int) -> HazardScore:
     IPCC AR6 projects 25% reduction in near-surface permafrost area by 2100 under SSP5-8.5.
     Active-layer deepening causes progressive infrastructure damage.
 
+    is_permafrost_override: when provided from GIS resolver (NSIDC 2020 permafrost extent),
+    allows the engine to enable permafrost risk for assets whose region code is not in
+    PERMAFROST_REGIONS but whose lat/lon falls within mapped permafrost boundaries.
+
     Sources: IPCC AR6 Ch9.5.2; AMAP 2021 (Arctic Monitoring); Hjort et al 2022.
     """
-    if region not in PERMAFROST_REGIONS:
+    in_permafrost = is_permafrost_override if is_permafrost_override is not None \
+        else (region in PERMAFROST_REGIONS)
+    if not in_permafrost:
         return HazardScore(
             hazard="permafrost_thaw", annual_probability=0.0, severity_index=0.0,
             production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
@@ -1522,7 +1555,8 @@ def _permafrost_thaw(region: str, ssp: SSPScenario, year: int) -> HazardScore:
     )
 
 
-def _dust_storm(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+def _dust_storm(region: str, ssp: SSPScenario, year: int,
+               is_arid_override: bool | None = None) -> HazardScore:
     """
     Dust storm / haboob / aeolian transport hazard.
 
@@ -1531,9 +1565,15 @@ def _dust_storm(region: str, ssp: SSPScenario, year: int) -> HazardScore:
     under warming (IPCC AR6 Ch8) amplifies dust generation. Some regions show
     frequency increases (MENA, Mongolia), others mixed signals.
 
+    is_arid_override: when provided from GIS resolver (Köppen zone + WRI Aqueduct
+    dryland classification), enables dust-storm risk even for region codes outside
+    the DUST_STORM_REGIONS set (e.g. an asset in a dryland enclave within a humid region).
+
     Sources: WMO SDS-WAS; Ginoux et al 2012; IPCC AR6 Ch8.2; Middleton 2017.
     """
-    if region not in DUST_STORM_REGIONS:
+    in_arid = is_arid_override if is_arid_override is not None \
+        else (region in DUST_STORM_REGIONS)
+    if not in_arid:
         return HazardScore(
             hazard="dust_storm", annual_probability=0.0, severity_index=0.0,
             production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
@@ -1719,7 +1759,8 @@ def _subsidence(region: str, ssp: SSPScenario, year: int) -> HazardScore:
 
 
 def _freeze_thaw_cycle(region: str, ssp: SSPScenario, year: int,
-                       elevation_m: float = 300) -> HazardScore:
+                       elevation_m: float = 300,
+                       mean_winter_temp_override: float | None = None) -> HazardScore:
     """
     Freeze-thaw cycle infrastructure damage — pipe bursting, concrete cracking,
     road pavement heaving, bridge-deck damage.
@@ -1729,9 +1770,12 @@ def _freeze_thaw_cycle(region: str, ssp: SSPScenario, year: int,
     cold sites (near 0°C mean winter T), warming reduces cycling frequency.
     This is the same 'danger band' logic as blade icing but applied to infrastructure.
 
+    mean_winter_temp_override: when provided from GIS resolver (ERA5 2°×2° grid),
+    replaces the region-code lookup table for more accurate temperature input.
+
     Sources: IPCC AR6 Ch12.4; ASCE infrastructure resilience; Groisman et al 2006.
     """
-    _MEAN_WINTER_T: dict[str, float] = {
+    _MEAN_WINTER_T_FT: dict[str, float] = {
         "CA-AB": -12.0, "CA-QC": -14.0, "MN-01": -20.0,
         "CN-NM": -15.0, "US-WY": -8.0, "GB-ENG": 4.0,
         "NL-NH": 3.0, "AU-WA": 14.0, "AU-QLD": 20.0,
@@ -1739,7 +1783,14 @@ def _freeze_thaw_cycle(region: str, ssp: SSPScenario, year: int,
         "PE-01": -5.0,  # High Andes
     }
     _NO_FT = {"AU-QLD", "AU-NT", "IN-MH", "ID-KI", "BR-PA"}
-    if region in _NO_FT and elevation_m < 2000:
+    # Use GIS mean winter T override when available
+    baseline_mwt = (
+        mean_winter_temp_override
+        if mean_winter_temp_override is not None
+        else _MEAN_WINTER_T_FT.get(region, -3.0)
+    )
+    # Skip hot regions (mean winter T > 12°C) unless GIS reveals otherwise
+    if region in _NO_FT and elevation_m < 2000 and baseline_mwt > 10.0:
         return HazardScore(
             hazard="freeze_thaw_cycle", annual_probability=0.0, severity_index=0.0,
             production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
@@ -1748,7 +1799,7 @@ def _freeze_thaw_cycle(region: str, ssp: SSPScenario, year: int,
         )
 
     warming = ssp.regional_warming(year, region)
-    mwt = _MEAN_WINTER_T.get(region, -3.0) + warming
+    mwt = baseline_mwt + warming
     # Freeze-thaw cycles peak near 0°C mean winter T
     danger_center, danger_std = 0.0, 6.0
     ft_exposure = math.exp(-0.5 * ((mwt - danger_center) / danger_std) ** 2)
@@ -1758,7 +1809,7 @@ def _freeze_thaw_cycle(region: str, ssp: SSPScenario, year: int,
 
     w30 = ssp.regional_warming(2030, region)
     w50 = ssp.regional_warming(2050, region)
-    mwt0 = _MEAN_WINTER_T.get(region, -3.0)
+    mwt0 = baseline_mwt   # already resolved (GIS or region table)
     ft30 = math.exp(-0.5 * ((mwt0 + w30 - danger_center) / danger_std) ** 2)
     ft50 = math.exp(-0.5 * ((mwt0 + w50 - danger_center) / danger_std) ** 2)
     return HazardScore(
@@ -2078,6 +2129,7 @@ class PhysicalHazardEngine:
         lat: float | None = None,
         lon: float | None = None,
         elevation_override: float | None = None,
+        equipment_type: str | None = None,
         _depth: int = 0,   # internal recursion guard — do NOT pass externally
     ) -> AssetHazardProfile:
         """
@@ -2090,8 +2142,13 @@ class PhysicalHazardEngine:
             year: Assessment year (2026–2050).
             ssp: SSP scenario id (e.g., "ssp370"). Overrides ngfs_family.
             ngfs_family: NGFS scenario family — translated to SSP if ssp not given.
-            lat, lon: Asset coordinates (decimal degrees). Used for coastal detection.
+            lat, lon: Asset coordinates (decimal degrees). Enables GIS-based
+                      spatial resolution (elevation, coastal distance, permafrost
+                      zone, cyclone belt, Köppen zone, mean winter temperature).
             elevation_override: Override the region default elevation (metres).
+            equipment_type: Asset equipment class (e.g. "open_pit_mine", "wind_farm").
+                            Activates per-hazard sensitivity multipliers from the
+                            GIS equipment sensitivity matrix.
         """
         # Resolve SSP
         if ssp:
@@ -2101,6 +2158,32 @@ class PhysicalHazardEngine:
         else:
             scenario = SSP_SCENARIOS["ssp245"]
 
+        # ── GIS resolution (lat/lon → spatial attributes) ─────────────────────
+        # When lat/lon are provided, the GIS resolver augments/overrides the
+        # region-code lookup tables with real spatial data from embedded grids.
+        gis_attrs = None
+        gis_mean_winter_temp: float | None = None
+        gis_is_permafrost: bool | None = None
+        gis_is_cyclone_belt: bool | None = None
+        gis_is_arid: bool | None = None
+        gis_equipment_sensitivity: dict[str, float] = {}
+
+        if lat is not None and lon is not None and _depth == 0:
+            try:
+                from .gis import resolve as _gis_resolve
+                gis_attrs = _gis_resolve(lat, lon, equipment_type)
+                gis_mean_winter_temp = gis_attrs.mean_winter_temp
+                gis_is_permafrost = gis_attrs.is_permafrost
+                gis_is_cyclone_belt = gis_attrs.is_cyclone_belt
+                gis_is_arid = gis_attrs.is_arid
+                gis_equipment_sensitivity = gis_attrs.equipment_sensitivity
+                # GIS elevation overrides region table when provided
+                if elevation_override is None:
+                    elevation_override = float(gis_attrs.elevation_m)
+            except Exception:
+                # GIS resolver failure is non-fatal — fall back to region tables
+                gis_attrs = None
+
         # Resolve spatial context — uses lat/lon for asset-level downscaling
         spatial = _resolve_spatial_context(lat, lon, region, elevation_override)
         elevation = spatial["elevation_m"]
@@ -2108,15 +2191,13 @@ class PhysicalHazardEngine:
         coastal_factor = spatial["coastal_factor"]
         lulc = REGION_LULC.get(region, LULCType.GRASSLAND)
 
-        # Use lat/lon-aware warming if coordinates available, else fall back to region
-        if lat is not None and lon is not None:
-            # Patch scenario with lat/lon-derived warming for this assessment
-            # We do this by creating a thin wrapper that overrides regional_warming
-            import types
-            _orig_rw = scenario.regional_warming
-            def _latlon_warming(yr, reg, _lat=lat, _lon=lon, _scen=scenario):
-                return _scen.warming_at_latlon(yr, _lat, _lon, reg)
-            scenario.regional_warming = _latlon_warming   # type: ignore[method-assign]
+        # Override is_coastal from GIS coastal distance when GIS available
+        if gis_attrs is not None:
+            if gis_attrs.coastal_km < 50:
+                is_coastal = True
+                coastal_factor = max(coastal_factor, 1.0 + (50 - gis_attrs.coastal_km) / 50.0 * 0.4)
+            elif gis_attrs.coastal_km > 300:
+                is_coastal = False
 
         # Sub-grid correction factors (elevation relative to 25km cell mean)
         sg = spatial["subgrid"]
@@ -2174,7 +2255,7 @@ class PhysicalHazardEngine:
                 "steps 1-4 applied using lookup-table baseline."
             )
 
-        # Compute all 25 hazards with sub-grid downscaling applied
+        # Compute all 25 hazards with sub-grid downscaling + GIS overrides applied
         hazards: dict[str, HazardScore] = {
             # ── Core 10 (original) ────────────────────────────────────────────
             "heat_stress":            _heat_stress(region, scenario, year,
@@ -2189,21 +2270,32 @@ class PhysicalHazardEngine:
             "saltwater_intrusion":    _saltwater_intrusion(region, scenario, year, is_coastal, elevation, coastal_factor),
             "landslide":              _landslide(region, scenario, year, elevation, lulc),
             "wildfire":               _wildfire(region, scenario, year, lulc),
-            "cyclone":                _cyclone(region, scenario, year, is_coastal),
+            # GIS: is_cyclone_belt_override enables risk when IBTrACS confirms belt
+            "cyclone":                _cyclone(region, scenario, year, is_coastal,
+                                          is_cyclone_belt_override=gis_is_cyclone_belt),
             "drought":                _drought(region, scenario, year),
             "water_stress":           _water_stress(region, scenario, year,
                                           water_stress_factor=sg["water_stress_factor"]),
-            # ── New 15 (v0.4) ────────────────────────────────────────────────
+            # ── New 15 (v0.4) — GIS overrides passed where relevant ───────────
             "extreme_cold":           _extreme_cold(region, scenario, year, elevation_m=elevation),
-            "blade_icing":            _blade_icing(region, scenario, year, elevation_m=elevation),
+            # GIS: ERA5 mean winter temp overrides region lookup for icing Gaussian
+            "blade_icing":            _blade_icing(region, scenario, year, elevation_m=elevation,
+                                          mean_winter_temp_override=gis_mean_winter_temp),
             "extratropical_cyclone":  _extratropical_cyclone(region, scenario, year, elevation_m=elevation),
             "flash_flood":            _flash_flood(region, scenario, year, lulc, elevation_m=elevation),
-            "permafrost_thaw":        _permafrost_thaw(region, scenario, year),
-            "dust_storm":             _dust_storm(region, scenario, year),
+            # GIS: NSIDC permafrost extent enables risk beyond PERMAFROST_REGIONS set
+            "permafrost_thaw":        _permafrost_thaw(region, scenario, year,
+                                          is_permafrost_override=gis_is_permafrost),
+            # GIS: Köppen + WRI Aqueduct dryland flag extends dust-storm applicability
+            "dust_storm":             _dust_storm(region, scenario, year,
+                                          is_arid_override=gis_is_arid),
             "hail":                   _hail(region, scenario, year),
             "lightning":              _lightning(region, scenario, year),
             "subsidence":             _subsidence(region, scenario, year),
-            "freeze_thaw_cycle":      _freeze_thaw_cycle(region, scenario, year, elevation_m=elevation),
+            # GIS: ERA5 mean winter temp overrides region lookup for FT Gaussian
+            "freeze_thaw_cycle":      _freeze_thaw_cycle(region, scenario, year,
+                                          elevation_m=elevation,
+                                          mean_winter_temp_override=gis_mean_winter_temp),
             "compound_flood":         _compound_flood(region, scenario, year, is_coastal, elevation, coastal_factor),
             "avalanche":              _avalanche(region, scenario, year, elevation_m=elevation),
             "marine_heatwave":        _marine_heatwave(region, scenario, year, is_coastal, coastal_factor),
@@ -2211,9 +2303,22 @@ class PhysicalHazardEngine:
             "tornado":                _tornado(region, scenario, year),
         }
 
-        # Restore original warming method (avoid polluting shared scenario object)
-        if lat is not None and lon is not None:
-            scenario.regional_warming = _orig_rw   # type: ignore[method-assign]
+        # ── Equipment sensitivity multipliers (GIS resolver) ─────────────────
+        # Apply per-hazard sensitivity multipliers from the equipment type matrix.
+        # Multipliers > 1 amplify production_loss_pct; < 1 attenuate it.
+        # This reflects that an open-pit mine has different vulnerability to heat
+        # than a wind farm, even at the same location.
+        if gis_equipment_sensitivity:
+            for hazard_key, score in hazards.items():
+                mult = gis_equipment_sensitivity.get(hazard_key, 1.0)
+                if mult != 1.0 and score.applicable:
+                    # Clamp: multiplier can at most double the base loss (prevents runaway)
+                    new_loss = round(
+                        min(score.production_loss_pct * mult,
+                            score.production_loss_pct * 2.0),
+                        5,
+                    )
+                    score.production_loss_pct = new_loss
 
         # Joint annual production loss (independent events approximation)
         # P(loss) = 1 - ∏(1 - p_i) per hazard
@@ -2244,6 +2349,7 @@ class PhysicalHazardEngine:
                 asset_id, asset_name, region, 2050,
                 ssp=scenario.id, lat=lat, lon=lon,
                 elevation_override=elevation_override,
+                equipment_type=equipment_type,
                 _depth=_depth + 1,
             )
             peak_loss = peak_profile.annual_loss_pct
@@ -2259,6 +2365,7 @@ class PhysicalHazardEngine:
                     asset_id, asset_name, region, yr,
                     ssp=scenario.id, lat=lat, lon=lon,
                     elevation_override=elevation_override,
+                    equipment_type=equipment_type,
                     _depth=_depth + 1,
                 )
                 if p.annual_loss_pct >= 0.05:
