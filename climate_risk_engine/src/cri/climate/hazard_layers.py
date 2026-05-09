@@ -1319,9 +1319,17 @@ def _extreme_cold(region: str, ssp: SSPScenario, year: int,
 
 def _blade_icing(region: str, ssp: SSPScenario, year: int,
                  elevation_m: float = 300,
-                 mean_winter_temp_override: float | None = None) -> HazardScore:
+                 mean_winter_temp_override: float | None = None,
+                 equipment_type: str | None = None) -> HazardScore:
     """
     Wind turbine blade and overhead-line icing.
+
+    *** APPLICABILITY: wind turbines and overhead power lines ONLY. ***
+    This hazard is NOT applicable to breweries, mines, refineries, smelters,
+    or any asset that does not have rotating wind-energy blades or long-span
+    overhead conductors. For those assets, the relevant cold-weather risks are
+    modelled by _freeze_thaw_cycle (pipe burst, concrete cracking) and
+    _extreme_cold (cold-wave operational disruption).
 
     Icing is maximum in the 'glaze-ice band': mean winter temperature −10°C to 0°C
     with liquid water present (freezing rain, rime, fog). This creates an asymmetric
@@ -1332,10 +1340,31 @@ def _blade_icing(region: str, ssp: SSPScenario, year: int,
 
     mean_winter_temp_override: when provided from GIS resolver (ERA5 2°×2° grid),
     replaces the region-code lookup table for more accurate temperature input.
+    equipment_type: if provided and NOT a blade/line asset, returns not-applicable.
 
     Sources: IEA Wind Task 19 (2021); Rissanen et al 2022; Dobesch et al 2003;
-             IPCC AR6 Ch11.3.
+             IPCC AR6 Ch11.3; RenewableUK (2020) icing incident registry.
     """
+    # ── Equipment applicability gate ───────────────────────────────────────
+    # Blade icing is ONLY meaningful for assets with rotating aerodynamic surfaces
+    # or long-span overhead conductors. For all other equipment types the hazard
+    # is not applicable — freeze-thaw and extreme-cold cover the relevant risks.
+    _BLADE_EQUIPMENT = {
+        "wind_farm", "wind_turbine", "transmission_line",
+        "overhead_line", "power_line",
+    }
+    # If equipment_type is explicitly set to something non-blade, skip.
+    # If equipment_type is None (unknown), we keep the hazard to avoid false negatives
+    # for cases where the user hasn't specified (e.g. custom imports without type).
+    if equipment_type is not None and equipment_type not in _BLADE_EQUIPMENT:
+        return HazardScore(
+            hazard="blade_icing", annual_probability=0.0, severity_index=0.0,
+            production_loss_pct=0.0, trend_2030=0.0, trend_2050=0.0,
+            data_source="IEA Wind Task 19", applicable=False,
+            notes=f"Not applicable — {equipment_type} has no rotating wind-energy blades. "
+                  "See freeze_thaw_cycle and extreme_cold for cold-weather infrastructure risks.",
+        )
+
     # Mean winter 2-m temperature proxy (°C) — historical normal, pre-warming
     _MEAN_WINTER_T: dict[str, float] = {
         "CA-AB": -12.0, "CA-QC": -14.0, "MN-01": -20.0,
@@ -2279,8 +2308,10 @@ class PhysicalHazardEngine:
             # ── New 15 (v0.4) — GIS overrides passed where relevant ───────────
             "extreme_cold":           _extreme_cold(region, scenario, year, elevation_m=elevation),
             # GIS: ERA5 mean winter temp overrides region lookup for icing Gaussian
+            # equipment_type gate: only applicable to wind_farm / transmission_line
             "blade_icing":            _blade_icing(region, scenario, year, elevation_m=elevation,
-                                          mean_winter_temp_override=gis_mean_winter_temp),
+                                          mean_winter_temp_override=gis_mean_winter_temp,
+                                          equipment_type=equipment_type),
             "extratropical_cyclone":  _extratropical_cyclone(region, scenario, year, elevation_m=elevation),
             "flash_flood":            _flash_flood(region, scenario, year, lulc, elevation_m=elevation),
             # GIS: NSIDC permafrost extent enables risk beyond PERMAFROST_REGIONS set
