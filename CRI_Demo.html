@@ -1712,7 +1712,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         </div>
       </div>
 
-      <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. <strong>Physical risk score = mean applicable severity × 20 (0–100 scale)</strong> — the same formula used in the Supply Chain panel (Hazard Score) and in the physical pillar of the Climate Rating. The Climate Rating composite = physical × 35% + transition × 35% + financial × 30%; it is a portfolio-level three-pillar average and will naturally differ from individual asset scores. SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission. <strong>Spatial downscaling (25 km → 1 km):</strong> Open-Meteo's CMIP6 Climate Change API (MRI-AGCM3.2-S, 0.25° / ~25 km resolution) provides projections at the asset's actual grid cell — not interpolated from distant regional centroids. The warming delta is computed as <em>T_future − T_historical</em> within the same model and grid cell, which eliminates the systematic 10–20°C GCM mean-state bias that arises when comparing CMIP6 output directly to reanalysis. The raw delta is SSP-scaled via IPCC AR6 WG1 Table 4.5 GMST ratios and added to the NASA POWER MERRA-2 observed baseline (0.5° / ~55 km, 2001–2020). WRI Aqueduct regional baselines are blended from the nearest available regions (capped at 2000 km; with full coverage for Europe, Americas, Asia-Pacific, and China provinces). Sub-grid terrain corrections — elevation lapse rate, coastal proximity, urban heat island, slope factor, river proximity — are applied at 1 km precision. See the 🔬 Downscaling tab in the Portfolio Map above for the grid-cell visualisation.</span></div>
+      <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. <strong>Per-asset physical risk score = mean applicable severity × 20 (0–100 scale).</strong> <strong>Portfolio score = carrying-value (CV) weighted average of asset scores</strong> — assets with higher book value ($M) have proportionally greater influence on the composite, which is financially more defensible than equal-weighting. Falls back to equal-weighting when no CV data is provided. This matches the Climate Rating physical pillar formula exactly, so both panels always display the same portfolio score. The Climate Rating composite = physical × 35% + transition × 35% + financial × 30%. SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission. <strong>Spatial downscaling (25 km → 1 km):</strong> Open-Meteo's CMIP6 Climate Change API (MRI-AGCM3.2-S, 0.25° / ~25 km resolution) provides projections at the asset's actual grid cell — not interpolated from distant regional centroids. The warming delta is computed as <em>T_future − T_historical</em> within the same model and grid cell, which eliminates the systematic 10–20°C GCM mean-state bias that arises when comparing CMIP6 output directly to reanalysis. The raw delta is SSP-scaled via IPCC AR6 WG1 Table 4.5 GMST ratios and added to the NASA POWER MERRA-2 observed baseline (0.5° / ~55 km, 2001–2020). WRI Aqueduct regional baselines are blended from the nearest available regions (capped at 2000 km; with full coverage for Europe, Americas, Asia-Pacific, and China provinces). Sub-grid terrain corrections — elevation lapse rate, coastal proximity, urban heat island, slope factor, river proximity — are applied at 1 km precision. See the 🔬 Downscaling tab in the Portfolio Map above for the grid-cell visualisation.</span></div>
 
       <!-- ── CRI COMPUTATION TRACE ─────────────────────────────────────── -->
       <div id="cri-trace-panel" style="display:none">
@@ -3072,8 +3072,17 @@ async function downloadPhysicalRiskReport() {
   });
 
   // ── Portfolio-level aggregates ─────────────────────────────────────────
-  var scores = assetResults.map(function(r){ return r.prof.score; });
-  var portfolioScore = scores.length ? Math.round(scores.reduce(function(a,b){return a+b;},0)/scores.length * 10)/10 : 0;
+  // CV-weighted mean: weights each asset score by its carrying value ($M).
+  // Falls back to simple equal-weighted mean if no CV data is available.
+  // This MUST match the Climate Rating physical pillar formula (line ~11397)
+  // so both panels always display identical portfolio physical risk scores.
+  var _prCVTot = assetResults.reduce(function(s,r){ return s+(+(r.asset.cv||0)); }, 0);
+  var portfolioScore = assetResults.length
+    ? Math.round((_prCVTot > 0
+        ? assetResults.reduce(function(s,r){ return s+(r.prof.score||0)*(+(r.asset.cv||0)); }, 0) / _prCVTot
+        : assetResults.reduce(function(s,r){ return s+(r.prof.score||0); }, 0) / assetResults.length
+      ) * 10) / 10
+    : 0;
   var portfolioLabel = portfolioScore >= 80 ? 'Critical' : portfolioScore >= 60 ? 'High' : portfolioScore >= 40 ? 'Elevated' : portfolioScore >= 20 ? 'Moderate' : 'Low';
   var labelColour = {Critical:'#b91c1c',High:'#c2410c',Elevated:'#b45309',Moderate:'#1d4ed8',Low:'#15803d'}[portfolioLabel]||'#374151';
 
@@ -3255,7 +3264,7 @@ async function downloadPhysicalRiskReport() {
         '<div style="text-align:right">'+
           '<div class="cover-score">'+portfolioScore+'</div>'+
           '<div style="font-size:13px;font-weight:700;color:'+labelColour+'">'+portfolioLabel+' Physical Risk</div>'+
-          '<div style="font-size:11px;color:#9ca3af">Portfolio mean score (0–100)</div>'+
+          '<div style="font-size:11px;color:#9ca3af">CV-weighted portfolio score (0–100)</div>'+
         '</div>'+
       '</div>'+
       '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">'+
@@ -8199,12 +8208,17 @@ function buildAndLoadResults() {
       ? hList.reduce(function(s,a){ return s + (a.loss_2030_pct||0); }, 0) / hList.length
       : 0;
 
-    // Physical pillar: use the same severity-based hz.score (0–100) as the Physical Risk panel.
-    // Formula: hz.score = avgSev × 20 inside assessHazards(). Simple average across assets.
-    // Thresholds align with Physical Risk panel: <20 Low, 20–35 Moderate, 35–55 Elevated, ≥55 High.
-    // (Previously used avgLoss×5 which is a different quantity and produced systematically lower values.)
-    var physScore  = hList.length > 0
-      ? Math.min(100, hList.reduce(function(s,a){ return s+(a.score||0); }, 0) / hList.length)
+    // Physical pillar: CV-weighted average of hz.score (0–100 severity scale).
+    // Weights each asset by carrying value ($M) so larger/more-exposed assets have
+    // greater influence — financially more defensible than equal-weighting.
+    // Falls back to simple average when no CV data is available.
+    // MUST match the Excel-import path (line ~11397) and Physical Hazard Report
+    // so all three panels always display the same portfolio physical risk score.
+    var _cvTotW = hList.reduce(function(s,a){ return s+(+(a.cv||0)); }, 0);
+    var physScore = hList.length > 0
+      ? Math.min(100, _cvTotW > 0
+          ? hList.reduce(function(s,a){ return s+(a.score||0)*(+(a.cv||0)); }, 0) / _cvTotW
+          : hList.reduce(function(s,a){ return s+(a.score||0); }, 0) / hList.length)
       : 0;
     var physLabel  = physScore >= 55 ? 'High' : physScore >= 35 ? 'Elevated' : physScore >= 20 ? 'Moderate' : 'Low';
 
