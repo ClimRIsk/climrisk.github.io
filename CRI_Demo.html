@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>CRI · Climate Risk Intelligence · v0.3</title>
+<title>CRI · Climate Risk Intelligence · v0.4</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>/* PDF.js + jsPDF loaded lazily */</script>
@@ -743,7 +743,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
   <!-- Access Request Modal -->
   <div id="gate-signup" style="background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:460px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
     <div style="font-size:36px;margin-bottom:10px">🌍</div>
-    <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK · CRI ENGINE v0.3</div>
+    <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK · CRI ENGINE v0.4</div>
     <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 8px">Request Engine Access</h2>
     <p style="font-size:13px;color:#64748b;margin:0 0 28px;line-height:1.7">GPS-precise climate risk · TCFD · IFRS S2 · CSRD<br>We review all requests and respond within 1 business day.</p>
     <div style="text-align:left;margin-bottom:14px">
@@ -910,7 +910,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <button class="nav-btn" onclick="exportDataPackage()" style="font-size:11px"><span class="nav-icon">📦</span>Export Data Package</button>
     <button class="nav-btn" onclick="openPilotModal()" style="font-size:11px;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;border:none;font-weight:700"><span class="nav-icon">🚀</span>Generate Pilot</button>
   </div>
-  <div class="side-foot">CRI v0.3 · 2026–2100</div>
+  <div class="side-foot">CRI v0.4 · 2026–2100</div>
 </nav>
 
 <!-- ═══ PILOT BANNER (hidden unless initPilotMode activated) ═══ -->
@@ -918,7 +918,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
   <span style="font-size:18px">🚀</span>
   <span style="font-weight:800;font-size:13px" id="pb-client"></span>
   <span style="opacity:.7">·</span>
-  <span style="opacity:.85">CRI Climate Risk Analysis · v0.3</span>
+  <span style="opacity:.85">CRI Climate Risk Analysis · v0.4</span>
   <span style="flex:1"></span>
   <span id="pb-days" style="background:rgba(255,255,255,.15);padding:3px 10px;border-radius:10px;font-weight:700"></span>
   <span style="opacity:.7">·</span>
@@ -1047,7 +1047,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 <div class="main">
   <div class="top">
     <span class="top-title" id="top-title">Overview</span>
-    <span class="top-tag">CRI Engine v0.3 · Pilot</span>
+    <span class="top-tag">CRI Engine v0.4 · Pilot</span>
     <div class="sel-wrap">
       <span class="sel-lbl">Company</span>
       <select id="coSel">
@@ -1901,7 +1901,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <!-- Score derivation note -->
       <div style="background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.25);border-radius:8px;padding:11px 15px;margin-bottom:14px;font-size:12px;line-height:1.6;color:var(--muted)">
         <strong style="color:var(--text)">📊 How the composite score is built</strong> —
-        The <em>physical pillar</em> (35% weight) is the CV-weighted average of individual asset hazard scores (0–100 severity scale) — the <strong>same formula</strong> used in the Physical Risk and Supply Chain panels.
+        The <em>physical pillar</em> (35% weight) is the <strong>equal-weighted average</strong> of individual asset physical risk scores (0–100 severity scale) — the <strong>same formula</strong> used in the Physical Risk and Supply Chain panels. Equal-weighting is required for regulatory risk disclosure (TCFD / IFRS S2 / CSRD): every asset is equally material regardless of book value.
         The transition pillar (35%) is carbon cost as % of EBITDA under the NZE 2030 scenario.
         The financial pillar (30%) is enterprise-value at risk under NZE vs Current Policies.
         The composite therefore lies below individual high-scoring assets when those assets are offset by lower transition or financial risk, or by other assets with lower physical scores.
@@ -2833,7 +2833,7 @@ function _lbDownloadAuditTrail() {
   var meta = [
     ['CRI Engine Loan Portfolio Audit Trail'],
     ['Generated', ts],
-    ['Model Version', 'CRI Engine v0.3'],
+    ['Model Version', 'CRI Engine v0.4'],
     ['GDPR Basis', 'GDPR Article 6(1)(b) – contractual necessity; Article 6(1)(f) – legitimate interests (regulatory compliance)'],
     ['SSP Scenario', sspLabel],
     ['Assessment Year', yr],
@@ -2929,7 +2929,7 @@ function _lbDownloadAuditTrail() {
     ['Green Asset Ratio (GAR)','Loans to borrowers with physScore < 20 AND NOT high-carbon sectors as % of total portfolio'],
     ['SFDR Article 8/9','Portfolio GAR ≥ 60% → Art.9 aligned; ≥ 30% → Art.8 aligned; below → review required'],
     [''],
-    ['Disclaimer','This assessment is generated by the CRI Engine v0.3 for regulatory reporting support purposes. It should be reviewed by qualified risk professionals and does not constitute financial advice. Data sources are updated annually.'],
+    ['Disclaimer','This assessment is generated by the CRI Engine v0.4 for regulatory reporting support purposes. It should be reviewed by qualified risk professionals and does not constitute financial advice. Data sources are updated annually.'],
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(method), 'Methodology');
 
@@ -2953,7 +2953,7 @@ function _physDownloadAuditTrail() {
   var meta = [
     ['CRI Engine Physical Risk Audit Trail'],
     ['Generated', ts],
-    ['Model Version', 'CRI Engine v0.3'],
+    ['Model Version', 'CRI Engine v0.4'],
     ['Company', coName],
     ['SSP Scenario', sspLabel],
     ['Assessment Year', yr],
@@ -3035,7 +3035,7 @@ function _physDownloadAuditTrail() {
     ['Elevated','35–49 — material financial impact likely'],
     ['High','50–100 — potential asset stranding risk'],
     [''],
-    ['Disclaimer','This assessment is generated by the CRI Engine v0.3 for regulatory reporting support. Review by qualified risk professionals required before submission to regulators. Sources updated annually.'],
+    ['Disclaimer','This assessment is generated by the CRI Engine v0.4 for regulatory reporting support. Review by qualified risk professionals required before submission to regulators. Sources updated annually.'],
   ];
   XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(method), 'Methodology');
 
@@ -3269,19 +3269,25 @@ async function downloadPhysicalRiskReport() {
           '<div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Physical Climate Hazard Report</div>'+
           '<div style="font-size:28px;font-weight:900;color:#111827;margin-bottom:4px">'+coName+'</div>'+
           (sector?'<div style="font-size:14px;color:#6b7280;margin-bottom:8px">'+sector+'</div>':'')+
-          '<div style="font-size:12px;color:#9ca3af">Generated '+ts+' · CRI Engine v0.3 · Scenario: '+sspLabel+'</div>'+
+          '<div style="font-size:12px;color:#9ca3af">Generated '+ts+' · CRI Engine v0.4 · Scenario: '+sspLabel+'</div>'+
         '</div>'+
         '<div style="text-align:right">'+
           '<div class="cover-score">'+portfolioScore+'</div>'+
           '<div style="font-size:13px;font-weight:700;color:'+labelColour+'">'+portfolioLabel+' Physical Risk</div>'+
           '<div style="font-size:11px;color:#9ca3af">Equal-weighted portfolio score (0–100)</div>'+
+          (portfolioExpM > 0 ?
+            '<div style="margin-top:8px;padding:6px 10px;background:#fff1f2;border-radius:6px;border:1px solid #fecdd3">'+
+              '<div style="font-size:18px;font-weight:800;color:#b91c1c">$'+portfolioExpM.toFixed(1)+'M</div>'+
+              '<div style="font-size:10px;color:#9ca3af">Est. annual financial exposure (CV × loss%)</div>'+
+            '</div>'
+          : '')+
         '</div>'+
       '</div>'+
       '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px">'+
         '<span class="badge" style="background:#f0fdf4;color:#166534">'+hList.length+' Asset'+(hList.length>1?'s':'')+'</span>'+
         '<span class="badge" style="background:#eff6ff;color:#1e40af">'+sspLabel.split('—')[0].trim()+'</span>'+
         '<span class="badge" style="background:#faf5ff;color:#6d28d9">Horizon: '+yr+'</span>'+
-        '<span class="badge" style="background:#fff7ed;color:#9a3412">10 Hazard Categories</span>'+
+        '<span class="badge" style="background:#fff7ed;color:#9a3412">25 Physical Hazards (IPCC AR6)</span>'+
         '<span class="badge" style="background:#f9fafb;color:#374151">IPCC AR6 · WRI Aqueduct 4.0 (parameterised)</span>'+
         '<span style="color:#9ca3af;font-size:11px;padding:3px 8px;align-self:center">Physical only — no transition or financial data required</span>'+
       '</div>'+
@@ -3401,7 +3407,7 @@ async function downloadPhysicalRiskReport() {
       'GPS-resolved site modifiers are applied where coordinates are available. '+
       'Suitable for TCFD, IFRS S2, CSRD ESRS E1, ECB climate stress testing, and EBA Pillar 3 ESG disclosure. '+
       'Review by a qualified risk professional is recommended before regulatory submission. '+
-      'CRI Engine v0.3 · '+ts+
+      'CRI Engine v0.4 · '+ts+
     '</div>'+
 
     '</div>'+
@@ -4354,7 +4360,8 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
     });
 
     // ── Rich tooltip with full hazard breakdown ───────────────────────
-    var sevLabel = score>=55?'High':score>=35?'Elevated':score>=20?'Moderate':'Low';
+    // Standardised 5-band scale: Critical≥80, High≥60, Elevated≥40, Moderate≥20, Low<20
+    var sevLabel = score>=80?'Critical':score>=60?'High':score>=40?'Elevated':score>=20?'Moderate':'Low';
     var hzRows = allHz.slice(0, 6).map(function(h) {
       var hc = HZ_COL[h.h] || '#888';
       var barW = Math.round((h.sev/5)*60);
@@ -5262,7 +5269,7 @@ function genPrompt(){
   var y30=run.years.find(function(y){return y.year===2030;}),y50=run.years.find(function(y){return y.year===2050;});
   var fmtMap={ic:'Investment Committee Memo',board:'Board Risk Briefing',esg:'ESG/TCFD Disclosure',pm:'Portfolio Manager Summary',tech:'Detailed Technical Analysis'};
   var fmt=fmtMap[el('rFmt').value];
-  var p='You are a senior climate risk analyst. Write a professional '+fmt+' based on CRI v0.3 model output.\n\n';
+  var p='You are a senior climate risk analyst. Write a professional '+fmt+' based on CRI v0.4 model output.\n\n';
   p+='COMPANY: '+cd.name+' ('+cd.sector+')\nActive scenario: '+run.label+'\n\n';
   if(el('iV').checked){p+='VALUATION\nEV ('+run.label+'): $'+run.ev+'B | EV (NZE): $'+nze.ev+'B | EV (CP): $'+cp_r.ev+'B\nNZE vs CP: '+pct(nze.ev,cp_r.ev)+'% EV impact\nShare price: $'+run.share_price+' | WACC: '+run.wacc+'%\n\n';}
   if(el('iP').checked){p+='PHYSICAL RISK\n';HAZ[cid].forEach(function(a){p+='  '+a.asset+' ('+a.region+'): loss 2030 '+a.loss_2030_pct+'%, 2050 '+a.loss_2050_pct+'%';var hbs=Object.entries(a.hazard_breakdown||{});if(hbs.length)p+=' | '+hbs.map(function(e){return e[0]+' '+e[1]+'% p.a.';}).join(', ');p+='\n';});p+='\n';}
@@ -6638,7 +6645,7 @@ function _escH(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function _ctrPopulateFromProfiles(assetProfiles, companyName, sector, ssp, yr) {
   if (!assetProfiles || !assetProfiles.length) return;
   _ctrStart('CRI Analysis: ' + companyName);
-  _ctrLog('DATA INGESTION','📥','Company', (companyName||'—') + ' · ' + (sector||'—'), 'formula', 'CRI Engine v0.3');
+  _ctrLog('DATA INGESTION','📥','Company', (companyName||'—') + ' · ' + (sector||'—'), 'formula', 'CRI Engine v0.4');
   _ctrLog('DATA INGESTION','📥','Assets', assetProfiles.length + ' GPS-resolved site(s)', 'result', 'Asset registry');
   _ctrLog('DATA INGESTION','📥','Scenario', (ssp||'ssp370').toUpperCase() + ' · Horizon ' + yr, 'muted', 'IPCC AR6 / NGFS Phase 4');
   _ctrLog('DATA INGESTION','📥','WRI Aqueduct 4.0', '80+ region baseline values loaded · flood, water stress, drought', 'muted', 'Kuzma et al. 2023');
@@ -6707,13 +6714,13 @@ function _ctrPopulateFromProfiles(assetProfiles, companyName, sector, ssp, yr) {
     _ctrLog(ph3,'🏆','Composite score', ''+rat.composite, 'result','');
     _ctrLog(ph3,'🏆','→ CRI Rating',
       rat.rating + ' (' + (rat.label||rat.rating) + ')  composite = ' + rat.composite,
-      rat.composite>=55?'high':rat.composite>=35?'warn':'result','CRI Engine v0.3');
+      rat.composite>=55?'high':rat.composite>=35?'warn':'result','CRI Engine v0.4');
   } else {
     // Estimate from physical scores only (transition / financial pillars not yet computed)
     var avgPhys = assetProfiles.reduce(function(s,ap){ return s+ap.prof.score; },0) / (assetProfiles.length||1);
     var ph3 = 'CLIMATE RATING (Physical Pillar)';
     _ctrLog(ph3,'🏆','Physical score (mean)', avgPhys.toFixed(1)+'/100', 'result','IPCC AR6 WG2');
-    _ctrLog(ph3,'🏆','Note', 'Full composite (Transition + Financial pillars) computed on complete analysis run', 'muted','CRI Engine v0.3');
+    _ctrLog(ph3,'🏆','Note', 'Full composite (Transition + Financial pillars) computed on complete analysis run', 'muted','CRI Engine v0.4');
   }
 
   _ctrFlush();
@@ -6809,7 +6816,7 @@ function _ctrLogComposite(physScore, transScore, finScore, ccPct, evAtRisk, comp
   _ctrLog(ph3,'🏆','Transition pillar (35%)',''+transScore.toFixed(1)+' × 0.35 = '+(transScore*0.35).toFixed(2),'formula','NGFS Phase 4');
   _ctrLog(ph3,'🏆','Financial pillar (30%)',''+finScore.toFixed(1)+' × 0.30 = '+(finScore*0.30).toFixed(2),'formula','CRI DCF Model');
   _ctrLog(ph3,'🏆','Composite score',''+physScore.toFixed(1)+'×0.35 + '+transScore.toFixed(1)+'×0.35 + '+finScore.toFixed(1)+'×0.30 = '+composite,'result','');
-  _ctrLog(ph3,'🏆','→ CRI Rating',rating+' ('+(composite>=75?'Very High':composite>=55?'High':composite>=35?'Elevated':composite>=18?'Moderate':'Low')+' Climate Risk)  composite = '+composite, composite>=55?'high':composite>=35?'warn':'result','CRI Engine v0.3');
+  _ctrLog(ph3,'🏆','→ CRI Rating',rating+' ('+(composite>=75?'Very High':composite>=55?'High':composite>=35?'Elevated':composite>=18?'Moderate':'Low')+' Climate Risk)  composite = '+composite, composite>=55?'high':composite>=35?'warn':'result','CRI Engine v0.4');
 }
 
 /* Sector-aware hazard assessment — wraps assessHazards() with sector-specific
@@ -7284,7 +7291,7 @@ function latLonToRegion(lat, lon) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
-   GPS SITE-SPECIFIC PHYSICS LAYER  (CRI v0.3)
+   GPS SITE-SPECIFIC PHYSICS LAYER  (CRI v0.4)
    ─────────────────────────────────────────────────────────────────────────
    Upgrades the engine from regional-bucket assessment to GPS site-specific
    hazard quantification. Given any lat/lon, we derive:
@@ -8232,7 +8239,8 @@ function buildAndLoadResults() {
     var physScore = hList.length > 0
       ? Math.min(100, hList.reduce(function(s,a){ return s+(a.score||0); }, 0) / hList.length)
       : 0;
-    var physLabel  = physScore >= 55 ? 'High' : physScore >= 35 ? 'Elevated' : physScore >= 20 ? 'Moderate' : 'Low';
+    // Standardised 5-band scale: Critical≥80, High≥60, Elevated≥40, Moderate≥20, Low<20
+    var physLabel  = physScore >= 80 ? 'Critical' : physScore >= 60 ? 'High' : physScore >= 40 ? 'Elevated' : physScore >= 20 ? 'Moderate' : 'Low';
 
     // Transition pillar: carbon cost as % of EBITDA under NZE 2030
     var nzeRun  = D.companies[co_id].runs.nze_2050;
@@ -8264,14 +8272,41 @@ function buildAndLoadResults() {
     /* Use the higher of: (a) what the physics model computes, (b) the IEA sector minimum */
     var ccPct = Math.max(ccPctRaw, _sf);
     var transScore = Math.min(100, ccPct * 3);
-    var transLabel = transScore >= 70 ? 'Critical' : transScore >= 50 ? 'High' : transScore >= 30 ? 'Elevated' : transScore >= 15 ? 'Moderate' : 'Low';
+
+    // ── Transition discount: read wizard commitment inputs (same logic as Excel-import path) ──
+    // Clients who entered SBTi/NZ/reduction targets in Step 5 must not be penalised vs
+    // Excel-import users who get this discount from their uploaded document text.
+    var _wizNZ         = (el('i-nz') && el('i-nz').value) || 'none';
+    var _wizNZYear     = el('i-nzyear') ? +(el('i-nzyear').value||0) : 0;
+    var _wizRed2030    = el('i-t30')    ? +(el('i-t30').value||0) : 0;
+    var _wizInitsEls   = document.querySelectorAll('#init-checks input[type=checkbox]:checked');
+    var _wizInitsCount = _wizInitsEls ? _wizInitsEls.length : 0;
+
+    var _wizDiscount = 0;
+    var _wizDiscountNote = '';
+    if (_wizNZ === 'committed') {
+      _wizDiscount += 3;
+      _wizDiscountNote += 'Net-zero commitment (−3 pts); ';
+      if (_wizNZYear > 2024 && _wizNZYear <= 2050) {
+        _wizDiscount += 1;  // bonus for ≤2050 target year
+        _wizDiscountNote += 'Target year ' + _wizNZYear + ' (≤2050) (−1 pt); ';
+      }
+    }
+    if (_wizRed2030 >= 40)      { _wizDiscount += 4; _wizDiscountNote += _wizRed2030 + '% 2030 target (−4 pts); '; }
+    else if (_wizRed2030 >= 20) { _wizDiscount += 2; _wizDiscountNote += _wizRed2030 + '% 2030 target (−2 pts); '; }
+    if (_wizInitsCount >= 3)    { _wizDiscount += 3; _wizDiscountNote += _wizInitsCount + ' active initiatives (−3 pts); '; }
+    else if (_wizInitsCount >= 1){ _wizDiscount += 1; _wizDiscountNote += _wizInitsCount + ' active initiative(s) (−1 pt); '; }
+    _wizDiscount = Math.min(15, _wizDiscount);  // same 15-pt cap as Excel path
+
+    var transScoreAdj = Math.max(0, transScore - _wizDiscount);
+    var transLabel = transScoreAdj >= 70 ? 'Critical' : transScoreAdj >= 50 ? 'High' : transScoreAdj >= 30 ? 'Elevated' : transScoreAdj >= 15 ? 'Moderate' : 'Low';
 
     // Financial pillar: EV at risk NZE vs CP
     var evAtRisk  = cpRun.ev > 0 ? (cpRun.ev - nzeRun.ev) / cpRun.ev * 100 : 0;
     var finScore  = Math.min(100, evAtRisk * 1.3);
     var finLabel  = finScore >= 70 ? 'High' : finScore >= 45 ? 'Elevated' : finScore >= 20 ? 'Moderate' : 'Low';
 
-    var composite = Math.round(physScore * 0.35 + transScore * 0.35 + finScore * 0.30);
+    var composite = Math.round(physScore * 0.35 + transScoreAdj * 0.35 + finScore * 0.30);
     var rating    = composite >= 75 ? 'E' : composite >= 55 ? 'D' : composite >= 35 ? 'C' : composite >= 18 ? 'B' : 'A';
     var ratingLabel = {A:'Low Climate Risk',B:'Moderate Climate Risk',C:'Elevated Climate Risk',D:'High Climate Risk',E:'Very High Climate Risk'}[rating];
 
@@ -8279,25 +8314,28 @@ function buildAndLoadResults() {
       ? hList.slice().sort(function(a,b){ return (b.score||0)-(a.score||0); })[0]
       : null;
 
+    var _transDrivers = [
+      'Carbon cost 2030 (NZE): ' + ccPct.toFixed(1) + '% of EBITDA → raw score ' + Math.round(transScore) + '/100',
+      'Emission basis: ' + _emSource,
+      'NZE 2050 scenario — NGFS Phase 4 carbon price path · S1 base: ' + wizS1mt.toFixed(2) + ' MtCO₂e · S2 base: ' + wizS2mt.toFixed(2) + ' MtCO₂e'
+    ];
+    if (_wizDiscount > 0) _transDrivers.push('Decarbonisation discount −' + _wizDiscount + ' pts: ' + _wizDiscountNote.replace(/;\s*$/, ''));
+
     RATINGS[co_id] = {
       rating:      rating,
       label:       ratingLabel,
       composite:   composite,
       confidence:  'Medium',
       sector_rank: wizAssets.length + ' asset(s) · ' + sector + ' · ' + (_emSource.indexOf('PRODUCTION')>=0?'Production-based emissions':_emSource.indexOf('MEASURED')>=0?'Measured emissions':'Revenue proxy emissions — add production volume for accuracy'),
-      summary:     name + ' receives a CRI Rating of ' + rating + ' (' + ratingLabel + '), computed from site-specific physical hazard assessment across ' + wizAssets.length + ' asset location(s), NGFS Phase 4 transition scenario modelling, and enterprise value sensitivity analysis under NZE 2050 vs Current Policies.',
+      summary:     name + ' receives a CRI Rating of ' + rating + ' (' + ratingLabel + '), computed from site-specific physical hazard assessment across ' + wizAssets.length + ' asset location(s), NGFS Phase 4 transition scenario modelling, and enterprise value sensitivity analysis under NZE 2050 vs Current Policies.' + (_wizDiscount > 0 ? ' Decarbonisation commitments reduce transition score by ' + _wizDiscount + ' points.' : ''),
       pillars: {
         physical:   { label: physLabel,  score: physScore,
                       drivers: [
-                        'Physical hazard severity score (avg across ' + hList.length + ' asset' + (hList.length>1?'s':'') + '): ' + physScore.toFixed(1) + '/100 · Annual loss 2030: ' + avgLoss.toFixed(2) + '% of asset value',
+                        'Equal-weighted physical hazard score across ' + hList.length + ' asset' + (hList.length>1?'s':'') + ': ' + physScore.toFixed(1) + '/100 · Annual loss 2030: ' + avgLoss.toFixed(2) + '% of asset value',
                         topPhys ? 'Highest-risk asset: ' + topPhys.asset + ' (score ' + (topPhys.score||0).toFixed(1) + '/100 · ' + (topPhys.loss_2030_pct||0).toFixed(2) + '% loss/yr)' : 'Assets assessed under SSP3-7.0 scenario'
                       ]},
-        transition: { label: transLabel, score: transScore,
-                      drivers: [
-                        'Carbon cost 2030 (NZE): ' + ccPct.toFixed(1) + '% of EBITDA → score ' + Math.round(transScore) + '/100',
-                        'Emission basis: ' + _emSource,
-                        'NZE 2050 scenario — NGFS Phase 4 carbon price path · S1 base: ' + wizS1mt.toFixed(2) + ' MtCO₂e · S2 base: ' + wizS2mt.toFixed(2) + ' MtCO₂e'
-                      ]},
+        transition: { label: transLabel, score: transScoreAdj,
+                      drivers: _transDrivers },
         financial:  { label: finLabel,   score: finScore,
                       drivers: [
                         'EV at risk (NZE vs Current Policies): ' + evAtRisk.toFixed(1) + '%',
@@ -8307,7 +8345,7 @@ function buildAndLoadResults() {
     };
 
     // ── Fire trace flush ──────────────────────────────
-    _ctrLogComposite(physScore, transScore, finScore, ccPct, evAtRisk, composite, rating, sector, nzeRun.wacc||8.5);
+    _ctrLogComposite(physScore, transScoreAdj, finScore, ccPct, evAtRisk, composite, rating, sector, nzeRun.wacc||8.5);
     _ctrFlush();
   })();
 
@@ -8829,9 +8867,10 @@ function renderReport() {
   try {
   var rows = assets.map(function(a, i) {
     var ps = a.physScore||0;
-    var riskCls = ps>=50?'at-risk-high':ps>=35?'at-risk-elev':ps>=20?'at-risk-mod':'at-risk-low';
-    var riskLbl = ps>=50?'High':ps>=35?'Elevated':ps>=20?'Moderate':'Low';
-    var riskCol = ps>=50?'#b91c1c':ps>=35?'#b45309':ps>=20?'#ca8a04':'#16a34a';
+    // Standardised 5-band scale: Critical≥80, High≥60, Elevated≥40, Moderate≥20, Low<20
+    var riskCls = ps>=80?'at-risk-high':ps>=60?'at-risk-high':ps>=40?'at-risk-elev':ps>=20?'at-risk-mod':'at-risk-low';
+    var riskLbl = ps>=80?'Critical':ps>=60?'High':ps>=40?'Elevated':ps>=20?'Moderate':'Low';
+    var riskCol = ps>=80?'#b91c1c':ps>=60?'#c2410c':ps>=40?'#b45309':ps>=20?'#ca8a04':'#16a34a';
     var topHazards = Array.isArray(a.topHazards) ? a.topHazards : [];
     var cv = a.cv || 0;
     var physM   = +(a.physLossM||0);
@@ -11427,7 +11466,8 @@ function _xlInjectToEngine() {
   var physScore = hList.length
     ? Math.min(100, hList.reduce(function(s,a){ return s+(a.score||0); }, 0) / hList.length)
     : 0;
-  var physLabel = physScore>=55?'High':physScore>=35?'Elevated':physScore>=20?'Moderate':'Low';
+  // Standardised 5-band scale: Critical≥80, High≥60, Elevated≥40, Moderate≥20, Low<20
+  var physLabel = physScore>=80?'Critical':physScore>=60?'High':physScore>=40?'Elevated':physScore>=20?'Moderate':'Low';
   var nzeRun   = D.companies[co_id].runs.nze_2050;
   var cpRun    = D.companies[co_id].runs.current_policies;
   var nzeY30   = nzeRun.years.find(function(y){return y.year===2030;}) || nzeRun.years[0];
@@ -11493,7 +11533,7 @@ function _xlInjectToEngine() {
     sector_rank: hList.length + ' asset(s) · ' + sector + ' · Excel import',
     summary: name + ' receives a CRI Rating of ' + rating + ' (' + rLabels[rating] + '), computed from site-specific physical hazard assessment across ' + hList.length + ' asset location(s), NGFS Phase 4 transition scenario modelling, and enterprise value sensitivity analysis under NZE 2050 vs Current Policies.' + (_trKV && _trKV.sbtiVerified ? ' SBTi-verified net-zero commitment reduces transition pillar score by '+_transDiscount+' points.' : ''),
     pillars: {
-      physical:   { label:physLabel,     score:physScore,       drivers:['CV-weighted physical hazard score ('+hList.length+' asset'+(hList.length>1?'s':'')+', severity scale): '+physScore.toFixed(1)+'/100 · Avg annual loss 2030: '+avgLoss.toFixed(2)+'%', topPhys?'Highest-risk asset: '+topPhys.asset+' (score '+(topPhys.score||0).toFixed(1)+'/100 · '+(topPhys.loss_2030_pct||0).toFixed(2)+'% loss/yr)':'Multi-asset portfolio'] },
+      physical:   { label:physLabel,     score:physScore,       drivers:['Equal-weighted physical hazard score across '+hList.length+' asset'+(hList.length>1?'s':'')+' (severity scale): '+physScore.toFixed(1)+'/100 · Avg annual loss 2030: '+avgLoss.toFixed(2)+'%', topPhys?'Highest-risk asset: '+topPhys.asset+' (score '+(topPhys.score||0).toFixed(1)+'/100 · '+(topPhys.loss_2030_pct||0).toFixed(2)+'% loss/yr)':'Multi-asset portfolio'] },
       transition: { label:transLabel,    score:transScoreAdj,   drivers:_transDrivers },
       financial:  { label:finLabel,      score:finScore,        drivers:['EV at risk (NZE vs Current Policies): '+evAtRisk.toFixed(1)+'%','NZE EV: $'+nzeRun.ev.toFixed(1)+'B  ·  CP EV: $'+cpRun.ev.toFixed(1)+'B  ·  WACC: '+nzeRun.wacc.toFixed(1)+'%'] }
     }
@@ -14638,7 +14678,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
       ['Sea Level Rise','IPCC AR6 Ch9 + NOAA proxy','IPCC AR6 WG1 Ch9'],
       ['Carbon Price Pathway','NGFS Phase 4 (2023)','NGFS 2023 / IEA WEO 2023'],
       ['Scope 3 Proxy Factors','GHG Protocol + EEIO (2022)','GHG Protocol Scope 3 Standard'],
-      ['Joint Loss Model','CRI v0.3 (compound risk)','IPCC AR6 WG2 Ch16'],
+      ['Joint Loss Model','CRI v0.4 (compound risk)','IPCC AR6 WG2 Ch16'],
       ['Energy Estimate','Sector emission intensity factors','IEA Energy Statistics 2023'],
     ].forEach(function(r){
       body += '<tr style="border-bottom:1px solid #f3f4f6"><td style="padding:6px 8px;font-weight:700">'+r[0]+'</td><td style="padding:6px 8px;color:#2563eb">'+r[1]+'</td><td style="padding:6px 8px;font-family:monospace;font-size:9px;color:#7c3aed">'+r[2]+'</td></tr>';
@@ -15487,10 +15527,10 @@ function _rhBuildMethodology() {
     {layer:'Cyclone Intensity',        dataset:'IPCC AR6 WG1 Ch11.7',             version:'AR6 2021', method:'5%/°C intensity uplift on coastal regions in CYCLONE_SET; Cat 4/5 frequency scaling',        ipcc:'IPCC AR6 WG1 Ch11.7'},
     {layer:'Drought / Water Stress',   dataset:'WRI Aqueduct Water Risk Atlas',    version:'v4.0',  method:'Baseline water/drought scores scaled by Palmer Drought Index proxy from GMST warming',          ipcc:'IPCC AR6 WG1 Ch11.6'},
     {layer:'Landslide',                dataset:'IPCC AR6 WG2 Ch5 + SRTM DEM',     version:'AR6 2021', method:'Terrain susceptibility (LANDSLIDE_SET) × precipitation scaling × LULC cohesion factor',       ipcc:'IPCC AR6 WG2 Ch5.3'},
-    {layer:'Joint Loss Model',         dataset:'Derived',                          version:'CRI v0.3', method:'Joint production loss: 1 − Π(1 − lossᵢ) across all applicable hazards; compound risk non-linear', ipcc:'IPCC AR6 WG2 Ch16'},
+    {layer:'Joint Loss Model',         dataset:'Derived',                          version:'CRI v0.4', method:'Joint production loss: 1 − Π(1 − lossᵢ) across all applicable hazards; compound risk non-linear', ipcc:'IPCC AR6 WG2 Ch16'},
     {layer:'Carbon Price Pathway',     dataset:'NGFS Phase 4 (2023)',              version:'Phase 4', method:'SSP-mapped NGFS scenarios: SSP1-2.6→NZE2050 ($130/t), SSP2-4.5→Delayed ($90/t), SSP3-7.0→CurPol ($60/t)', ipcc:'NGFS 2023; IEA WEO'},
     {layer:'Scope 3 Proxy',            dataset:'GHG Protocol + EEIO factors',      version:'2022',  method:'Spend-based proxy: 380 tCO2e/$M for purchased goods; or direct import from emissions sheet',   ipcc:'GHG Protocol Scope 3 Standard'},
-    {layer:'Enterprise Value Impact',  dataset:'Derived (DCF)',                    version:'CRI v0.3', method:'Physical CaR capitalised to portfolio EV impact using WACC-adjusted discount model. Calibration layer documented for client review under NDA.',        ipcc:'TCFD Technical Supplement 2017'},
+    {layer:'Enterprise Value Impact',  dataset:'Derived (DCF)',                    version:'CRI v0.4', method:'Physical CaR capitalised to portfolio EV impact using WACC-adjusted discount model. Calibration layer documented for client review under NDA.',        ipcc:'TCFD Technical Supplement 2017'},
   ];
 
   return '<div style="font-size:11px;color:#6b7280;margin-bottom:14px">Complete methodology audit trail — submit to external auditors or regulatory bodies as supporting documentation.</div>'+
@@ -16108,7 +16148,7 @@ function pmRefreshPreview() {
   var coName  = cid && D.companies[cid] ? D.companies[cid].name : '';
   var expiry  = new Date(); expiry.setDate(expiry.getDate() + days);
   var expiryStr = expiry.toISOString().split('T')[0];
-  var filename  = (coName || 'Client').replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.3.html';
+  var filename  = (coName || 'Client').replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.4.html';
   document.getElementById('pm-filename').textContent        = filename;
   document.getElementById('pm-expiry').textContent          = expiryStr + ' (' + days + ' days)';
   document.getElementById('pm-key-preview').textContent     = akey || '(none set — file will open without key)';
@@ -16263,7 +16303,7 @@ function generatePilotPackage() {
   source = source.replace('</body>', autoInit + '</body>');
 
   /* Download */
-  var filename = resolvedClientName.replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.3.html';
+  var filename = resolvedClientName.replace(/[^a-z0-9]/gi,'_') + '_CRI_Pilot_v0.4.html';
   var blob = new Blob([source], {type:'text/html;charset=utf-8'});
   var url  = URL.createObjectURL(blob);
   var a    = document.createElement('a');
@@ -16417,7 +16457,7 @@ function initPilotMode(cfg) {
       '<div style="font-size:13px;color:#4c1d95">Contact <strong>' + cfg.supportName + '</strong><br>' +
       '<a href="mailto:' + cfg.supportEmail + '" style="color:#7c3aed">' + cfg.supportEmail + '</a></div>' +
       '</div>' +
-      '<div style="font-size:11px;color:#9ca3af">CRI Climate Risk Intelligence · v0.3</div>' +
+      '<div style="font-size:11px;color:#9ca3af">CRI Climate Risk Intelligence · v0.4</div>' +
       '</div></div>';
   };
 
@@ -16492,7 +16532,7 @@ function initPilotMode(cfg) {
 
   /* 5. Update page title */
   var primaryName = cfg.primaryClientName || cfg.clientName;
-  document.title = primaryName + ' — CRI Climate Risk Analysis · v0.3';
+  document.title = primaryName + ' — CRI Climate Risk Analysis · v0.4';
 
   /* 6. Show pilot banner */
   var banner = el('pilot-banner');
