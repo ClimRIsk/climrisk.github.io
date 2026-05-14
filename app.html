@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClimRisk Platform · Access</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #0b1f38;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+  }
+
+  /* Ambient background shapes */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(29,158,117,0.12) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -150px; left: -150px;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(29,158,117,0.08) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .gate {
+    width: 100%;
+    max-width: 420px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Logo area */
+  .logo-area {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .logo-mark {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, #1d9e75, #0d4f3c);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 18px; color: #fff;
+    letter-spacing: -1px;
+  }
+  .logo-name {
+    font-size: 26px;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: -0.5px;
+  }
+  .logo-name span { color: #1d9e75; }
+  .logo-tagline {
+    font-size: 13px;
+    color: #64748b;
+    letter-spacing: 0.04em;
+  }
+
+  /* Card */
+  .card {
+    background: #132b47;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 16px;
+    padding: 36px 32px;
+    box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+  }
+
+  .card-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: #f1f5f9;
+    margin-bottom: 6px;
+  }
+  .card-sub {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 28px;
+    line-height: 1.5;
+  }
+
+  /* Form */
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 8px;
+  }
+  .field input {
+    width: 100%;
+    background: #0b1f38;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 14px;
+    color: #f1f5f9;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .field input:focus { border-color: #1d9e75; }
+  .field input::placeholder { color: #334155; }
+
+  .btn-access {
+    width: 100%;
+    background: linear-gradient(135deg, #1d9e75, #15856200);
+    background: #1d9e75;
+    border: none;
+    border-radius: 8px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+    letter-spacing: 0.02em;
+    margin-top: 6px;
+  }
+  .btn-access:hover { background: #17896400; background: #16a06b; }
+  .btn-access:active { transform: scale(0.99); }
+
+  .error-msg {
+    display: none;
+    background: rgba(220,38,38,0.12);
+    border: 1px solid rgba(220,38,38,0.3);
+    border-radius: 6px;
+    padding: 10px 14px;
+    font-size: 12px;
+    color: #fca5a5;
+    margin-top: 12px;
+    text-align: center;
+  }
+  .error-msg.show { display: block; }
+
+  /* Divider */
+  .divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 22px 0;
+    color: #334155; font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: rgba(255,255,255,0.07);
+  }
+
+  .contact-link {
+    text-align: center;
+    font-size: 12px;
+    color: #64748b;
+  }
+  .contact-link a {
+    color: #1d9e75;
+    text-decoration: none;
+    font-weight: 600;
+  }
+  .contact-link a:hover { text-decoration: underline; }
+
+  /* Feature pills below card */
+  .features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 24px;
+    justify-content: center;
+  }
+  .feat {
+    background: rgba(29,158,117,0.1);
+    border: 1px solid rgba(29,158,117,0.2);
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: #1d9e75;
+    white-space: nowrap;
+  }
+
+  /* Footer */
+  .gate-footer {
+    text-align: center;
+    margin-top: 32px;
+    font-size: 11px;
+    color: #334155;
+    line-height: 1.7;
+  }
+
+  /* Shake animation for wrong code */
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20% { transform: translateX(-8px); }
+    40% { transform: translateX(8px); }
+    60% { transform: translateX(-6px); }
+    80% { transform: translateX(6px); }
+  }
+  .shake { animation: shake 0.4s ease; }
+</style>
+</head>
+<body>
+
+<div class="gate">
+
+  <div class="logo-area">
+    <div class="logo-mark">
+      <div class="logo-icon">CR</div>
+      <div class="logo-name">Clim<span>Risk</span></div>
+    </div>
+    <div class="logo-tagline">Climate Risk Intelligence Platform</div>
+  </div>
+
+  <div class="card" id="gate-card">
+    <div class="card-title">Platform Access</div>
+    <div class="card-sub">Enter your access credentials to open the ClimRisk Platform. Contact <a href="mailto:shri@climrisk.io" style="color:#1d9e75">shri@climrisk.io</a> to request access.</div>
+
+    <div class="field">
+      <label>Email address</label>
+      <input type="email" id="inp-email" placeholder="you@yourcompany.com" autocomplete="email">
+    </div>
+
+    <div class="field">
+      <label>Access code</label>
+      <input type="password" id="inp-code" placeholder="Enter your access code" autocomplete="current-password"
+        onkeydown="if(event.key==='Enter') tryAccess()">
+    </div>
+
+    <button class="btn-access" onclick="tryAccess()">Access Platform &rarr;</button>
+
+    <div class="error-msg" id="err-msg">Access code is incorrect. Please check your email or contact shri@climrisk.io to request access.</div>
+
+    <div class="divider">or</div>
+
+    <div class="contact-link">
+      Don't have access? <a href="mailto:shri@climrisk.io?subject=ClimRisk Platform Access Request">Request access &rarr;</a>
+    </div>
+  </div>
+
+  <div class="features">
+    <div class="feat">25 IPCC AR6 Hazards</div>
+    <div class="feat">NGFS Phase 4 Scenarios</div>
+    <div class="feat">CSRD Ready</div>
+    <div class="feat">CBAM Calculator</div>
+    <div class="feat">MACC Engine</div>
+    <div class="feat">Double Materiality</div>
+  </div>
+
+  <div class="gate-footer">
+    ClimRisk B.V. &nbsp;·&nbsp; Amsterdam, Netherlands &nbsp;·&nbsp; KVK 95420134<br>
+    climrisk.io &nbsp;·&nbsp; shri@climrisk.io
+  </div>
+
+</div>
+
+<script>
+  // Access codes — add new client codes here as list
+  // Format: "email-prefix:code" or just "code" for universal codes
+  var VALID_CODES = [
+    'CRI2026',       // universal access code
+    'MORELLI2026',   // Morelli Consulting
+    'PILOT001',      // Pilot client 1
+    'PILOT002',      // Pilot client 2
+    'PILOT003',      // Pilot client 3
+  ];
+
+  function tryAccess() {
+    var email = document.getElementById('inp-email').value.trim();
+    var code  = document.getElementById('inp-code').value.trim().toUpperCase();
+    var err   = document.getElementById('err-msg');
+    var card  = document.getElementById('gate-card');
+
+    if (!email || !code) {
+      err.textContent = 'Please enter your email address and access code.';
+      err.classList.add('show');
+      card.classList.add('shake');
+      setTimeout(function() { card.classList.remove('shake'); }, 450);
+      return;
+    }
+
+    if (VALID_CODES.indexOf(code) >= 0) {
+      // Store session
+      sessionStorage.setItem('cri_auth', code);
+      sessionStorage.setItem('cri_email', email);
+      // Redirect to platform
+      document.getElementById('gate-card').style.opacity = '0.5';
+      document.getElementById('gate-card').style.transition = 'opacity 0.3s';
+      setTimeout(function() {
+        window.location.href = 'ClimRisk_Platform.html?auth=' + encodeURIComponent(code);
+      }, 300);
+    } else {
+      err.textContent = 'Access code is incorrect. Please check your email or contact shri@climrisk.io to request access.';
+      err.classList.add('show');
+      card.classList.add('shake');
+      setTimeout(function() { card.classList.remove('shake'); }, 450);
+      document.getElementById('inp-code').value = '';
+      document.getElementById('inp-code').focus();
+    }
+  }
+</script>
+
+</body>
+</html>
