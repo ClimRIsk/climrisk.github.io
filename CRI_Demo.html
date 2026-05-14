@@ -891,6 +891,8 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <button class="nav-btn" data-p="physical"><span class="nav-icon">🌡</span>Physical Risk</button>
     <button class="nav-btn" data-p="transition"><span class="nav-icon">⚡</span>Transition Risk</button>
     <button class="nav-btn" data-p="cbam"><span class="nav-icon">🇪🇺</span>CBAM Liability</button>
+    <button class="nav-btn" data-p="materiality"><span class="nav-icon">⚖</span>Materiality</button>
+    <button class="nav-btn" data-p="macc"><span class="nav-icon">📉</span>Abatement MACC</button>
     <button class="nav-btn" data-p="supplychain"><span class="nav-icon">🔗</span>Supply Chain</button>
     <button class="nav-btn" data-p="loanbook"><span class="nav-icon">🏦</span>Loan Portfolio</button>
   </div>
@@ -2417,9 +2419,33 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <!-- Choke point alert -->
       <div id="sc-choke" class="sc-choke" style="display:none"></div>
 
+      <!-- Procurement Intelligence -->
+      <div id="sc-procurement" style="margin-top:16px"></div>
+
       <!-- Supply chain chart -->
       <div class="cc"><div class="cc-title">Risk-Adjusted Spend by Supplier (USD M)</div><div class="ch h280"><canvas id="scC"></canvas></div></div>
     </div><!-- p-supplychain -->
+
+    <!-- ═══════════════════ DOUBLE MATERIALITY ════════════════════════ -->
+    <div id="p-materiality" class="panel">
+      <div class="ph"><h1>Double Materiality Assessment</h1><p>CSRD / ESRS 1 compliant — inside-out impact lens and outside-in financial lens with threshold documentation</p></div>
+      <div id="mat-impact-section"></div>
+      <div id="mat-financial-section" style="margin-top:18px"></div>
+      <div id="mat-threshold-section" style="margin-top:18px"></div>
+    </div>
+
+    <!-- ═══════════════════ MACC TRANSITION FINANCE ════════════════════════ -->
+    <div id="p-macc" class="panel">
+      <div class="ph"><h1>Marginal Abatement Cost Curve (MACC)</h1><p>Decarbonization levers ranked by cost per tonne — identifies projects that pay for themselves at today's carbon price</p></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap">
+        <label style="font-size:12px;font-weight:600;color:var(--muted)">EU ETS Carbon Price (EUR/tCO2e):</label>
+        <input type="number" id="macc-cp" value="75" min="10" max="500" style="width:90px;padding:5px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text)" onchange="renderMacc()">
+      </div>
+      <div id="macc-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:18px"></div>
+      <div class="cc" style="margin-bottom:18px"><div class="cc-title">MACC — Abatement Initiatives Ranked by Cost per Tonne</div><div class="ch h320"><canvas id="macc-chart"></canvas></div></div>
+      <div id="macc-sll" style="margin-bottom:18px"></div>
+      <div id="macc-cfo"></div>
+    </div>
 
     <!-- ═══════════════════ LOAN PORTFOLIO (Banking Sector) ════════════════════════ -->
     <div id="p-loanbook" class="panel">
@@ -4089,8 +4115,8 @@ function _gateShowPending(email) {
 
 /* ── Navigation ─────────────────────────────────── */
 var cur = 'dataint';
-var panels = ['intake','overview','physical','transition','cbam','costs','dataint','supplychain','loanbook','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub'];
-var labels = {intake:'Company Setup',overview:'Overview',physical:'Physical Risk',transition:'Transition Risk',costs:'Cost Parameters',dataint:'Excel Integration',supplychain:'Supply Chain Risk',loanbook:'Loan Portfolio',portfolio:'Portfolio Roll-up',compare:'Compare',stats:'Statistical View',ratings:'Climate Rating',disclosures:'Disclosures',report:'Risk Report',genai:'GenAI Report',reportintel:'Report Intelligence',reghub:'Regulatory Hub'};
+var panels = ['intake','overview','physical','transition','cbam','costs','dataint','supplychain','materiality','macc','loanbook','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub'];
+var labels = {intake:'Company Setup',overview:'Overview',physical:'Physical Risk',transition:'Transition Risk',costs:'Cost Parameters',dataint:'Excel Integration',supplychain:'Supply Chain Risk',materiality:'Double Materiality Assessment',macc:'Abatement MACC',loanbook:'Loan Portfolio',portfolio:'Portfolio Roll-up',compare:'Compare',stats:'Statistical View',ratings:'Climate Rating',disclosures:'Disclosures',report:'Risk Report',genai:'GenAI Report',reportintel:'Report Intelligence',reghub:'Regulatory Hub'};
 
 function show(name) {
   panels.forEach(function(p) {
@@ -4128,6 +4154,8 @@ function render(name) {
   if (name==='report')      renderReport();
   if (name==='dataint')     renderDataInt();
   if (name==='supplychain') renderSupplyChain();
+  if (name==='materiality') renderMateriality();
+  if (name==='macc')        renderMacc();
   if (name==='loanbook')    renderLoanBook();
   if (name==='portfolio')   renderPortfolio();
   if (name==='reportintel') renderReportIntel();
@@ -12567,6 +12595,440 @@ function renderSupplyChain() {
       plugins:{ legend:{labels:{color:gc().tick,font:{size:11}}} }
     })
   });
+
+  // ── Procurement Intelligence ──────────────────────────────────────────────
+  var procDiv = el('sc-procurement');
+  if (!procDiv) return;
+
+  // Triage scoring: (hazardScore/100 * 0.5) + (spendM/totalSpend * 0.5)
+  var _ts = totalSpend || 1;
+  var triaged = all.map(function(s) {
+    var tScore = (s.hazardScore / 100 * 0.5) + (s.spendM / _ts * 0.5);
+    var cfProxy = s.annualLoss * s.spendM / 100;
+    var dqBadge, dqColor;
+    if (s.hazardScore > 60) { dqBadge = '&#9888; Estimated — Request EPD'; dqColor = 'var(--amber)'; }
+    else if (s.hazardScore > 40) { dqBadge = '&#128203; Self-reported'; dqColor = 'var(--muted)'; }
+    else { dqBadge = '&#10003; Low exposure'; dqColor = 'var(--green)'; }
+    var carbonLiab = s.spendM * (s.annualLoss / 100) * 0.4 * 75;
+    var trueCost = s.spendM + carbonLiab;
+    return Object.assign({}, s, { tScore: tScore, cfProxy: cfProxy, dqBadge: dqBadge, dqColor: dqColor, carbonLiab: carbonLiab, trueCost: trueCost });
+  }).sort(function(a,b){ return b.tScore - a.tScore; }).slice(0,8);
+
+  // Find cheapest true cost supplier as benchmark
+  var minTrueCost = triaged.length ? Math.min.apply(null, triaged.map(function(s){return s.trueCost;})) : 0;
+
+  var ph = '<div class="cc" style="margin-bottom:14px">';
+  ph += '<div class="cc-title">Procurement Triage Matrix — Top 8 by Composite Risk Score</div>';
+  ph += '<div style="padding:14px 18px;overflow-x:auto">';
+  ph += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+  ph += '<thead><tr style="border-bottom:2px solid var(--border)">';
+  ph += '<th style="text-align:left;padding:6px 10px">Rank</th>';
+  ph += '<th style="text-align:left;padding:6px 10px">Supplier</th>';
+  ph += '<th style="text-align:right;padding:6px 10px">Triage Score</th>';
+  ph += '<th style="text-align:right;padding:6px 10px">Carbon Footprint Proxy</th>';
+  ph += '<th style="text-align:left;padding:6px 10px">Data Quality</th>';
+  ph += '<th style="text-align:right;padding:6px 10px">CBAM True Cost</th>';
+  ph += '</tr></thead><tbody>';
+  triaged.forEach(function(s, i) {
+    ph += '<tr style="border-bottom:1px solid var(--border)">';
+    ph += '<td style="padding:6px 10px;font-weight:700;color:var(--muted)">'+(i+1)+'</td>';
+    ph += '<td style="padding:6px 10px;font-weight:600">'+s.name+'</td>';
+    ph += '<td style="padding:6px 10px;text-align:right;font-weight:700">'+(s.tScore*100).toFixed(1)+'</td>';
+    ph += '<td style="padding:6px 10px;text-align:right">$'+s.cfProxy.toFixed(2)+'M</td>';
+    ph += '<td style="padding:6px 10px;color:'+s.dqColor+'">'+s.dqBadge+'</td>';
+    ph += '<td style="padding:6px 10px;text-align:right;font-weight:700">$'+s.trueCost.toFixed(1)+'M</td>';
+    ph += '</tr>';
+  });
+  ph += '</tbody></table></div></div>';
+
+  // CBAM True Cost Comparison
+  ph += '<div class="cc" style="margin-bottom:14px">';
+  ph += '<div class="cc-title">CBAM True Cost Comparison</div>';
+  ph += '<div style="padding:14px 18px;overflow-x:auto">';
+  ph += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
+  ph += '<thead><tr style="border-bottom:2px solid var(--border)">';
+  ph += '<th style="text-align:left;padding:6px 10px">Supplier</th>';
+  ph += '<th style="text-align:right;padding:6px 10px">Invoice Cost</th>';
+  ph += '<th style="text-align:right;padding:6px 10px">Carbon Liability</th>';
+  ph += '<th style="text-align:right;padding:6px 10px">True Cost</th>';
+  ph += '<th style="text-align:left;padding:6px 10px">Verdict</th>';
+  ph += '</tr></thead><tbody>';
+  triaged.forEach(function(s) {
+    var preferred = s.trueCost <= minTrueCost * 1.05;
+    var verdict = preferred ? '<span style="color:var(--green);font-weight:700">&#10003; Preferred</span>' : '<span style="color:var(--amber);font-weight:700">&#9888; Reconsider</span>';
+    ph += '<tr style="border-bottom:1px solid var(--border)">';
+    ph += '<td style="padding:6px 10px;font-weight:600">'+s.name+'</td>';
+    ph += '<td style="padding:6px 10px;text-align:right">$'+s.spendM.toFixed(1)+'M</td>';
+    ph += '<td style="padding:6px 10px;text-align:right;color:var(--amber)">$'+s.carbonLiab.toFixed(2)+'M</td>';
+    ph += '<td style="padding:6px 10px;text-align:right;font-weight:700">$'+s.trueCost.toFixed(1)+'M</td>';
+    ph += '<td style="padding:6px 10px">'+verdict+'</td>';
+    ph += '</tr>';
+  });
+  ph += '</tbody></table></div></div>';
+
+  // Engagement Priority Checklist
+  ph += '<div class="cc">';
+  ph += '<div class="cc-title">Supplier Engagement Priority Checklist — Primary Data Requests by Tier</div>';
+  ph += '<div style="padding:16px 20px;font-size:12px;line-height:1.8;display:grid;grid-template-columns:repeat(3,1fr);gap:16px">';
+  ph += '<div style="background:rgba(239,68,68,0.06);border:1px solid rgba(239,68,68,0.2);border-radius:8px;padding:14px">';
+  ph += '<div style="font-weight:700;color:var(--red);margin-bottom:8px;font-size:13px">Tier 1 — Direct Suppliers</div>';
+  ph += '<div style="color:var(--muted)">Request entity-level Scope 1 and Scope 2 verified by third party</div>';
+  ph += '<div style="color:var(--muted)">Request full Scope 3 disaggregated by category</div>';
+  ph += '<div style="color:var(--muted)">Require third-party Environmental Product Declaration (EPD)</div>';
+  ph += '<div style="color:var(--muted)">Obtain GHG Protocol or ISO 14064 verification statement</div>';
+  ph += '</div>';
+  ph += '<div style="background:rgba(245,158,11,0.06);border:1px solid rgba(245,158,11,0.2);border-radius:8px;padding:14px">';
+  ph += '<div style="font-weight:700;color:var(--amber);margin-bottom:8px;font-size:13px">Tier 2 — Sub-suppliers</div>';
+  ph += '<div style="color:var(--muted)">Request entity-level Scope 1 and Scope 2 (self-reported acceptable)</div>';
+  ph += '<div style="color:var(--muted)">Obtain product-level EPD for key materials</div>';
+  ph += '<div style="color:var(--muted)">Annual GHG inventory disclosure minimum requirement</div>';
+  ph += '</div>';
+  ph += '<div style="background:rgba(34,197,94,0.06);border:1px solid rgba(34,197,94,0.2);border-radius:8px;padding:14px">';
+  ph += '<div style="font-weight:700;color:var(--green);margin-bottom:8px;font-size:13px">Tier 3 — Sub-sub-suppliers</div>';
+  ph += '<div style="color:var(--muted)">Sector-level proxy data acceptable for initial assessment</div>';
+  ph += '<div style="color:var(--muted)">Use EXIOBASE or Trucost IO intensity factors as baseline</div>';
+  ph += '<div style="color:var(--muted)">Escalate to Tier 2 standards if spend exceeds $5M/year</div>';
+  ph += '</div>';
+  ph += '</div></div>';
+
+  procDiv.innerHTML = ph;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   DOUBLE MATERIALITY
+═══════════════════════════════════════════════════════════════ */
+function renderMateriality() {
+  var cid = co();
+  var coObj = (cid && COS[cid]) ? COS[cid] : null;
+  var sector = coObj ? (coObj.sector || 'Other') : 'Other';
+  var runKey = coObj ? (Object.keys(coObj.runs)[0]) : null;
+  var run = coObj && runKey ? coObj.runs[runKey] : null;
+  var firstYr = run && run.years && run.years[0] ? run.years[0] : null;
+  var annualRevM = firstYr ? (firstYr.revenue * 1000) : 1000; // convert $B to $M
+  var assets = coObj ? (D.hazards[cid] || []) : [];
+  var topHazards = [];
+  if (assets.length) {
+    var hz0 = assessHazardsSector(assets[0].region||'global', assets[0].lat||null, assets[0].lon||null, 'ssp370', 2030, sector);
+    topHazards = (hz0.hazards||[]).filter(function(h){return h.applicable&&h.sev>0;}).sort(function(a,b){return b.sev-a.sev;}).slice(0,3);
+  }
+  if (!topHazards.length) {
+    topHazards = [
+      {h:'Heatwave / Extreme Heat', sev:3.5, annual_loss_pct:0.04},
+      {h:'Flood (Riverine)', sev:2.8, annual_loss_pct:0.025},
+      {h:'Water Stress', sev:2.2, annual_loss_pct:0.015}
+    ];
+  }
+
+  // ── Section A: Impact Materiality ───────────────────────────────────────
+  var impacts = [
+    {topic:'Water extraction',       likelihood:3, severity:4},
+    {topic:'GHG emissions',          likelihood:5, severity:5},
+    {topic:'Biodiversity loss',      likelihood:2, severity:3},
+    {topic:'Soil contamination',     likelihood:2, severity:2},
+    {topic:'Air quality',            likelihood:3, severity:3},
+    {topic:'Community displacement', likelihood:1, severity:4}
+  ];
+  // Adjust water likelihood from hazard if available
+  var waterH = topHazards.find(function(h){return h.h && h.h.toLowerCase().indexOf('water')>=0;});
+  if (waterH) impacts[0].likelihood = Math.round(Math.min(5, waterH.sev));
+
+  impacts.forEach(function(im) {
+    var sc = im.likelihood * im.severity;
+    if (sc >= 9) { im.status = 'Material'; im.col = 'var(--red)'; }
+    else if (sc >= 6) { im.status = 'Potentially Material'; im.col = 'var(--amber)'; }
+    else { im.status = 'Not Material'; im.col = 'var(--muted)'; }
+  });
+
+  // Build 5x5 matrix grid
+  var matA = '<div class="cc"><div class="cc-title">Section A — Impact Materiality (Inside-Out): Company Impact ON Environment</div>';
+  matA += '<div style="padding:16px 20px">';
+  matA += '<div style="display:grid;grid-template-columns:60px repeat(5,1fr);gap:4px;font-size:11px;max-width:520px">';
+  matA += '<div style="grid-column:1;grid-row:1;display:flex;align-items:flex-end;justify-content:flex-end;padding:4px;font-weight:600;color:var(--muted);font-size:10px">Sev</div>';
+  for (var lk=1;lk<=5;lk++) {
+    matA += '<div style="grid-column:'+(lk+1)+';grid-row:1;text-align:center;font-size:10px;font-weight:600;color:var(--muted)">L'+lk+'</div>';
+  }
+  for (var sev=5;sev>=1;sev--) {
+    var rowIdx = 6 - sev + 1;
+    matA += '<div style="grid-column:1;grid-row:'+rowIdx+';display:flex;align-items:center;justify-content:flex-end;padding:4px;font-size:10px;font-weight:600;color:var(--muted)">'+sev+'</div>';
+    for (var lik=1;lik<=5;lik++) {
+      var sc2 = lik * sev;
+      var bgC = sc2>=9 ? 'rgba(239,68,68,0.15)' : sc2>=6 ? 'rgba(245,158,11,0.15)' : 'rgba(156,163,175,0.08)';
+      var cellTopics = impacts.filter(function(im){return im.likelihood===lik&&im.severity===sev;});
+      var cellHtml = cellTopics.map(function(im){
+        return '<div style="font-size:9px;line-height:1.2;color:'+im.col+';font-weight:700">'+im.topic+'</div>';
+      }).join('');
+      matA += '<div style="grid-column:'+(lik+1)+';grid-row:'+rowIdx+';background:'+bgC+';border:1px solid var(--border);border-radius:4px;min-height:44px;padding:4px;display:flex;flex-direction:column;align-items:center;justify-content:center">'+cellHtml+'</div>';
+    }
+  }
+  matA += '</div>';
+  matA += '<div style="display:flex;gap:16px;margin-top:12px;font-size:11px">';
+  matA += '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:rgba(239,68,68,0.3);border-radius:2px;display:inline-block"></span>Material (score &ge; 9)</span>';
+  matA += '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:rgba(245,158,11,0.3);border-radius:2px;display:inline-block"></span>Potentially Material (6-8)</span>';
+  matA += '<span style="display:flex;align-items:center;gap:4px"><span style="width:12px;height:12px;background:rgba(156,163,175,0.15);border-radius:2px;display:inline-block"></span>Not Material</span>';
+  matA += '</div>';
+  matA += '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:16px"><thead><tr style="border-bottom:2px solid var(--border)"><th style="text-align:left;padding:6px 10px">Impact Topic</th><th style="text-align:center;padding:6px 10px">Likelihood</th><th style="text-align:center;padding:6px 10px">Severity</th><th style="text-align:center;padding:6px 10px">Score</th><th style="text-align:left;padding:6px 10px">Status</th></tr></thead><tbody>';
+  impacts.forEach(function(im){
+    matA += '<tr style="border-bottom:1px solid var(--border)"><td style="padding:6px 10px;font-weight:600">'+im.topic+'</td><td style="text-align:center;padding:6px 10px">'+im.likelihood+'</td><td style="text-align:center;padding:6px 10px">'+im.severity+'</td><td style="text-align:center;padding:6px 10px;font-weight:700">'+(im.likelihood*im.severity)+'</td><td style="padding:6px 10px;color:'+im.col+';font-weight:600">'+im.status+'</td></tr>';
+  });
+  matA += '</tbody></table></div></div>';
+  if (el('mat-impact-section')) el('mat-impact-section').innerHTML = matA;
+
+  // ── Section B: Financial Materiality ─────────────────────────────────────
+  var finRows = topHazards.map(function(h) {
+    var lossM = (h.annual_loss_pct || (h.annualLoss ? h.annualLoss/100 : 0.03)) * annualRevM;
+    var waccBps = h.sev >= 3.5 ? 80 : h.sev >= 2 ? 40 : 20;
+    var cfImpact = annualRevM > 0 ? (lossM / annualRevM * 100) : 0;
+    var matStat = (cfImpact > 1 || lossM > 50) ? 'Material' : 'Not Material';
+    var matCol = matStat === 'Material' ? 'var(--red)' : 'var(--muted)';
+    return {h: h.h||h.hazard||'Unknown', lossM: lossM, waccBps: waccBps, cfImpact: cfImpact, matStat: matStat, matCol: matCol};
+  });
+
+  var matB = '<div class="cc"><div class="cc-title">Section B — Financial Materiality (Outside-In): Climate Impact ON Company</div>';
+  matB += '<div style="padding:14px 18px;overflow-x:auto">';
+  matB += '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid var(--border)">';
+  matB += '<th style="text-align:left;padding:6px 10px">Hazard</th>';
+  matB += '<th style="text-align:right;padding:6px 10px">Revenue at Risk</th>';
+  matB += '<th style="text-align:right;padding:6px 10px">WACC Impact</th>';
+  matB += '<th style="text-align:right;padding:6px 10px">CF Impact %</th>';
+  matB += '<th style="text-align:left;padding:6px 10px">Materiality Status</th>';
+  matB += '</tr></thead><tbody>';
+  finRows.forEach(function(r){
+    matB += '<tr style="border-bottom:1px solid var(--border)">';
+    matB += '<td style="padding:6px 10px;font-weight:600">'+r.h+'</td>';
+    matB += '<td style="padding:6px 10px;text-align:right">$'+r.lossM.toFixed(1)+'M</td>';
+    matB += '<td style="padding:6px 10px;text-align:right;color:var(--amber)">+'+r.waccBps+'bps</td>';
+    matB += '<td style="padding:6px 10px;text-align:right">'+r.cfImpact.toFixed(2)+'%</td>';
+    matB += '<td style="padding:6px 10px;color:'+r.matCol+';font-weight:600">'+r.matStat+'</td>';
+    matB += '</tr>';
+  });
+  matB += '</tbody></table></div></div>';
+  if (el('mat-financial-section')) el('mat-financial-section').innerHTML = matB;
+
+  // ── Section C: Threshold Documentation ───────────────────────────────────
+  var today = new Date().toISOString().split('T')[0];
+  var auditRows = [];
+  impacts.forEach(function(im){
+    auditRows.push({topic:im.topic, lens:'Impact (Inside-Out)', score:im.likelihood*im.severity, threshold:'6 (ESRS 1 double materiality)', decision:im.status, rationale:'Likelihood '+im.likelihood+' x Severity '+im.severity+' = '+(im.likelihood*im.severity), date:today});
+  });
+  finRows.forEach(function(r){
+    auditRows.push({topic:r.h, lens:'Financial (Outside-In)', score:r.cfImpact.toFixed(2)+'% CF', threshold:'1% CF impact or $50M revenue at risk', decision:r.matStat, rationale:'CF impact '+r.cfImpact.toFixed(2)+'% and revenue at risk $'+r.lossM.toFixed(1)+'M', date:today});
+  });
+
+  var matC = '<div class="cc"><div class="cc-title">Section C — Threshold Documentation (Audit Package)</div>';
+  matC += '<div style="padding:14px 18px;overflow-x:auto">';
+  matC += '<table style="width:100%;border-collapse:collapse;font-size:11px"><thead><tr style="border-bottom:2px solid var(--border)">';
+  matC += '<th style="text-align:left;padding:6px 8px">Topic</th><th style="text-align:left;padding:6px 8px">Lens</th><th style="text-align:center;padding:6px 8px">Score</th><th style="text-align:left;padding:6px 8px">Threshold</th><th style="text-align:left;padding:6px 8px">Decision</th><th style="text-align:left;padding:6px 8px">Rationale</th><th style="text-align:left;padding:6px 8px">Date</th>';
+  matC += '</tr></thead><tbody>';
+  auditRows.forEach(function(r){
+    var dCol = r.decision==='Material' ? 'var(--red)' : r.decision==='Potentially Material' ? 'var(--amber)' : 'var(--muted)';
+    matC += '<tr style="border-bottom:1px solid var(--border)">';
+    matC += '<td style="padding:5px 8px;font-weight:600">'+r.topic+'</td>';
+    matC += '<td style="padding:5px 8px;color:var(--muted)">'+r.lens+'</td>';
+    matC += '<td style="padding:5px 8px;text-align:center">'+r.score+'</td>';
+    matC += '<td style="padding:5px 8px;color:var(--muted);font-size:10px">'+r.threshold+'</td>';
+    matC += '<td style="padding:5px 8px;color:'+dCol+';font-weight:700">'+r.decision+'</td>';
+    matC += '<td style="padding:5px 8px;color:var(--muted);font-size:10px">'+r.rationale+'</td>';
+    matC += '<td style="padding:5px 8px;color:var(--muted)">'+r.date+'</td>';
+    matC += '</tr>';
+  });
+  matC += '</tbody></table>';
+  matC += '<div style="padding:12px 0 4px"><button class="btn-secondary" onclick="_dlMaterialityAudit()" style="font-size:12px;padding:7px 16px">&#128229; Download Audit Package</button></div>';
+  matC += '</div></div>';
+  if (el('mat-threshold-section')) el('mat-threshold-section').innerHTML = matC;
+}
+
+function _dlMaterialityAudit() {
+  var cid = co();
+  var coName = (cid && COS[cid]) ? (COS[cid].name || cid) : 'Unknown Company';
+  var today = new Date().toISOString().split('T')[0];
+  var html = '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Double Materiality Audit Package</title>';
+  html += '<style>body{font-family:Arial,sans-serif;margin:40px;color:#1a1a1a}h1{color:#1e3a5f}table{border-collapse:collapse;width:100%;margin-top:16px}th,td{border:1px solid #ddd;padding:8px 12px;font-size:12px}th{background:#f0f4f8;font-weight:700}h2{margin-top:32px;color:#2c5282}p{color:#555;font-size:13px}</style>';
+  html += '</head><body>';
+  html += '<h1>Double Materiality Assessment</h1>';
+  html += '<p><strong>Company:</strong> '+coName+' &nbsp; <strong>Date:</strong> '+today+' &nbsp; <strong>Standard:</strong> CSRD / ESRS 1</p>';
+  html += '<p>This document constitutes the formal materiality assessment audit package prepared in accordance with ESRS 1 requirements for dual materiality. It covers both the inside-out impact materiality lens and the outside-in financial materiality lens.</p>';
+  html += '<h2>Impact Materiality (Inside-Out)</h2>';
+  html += '<table><tr><th>Topic</th><th>Likelihood</th><th>Severity</th><th>Score</th><th>Decision</th></tr>';
+  var impTopics = [
+    {topic:'Water extraction',       likelihood:3, severity:4},
+    {topic:'GHG emissions',          likelihood:5, severity:5},
+    {topic:'Biodiversity loss',      likelihood:2, severity:3},
+    {topic:'Soil contamination',     likelihood:2, severity:2},
+    {topic:'Air quality',            likelihood:3, severity:3},
+    {topic:'Community displacement', likelihood:1, severity:4}
+  ];
+  impTopics.forEach(function(im){
+    var sc = im.likelihood * im.severity;
+    var dec = sc>=9 ? 'Material' : sc>=6 ? 'Potentially Material' : 'Not Material';
+    html += '<tr><td>'+im.topic+'</td><td>'+im.likelihood+'</td><td>'+im.severity+'</td><td>'+sc+'</td><td>'+dec+'</td></tr>';
+  });
+  html += '</table>';
+  html += '<h2>Financial Materiality (Outside-In)</h2>';
+  html += '<p>Thresholds: CF impact greater than 1% OR revenue at risk greater than $50M triggers Material classification.</p>';
+  html += '<h2>Regulatory References</h2>';
+  html += '<p>CSRD Directive (EU) 2022/2464 -- ESRS 1 General Requirements -- ESRS E1 Climate Change -- GRI 3 Material Topics 2021</p>';
+  html += '<p style="margin-top:40px;color:#888;font-size:11px">Generated by CRI Climate Risk Intelligence Platform v0.4</p>';
+  html += '</body></html>';
+  var blob = new Blob([html], {type:'text/html'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'Materiality_Audit_'+coName.replace(/\s+/g,'_')+'_'+today+'.html';
+  a.click();
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MACC TRANSITION FINANCE
+═══════════════════════════════════════════════════════════════ */
+var MACC_INITIATIVES = {
+  '_default': [
+    { name:'LED lighting upgrade',                vol:800,    costPerT: -45, capexM:0.8  },
+    { name:'Building energy management (BMS)',    vol:1200,   costPerT: -30, capexM:1.4  },
+    { name:'Fleet electrification (LDV)',         vol:2200,   costPerT: -12, capexM:4.5  },
+    { name:'Rooftop solar PV (0.5 MW)',           vol:600,    costPerT: -8,  capexM:0.9  },
+    { name:'Compressed air leak repair',          vol:400,    costPerT: 5,   capexM:0.3  },
+    { name:'Renewable energy PPA (offsite)',      vol:8000,   costPerT: 18,  capexM:1.2  },
+    { name:'Industrial heat pump retrofit',       vol:5500,   costPerT: 35,  capexM:8.0  },
+    { name:'Logistics fleet electrification',     vol:3200,   costPerT: 42,  capexM:12.0 },
+    { name:'Green hydrogen process switch',       vol:12000,  costPerT: 110, capexM:45.0 },
+    { name:'Carbon capture (CCS pilot)',          vol:25000,  costPerT: 185, capexM:90.0 }
+  ],
+  'Food & Beverage': [
+    { name:'Refrigerant leak management (HFCs)',  vol:1800,   costPerT: -52, capexM:0.6  },
+    { name:'Waste heat recovery (breweries)',     vol:2400,   costPerT: -28, capexM:3.2  },
+    { name:'Agricultural sourcing switch (regen)',vol:15000,  costPerT: 8,   capexM:5.0  },
+    { name:'Biomass boiler for process heat',     vol:6000,   costPerT: 22,  capexM:9.0  },
+    { name:'Cold chain electrification',         vol:4200,   costPerT: 38,  capexM:14.0 },
+    { name:'Packaging material switch (bio-PE)', vol:2800,   costPerT: 55,  capexM:7.5  },
+    { name:'Anaerobic digestion (waste to biogas)',vol:3500,  costPerT: 62,  capexM:11.0 },
+    { name:'Green hydrogen for thermal processes',vol:18000,  costPerT: 125, capexM:55.0 }
+  ],
+  'Mining': [
+    { name:'Diesel haul fleet electrification',  vol:18000,  costPerT: 28,  capexM:35.0 },
+    { name:'Ventilation on demand',              vol:5000,   costPerT: -18, capexM:2.5  },
+    { name:'Solar hybrid microgrid (remote site)',vol:9000,  costPerT: 12,  capexM:22.0 },
+    { name:'Methane capture (underground)',      vol:22000,  costPerT: -35, capexM:8.0  },
+    { name:'Process electrification (smelting)', vol:45000,  costPerT: 65,  capexM:120.0},
+    { name:'Green hydrogen (reductant)',         vol:80000,  costPerT: 145, capexM:250.0}
+  ]
+};
+
+function renderMacc() {
+  var cid = co();
+  var coObj = (cid && COS[cid]) ? COS[cid] : null;
+  var sector = coObj ? (coObj.sector || '_default') : '_default';
+  var initiatives = MACC_INITIATIVES[sector] || MACC_INITIATIVES['_default'];
+  var cpEl = el('macc-cp');
+  var carbonPrice = cpEl ? parseFloat(cpEl.value) || 75 : 75;
+
+  // Sort by costPerT ascending
+  var sorted = initiatives.slice().sort(function(a,b){return a.costPerT - b.costPerT;});
+
+  var justified = sorted.filter(function(m){return m.costPerT < carbonPrice;});
+  var totalCapex = justified.reduce(function(a,m){return a+m.capexM;},0);
+  var totalVol = justified.reduce(function(a,m){return a+m.vol;},0);
+  var annualSaving = justified.reduce(function(a,m){return a + m.vol*(carbonPrice-m.costPerT);},0) / 1e6;
+
+  // Summary cards
+  var cardsHtml = '';
+  cardsHtml += '<div class="card"><div class="clbl">Economically Justified Projects</div><div class="cval">'+justified.length+' projects</div><div class="cdelta grn">Total CapEx $'+totalCapex.toFixed(1)+'M</div></div>';
+  cardsHtml += '<div class="card"><div class="clbl">Total Abatement Potential</div><div class="cval">'+totalVol.toLocaleString()+' tCO2e</div><div class="cdelta grn">At or below EUR '+carbonPrice+'/t</div></div>';
+  cardsHtml += '<div class="card"><div class="clbl">Annual Carbon Cost Saving</div><div class="cval">$'+annualSaving.toFixed(2)+'M/yr</div><div class="cdelta grn">vs current EU ETS pricing</div></div>';
+  if (el('macc-cards')) el('macc-cards').innerHTML = cardsHtml;
+
+  // Chart
+  kill('macc-chart');
+  var barColors = sorted.map(function(m){
+    if (m.costPerT < 0) return '#22c55e';
+    if (m.costPerT < carbonPrice) return '#f59e0b';
+    return '#ef4444';
+  });
+  var cpLine = sorted.map(function(){ return carbonPrice; });
+  mk('macc-chart', {
+    type:'bar',
+    data:{
+      labels: sorted.map(function(m){return m.name.length>28?m.name.substring(0,27)+'..':m.name;}),
+      datasets:[
+        {
+          label:'Cost per tonne (EUR/tCO2e)',
+          data: sorted.map(function(m){return m.costPerT;}),
+          backgroundColor: barColors,
+          borderRadius: 4
+        },
+        {
+          type:'line',
+          label:'Carbon Price (EUR '+carbonPrice+'/t)',
+          data: cpLine,
+          borderColor:'#6366f1',
+          borderWidth:2,
+          borderDash:[6,3],
+          pointRadius:0,
+          fill:false
+        }
+      ]
+    },
+    options: Object.assign(mkOpts(function(v){return '€'+v+'/t';}, false), {
+      plugins:{
+        legend:{labels:{color:gc().tick,font:{size:11}}},
+        tooltip:{callbacks:{
+          label:function(ctx){
+            var idx = ctx.dataIndex;
+            if (ctx.datasetIndex===1) return 'Carbon price: €'+carbonPrice+'/t';
+            var m = sorted[idx];
+            return ['Cost: €'+m.costPerT+'/tCO2e','Volume: '+m.vol.toLocaleString()+' tCO2e','CapEx: $'+m.capexM+'M'];
+          }
+        }}
+      }
+    })
+  });
+
+  // SLL Structuring Table
+  var top3 = justified.slice(0,3);
+  var timelineBase = 2026;
+  var sllHtml = '<div class="cc"><div class="cc-title">SLL Structuring Table — Top 3 Justified Projects as Sustainability Performance Targets</div>';
+  sllHtml += '<div style="padding:14px 18px;overflow-x:auto">';
+  sllHtml += '<table style="width:100%;border-collapse:collapse;font-size:12px"><thead><tr style="border-bottom:2px solid var(--border)">';
+  sllHtml += '<th style="text-align:left;padding:6px 10px">Milestone</th>';
+  sllHtml += '<th style="text-align:center;padding:6px 10px">Target (% reduction)</th>';
+  sllHtml += '<th style="text-align:center;padding:6px 10px">Timeline</th>';
+  sllHtml += '<th style="text-align:left;padding:6px 10px">KPI</th>';
+  sllHtml += '<th style="text-align:left;padding:6px 10px">Interest Rate Link (SPT)</th>';
+  sllHtml += '</tr></thead><tbody>';
+  top3.forEach(function(m, i){
+    var targetPct = Math.round(m.vol / 50000 * 100);
+    if (targetPct < 5) targetPct = 5;
+    if (targetPct > 40) targetPct = 40;
+    var timeline = (timelineBase + 2 + i);
+    var kpi = i===0 ? 'kWh consumed per unit of output' : i===1 ? 'MWh renewable / total MWh' : 'tCO2e Scope 1+2 per $M revenue';
+    var ratchet = 10 + i*5;
+    sllHtml += '<tr style="border-bottom:1px solid var(--border)">';
+    sllHtml += '<td style="padding:6px 10px;font-weight:600">'+m.name+'</td>';
+    sllHtml += '<td style="padding:6px 10px;text-align:center;font-weight:700;color:var(--green)">'+targetPct+'%</td>';
+    sllHtml += '<td style="padding:6px 10px;text-align:center">By '+timeline+'</td>';
+    sllHtml += '<td style="padding:6px 10px;color:var(--muted)">'+kpi+'</td>';
+    sllHtml += '<td style="padding:6px 10px;color:var(--accent)">SPT '+i+': '+ratchet+'bps margin reduction if achieved</td>';
+    sllHtml += '</tr>';
+  });
+  sllHtml += '</tbody></table>';
+  sllHtml += '<div style="margin-top:12px;padding:12px;background:rgba(99,102,241,0.06);border:1px solid rgba(99,102,241,0.2);border-radius:8px;font-size:12px;color:var(--muted);line-height:1.6">';
+  sllHtml += 'These milestones form the basis of a Sustainability-Linked Loan (SLL) under LMA SLL Principles 2023. A lender will price the margin ratchet against annual verification by a third-party auditor.';
+  sllHtml += '</div></div></div>';
+  if (el('macc-sll')) el('macc-sll').innerHTML = sllHtml;
+
+  // Justify to CFO
+  var fiveYrSaving = annualSaving * 5;
+  var cfoHtml = '<div class="cc"><div class="cc-title">Executive Summary: Justify to CFO</div>';
+  cfoHtml += '<div style="padding:16px 20px;background:rgba(34,197,94,0.04);border-left:4px solid var(--green);font-size:13px;line-height:1.8;color:var(--text)">';
+  cfoHtml += '<strong>Decarbonization Business Case</strong><br>';
+  cfoHtml += 'Projects totalling '+totalVol.toLocaleString()+' tCO2e of abatement cost less than EUR '+carbonPrice+'/tCO2e to implement. ';
+  cfoHtml += 'Under current EU ETS pricing, the avoided carbon cost over a 5-year horizon is $'+fiveYrSaving.toFixed(1)+'M ';
+  cfoHtml += 'exceeding the combined CapEx of $'+totalCapex.toFixed(1)+'M. ';
+  cfoHtml += 'These projects are financially net-positive without any sustainability premium.';
+  cfoHtml += '<br><br>';
+  cfoHtml += '<strong>Payback Analysis:</strong> Combined CapEx $'+totalCapex.toFixed(1)+'M against annualised saving of $'+annualSaving.toFixed(2)+'M/yr ';
+  cfoHtml += 'implies a payback period of '+(annualSaving>0?(totalCapex/annualSaving).toFixed(1):'N/A')+' years. ';
+  cfoHtml += 'SLL financing can further reduce net CapEx through margin ratchet benefits over the loan tenor.';
+  cfoHtml += '</div></div>';
+  if (el('macc-cfo')) el('macc-cfo').innerHTML = cfoHtml;
 }
 
 /* ═══════════════════════════════════════════════════════════════
