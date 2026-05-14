@@ -888,7 +888,7 @@ footer{
     <div class="nav-links">
       <a href="#manifesto">Our Story</a>
       <a href="#engine">Engine</a>
-      <a href="#demo">Free Demo</a>
+      <a href="#demo">Live Demo</a>
       <a href="#regulatory">Frameworks</a>
       <a href="#pricing">Engagement</a>
       <a href="#contact">Contact</a>
@@ -901,7 +901,7 @@ footer{
         <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
       </a>
       <button class="theme-toggle" onclick="toggleTheme()" title="Toggle dark/light mode" id="themeBtn">🌙</button>
-      <button class="nav-cta" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">Try Free Demo</button>
+      <a href="app.html" class="nav-cta" style="text-decoration:none">Access Platform →</a>
       <button class="nav-mobile-toggle" onclick="toggleMobileNav()" id="mobileToggle" aria-label="Menu">
         <span></span><span></span><span></span>
       </button>
@@ -911,7 +911,7 @@ footer{
 <div class="nav-mobile-menu" id="mobileMenu">
   <a href="#manifesto"  onclick="closeMobileNav()">Our Story</a>
   <a href="#engine"     onclick="closeMobileNav()">Engine</a>
-  <a href="#demo"       onclick="closeMobileNav()">Free Demo</a>
+  <a href="#demo"       onclick="closeMobileNav()">Live Demo</a>
   <a href="#regulatory" onclick="closeMobileNav()">Frameworks</a>
   <a href="#pricing"    onclick="closeMobileNav()">Engagement</a>
   <a href="#contact"    onclick="closeMobileNav()">Contact</a>
@@ -949,8 +949,8 @@ footer{
         <h1>Climate risk analysis<br>that used to take <em>weeks</em> —<br>automated to <span class="danger">hours.</span></h1>
         <p class="hero-sub">ClimRisk's CRI Engine automates the complex climate and sustainability workflows that traditionally require large teams of specialists working for months — delivering GPS-precise physical risk, transition exposure, and multi-framework disclosure outputs for <strong>enterprises, financial institutions, consultants, and sustainability teams.</strong></p>
         <div class="hero-ctas">
-          <button class="btn-primary" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">🔬 Try Free Demo</button>
-          <button class="btn-outline" onclick="document.getElementById('pricing').scrollIntoView({behavior:'smooth'})">How we engage →</button>
+          <a href="app.html" class="btn-primary" style="text-decoration:none">Access Platform →</a>
+          <button class="btn-outline" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">🔬 See Live Demo</button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
           <span style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);font-weight:500">📘 TCFD</span>
@@ -1863,6 +1863,23 @@ footer{
   </div>
 </section>
 
+<!-- ══════════════════ ACCESS PLATFORM BANNER ═══ -->
+<div style="background:linear-gradient(135deg,#0b1f38 0%,#0d2e47 100%);padding:64px 24px;text-align:center;border-top:1px solid rgba(29,158,117,0.2);border-bottom:1px solid rgba(29,158,117,0.2)">
+  <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#1d9e75;margin-bottom:14px">ClimRisk Platform · v0.4</p>
+  <h2 style="color:#fff;font-size:clamp(24px,4vw,40px);font-weight:800;letter-spacing:-.02em;margin-bottom:16px;line-height:1.15">The complete climate risk engine.<br>Ready now.</h2>
+  <p style="color:rgba(255,255,255,.55);font-size:15px;margin-bottom:32px;max-width:520px;margin-left:auto;margin-right:auto;line-height:1.75">25 IPCC AR6 hazards · NGFS Phase 4 · CSRD double materiality · CBAM liability · MACC and SLL structuring. All automated in one session.</p>
+  <a href="app.html" style="display:inline-block;background:#1d9e75;color:#fff;font-size:16px;font-weight:700;padding:16px 40px;border-radius:10px;text-decoration:none;letter-spacing:.01em;transition:background .2s" onmouseover="this.style.background='#16a06b'" onmouseout="this.style.background='#1d9e75'">Access Platform →</a>
+  <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:24px">
+    <span style="font-size:11px;padding:5px 12px;border-radius:20px;background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.25);color:#1d9e75">25 IPCC AR6 Hazards</span>
+    <span style="font-size:11px;padding:5px 12px;border-radius:20px;background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.25);color:#1d9e75">NGFS Phase 4</span>
+    <span style="font-size:11px;padding:5px 12px;border-radius:20px;background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.25);color:#1d9e75">CSRD Ready</span>
+    <span style="font-size:11px;padding:5px 12px;border-radius:20px;background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.25);color:#1d9e75">CBAM Calculator</span>
+    <span style="font-size:11px;padding:5px 12px;border-radius:20px;background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.25);color:#1d9e75">MACC Engine</span>
+    <span style="font-size:11px;padding:5px 12px;border-radius:20px;background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.25);color:#1d9e75">Double Materiality</span>
+  </div>
+  <p style="margin-top:20px;font-size:12px;color:rgba(255,255,255,.3)">Contact <a href="mailto:shri@climrisk.io" style="color:#1d9e75;text-decoration:none">shri@climrisk.io</a> to request access credentials.</p>
+</div>
+
 <!-- ══════════════════ CTA / CONTACT ════════════ -->
 <div class="cta-section" id="contact">
   <div class="cta-inner" style="max-width:720px">
@@ -1927,10 +1944,10 @@ footer{
     </div>
     <div class="footer-col">
       <div class="fc-head">Product</div>
+      <a href="app.html" style="color:#1d9e75;font-weight:700">Access Platform →</a>
       <a href="#engine">CRI Engine</a>
-      <a href="#demo">Free Demo</a>
+      <a href="#demo">Live Demo</a>
       <a href="#pricing">Engagement</a>
-      <a href="#about">About</a>
     </div>
     <div class="footer-col">
       <div class="fc-head">Frameworks</div>

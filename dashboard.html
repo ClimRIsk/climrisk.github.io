@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClimRisk Platform · Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#0b1f38;--navy2:#132b47;--navy3:#1a3a5c;
+  --green:#1d9e75;--green2:#17896a;--green3:#0d4f3c;
+  --amber:#f59e0b;--red:#dc2626;--blue:#3b82f6;
+  --text:#f1f5f9;--muted:#94a3b8;--faint:#64748b;
+  --border:rgba(255,255,255,0.08);--surf:#132b47;--surf2:#1a3a5c;
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+
+/* ── TOP NAV ── */
+.topnav{
+  display:flex;align-items:center;gap:0;
+  background:var(--navy2);border-bottom:1px solid var(--border);
+  padding:0 24px;height:56px;flex-shrink:0;
+  position:sticky;top:0;z-index:100;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none;margin-right:auto}
+.nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--green),var(--green3));border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:14px;color:#fff}
+.nav-logo-name{font-size:17px;font-weight:800;color:var(--text)}
+.nav-logo-name span{color:var(--green)}
+.nav-logo-tag{font-size:10px;font-weight:600;letter-spacing:.08em;color:var(--green);background:rgba(29,158,117,.12);border:1px solid rgba(29,158,117,.25);border-radius:4px;padding:2px 6px;margin-left:6px}
+.nav-links{display:flex;align-items:center;gap:4px}
+.nav-link{padding:6px 12px;border-radius:6px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;text-decoration:none;transition:all .15s}
+.nav-link:hover{color:var(--text);background:var(--surf2)}
+.nav-link.active{color:var(--green);background:rgba(29,158,117,.1)}
+.nav-right{display:flex;align-items:center;gap:12px;margin-left:20px}
+.nav-user{display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--surf2);border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted)}
+.nav-avatar{width:26px;height:26px;background:var(--green3);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.btn-new{background:var(--green);color:#fff;border:none;border-radius:7px;padding:7px 14px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background .15s}
+.btn-new:hover{background:var(--green2)}
+
+/* ── LAYOUT ── */
+.app-body{display:flex;flex:1;min-height:0}
+.sidebar{width:220px;flex-shrink:0;background:var(--navy2);border-right:1px solid var(--border);padding:16px 12px;display:flex;flex-direction:column;gap:4px}
+.sb-section{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--faint);text-transform:uppercase;padding:10px 8px 6px}
+.sb-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:7px;font-size:13px;color:var(--muted);cursor:pointer;text-decoration:none;transition:all .15s}
+.sb-item:hover{color:var(--text);background:var(--surf2)}
+.sb-item.active{color:var(--green);background:rgba(29,158,117,.1);font-weight:600}
+.sb-icon{font-size:14px;width:18px;text-align:center}
+.sb-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:10px;padding:1px 6px;font-size:10px;font-weight:700}
+.sb-badge.green{background:var(--green)}
+.sb-foot{margin-top:auto;padding-top:12px;border-top:1px solid var(--border)}
+
+.main{flex:1;overflow-y:auto;padding:28px 32px;display:flex;flex-direction:column;gap:24px}
+
+/* ── CARDS ── */
+.section-title{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);margin-bottom:12px}
+.card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:20px 22px}
+.card-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px}
+.card-sub{font-size:12px;color:var(--muted)}
+
+/* ── HERO WELCOME ── */
+.hero{background:linear-gradient(135deg,var(--navy2) 0%,var(--navy3) 100%);border:1px solid var(--border);border-radius:14px;padding:24px 28px;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.hero-left h1{font-size:22px;font-weight:800;color:var(--text);margin-bottom:6px}
+.hero-left p{font-size:13px;color:var(--muted);max-width:480px;line-height:1.6}
+.hero-actions{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
+.btn-hero-p{background:var(--green);color:#fff;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s}
+.btn-hero-p:hover{background:var(--green2)}
+.btn-hero-o{background:transparent;color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:all .15s}
+.btn-hero-o:hover{background:var(--surf2)}
+.hero-stats{display:flex;gap:20px;flex-shrink:0}
+.hstat{text-align:center}
+.hstat-val{font-size:28px;font-weight:800;color:var(--green)}
+.hstat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+
+/* ── DEADLINE TICKER ── */
+.deadline-bar{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:10px;padding:14px 18px;display:flex;gap:20px;flex-wrap:wrap;align-items:center}
+.dl-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--amber);margin-right:4px}
+.dl-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text)}
+.dl-badge{padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700}
+.dl-urgent{background:rgba(220,38,38,.2);color:#fca5a5;border:1px solid rgba(220,38,38,.3)}
+.dl-warn{background:rgba(245,158,11,.2);color:#fcd34d;border:1px solid rgba(245,158,11,.3)}
+.dl-ok{background:rgba(29,158,117,.15);color:#6ee7b7;border:1px solid rgba(29,158,117,.25)}
+
+/* ── QUICK ACTIONS ── */
+.qa-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.qa-card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px 16px;cursor:pointer;transition:all .2s;text-align:center;text-decoration:none;display:block}
+.qa-card:hover{border-color:var(--green);background:rgba(29,158,117,.06);transform:translateY(-2px)}
+.qa-icon{font-size:26px;margin-bottom:10px}
+.qa-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px}
+.qa-desc{font-size:11px;color:var(--muted);line-height:1.4}
+.qa-auto{display:inline-block;background:rgba(29,158,117,.15);color:var(--green);border-radius:8px;font-size:9px;font-weight:700;letter-spacing:.05em;padding:2px 6px;margin-top:6px}
+
+/* ── STATS GRID ── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.stat-card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.stat-val{font-size:28px;font-weight:800;color:var(--text);margin-bottom:2px}
+.stat-lbl{font-size:11px;color:var(--muted)}
+.stat-trend{font-size:11px;margin-top:4px}
+.trend-up{color:var(--green)}
+.trend-dn{color:var(--red)}
+
+/* ── ASSESSMENTS TABLE ── */
+.ass-table{width:100%;border-collapse:collapse;font-size:13px}
+.ass-table th{text-align:left;padding:10px 14px;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);border-bottom:1px solid var(--border)}
+.ass-table td{padding:12px 14px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.ass-table tr:last-child td{border-bottom:none}
+.ass-table tr:hover td{background:rgba(255,255,255,.02)}
+.score-badge{display:inline-block;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700}
+.score-high{background:rgba(220,38,38,.15);color:#fca5a5;border:1px solid rgba(220,38,38,.3)}
+.score-med{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.3)}
+.score-low{background:rgba(29,158,117,.15);color:#6ee7b7;border:1px solid rgba(29,158,117,.3)}
+.ass-actions{display:flex;gap:6px}
+.btn-xs{padding:4px 10px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer;border:none;transition:all .15s}
+.btn-xs-p{background:var(--green);color:#fff}
+.btn-xs-p:hover{background:var(--green2)}
+.btn-xs-o{background:var(--surf2);color:var(--muted)}
+.btn-xs-o:hover{color:var(--text)}
+.status-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px}
+.dot-done{background:var(--green)}
+.dot-run{background:var(--amber);animation:pulse 1.2s infinite}
+.dot-pend{background:var(--faint)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── AUTOMATION PANEL ── */
+.auto-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.auto-card{background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+.auto-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.auto-title{font-size:13px;font-weight:700;color:var(--text)}
+.toggle{position:relative;width:36px;height:20px;cursor:pointer}
+.toggle input{opacity:0;width:0;height:0}
+.slider{position:absolute;inset:0;background:#334155;border-radius:20px;transition:.3s}
+.slider::before{content:'';position:absolute;height:14px;width:14px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.3s}
+.toggle input:checked + .slider{background:var(--green)}
+.toggle input:checked + .slider::before{transform:translateX(16px)}
+.auto-item{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,.04);font-size:12px;color:var(--muted)}
+.auto-item:last-child{border-bottom:none}
+.auto-item .check{color:var(--green);flex-shrink:0}
+.auto-item .pend{color:var(--faint);flex-shrink:0}
+.auto-next{font-size:11px;color:var(--faint);margin-top:10px}
+
+/* ── REGULATORY CALENDAR ── */
+.reg-list{display:flex;flex-direction:column;gap:8px}
+.reg-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.04)}
+.reg-item:last-child{border-bottom:none}
+.reg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.reg-content{}
+.reg-title{font-size:13px;font-weight:600;color:var(--text)}
+.reg-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.reg-days{font-size:11px;font-weight:700;margin-top:4px}
+
+/* ── MODALS ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:500;opacity:0;pointer-events:none;transition:opacity .2s}
+.modal-overlay.show{opacity:1;pointer-events:all}
+.modal{background:var(--navy2);border:1px solid var(--border);border-radius:16px;width:520px;max-width:90vw;padding:28px 28px;max-height:80vh;overflow-y:auto}
+.modal-title{font-size:18px;font-weight:800;color:var(--text);margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.form-field{margin-bottom:14px}
+.form-field label{display:block;font-size:12px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.form-field input,.form-field select{width:100%;background:var(--navy);border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:10px 12px;font-size:13px;color:var(--text);outline:none;transition:border-color .2s}
+.form-field input:focus,.form-field select:focus{border-color:var(--green)}
+.form-field select option{background:var(--navy2)}
+.modal-foot{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.btn-cancel{background:transparent;border:1px solid var(--border);color:var(--muted);border-radius:7px;padding:9px 18px;font-size:13px;cursor:pointer}
+.btn-run{background:var(--green);color:#fff;border:none;border-radius:7px;padding:9px 20px;font-size:13px;font-weight:700;cursor:pointer}
+.btn-run:hover{background:var(--green2)}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){
+  .sidebar{display:none}
+  .qa-grid,.stats-grid{grid-template-columns:1fr 1fr}
+  .auto-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<!-- AUTH GUARD -->
+<script>
+(function(){
+  var auth = sessionStorage.getItem('cri_auth');
+  if(!auth){ window.location.href='app.html'; }
+})();
+</script>
+
+<!-- TOP NAV -->
+<nav class="topnav">
+  <a class="nav-logo" href="dashboard.html">
+    <div class="nav-logo-icon">CR</div>
+    <div class="nav-logo-name">Clim<span>Risk</span></div>
+    <span class="nav-logo-tag">PLATFORM</span>
+  </a>
+  <div class="nav-links">
+    <a class="nav-link active" href="dashboard.html">Dashboard</a>
+    <a class="nav-link" href="ClimRisk_Platform.html">Assessment Engine</a>
+    <a class="nav-link" href="#" onclick="showSection('reports')">Reports</a>
+    <a class="nav-link" href="#" onclick="showSection('settings')">Settings</a>
+  </div>
+  <div class="nav-right">
+    <button class="btn-new" onclick="openNewAssessment()">+ New Assessment</button>
+    <div class="nav-user" onclick="logout()">
+      <div class="nav-avatar" id="nav-avatar">?</div>
+      <span id="nav-email">Loading...</span>
+      <span style="font-size:10px;color:var(--faint)">&#9660;</span>
+    </div>
+  </div>
+</nav>
+
+<div class="app-body">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-section">Workspace</div>
+  <a class="sb-item active" href="dashboard.html"><span class="sb-icon">⬛</span>Dashboard</a>
+  <a class="sb-item" href="ClimRisk_Platform.html"><span class="sb-icon">🌡</span>Assessment Engine</a>
+  <a class="sb-item" href="#" onclick="openNewAssessment()"><span class="sb-icon">+</span>New Assessment</a>
+
+  <div class="sb-section">Analytics</div>
+  <a class="sb-item" href="#"><span class="sb-icon">📊</span>My Reports <span class="sb-badge green" id="sb-rpt-cnt">0</span></a>
+  <a class="sb-item" href="#"><span class="sb-icon">🔗</span>Portfolio View</a>
+  <a class="sb-item" href="#"><span class="sb-icon">🗺</span>Risk Map</a>
+
+  <div class="sb-section">Regulatory</div>
+  <a class="sb-item" href="#"><span class="sb-icon">🏛</span>CSRD Hub <span class="sb-badge" id="sb-csrd-urgency">!</span></a>
+  <a class="sb-item" href="#"><span class="sb-icon">🇪🇺</span>CBAM Tracker</a>
+  <a class="sb-item" href="#"><span class="sb-icon">⚡</span>MACC Engine</a>
+
+  <div class="sb-foot">
+    <a class="sb-item" href="#"><span class="sb-icon">⚙</span>Settings</a>
+    <a class="sb-item" href="app.html" onclick="logout()"><span class="sb-icon">↩</span>Sign out</a>
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main">
+
+  <!-- DEADLINE TICKER -->
+  <div class="deadline-bar">
+    <span class="dl-label">⏰ Regulatory Deadlines</span>
+    <div class="dl-item"><span class="dl-badge dl-urgent">URGENT</span> CBAM Full Obligation — 1 Jan 2026 <span id="dl-cbam-days" style="color:var(--amber);font-weight:700"></span></div>
+    <div class="dl-item"><span class="dl-badge dl-warn">Q4 2026</span> CSRD Phase 2 Annual Report</div>
+    <div class="dl-item"><span class="dl-badge dl-warn">31 Dec 2026</span> IFRS S2 First Disclosure</div>
+    <div class="dl-item"><span class="dl-badge dl-ok">2027</span> CSRD Phase 3 SMEs</div>
+  </div>
+
+  <!-- HERO WELCOME -->
+  <div class="hero">
+    <div class="hero-left">
+      <h1 id="welcome-msg">Welcome back</h1>
+      <p>Your climate risk intelligence workspace. Run a full CSRD-compliant assessment in 20 minutes. All outputs are audit-ready and exportable to PDF, Excel, and JSON.</p>
+      <div class="hero-actions">
+        <button class="btn-hero-p" onclick="openNewAssessment()">+ Start New Assessment</button>
+        <button class="btn-hero-o" onclick="window.location.href='ClimRisk_Platform.html'">Open Engine →</button>
+      </div>
+    </div>
+    <div class="hero-stats">
+      <div class="hstat"><div class="hstat-val" id="hs-assessed">0</div><div class="hstat-lbl">Companies Assessed</div></div>
+      <div class="hstat"><div class="hstat-val" id="hs-reports">0</div><div class="hstat-lbl">Reports Generated</div></div>
+      <div class="hstat"><div class="hstat-val" id="hs-alerts">3</div><div class="hstat-lbl">Active Alerts</div></div>
+    </div>
+  </div>
+
+  <!-- QUICK ACTIONS -->
+  <div>
+    <div class="section-title">Quick actions</div>
+    <div class="qa-grid">
+      <a class="qa-card" onclick="openNewAssessment()" href="#">
+        <div class="qa-icon">🌡</div>
+        <div class="qa-title">Physical Risk Assessment</div>
+        <div class="qa-desc">25 IPCC AR6 hazards, GPS resolved, full damage breakdown</div>
+        <div class="qa-auto">AUTO: hazard scoring + financial translation</div>
+      </a>
+      <a class="qa-card" onclick="window.location.href='ClimRisk_Platform.html#cbam'" href="#">
+        <div class="qa-icon">🇪🇺</div>
+        <div class="qa-title">CBAM Liability Check</div>
+        <div class="qa-desc">Embedded carbon calculator, certificate cost, compliance checklist</div>
+        <div class="qa-auto">AUTO: EU ETS price + embedded carbon</div>
+      </a>
+      <a class="qa-card" onclick="window.location.href='ClimRisk_Platform.html#macc'" href="#">
+        <div class="qa-icon">📉</div>
+        <div class="qa-title">MACC + SLL Structuring</div>
+        <div class="qa-desc">Abatement levers ranked by cost per tonne, SLL milestone table</div>
+        <div class="qa-auto">AUTO: sector-specific lever library</div>
+      </a>
+      <a class="qa-card" onclick="window.location.href='ClimRisk_Platform.html#materiality'" href="#">
+        <div class="qa-icon">⚖</div>
+        <div class="qa-title">Double Materiality</div>
+        <div class="qa-desc">Inside-out impact + outside-in financial lens, CSRD audit trail</div>
+        <div class="qa-auto">AUTO: materiality threshold + documentation</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div>
+    <div class="section-title">Usage overview</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-val" id="st-companies">0</div>
+        <div class="stat-lbl">Companies assessed</div>
+        <div class="stat-trend trend-up" id="st-companies-trend"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="st-assets">0</div>
+        <div class="stat-lbl">Assets modelled</div>
+        <div class="stat-trend trend-up" id="st-assets-trend"></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" id="st-reports">0</div>
+        <div class="stat-lbl">Reports downloaded</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-val" style="color:var(--amber)" id="st-deadlines">3</div>
+        <div class="stat-lbl">Upcoming deadlines</div>
+        <div class="stat-trend" style="color:var(--amber)">Next: 1 Jan 2026</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ASSESSMENTS -->
+  <div class="card">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <div><div class="card-title">Recent Assessments</div><div class="card-sub">Your last 10 company assessments</div></div>
+      <button class="btn-xs btn-xs-p" onclick="openNewAssessment()">+ New</button>
+    </div>
+    <div id="ass-empty" style="text-align:center;padding:32px;color:var(--faint);font-size:13px">
+      No assessments yet. Click <strong style="color:var(--green)">+ New Assessment</strong> to get started.
+    </div>
+    <table class="ass-table" id="ass-table" style="display:none">
+      <thead>
+        <tr>
+          <th>Company</th><th>Sector</th><th>Physical Score</th><th>Top Hazard</th><th>Date</th><th>Status</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="ass-tbody"></tbody>
+    </table>
+  </div>
+
+  <!-- AUTOMATION + REGULATORY -->
+  <div class="auto-grid">
+
+    <!-- AUTOMATION -->
+    <div class="auto-card">
+      <div class="auto-head">
+        <div class="auto-title">🤖 Automation Settings</div>
+        <div style="font-size:11px;color:var(--green);font-weight:600">90% automated</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">ClimRisk automates the heavy lifting. Toggle what runs automatically.</div>
+
+      <div class="auto-item"><span class="check">✓</span><span style="flex:1">Hazard severity scoring (25 IPCC AR6 hazards)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="auto-item"><span class="check">✓</span><span style="flex:1">Financial damage translation (asset + BI days)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="auto-item"><span class="check">✓</span><span style="flex:1">NGFS scenario carbon cost path (NZE + DT + CP)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="auto-item"><span class="check">✓</span><span style="flex:1">CBAM liability estimation (EU ETS forward price)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="auto-item"><span class="check">✓</span><span style="flex:1">MACC generation (sector-specific abatement levers)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="auto-item"><span class="check">✓</span><span style="flex:1">Double materiality matrix (CSRD ESRS 1 compliant)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="auto-item"><span class="check">✓</span><span style="flex:1">Supply chain triage (carbon + strategic importance)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
+      <div class="auto-item"><span class="pend">○</span><span style="flex:1">Auto-email reports to stakeholders after completion</span><label class="toggle"><input type="checkbox"><span class="slider"></span></label></div>
+      <div class="auto-item"><span class="pend">○</span><span style="flex:1">Regulatory deadline push notifications</span><label class="toggle"><input type="checkbox"><span class="slider"></span></label></div>
+
+      <div class="auto-next">Manual effort required: uploading the sustainability report PDF and confirming asset GPS coordinates. Everything else runs automatically.</div>
+    </div>
+
+    <!-- REGULATORY CALENDAR -->
+    <div class="auto-card">
+      <div class="auto-head">
+        <div class="auto-title">📅 Regulatory Calendar</div>
+        <div style="font-size:11px;color:var(--amber);font-weight:600" id="reg-urgency-label">3 upcoming</div>
+      </div>
+      <div class="reg-list" id="reg-list"></div>
+    </div>
+
+  </div>
+
+</main>
+</div>
+
+<!-- NEW ASSESSMENT MODAL -->
+<div class="modal-overlay" id="modal-new">
+  <div class="modal">
+    <div class="modal-title">New Assessment</div>
+    <div class="modal-sub">Enter company details to launch a pre-configured assessment in the ClimRisk engine.</div>
+    <div class="form-field">
+      <label>Company name</label>
+      <input type="text" id="m-company" placeholder="e.g. Heineken N.V.">
+    </div>
+    <div class="form-field">
+      <label>Sector</label>
+      <select id="m-sector">
+        <option value="">Select sector...</option>
+        <option>Food &amp; Beverage</option>
+        <option>Oil &amp; Gas</option>
+        <option>Mining</option>
+        <option>Chemicals</option>
+        <option>Cement &amp; Construction Materials</option>
+        <option>Steel &amp; Iron</option>
+        <option>Aluminium</option>
+        <option>Automotive</option>
+        <option>Utilities &amp; Power Generation</option>
+        <option>Real Estate</option>
+        <option>Agriculture &amp; Forestry</option>
+        <option>Financial Services</option>
+        <option>Technology</option>
+        <option>Retail &amp; Consumer</option>
+        <option>Transport &amp; Logistics</option>
+        <option>Healthcare</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="form-field">
+      <label>Headquarters country</label>
+      <input type="text" id="m-country" placeholder="e.g. Netherlands">
+    </div>
+    <div class="form-field">
+      <label>Annual revenue (USD million, approximate)</label>
+      <input type="number" id="m-rev" placeholder="e.g. 5000" min="0">
+    </div>
+    <div style="background:rgba(29,158,117,.08);border:1px solid rgba(29,158,117,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted);margin-top:4px">
+      <strong style="color:var(--green)">What runs automatically:</strong> hazard scoring for your sector and region, carbon cost under all 3 NGFS scenarios, CBAM liability estimate, MACC with SLL table, double materiality assessment, and supply chain triage. You will confirm asset GPS coordinates in the engine.
+    </div>
+    <div class="modal-foot">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-run" onclick="launchAssessment()">Launch Assessment →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SESSION ──────────────────────────────────────────────────────────
+var _auth  = sessionStorage.getItem('cri_auth')  || '';
+var _email = sessionStorage.getItem('cri_email') || 'user@example.com';
+
+function logout() {
+  sessionStorage.removeItem('cri_auth');
+  sessionStorage.removeItem('cri_email');
+  window.location.href = 'app.html';
+}
+
+// Set nav user
+(function() {
+  var nav = document.getElementById('nav-email');
+  var av  = document.getElementById('nav-avatar');
+  if (nav) nav.textContent = _email.split('@')[0];
+  if (av)  av.textContent  = _email.charAt(0).toUpperCase();
+  var wm = document.getElementById('welcome-msg');
+  if (wm) wm.textContent = 'Welcome back, ' + _email.split('@')[0];
+})();
+
+// ── LOCAL STORAGE ASSESSMENTS ────────────────────────────────────────
+var STORAGE_KEY = 'cri_assessments';
+
+function getAssessments() {
+  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]'); } catch(e) { return []; }
+}
+function saveAssessment(a) {
+  var list = getAssessments();
+  list.unshift(a);
+  if (list.length > 50) list = list.slice(0, 50);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+}
+
+function renderAssessments() {
+  var list = getAssessments();
+  var tbody = document.getElementById('ass-tbody');
+  var empty = document.getElementById('ass-empty');
+  var table = document.getElementById('ass-table');
+  var sbRpt = document.getElementById('sb-rpt-cnt');
+
+  var completedList = list.filter(function(a){ return a.status === 'complete'; });
+  if (sbRpt) sbRpt.textContent = completedList.length;
+
+  var hs = document.getElementById('hs-assessed');
+  var hr = document.getElementById('hs-reports');
+  var stC = document.getElementById('st-companies');
+  var stA = document.getElementById('st-assets');
+  var stR = document.getElementById('st-reports');
+  if (hs) hs.textContent  = list.length;
+  if (hr) hr.textContent  = completedList.length;
+  if (stC) stC.textContent = list.length;
+  if (stA) stA.textContent = list.reduce(function(s,a){ return s + (a.assets||1); }, 0);
+  if (stR) stR.textContent = completedList.length;
+
+  if (!list.length) {
+    if (empty) empty.style.display = 'block';
+    if (table) table.style.display = 'none';
+    return;
+  }
+  if (empty) empty.style.display = 'none';
+  if (table) table.style.display = 'table';
+
+  var scoreClass = function(s) {
+    if (s >= 60) return 'score-high';
+    if (s >= 35) return 'score-med';
+    return 'score-low';
+  };
+  var scoreLabel = function(s) {
+    if (s >= 60) return s + ' HIGH';
+    if (s >= 35) return s + ' MEDIUM';
+    return s + ' LOW';
+  };
+
+  tbody.innerHTML = list.slice(0, 10).map(function(a) {
+    var sc = a.physScore || '—';
+    var scHTML = sc === '—' ? '<span style="color:var(--faint)">—</span>'
+      : '<span class="score-badge ' + scoreClass(sc) + '">' + scoreLabel(sc) + '</span>';
+    var statusHTML = a.status === 'complete'
+      ? '<span class="status-dot dot-done"></span>Complete'
+      : a.status === 'running'
+      ? '<span class="status-dot dot-run"></span>Running...'
+      : '<span class="status-dot dot-pend"></span>Pending';
+    return '<tr>' +
+      '<td><strong>' + a.company + '</strong></td>' +
+      '<td style="color:var(--muted)">' + (a.sector || '—') + '</td>' +
+      '<td>' + scHTML + '</td>' +
+      '<td style="color:var(--muted);font-size:12px">' + (a.topHazard || '—') + '</td>' +
+      '<td style="color:var(--faint);font-size:12px">' + new Date(a.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}) + '</td>' +
+      '<td style="font-size:12px;color:var(--muted)">' + statusHTML + '</td>' +
+      '<td><div class="ass-actions">' +
+        '<button class="btn-xs btn-xs-p" onclick="openEngine(\'' + a.company + '\')">Open</button>' +
+        '<button class="btn-xs btn-xs-o" onclick="deleteAssessment(\'' + a.id + '\')">✕</button>' +
+      '</div></td>' +
+    '</tr>';
+  }).join('');
+}
+
+function deleteAssessment(id) {
+  var list = getAssessments().filter(function(a){ return a.id !== id; });
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  renderAssessments();
+}
+
+function openEngine(company) {
+  sessionStorage.setItem('cri_prefill_company', company);
+  window.location.href = 'ClimRisk_Platform.html';
+}
+
+// ── MODAL ────────────────────────────────────────────────────────────
+function openNewAssessment() {
+  document.getElementById('modal-new').classList.add('show');
+  document.getElementById('m-company').focus();
+}
+function closeModal() {
+  document.getElementById('modal-new').classList.remove('show');
+}
+document.getElementById('modal-new').addEventListener('click', function(e){
+  if (e.target === this) closeModal();
+});
+
+function launchAssessment() {
+  var company = document.getElementById('m-company').value.trim();
+  var sector  = document.getElementById('m-sector').value;
+  var country = document.getElementById('m-country').value.trim();
+  var rev     = document.getElementById('m-rev').value;
+  if (!company) { document.getElementById('m-company').focus(); return; }
+
+  var assessment = {
+    id:       'a' + Date.now(),
+    company:  company,
+    sector:   sector || 'Other',
+    country:  country,
+    rev:      rev,
+    date:     new Date().toISOString(),
+    status:   'running',
+    physScore: null,
+    topHazard: null,
+    assets:   1
+  };
+  saveAssessment(assessment);
+  closeModal();
+  renderAssessments();
+
+  // Store prefill data for the engine
+  sessionStorage.setItem('cri_prefill_company', company);
+  sessionStorage.setItem('cri_prefill_sector',  sector);
+  sessionStorage.setItem('cri_prefill_country', country);
+  sessionStorage.setItem('cri_prefill_rev',     rev);
+  sessionStorage.setItem('cri_active_assessment', assessment.id);
+
+  // Redirect to engine after brief delay
+  setTimeout(function() {
+    window.location.href = 'ClimRisk_Platform.html';
+  }, 600);
+}
+
+// ── DEADLINE TICKER ──────────────────────────────────────────────────
+(function() {
+  var now    = new Date();
+  var cbam   = new Date('2026-01-01');
+  var days   = Math.ceil((cbam - now) / (1000*60*60*24));
+  var el     = document.getElementById('dl-cbam-days');
+  if (el) el.textContent = '(' + days + ' days)';
+})();
+
+// ── REGULATORY CALENDAR ──────────────────────────────────────────────
+var REGULATIONS = [
+  { title:'CBAM Full Financial Obligation', date:'2026-01-01', desc:'EU importers of covered goods (steel, cement, aluminium, fertiliser, electricity, hydrogen) must purchase certificates equal to embedded carbon at EU ETS price.', urgency:'red' },
+  { title:'CSRD Phase 2 Annual Report', date:'2026-12-31', desc:'Large EU companies (>500 employees or >€40M revenue) must publish first CSRD-compliant sustainability report covering FY2025.', urgency:'amber' },
+  { title:'IFRS S2 Climate Disclosure', date:'2026-12-31', desc:'First climate-related disclosure under IFRS S2 for companies that have adopted ISSB standards. Physical and transition risk quantification required.', urgency:'amber' },
+  { title:'DNB Climate Stress Test', date:'2026-06-30', desc:'Dutch National Bank mandatory climate risk stress test submission for all supervised financial institutions operating in the Netherlands.', urgency:'amber' },
+  { title:'CSRD Phase 3 — SMEs', date:'2027-12-31', desc:'CSRD extends to listed SMEs and non-EU companies with significant EU operations. Limited reporting standards (LSME) apply.', urgency:'green' }
+];
+
+(function() {
+  var list = document.getElementById('reg-list');
+  if (!list) return;
+  var now = new Date();
+  list.innerHTML = REGULATIONS.map(function(r) {
+    var d    = new Date(r.date);
+    var days = Math.ceil((d - now) / (1000*60*60*24));
+    var col  = r.urgency === 'red' ? 'var(--red)' : r.urgency === 'amber' ? 'var(--amber)' : 'var(--green)';
+    var daysLabel = days < 0 ? 'Passed' : days === 0 ? 'Today' : days + ' days';
+    var daysCol   = days < 90 ? 'var(--red)' : days < 270 ? 'var(--amber)' : 'var(--green)';
+    return '<div class="reg-item">' +
+      '<div class="reg-dot" style="background:' + col + '"></div>' +
+      '<div class="reg-content">' +
+        '<div class="reg-title">' + r.title + '</div>' +
+        '<div class="reg-meta">' + new Date(r.date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) + ' · ' + r.desc.substring(0,80) + '...</div>' +
+        '<div class="reg-days" style="color:' + daysCol + '">' + daysLabel + ' remaining</div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+})();
+
+// ── DEMO ASSESSMENTS (first-time experience) ─────────────────────────
+(function() {
+  var existing = getAssessments();
+  if (existing.length > 0) { renderAssessments(); return; }
+  // Seed with Carlsberg example so dashboard isn't empty on first load
+  var seed = [
+    { id:'seed1', company:'Carlsberg Group', sector:'Food & Beverage', country:'Denmark', date: new Date(Date.now()-3*24*60*60*1000).toISOString(), status:'complete', physScore:63, topHazard:'Agricultural Drought', assets:12 },
+    { id:'seed2', company:'Heineken N.V.',   sector:'Food & Beverage', country:'Netherlands', date: new Date(Date.now()-7*24*60*60*1000).toISOString(), status:'complete', physScore:48, topHazard:'Water Stress', assets:8 }
+  ];
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
+  renderAssessments();
+})();
+
+renderAssessments();
+</script>
+
+</body>
+</html>

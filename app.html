@@ -301,7 +301,7 @@
       document.getElementById('gate-card').style.opacity = '0.5';
       document.getElementById('gate-card').style.transition = 'opacity 0.3s';
       setTimeout(function() {
-        window.location.href = 'ClimRisk_Platform.html?auth=' + encodeURIComponent(code);
+        window.location.href = 'dashboard.html?auth=' + encodeURIComponent(code);
       }, 300);
     } else {
       err.textContent = 'Access code is incorrect. Please check your email or contact shri@climrisk.io to request access.';
