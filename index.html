@@ -1449,16 +1449,16 @@ footer{
 <!-- ══════════════════ FREE DEMO ═════════════════ -->
 <section class="section demo-section" id="demo">
   <div class="container">
-    <p class="section-label fade-up">Free Demo</p>
+    <p class="section-label fade-up">Live Preview</p>
     <h2 class="fade-up">See the engine run<br>on <em>your inputs.</em></h2>
-    <p class="section-sub fade-up">Enter your company details below. The CRI engine will compute a live sample analysis — your rating, physical risk profile, and financial scenario summary. Free, instant, no card required.</p>
+    <p class="section-sub fade-up">Enter your company details below. The CRI engine computes a live sample analysis — your rating, physical risk profile, and financial scenario summary. Instant, no card required.</p>
 
     <div class="demo-gate fade-up">
       <div class="demo-gate-top">
         <!-- Form -->
         <div>
-          <div class="demo-form-title">Run your free CRI analysis</div>
-          <div class="demo-form-sub">Takes 10 seconds. We'll generate a real risk profile using your inputs.</div>
+          <div class="demo-form-title">Run a live CRI analysis</div>
+          <div class="demo-form-sub">Takes 10 seconds. The engine generates a real risk profile using your inputs.</div>
           <form id="demoForm" onsubmit="runDemo(event)">
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
               <div class="form-field">
@@ -1557,19 +1557,23 @@ footer{
               </div>
             </div>
             <button type="submit" class="demo-submit" id="demoBtn">
-              🔬 Run free analysis — instant, no card required
+              🔬 Run live analysis — instant, no card required
             </button>
-            <p style="font-size:11px;color:var(--subtle);margin-top:10px;text-align:center">Free tier — A–E rating, top hazards, scenario summary. Full platform by request.</p>
+            <p style="font-size:11px;color:var(--subtle);margin-top:10px;text-align:center">Preview tier — A–E rating, top hazards, scenario summary. <a href="app.html" style="color:var(--green);font-weight:600;text-decoration:none">Access full platform →</a></p>
           </form>
         </div>
 
         <!-- Email capture — shown after score renders -->
-        <div id="emailCapture" style="display:none;margin-top:16px;padding:16px 20px;background:var(--green-dim);border:1.5px solid var(--border2);border-radius:12px;align-items:center;gap:12px;flex-wrap:wrap">
-          <div style="flex:1;min-width:200px;font-size:14px;font-weight:600">Want the full engine link sent to you?<br><span style="font-size:12px;color:var(--muted);font-weight:400">We'll send direct access within 1 business day.</span></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <input id="demo-email-input" type="email" placeholder="your@company.com" style="padding:9px 13px;border-radius:8px;border:1.5px solid var(--border2);background:var(--surf);color:var(--text);font-size:13px;outline:none;min-width:200px">
-            <button onclick="sendDemoEmail()" style="padding:9px 18px;border-radius:8px;background:var(--green);color:#fff;font-size:13px;font-weight:700;border:none;cursor:pointer;white-space:nowrap">Send me the link →</button>
+        <div id="emailCapture" style="display:none;margin-top:16px;padding:20px 24px;background:var(--green-dim);border:1.5px solid var(--border2);border-radius:12px;align-items:center;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px">
+            <div style="font-size:14px;font-weight:700;margin-bottom:4px">Ready to run the full analysis?</div>
+            <div style="font-size:12px;color:var(--muted)">The complete platform has 25 IPCC AR6 hazards, CBAM liability, MACC engine, CSRD double materiality, and GPS-resolved asset scoring. All automated.</div>
           </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <a href="app.html" style="padding:11px 22px;border-radius:8px;background:var(--green);color:#fff;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;display:inline-block">Access Platform →</a>
+            <button onclick="sendDemoEmail()" style="padding:11px 18px;border-radius:8px;background:transparent;color:var(--green);font-size:13px;font-weight:600;border:1.5px solid var(--green);cursor:pointer;white-space:nowrap">Request access by email</button>
+          </div>
+          <input id="demo-email-input" type="email" placeholder="your@company.com" style="display:none">
         </div>
 
         <!-- What's included -->
@@ -1584,7 +1588,7 @@ footer{
             <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">TCFD / IFRS S2 / CSRD disclosure report <em>(Professional)</em></div></div>
             <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">25-year financial trajectory + export package <em>(Professional)</em></div></div>
           </div>
-          <div class="demo-note">Full platform access is available as a bespoke engagement. We work directly with your risk or sustainability team to run the complete analysis and deliver board-ready reports.</div>
+          <div class="demo-note">Full platform access is available now at <a href="app.html" style="color:var(--green);font-weight:700;text-decoration:none">climrisk.io/app.html</a>. Contact <a href="mailto:shri@climrisk.io" style="color:var(--green);font-weight:700;text-decoration:none">shri@climrisk.io</a> to receive access credentials. We respond within one business day.</div>
         </div>
       </div>
 
@@ -1597,7 +1601,7 @@ footer{
           </div>
           <div class="do-badges">
             <span class="do-badge">GPS-resolved</span>
-            <span class="do-badge">Free Tier</span>
+            <span class="do-badge">Preview Tier</span>
             <span class="do-badge live-indicator"><div class="live-dot" style="background:#fff;border:1px solid rgba(255,255,255,.5)"></div>Live output</span>
           </div>
         </div>
@@ -1673,10 +1677,10 @@ footer{
 
             <div class="do-upgrade">
               <div class="do-upgrade-text">
-                Want the full analysis?
-                <span>GPS asset-level breakdown · 25yr trajectory · TCFD/CSRD disclosure report · Legal sign-off workflow</span>
+                This is the preview tier. The full platform has more.
+                <span>GPS asset-level breakdown · 25 IPCC AR6 hazards · CBAM liability · MACC engine · CSRD double materiality · TCFD / IFRS S2 disclosure report</span>
               </div>
-              <button class="do-upgrade-btn" onclick="document.getElementById('contact').scrollIntoView({behavior:'smooth'})">Request full report →</button>
+              <a href="app.html" class="do-upgrade-btn" style="text-decoration:none;display:inline-block">Access Full Platform →</a>
             </div>
           </div>
         </div>
