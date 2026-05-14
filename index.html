@@ -943,7 +943,7 @@ footer{
         <div style="font-size:12px;font-weight:500;color:rgba(255,255,255,.5);margin-top:4px;font-style:italic;letter-spacing:.01em">Turning climate science into capital decisions.</div>
       </div>
     </div>
-    <div class="hero-eyebrow"><div class="hero-line"></div><span>CRI Engine v0.3 — Climate Intelligence &amp; Workflow Automation</span></div>
+    <div class="hero-eyebrow"><div class="hero-line"></div><span>CRI Engine v0.4 — Climate Intelligence &amp; Workflow Automation</span></div>
     <div class="hero-grid">
       <div class="hero-left fade-up">
         <h1>Climate risk analysis<br>that used to take <em>weeks</em> —<br>automated to <span class="danger">hours.</span></h1>
@@ -1011,8 +1011,8 @@ footer{
 
     <div class="hero-stats fade-up stagger-2">
       <div class="hero-stat">
-        <div class="hs-num">10<span>+</span></div>
-        <div class="hs-lbl">Physical hazards modelled — Flood, Heat, Water, Cyclone &amp; more</div>
+        <div class="hs-num">25</div>
+        <div class="hs-lbl">IPCC AR6 physical hazards — Drought, Flood, Heat, Cyclone, Sea-level rise &amp; more</div>
       </div>
       <div class="hero-stat">
         <div class="hs-num">4<span> SSP</span></div>
@@ -1102,7 +1102,7 @@ footer{
             <div class="cc-row"><span class="cc-key">CRI Rating</span><span class="cc-val good">C — Elevated (54/100)</span></div>
             <div class="cc-row"><span class="cc-key">Physical Risk</span><span class="cc-val good">Per-asset, GPS-resolved</span></div>
             <div class="cc-row"><span class="cc-key">EV at Risk ($B)</span><span class="cc-val good">$4.1B (38.2% of EV)</span></div>
-            <div class="cc-row"><span class="cc-key">Asset-level hazard breakdown</span><span class="cc-val good">10 hazards × 4 SSPs</span></div>
+            <div class="cc-row"><span class="cc-key">Asset-level hazard breakdown</span><span class="cc-val good">25 hazards × 4 SSPs</span></div>
             <div class="cc-row"><span class="cc-key">Scenario-adjusted FCF</span><span class="cc-val good">Annual 2026–2050</span></div>
             <div class="cc-row"><span class="cc-key">TCFD disclosure output</span><span class="cc-val good">PDF + CSRD + IFRS S2</span></div>
             <div class="cc-row"><span class="cc-key">Carbon cost in EBITDA</span><span class="cc-val good">$148M = 8.4% (2030)</span></div>
@@ -1157,7 +1157,7 @@ footer{
       <div class="feat fade-up">
         <div class="feat-icon">🛰</div>
         <div class="feat-title">GPS Site-Specific Hazard Engine</div>
-        <div class="feat-desc">Input a lat/lon. Get 10 hazard scores built from real elevation, coastal distance, river proximity, urban heat island, and slope physics — not regional averages.</div>
+        <div class="feat-desc">Input a lat/lon. Get 25 IPCC AR6 hazard scores built from real elevation, coastal distance, river proximity, urban heat island, and slope physics — not regional averages.</div>
         <div class="feat-tags">
           <span class="tag tag-g">WRI Aqueduct</span><span class="tag tag-g">NASA NEX-GDDP</span><span class="tag tag-g">IPCC AR6</span>
         </div>
@@ -1247,7 +1247,7 @@ footer{
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px">
         <div style="font-size:11px;font-weight:700;letter-spacing:.1em;color:var(--green);margin-bottom:8px">LAYER 1</div>
         <div style="font-size:18px;font-weight:700;color:var(--text);margin-bottom:12px">Site Physics</div>
-        <p style="font-size:14px;color:var(--muted);line-height:1.7;margin:0">Every asset's GPS coordinates are matched against satellite elevation data and climate hazard grids. This matters because two factories in the same city can face completely different flood risk depending on whether one sits on a floodplain. We use WRI Aqueduct 4.0 for water stress, NASA NEX-GDDP for temperature projections, and IPCC AR6 warming trajectories to score ten hazards per site: heat stress, riverine and coastal flooding, sea-level rise, saltwater intrusion, landslides, wildfire, cyclones, drought, and water stress.</p>
+        <p style="font-size:14px;color:var(--muted);line-height:1.7;margin:0">Every asset's GPS coordinates are matched against satellite elevation data and climate hazard grids. This matters because two factories in the same city can face completely different flood risk depending on whether one sits on a floodplain. We use WRI Aqueduct 4.0 for water stress, NASA NEX-GDDP for temperature projections, and IPCC AR6 warming trajectories to score 25 physical hazards per site — spanning chronic hazards (heat stress, water stress, drought, sea-level rise, permafrost thaw) and acute hazards (extreme heat events, riverine and coastal flooding, tropical cyclones, wildfires, extreme precipitation, landslides, saltwater intrusion, and more) — calibrated from real-world event loss data.</p>
       </div>
 
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px">
@@ -1374,15 +1374,15 @@ footer{
         <p style="font-size:13px;color:var(--muted);line-height:1.6;margin:0">All scenario ordering, sensitivity, and financial logic tests pass. The 5 failures reveal addressable calibration issues — not conceptual flaws.</p>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:24px">
-        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:#fbbf24;text-transform:uppercase;margin-bottom:12px">Known Issues (in the backlog)</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:.08em;color:var(--green);text-transform:uppercase;margin-bottom:12px">v0.4 Resolved Issues</div>
         <div style="display:flex;flex-direction:column;gap:8px">
           <div style="display:flex;gap:8px;align-items:flex-start">
-            <span style="background:rgba(239,68,68,.15);color:#ef4444;font-weight:700;font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-top:1px">HIGH</span>
-            <span style="font-size:12px;color:var(--muted);line-height:1.5">Physical loss dollar amounts are 30–43× too large vs. historical events — hazard multiplier recalibration needed</span>
+            <span style="background:rgba(16,185,129,.15);color:#10b981;font-weight:700;font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-top:1px">FIXED</span>
+            <span style="font-size:12px;color:var(--muted);line-height:1.5;text-decoration:line-through;opacity:.6">Physical loss dollar amounts 30–43× too large vs. historical events</span>
           </div>
           <div style="display:flex;gap:8px;align-items:flex-start">
-            <span style="background:rgba(251,191,36,.15);color:#fbbf24;font-weight:700;font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-top:1px">MED</span>
-            <span style="font-size:12px;color:var(--muted);line-height:1.5">WACC uplift term in financial score always evaluates to zero — need to swap NZE–CP spread for DT–NZE spread</span>
+            <span style="background:rgba(16,185,129,.15);color:#10b981;font-weight:700;font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-top:1px">FIXED</span>
+            <span style="font-size:12px;color:var(--muted);line-height:1.5;text-decoration:line-through;opacity:.6">WACC uplift term always evaluated to zero</span>
           </div>
           <div style="display:flex;gap:8px;align-items:flex-start">
             <span style="background:rgba(100,116,139,.15);color:var(--muted);font-weight:700;font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-top:1px">LOW</span>
@@ -1390,7 +1390,7 @@ footer{
           </div>
           <div style="display:flex;gap:8px;align-items:flex-start">
             <span style="background:rgba(100,116,139,.15);color:var(--muted);font-weight:700;font-size:10px;padding:1px 5px;border-radius:3px;white-space:nowrap;margin-top:1px">LOW</span>
-            <span style="font-size:12px;color:var(--muted);line-height:1.5">Zero-emissions companies still score ~38/100 on transition due to commodity demand-shift — design intent TBC</span>
+            <span style="font-size:12px;color:var(--muted);line-height:1.5">Zero-emissions companies still score ~38/100 on transition due to commodity demand-shift — by design, under review</span>
           </div>
         </div>
       </div>
@@ -1400,7 +1400,7 @@ footer{
     <div class="fade-up" style="background:linear-gradient(135deg,rgba(26,60,94,.12),rgba(42,140,122,.08));border:1px solid rgba(42,140,122,.3);border-radius:12px;padding:24px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
       <div style="flex:1;min-width:200px">
         <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">CRI Model Validation Study v1.0</div>
-        <div style="font-size:13px;color:var(--muted)">28 tests · 4 companies · 5 model issues documented · Executed 8 May 2026</div>
+        <div style="font-size:13px;color:var(--muted)">28 tests · 4 companies · 2 of 5 issues resolved in v0.4 · Executed 8 May 2026</div>
       </div>
       <a href="CRI_Validation_Study_v1.0.docx" download style="background:var(--green);color:#fff;font-weight:700;font-size:13px;padding:10px 20px;border-radius:8px;text-decoration:none;white-space:nowrap;display:flex;align-items:center;gap:6px">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 16l-6-6h4V4h4v6h4l-6 6zm-6 4h12v-2H6v2z"/></svg>
@@ -1425,7 +1425,7 @@ footer{
           <span style="font-size:11px;background:rgba(59,110,158,.15);color:#6baed6;padding:3px 8px;border-radius:4px">DCF + WACC</span>
           <span style="font-size:11px;background:rgba(59,110,158,.15);color:#6baed6;padding:3px 8px;border-radius:4px">Pydantic schemas</span>
           <span style="font-size:11px;background:rgba(59,110,158,.15);color:#6baed6;padding:3px 8px;border-radius:4px">28 validation tests</span>
-          <span style="font-size:11px;background:rgba(59,110,158,.15);color:#6baed6;padding:3px 8px;border-radius:4px">CRI Engine v0.3</span>
+          <span style="font-size:11px;background:rgba(59,110,158,.15);color:#6baed6;padding:3px 8px;border-radius:4px">CRI Engine v0.4</span>
         </div>
       </div>
       <div style="background:var(--card);border:1px solid var(--border);border-radius:12px;padding:28px">
@@ -1593,7 +1593,7 @@ footer{
         <div class="do-header">
           <div>
             <div class="do-company" id="out-company">Meridian Chemicals AG</div>
-            <div class="do-meta" id="out-meta">Chemicals · SSP3-7.0 · 2030 · CRI Engine v0.3</div>
+            <div class="do-meta" id="out-meta">Chemicals · SSP3-7.0 · 2030 · CRI Engine v0.4</div>
           </div>
           <div class="do-badges">
             <span class="do-badge">GPS-resolved</span>
@@ -1694,7 +1694,7 @@ footer{
       <div class="about-text fade-up">
         <p class="about-body">ClimRisk is a <strong>climate intelligence and risk analytics company</strong> focused on automating complex climate and sustainability workflows through its proprietary CRI Engine. We help organisations reduce the time, cost, and human effort required for climate risk assessment, ESG analysis, scenario modelling, and sustainability reporting.</p>
         <p class="about-body">Traditional climate and ESG projects often require large teams of specialists working for weeks or months across data collection, risk analysis, financial modelling, and disclosure preparation. <strong>ClimRisk was built to streamline and automate these workflows</strong> through a scalable, technology-driven approach — combining climate science, financial analytics, and risk intelligence into a unified system that generates faster, more consistent, and decision-ready outputs.</p>
-        <p class="about-body">We serve <strong>enterprises, financial institutions, consultants, and sustainability teams</strong> across mining, energy, chemicals, real estate, infrastructure, and financial services — currently in our pioneer client phase, working directly with organisations to refine the engine against real-world regulatory submissions.</p>
+        <p class="about-body">We serve <strong>enterprises, financial institutions, consultants, and sustainability teams</strong> across mining, energy, chemicals, real estate, infrastructure, and financial services — currently working directly with select enterprises and consultancies on scoped engagements — delivering board-ready climate risk reports and refining the engine against live regulatory submissions.</p>
 
         <div class="about-values">
           <div class="av-item fade-up">
@@ -1735,9 +1735,9 @@ footer{
           <div class="team-member">
             <div class="tm-avatar" style="background:linear-gradient(135deg,#0ea5e9,#7c3aed)">CRI</div>
             <div>
-              <div class="tm-name">CRI Engine v0.3</div>
+              <div class="tm-name">CRI Engine v0.4</div>
               <div class="tm-role">Climate Risk Intelligence Platform</div>
-              <div class="tm-bio">Built on WRI Aqueduct 4.0, NGFS Phase 4, IPCC AR6 WG2, and NASA NEX-GDDP. GPS site-specific physics layer · 10 physical hazards · 4 SSP scenarios · TCFD/IFRS S2/CSRD output.</div>
+              <div class="tm-bio">Built on WRI Aqueduct 4.0, NGFS Phase 4, IPCC AR6 WG2, and NASA NEX-GDDP. GPS site-specific physics layer · 25 IPCC AR6 physical hazards · 4 SSP scenarios · TCFD/IFRS S2/CSRD output.</div>
             </div>
           </div>
 
@@ -1757,7 +1757,7 @@ footer{
           <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:12px;letter-spacing:.05em;text-transform:uppercase">Current status</div>
           <div style="display:flex;flex-direction:column;gap:8px">
             <div style="display:flex;align-items:center;gap:10px;font-size:13px">
-              <span style="color:var(--green);font-weight:700">✓</span><span>CRI Engine v0.3 — production ready</span>
+              <span style="color:var(--green);font-weight:700">✓</span><span>CRI Engine v0.4 — production ready</span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px">
               <span style="color:var(--green);font-weight:700">✓</span><span>TCFD · IFRS S2 · CSRD disclosure output</span>
@@ -1766,10 +1766,13 @@ footer{
               <span style="color:var(--green);font-weight:700">✓</span><span>GPS site-specific hazard physics layer</span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px">
-              <span style="color:var(--amber);font-weight:700">→</span><span>Accepting pilot engagement clients now</span>
+              <span style="color:var(--green);font-weight:700">✓</span><span>25 IPCC AR6 physical hazards — expanded from v0.3</span>
             </div>
             <div style="display:flex;align-items:center;gap:10px;font-size:13px">
-              <span style="color:var(--subtle)">○</span><span style="color:var(--subtle)">SaaS platform — roadmap 2026</span>
+              <span style="color:var(--amber);font-weight:700">→</span><span>Accepting scoped engagements — reply within 1 business day</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;font-size:13px">
+              <span style="color:var(--subtle)">○</span><span style="color:var(--subtle)">SaaS platform — roadmap H2 2026</span>
             </div>
           </div>
         </div>
@@ -2858,7 +2861,7 @@ function renderDemoOutput(company, sector, revenue, region) {
 
   // Populate DOM
   el('out-company').textContent    = company;
-  el('out-meta').textContent       = sector + ' · ' + d.region + ' · SSP3-7.0 · 2030 · CRI Engine v0.3';
+  el('out-meta').textContent       = sector + ' · ' + d.region + ' · SSP3-7.0 · 2030 · CRI Engine v0.4';
   el('out-letter').textContent     = rating;
   el('out-letter').className       = 'do-letter';
   el('out-letter').style.background= ratingCols[rating];
