@@ -297,7 +297,12 @@
       // Store session
       sessionStorage.setItem('cri_auth', code);
       sessionStorage.setItem('cri_email', email);
-      // Redirect to platform
+      // Founder full access bypass — auto-unlocks platform gate for owner emails
+      var em = email.toLowerCase();
+      if (em === 'shri@climrisk.io' || em === 'shrinivashdkannan@gmail.com') {
+        try { localStorage.setItem('cri_license_token_v1', 'climrisk-owner-shri-permanent-9x7k2m'); } catch(e) {}
+      }
+      // Redirect to platform hub
       document.getElementById('gate-card').style.opacity = '0.5';
       document.getElementById('gate-card').style.transition = 'opacity 0.3s';
       setTimeout(function() {
