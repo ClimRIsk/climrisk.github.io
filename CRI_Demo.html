@@ -893,6 +893,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <button class="nav-btn" data-p="cbam"><span class="nav-icon">🇪🇺</span>CBAM Liability</button>
     <button class="nav-btn" data-p="materiality"><span class="nav-icon">⚖</span>Materiality</button>
     <button class="nav-btn" data-p="macc"><span class="nav-icon">📉</span>Abatement MACC</button>
+    <button class="nav-btn" data-p="siteassess"><span class="nav-icon">🏗</span>Site Assessment</button>
     <button class="nav-btn" data-p="supplychain"><span class="nav-icon">🔗</span>Supply Chain</button>
     <button class="nav-btn" data-p="loanbook"><span class="nav-icon">🏦</span>Loan Portfolio</button>
   </div>
@@ -2445,6 +2446,152 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <div class="cc" style="margin-bottom:18px"><div class="cc-title">MACC — Abatement Initiatives Ranked by Cost per Tonne</div><div class="ch h320"><canvas id="macc-chart"></canvas></div></div>
       <div id="macc-sll" style="margin-bottom:18px"></div>
       <div id="macc-cfo"></div>
+    </div>
+
+    <!-- ═══════════════════ SITE ASSESSMENT ════════════════════════ -->
+    <div id="p-siteassess" class="panel">
+      <div class="ph"><h1>Site Assessment</h1><p>Compare up to 3 candidate sites across climate hazards, engineering specifications, and CapEx resilience uplift for new infrastructure investments.</p></div>
+
+      <!-- Section A: Site Inputs -->
+      <div class="card" style="margin-bottom:18px;padding:20px">
+        <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;letter-spacing:.03em">CANDIDATE SITE CONFIGURATION</div>
+
+        <!-- Site 1 -->
+        <div id="sa-site-1" style="margin-bottom:12px">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Site 1</div>
+          <div style="display:grid;grid-template-columns:1fr 110px 110px 1fr 130px 130px;gap:8px;align-items:end">
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Site Name</div>
+              <input type="text" id="sa-name-1" value="Site A" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Latitude</div>
+              <input type="number" id="sa-lat-1" value="51.5" min="-90" max="90" step="0.1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Longitude</div>
+              <input type="number" id="sa-lon-1" value="-0.1" min="-180" max="180" step="0.1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Asset Type</div>
+              <select id="sa-type-1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>Industrial Plant</option><option>Data Centre</option><option>Logistics Hub</option><option>Mining Operation</option><option>Renewable Energy Farm</option><option>Port / Terminal</option><option>Agricultural Facility</option><option>Residential Development</option><option>Mixed Use Commercial</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Design Life</div>
+              <select id="sa-life-1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>20 years</option><option>30 years</option><option selected>50 years</option><option>75 years</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Commissioning</div>
+              <select id="sa-yr-1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2030</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Site 2 -->
+        <div id="sa-site-2" style="margin-bottom:12px;display:none">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Site 2</div>
+          <div style="display:grid;grid-template-columns:1fr 110px 110px 1fr 130px 130px;gap:8px;align-items:end">
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Site Name</div>
+              <input type="text" id="sa-name-2" value="Site B" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Latitude</div>
+              <input type="number" id="sa-lat-2" value="48.9" min="-90" max="90" step="0.1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Longitude</div>
+              <input type="number" id="sa-lon-2" value="2.3" min="-180" max="180" step="0.1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Asset Type</div>
+              <select id="sa-type-2" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>Industrial Plant</option><option>Data Centre</option><option>Logistics Hub</option><option>Mining Operation</option><option>Renewable Energy Farm</option><option>Port / Terminal</option><option>Agricultural Facility</option><option>Residential Development</option><option>Mixed Use Commercial</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Design Life</div>
+              <select id="sa-life-2" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>20 years</option><option>30 years</option><option selected>50 years</option><option>75 years</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Commissioning</div>
+              <select id="sa-yr-2" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2030</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Site 3 -->
+        <div id="sa-site-3" style="margin-bottom:12px;display:none">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em">Site 3</div>
+          <div style="display:grid;grid-template-columns:1fr 110px 110px 1fr 130px 130px;gap:8px;align-items:end">
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Site Name</div>
+              <input type="text" id="sa-name-3" value="Site C" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Latitude</div>
+              <input type="number" id="sa-lat-3" value="25.0" min="-90" max="90" step="0.1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Longitude</div>
+              <input type="number" id="sa-lon-3" value="55.3" min="-180" max="180" step="0.1" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:transparent;color:var(--text);box-sizing:border-box">
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Asset Type</div>
+              <select id="sa-type-3" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>Industrial Plant</option><option>Data Centre</option><option>Logistics Hub</option><option>Mining Operation</option><option>Renewable Energy Farm</option><option>Port / Terminal</option><option>Agricultural Facility</option><option>Residential Development</option><option>Mixed Use Commercial</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Design Life</div>
+              <select id="sa-life-3" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>20 years</option><option>30 years</option><option selected>50 years</option><option>75 years</option>
+              </select>
+            </div>
+            <div>
+              <div style="font-size:11px;color:var(--muted);margin-bottom:3px">Commissioning</div>
+              <select id="sa-yr-3" style="width:100%;padding:6px 10px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf);color:var(--text);box-sizing:border-box">
+                <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2030</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap">
+          <button id="sa-add-btn" onclick="addSiteRow()" style="padding:8px 18px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf2);color:var(--text);cursor:pointer;font-weight:600">+ Add Site</button>
+          <button onclick="renderSiteAssess()" style="flex:1;padding:10px 18px;font-size:14px;border:none;border-radius:6px;background:var(--green);color:#fff;cursor:pointer;font-weight:700;letter-spacing:.03em">Run Site Assessment</button>
+        </div>
+      </div>
+
+      <!-- Section B: Output -->
+      <div id="sa-output" style="display:none">
+        <div id="sa-comparison-table" style="margin-bottom:18px"></div>
+        <div id="sa-detail-cards" style="margin-bottom:18px"></div>
+
+        <div style="display:flex;justify-content:flex-end;margin-bottom:18px">
+          <button onclick="window.print()" style="padding:9px 20px;font-size:13px;border:1px solid var(--border);border-radius:6px;background:var(--surf2);color:var(--text);cursor:pointer;font-weight:600">Download Site Assessment Report</button>
+        </div>
+      </div>
+
+      <!-- Section C: EU Taxonomy DNSH Note -->
+      <div class="card" style="padding:18px;border-left:3px solid var(--amber)">
+        <div style="font-size:12px;font-weight:700;color:var(--amber);margin-bottom:8px;text-transform:uppercase;letter-spacing:.06em">EU Taxonomy DNSH Guidance</div>
+        <div style="font-size:13px;color:var(--text);line-height:1.6">
+          <p style="margin:0 0 8px">New infrastructure must satisfy the Do No Significant Harm test under EU Taxonomy Regulation 2020/852 to qualify as a sustainable economic activity.</p>
+          <p style="margin:0 0 8px">This assessment addresses the <strong>Climate Change Adaptation</strong> objective under Article 11. Physical hazard exposure exceeding severity 3.5 over the asset design life triggers mandatory adaptation measures before taxonomy alignment can be claimed.</p>
+          <p style="margin:0">DNSH documentation covering all six environmental objectives is required for green bond issuance and sustainable finance instruments. Findings from this tool should be referenced in the Technical Screening Criteria annex of your taxonomy disclosure.</p>
+        </div>
+      </div>
     </div>
 
     <!-- ═══════════════════ LOAN PORTFOLIO (Banking Sector) ════════════════════════ -->
@@ -4115,7 +4262,7 @@ function _gateShowPending(email) {
 
 /* ── Navigation ─────────────────────────────────── */
 var cur = 'dataint';
-var panels = ['intake','overview','physical','transition','cbam','costs','dataint','supplychain','materiality','macc','loanbook','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub'];
+var panels = ['intake','overview','physical','transition','cbam','costs','dataint','supplychain','materiality','macc','siteassess','loanbook','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub'];
 var labels = {intake:'Company Setup',overview:'Overview',physical:'Physical Risk',transition:'Transition Risk',costs:'Cost Parameters',dataint:'Excel Integration',supplychain:'Supply Chain Risk',materiality:'Double Materiality Assessment',macc:'Abatement MACC',loanbook:'Loan Portfolio',portfolio:'Portfolio Roll-up',compare:'Compare',stats:'Statistical View',ratings:'Climate Rating',disclosures:'Disclosures',report:'Risk Report',genai:'GenAI Report',reportintel:'Report Intelligence',reghub:'Regulatory Hub'};
 
 function show(name) {
@@ -4156,6 +4303,7 @@ function render(name) {
   if (name==='supplychain') renderSupplyChain();
   if (name==='materiality') renderMateriality();
   if (name==='macc')        renderMacc();
+  if (name==='siteassess')  renderSiteAssess();
   if (name==='loanbook')    renderLoanBook();
   if (name==='portfolio')   renderPortfolio();
   if (name==='reportintel') renderReportIntel();
@@ -17430,6 +17578,295 @@ function initPilotMode(cfg) {
       };
     }
   }
+}
+
+var SITE_HAZARD_TRAJECTORY = {
+  'Coastal Flood':        { nze:[1.0,1.08,1.18,1.25,1.28,1.30], dt:[1.0,1.10,1.25,1.42,1.55,1.65], cp:[1.0,1.12,1.32,1.58,1.82,2.10] },
+  'Riverine Flood':       { nze:[1.0,1.06,1.14,1.20,1.22,1.24], dt:[1.0,1.08,1.20,1.35,1.45,1.55], cp:[1.0,1.10,1.28,1.50,1.70,1.95] },
+  'Heat Stress':          { nze:[1.0,1.10,1.22,1.30,1.33,1.35], dt:[1.0,1.14,1.32,1.55,1.70,1.82], cp:[1.0,1.18,1.42,1.72,2.05,2.45] },
+  'Water Stress':         { nze:[1.0,1.08,1.18,1.25,1.27,1.28], dt:[1.0,1.12,1.28,1.48,1.62,1.72], cp:[1.0,1.15,1.35,1.62,1.88,2.18] },
+  'Agricultural Drought': { nze:[1.0,1.07,1.16,1.22,1.24,1.25], dt:[1.0,1.10,1.24,1.42,1.55,1.65], cp:[1.0,1.14,1.34,1.60,1.85,2.15] },
+  'Wildfire':             { nze:[1.0,1.12,1.28,1.40,1.45,1.48], dt:[1.0,1.18,1.40,1.68,1.88,2.05], cp:[1.0,1.22,1.50,1.85,2.25,2.72] },
+  'Tropical Cyclone':     { nze:[1.0,1.05,1.12,1.18,1.20,1.22], dt:[1.0,1.08,1.18,1.32,1.42,1.50], cp:[1.0,1.10,1.25,1.45,1.65,1.88] },
+  'Sea Level Rise':       { nze:[1.0,1.10,1.25,1.38,1.45,1.52], dt:[1.0,1.14,1.32,1.55,1.72,1.88], cp:[1.0,1.18,1.42,1.72,2.05,2.45] },
+  'Permafrost Thaw':      { nze:[1.0,1.15,1.35,1.50,1.55,1.58], dt:[1.0,1.22,1.48,1.78,1.98,2.15], cp:[1.0,1.28,1.62,2.02,2.45,2.95] },
+  'Saltwater Intrusion':  { nze:[1.0,1.08,1.20,1.30,1.35,1.38], dt:[1.0,1.12,1.28,1.48,1.62,1.75], cp:[1.0,1.15,1.35,1.62,1.90,2.20] }
+};
+
+var ASSET_VULNERABILITY = {
+  'Industrial Plant':        { topHazards:['Heat Stress','Water Stress','Coastal Flood'],   capexBase:0.12, capexResilient:0.22, designLife:30 },
+  'Data Centre':             { topHazards:['Heat Stress','Coastal Flood','Riverine Flood'],  capexBase:0.10, capexResilient:0.18, designLife:25 },
+  'Logistics Hub':           { topHazards:['Riverine Flood','Heat Stress','Wildfire'],       capexBase:0.08, capexResilient:0.15, designLife:30 },
+  'Mining Operation':        { topHazards:['Water Stress','Agricultural Drought','Wildfire'],capexBase:0.14, capexResilient:0.24, designLife:25 },
+  'Renewable Energy Farm':   { topHazards:['Tropical Cyclone','Heat Stress','Wildfire'],     capexBase:0.06, capexResilient:0.12, designLife:30 },
+  'Port / Terminal':         { topHazards:['Coastal Flood','Sea Level Rise','Saltwater Intrusion'], capexBase:0.16, capexResilient:0.28, designLife:50 },
+  'Agricultural Facility':   { topHazards:['Agricultural Drought','Water Stress','Heat Stress'],     capexBase:0.09, capexResilient:0.16, designLife:20 },
+  'Residential Development': { topHazards:['Coastal Flood','Heat Stress','Riverine Flood'],  capexBase:0.07, capexResilient:0.13, designLife:50 },
+  'Mixed Use Commercial':    { topHazards:['Coastal Flood','Heat Stress','Wildfire'],         capexBase:0.09, capexResilient:0.17, designLife:30 }
+};
+
+var DESIGN_SPECS = {
+  'Coastal Flood':    function(sev){ return 'Flood defence height: '+(0.5+sev*0.45).toFixed(1)+' m (1-in-100yr event + SLR margin)'; },
+  'Riverine Flood':   function(sev){ return 'Finished floor elevation: '+(0.3+sev*0.35).toFixed(1)+' m above 1-in-50yr flood plain'; },
+  'Heat Stress':      function(sev){ return 'HVAC cooling load: '+(35+sev*18).toFixed(0)+' W/m²; wet-bulb design temp: '+(28+sev*2.2).toFixed(1)+'°C'; },
+  'Water Stress':     function(sev){ return 'On-site water storage: '+(15+sev*12).toFixed(0)+' days operational reserve; closed-loop cooling required if sev > 3'; },
+  'Agricultural Drought':function(sev){ return 'Irrigation reserve capacity: '+(20+sev*15).toFixed(0)+'% above baseline demand'; },
+  'Wildfire':         function(sev){ return 'Ember-resistant cladding zone: '+(50+sev*80).toFixed(0)+' m; BAL-'+(sev<2?'12.5':sev<3?'19':sev<4?'29':'40')+' construction standard'; },
+  'Tropical Cyclone': function(sev){ return 'Structural wind load: '+(120+sev*35).toFixed(0)+' km/h design; roof connections to AS4055-N'+Math.ceil(sev+1); },
+  'Sea Level Rise':   function(sev){ return 'Crest elevation: '+(0.6+sev*0.55).toFixed(1)+' m above current mean high water; allow '+(0.3+sev*0.15).toFixed(1)+' m freeboard'; },
+  'Permafrost Thaw':  function(sev){ return 'Pile foundation design for active layer depth: '+(2.5+sev*1.8).toFixed(1)+' m; thermosyphon cooling system required if sev > 2.5'; },
+  'Saltwater Intrusion':function(sev){ return 'Groundwater barrier depth: '+(3+sev*2).toFixed(1)+' m; cathodic protection for all below-grade steel'; }
+};
+
+function siteHazardScore(lat, lon, hazard) {
+  var absLat = Math.abs(lat);
+  var base = 2.0;
+  if (hazard === 'Coastal Flood') {
+    var distCoast = Math.min(Math.abs(lon % 10), Math.abs(lon % 15)) * 0.3;
+    base = Math.max(0, 3.5 - distCoast + (absLat < 30 ? 0.8 : 0));
+  } else if (hazard === 'Heat Stress') {
+    base = absLat < 15 ? 4.2 : absLat < 30 ? 3.5 : absLat < 45 ? 2.5 : 1.5;
+  } else if (hazard === 'Water Stress') {
+    base = (absLat > 20 && absLat < 40) ? 3.2 : 2.0;
+    if (lon > 35 && lon < 60) base += 0.8;
+    if (lon > 110 && lon < 140 && lat < -20) base += 0.6;
+  } else if (hazard === 'Agricultural Drought') {
+    base = (absLat > 25 && absLat < 45) ? 2.8 : 2.0;
+  } else if (hazard === 'Wildfire') {
+    base = (absLat > 30 && absLat < 55) ? 2.5 : (absLat < 30 ? 2.0 : 1.5);
+    if (lat > 30 && lat < 42 && lon > -130 && lon < -110) base = 3.8;
+    if (lat < -25 && lat > -45 && lon > 140) base = 3.5;
+  } else if (hazard === 'Tropical Cyclone') {
+    base = (absLat < 25) ? 3.0 : (absLat < 35 ? 1.5 : 0.5);
+    if (lat > 5 && lat < 25 && lon > 100 && lon < 180) base = 3.8;
+    if (lat > 10 && lat < 30 && lon > -100 && lon < -60) base = 3.5;
+  } else if (hazard === 'Sea Level Rise') {
+    base = absLat < 30 ? 3.0 : 2.0;
+    if (lat > 0 && lat < 25 && lon > 80 && lon < 100) base = 4.0;
+  } else if (hazard === 'Riverine Flood') {
+    base = 2.5;
+  } else if (hazard === 'Permafrost Thaw') {
+    base = absLat > 60 ? 4.0 : absLat > 50 ? 2.5 : 0.5;
+  } else if (hazard === 'Saltwater Intrusion') {
+    base = absLat < 25 ? 2.8 : 2.0;
+  }
+  return Math.min(5, Math.max(0, base + (Math.random() * 0.4 - 0.2)));
+}
+
+var _siteRows = 1;
+
+function addSiteRow() {
+  if (_siteRows >= 3) return;
+  _siteRows++;
+  var row = document.getElementById('sa-site-'+_siteRows);
+  if (row) row.style.display = 'block';
+  if (_siteRows >= 3) document.getElementById('sa-add-btn').style.display = 'none';
+}
+
+function renderSiteAssess() {
+  var allHazards = ['Coastal Flood','Riverine Flood','Heat Stress','Water Stress','Agricultural Drought','Wildfire','Tropical Cyclone','Sea Level Rise','Permafrost Thaw','Saltwater Intrusion'];
+  var decadeLabels = ['2025','2030','2040','2050','2060','2075'];
+  var projectSize = 500; // USD M default
+
+  // Collect active site data
+  var sites = [];
+  for (var i = 1; i <= 3; i++) {
+    var rowEl = document.getElementById('sa-site-'+i);
+    if (!rowEl || rowEl.style.display === 'none') continue;
+    var nameEl = document.getElementById('sa-name-'+i);
+    var latEl  = document.getElementById('sa-lat-'+i);
+    var lonEl  = document.getElementById('sa-lon-'+i);
+    var typeEl = document.getElementById('sa-type-'+i);
+    var lifeEl = document.getElementById('sa-life-'+i);
+    var yrEl   = document.getElementById('sa-yr-'+i);
+    if (!nameEl) continue;
+    var siteName = nameEl.value || ('Site '+i);
+    var lat  = parseFloat(latEl ? latEl.value : 0) || 0;
+    var lon  = parseFloat(lonEl ? lonEl.value : 0) || 0;
+    var assetType = typeEl ? typeEl.value : 'Industrial Plant';
+    var designLife = lifeEl ? parseInt(lifeEl.value) : 30;
+    var commYear   = yrEl   ? parseInt(yrEl.value)   : 2025;
+
+    var vuln = ASSET_VULNERABILITY[assetType] || ASSET_VULNERABILITY['Industrial Plant'];
+
+    // Compute hazard scores
+    var hazardScores = {};
+    allHazards.forEach(function(h) {
+      hazardScores[h] = siteHazardScore(lat, lon, h);
+    });
+
+    // Composite risk: average of all hazards, weighted up for top asset hazards
+    var weightedSum = 0;
+    var weightTotal = 0;
+    allHazards.forEach(function(h) {
+      var w = vuln.topHazards.indexOf(h) >= 0 ? 2.0 : 1.0;
+      weightedSum += hazardScores[h] * w;
+      weightTotal += w;
+    });
+    var compositeRaw = weightedSum / weightTotal; // 0-5 scale
+    var composite100 = Math.round(compositeRaw / 5 * 100);
+
+    // Top hazard
+    var topHazard = allHazards.slice().sort(function(a,b){ return hazardScores[b] - hazardScores[a]; })[0];
+    var topScore  = hazardScores[topHazard];
+
+    // Trajectory at 2050 (index 3) for NZE and CP
+    var traj = SITE_HAZARD_TRAJECTORY[topHazard] || SITE_HAZARD_TRAJECTORY['Heat Stress'];
+    var nze2050 = (topScore * traj.nze[3]).toFixed(2);
+    var cp2050  = (topScore * traj.cp[3]).toFixed(2);
+
+    // CapEx delta
+    var capexBase = Math.round(projectSize * vuln.capexBase);
+    var capexRes  = Math.round(projectSize * vuln.capexResilient);
+    var capexDelta = capexRes - capexBase;
+
+    sites.push({
+      name: siteName, lat: lat, lon: lon, assetType: assetType,
+      designLife: designLife, commYear: commYear,
+      hazardScores: hazardScores, composite: composite100,
+      topHazard: topHazard, topScore: topScore,
+      nze2050: nze2050, cp2050: cp2050,
+      capexBase: capexBase, capexRes: capexRes, capexDelta: capexDelta,
+      vuln: vuln
+    });
+  }
+
+  if (!sites.length) return;
+
+  // Find best (lowest composite) and worst (highest composite)
+  var sorted = sites.slice().sort(function(a,b){ return a.composite - b.composite; });
+  var bestName  = sorted[0].name;
+  var worstName = sorted[sorted.length-1].name;
+
+  // Comparison table
+  var tHead = '<thead><tr style="font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">' +
+    '<th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border2)">Site</th>' +
+    '<th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border2)">Asset Type</th>' +
+    '<th style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border2)">Composite Risk</th>' +
+    '<th style="padding:8px 12px;text-align:left;border-bottom:1px solid var(--border2)">Top Hazard</th>' +
+    '<th style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border2)">2050 Risk (NZE vs CP)</th>' +
+    '<th style="padding:8px 12px;text-align:right;border-bottom:1px solid var(--border2)">CapEx Delta (USD M)</th>' +
+    '<th style="padding:8px 12px;text-align:center;border-bottom:1px solid var(--border2)">Verdict</th>' +
+    '</tr></thead>';
+
+  var tRows = sites.map(function(s) {
+    var riskColor = s.composite < 35 ? 'var(--green)' : s.composite < 60 ? 'var(--amber)' : 'var(--red)';
+    var verdict = '';
+    if (s.name === bestName && s.name === worstName) {
+      verdict = '<span style="background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px">Only Site</span>';
+    } else if (s.name === bestName) {
+      verdict = '<span style="background:var(--green);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px">Recommended</span>';
+    } else if (s.name === worstName) {
+      verdict = '<span style="background:var(--red);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px">High Risk</span>';
+    } else {
+      verdict = '<span style="background:var(--amber);color:#fff;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px">Moderate</span>';
+    }
+    return '<tr style="border-bottom:1px solid var(--border2);font-size:13px">' +
+      '<td style="padding:10px 12px;font-weight:600;color:var(--text)">'+s.name+'</td>' +
+      '<td style="padding:10px 12px;color:var(--muted)">'+s.assetType+'</td>' +
+      '<td style="padding:10px 12px;text-align:center"><span style="font-size:18px;font-weight:700;color:'+riskColor+'">'+s.composite+'</span><span style="font-size:10px;color:var(--muted)">/100</span></td>' +
+      '<td style="padding:10px 12px;color:var(--text)">'+s.topHazard+'<br><span style="font-size:11px;color:var(--muted)">Severity: '+s.topScore.toFixed(1)+'/5</span></td>' +
+      '<td style="padding:10px 12px;text-align:center;font-size:12px"><span style="color:var(--green)">NZE: '+s.nze2050+'</span><br><span style="color:var(--red)">CP: '+s.cp2050+'</span></td>' +
+      '<td style="padding:10px 12px;text-align:right;font-size:12px">Base: $'+s.capexBase+'M<br>Resilient: $'+s.capexRes+'M<br><strong style="color:var(--amber)">+$'+s.capexDelta+'M</strong></td>' +
+      '<td style="padding:10px 12px;text-align:center">'+verdict+'</td>' +
+      '</tr>';
+  }).join('');
+
+  var tableHtml = '<div class="card" style="padding:0;overflow:hidden">' +
+    '<div style="padding:14px 16px;border-bottom:1px solid var(--border2);font-size:13px;font-weight:700;color:var(--text)">Site Comparison Summary</div>' +
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">'+tHead+'<tbody>'+tRows+'</tbody></table></div>' +
+    '</div>';
+
+  var compEl = document.getElementById('sa-comparison-table');
+  if (compEl) compEl.innerHTML = tableHtml;
+
+  // Per-site detail cards
+  var detailHtml = '';
+  sites.forEach(function(s) {
+    var hazardRows = allHazards.map(function(h) {
+      var sc = s.hazardScores[h];
+      var isTop = s.vuln.topHazards.indexOf(h) >= 0;
+      var barW  = Math.round(sc / 5 * 100);
+      var barColor = sc < 2 ? 'var(--green)' : sc < 3.5 ? 'var(--amber)' : 'var(--red)';
+      var specText = (isTop && DESIGN_SPECS[h]) ? DESIGN_SPECS[h](sc) : '';
+      return '<tr style="border-bottom:1px solid var(--border2)">' +
+        '<td style="padding:6px 10px;font-size:12px;color:var(--text);white-space:nowrap">'+(isTop?'<strong>':'')+h+(isTop?'</strong>':'')+'</td>' +
+        '<td style="padding:6px 10px;width:120px">' +
+          '<div style="background:var(--border2);border-radius:3px;height:6px">' +
+            '<div style="width:'+barW+'%;background:'+barColor+';height:6px;border-radius:3px"></div>' +
+          '</div>' +
+        '</td>' +
+        '<td style="padding:6px 10px;font-size:12px;color:var(--text);text-align:center">'+sc.toFixed(1)+'</td>' +
+        '<td style="padding:6px 10px;font-size:11px;color:var(--muted)">'+specText+'</td>' +
+        '</tr>';
+    }).join('');
+
+    // Trajectory SVG chart (NZE vs CP for top hazard, decades 2025-2075)
+    var traj = SITE_HAZARD_TRAJECTORY[s.topHazard] || SITE_HAZARD_TRAJECTORY['Heat Stress'];
+    var svgW = 340, svgH = 90, padL = 30, padR = 10, padT = 10, padB = 20;
+    var chartW = svgW - padL - padR;
+    var chartH = svgH - padT - padB;
+    var maxMult = Math.max.apply(null, traj.cp.map(function(m){ return m; }));
+    var nzePoints = traj.nze.map(function(m, idx) {
+      var x = padL + idx/(traj.nze.length-1)*chartW;
+      var y = padT + chartH - (m / maxMult * chartH);
+      return x+','+y;
+    }).join(' ');
+    var cpPoints = traj.cp.map(function(m, idx) {
+      var x = padL + idx/(traj.cp.length-1)*chartW;
+      var y = padT + chartH - (m / maxMult * chartH);
+      return x+','+y;
+    }).join(' ');
+    var xLabels = decadeLabels.map(function(lbl, idx) {
+      var x = padL + idx/(decadeLabels.length-1)*chartW;
+      return '<text x="'+x+'" y="'+(svgH-4)+'" font-size="8" text-anchor="middle" fill="var(--muted)">'+lbl+'</text>';
+    }).join('');
+    var svgChart = '<svg width="'+svgW+'" height="'+svgH+'" style="display:block">' +
+      '<polyline points="'+nzePoints+'" fill="none" stroke="var(--green)" stroke-width="2" stroke-linejoin="round"/>' +
+      '<polyline points="'+cpPoints+'"  fill="none" stroke="var(--red)"   stroke-width="2" stroke-linejoin="round" stroke-dasharray="4 2"/>' +
+      xLabels +
+      '<text x="'+padL+'" y="'+(padT+8)+'" font-size="8" fill="var(--green)">NZE</text>' +
+      '<text x="'+(padL+28)+'" y="'+(padT+8)+'" font-size="8" fill="var(--red)">CP</text>' +
+      '</svg>';
+
+    detailHtml += '<div class="card" style="padding:0;overflow:hidden;margin-bottom:14px">' +
+      '<div style="padding:12px 16px;border-bottom:1px solid var(--border2);display:flex;align-items:center;gap:12px">' +
+        '<span style="font-size:14px;font-weight:700;color:var(--text)">'+s.name+'</span>' +
+        '<span style="font-size:11px;color:var(--muted)">'+s.assetType+' | '+s.lat+', '+s.lon+' | Design life: '+s.designLife+' yrs | Commissioning: '+s.commYear+'</span>' +
+      '</div>' +
+      '<div style="display:grid;grid-template-columns:1fr 360px;gap:0">' +
+        '<div style="overflow-x:auto">' +
+          '<table style="width:100%;border-collapse:collapse">' +
+            '<thead><tr style="font-size:10px;color:var(--muted);text-transform:uppercase">' +
+              '<th style="padding:6px 10px;text-align:left">Hazard</th>' +
+              '<th style="padding:6px 10px">Severity Bar</th>' +
+              '<th style="padding:6px 10px;text-align:center">Score</th>' +
+              '<th style="padding:6px 10px;text-align:left">Engineering Specification</th>' +
+            '</tr></thead>' +
+            '<tbody>'+hazardRows+'</tbody>' +
+          '</table>' +
+        '</div>' +
+        '<div style="padding:14px 16px;border-left:1px solid var(--border2)">' +
+          '<div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.05em">Hazard Trajectory: '+s.topHazard+'</div>' +
+          svgChart +
+          '<div style="font-size:10px;color:var(--muted);margin-top:6px">Severity multiplier relative to 2025 baseline. Solid line: Net Zero (NZE). Dashed line: Current Policies (CP).</div>' +
+          '<div style="margin-top:12px;padding:10px;background:var(--surf2);border-radius:6px">' +
+            '<div style="font-size:11px;font-weight:700;color:var(--text);margin-bottom:4px">CapEx Comparison</div>' +
+            '<div style="font-size:12px;color:var(--muted)">Standard build: <strong style="color:var(--text)">$'+s.capexBase+'M</strong></div>' +
+            '<div style="font-size:12px;color:var(--muted)">Resilient build: <strong style="color:var(--text)">$'+s.capexRes+'M</strong></div>' +
+            '<div style="font-size:12px;color:var(--amber);font-weight:700;margin-top:4px">Uplift required: +$'+s.capexDelta+'M</div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+  });
+
+  var detailEl = document.getElementById('sa-detail-cards');
+  if (detailEl) detailEl.innerHTML = detailHtml;
+
+  // Show output section
+  var outEl = document.getElementById('sa-output');
+  if (outEl) outEl.style.display = 'block';
 }
 </script>
 </body>

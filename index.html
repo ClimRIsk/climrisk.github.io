@@ -888,7 +888,7 @@ footer{
     <div class="nav-links">
       <a href="#manifesto">Our Story</a>
       <a href="#engine">Engine</a>
-      <a href="#demo">Live Demo</a>
+      <a href="#platform">Platform</a>
       <a href="#regulatory">Frameworks</a>
       <a href="#pricing">Engagement</a>
       <a href="#contact">Contact</a>
@@ -911,7 +911,7 @@ footer{
 <div class="nav-mobile-menu" id="mobileMenu">
   <a href="#manifesto"  onclick="closeMobileNav()">Our Story</a>
   <a href="#engine"     onclick="closeMobileNav()">Engine</a>
-  <a href="#demo"       onclick="closeMobileNav()">Live Demo</a>
+  <a href="#platform"       onclick="closeMobileNav()">Platform</a>
   <a href="#regulatory" onclick="closeMobileNav()">Frameworks</a>
   <a href="#pricing"    onclick="closeMobileNav()">Engagement</a>
   <a href="#contact"    onclick="closeMobileNav()">Contact</a>
@@ -950,7 +950,7 @@ footer{
         <p class="hero-sub">ClimRisk's CRI Engine automates the complex climate and sustainability workflows that traditionally require large teams of specialists working for months — delivering GPS-precise physical risk, transition exposure, and multi-framework disclosure outputs for <strong>enterprises, financial institutions, consultants, and sustainability teams.</strong></p>
         <div class="hero-ctas">
           <a href="app.html" class="btn-primary" style="text-decoration:none">Access Platform →</a>
-          <button class="btn-outline" onclick="document.getElementById('demo').scrollIntoView({behavior:'smooth'})">🔬 See Live Demo</button>
+          <button class="btn-outline" onclick="document.getElementById('platform').scrollIntoView({behavior:'smooth'})">Explore Platform</button>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">
           <span style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);color:rgba(255,255,255,.6);font-weight:500">📘 TCFD</span>
@@ -1447,244 +1447,73 @@ footer{
 </section>
 
 <!-- ══════════════════ FREE DEMO ═════════════════ -->
-<section class="section demo-section" id="demo">
+<section class="section" id="platform" style="background:var(--surf)">
   <div class="container">
-    <p class="section-label fade-up">Live Preview</p>
-    <h2 class="fade-up">See the engine run<br>on <em>your inputs.</em></h2>
-    <p class="section-sub fade-up">Enter your company details below. The CRI engine computes a live sample analysis — your rating, physical risk profile, and financial scenario summary. Instant, no card required.</p>
+    <p class="section-label fade-up">ClimRisk Platform · v0.4</p>
+    <h2 class="fade-up">The full engine.<br><em>Not a demo.</em></h2>
+    <p class="section-sub fade-up">Everything automated in one session — from raw company inputs to board-ready disclosure reports. No spreadsheets. No specialist team. No weeks of waiting.</p>
 
-    <div class="demo-gate fade-up">
-      <div class="demo-gate-top">
-        <!-- Form -->
-        <div>
-          <div class="demo-form-title">Run a live CRI analysis</div>
-          <div class="demo-form-sub">Takes 10 seconds. The engine generates a real risk profile using your inputs.</div>
-          <form id="demoForm" onsubmit="runDemo(event)">
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="form-field">
-                <label>Company Name</label>
-                <input type="text" id="d-company" placeholder="Meridian Chemicals AG" required>
-              </div>
-              <div class="form-field">
-                <label>Sector</label>
-                <select id="d-sector" required>
-                  <option value="">Select…</option>
-                  <option value="Oil & Gas">Oil &amp; Gas</option>
-                  <option value="Mining">Mining</option>
-                  <option value="Chemicals">Chemicals</option>
-                  <option value="Utilities">Utilities</option>
-                  <option value="Steel & Metals">Steel &amp; Metals</option>
-                  <option value="Cement">Cement</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-              <div class="form-field">
-                <label>Annual Revenue (USD M)</label>
-                <input type="number" id="d-revenue" placeholder="4200" min="1">
-              </div>
-              <div class="form-field">
-                <label>Primary Asset Region</label>
-                <select id="d-region">
-                  <optgroup label="── Europe ──────────────────">
-                    <option value="EU-NL">Netherlands / North Sea</option>
-                    <option value="EU-UK">United Kingdom — North Sea</option>
-                    <option value="EU-DE">Germany — Rhine Valley</option>
-                    <option value="EU-FR">France — Mediterranean</option>
-                    <option value="EU-IT">Italy — Mediterranean</option>
-                    <option value="EU-ES">Spain / Iberian Peninsula</option>
-                    <option value="EU-NO">Norway — North Sea</option>
-                    <option value="EU-PL">Poland — Central Europe</option>
-                    <option value="EU-SE">Sweden / Scandinavia</option>
-                    <option value="EU-CH">Switzerland — Alpine</option>
-                  </optgroup>
-                  <optgroup label="── North America ────────────">
-                    <option value="US-TX">Texas, USA</option>
-                    <option value="US-CA">California, USA</option>
-                    <option value="US-FL">Florida, USA</option>
-                    <option value="US-NY">Northeast USA</option>
-                    <option value="US-MN">Midwest USA</option>
-                    <option value="CA-AB">Canada — Alberta</option>
-                    <option value="CA-BC">Canada — British Columbia</option>
-                    <option value="MX">Mexico — Gulf Coast</option>
-                  </optgroup>
-                  <optgroup label="── Latin America ─────────────">
-                    <option value="BR-SP">Brazil — São Paulo / Southeast</option>
-                    <option value="BR-AM">Brazil — Amazon</option>
-                    <option value="CO">Colombia</option>
-                    <option value="CL">Chile — Atacama</option>
-                    <option value="AR">Argentina — Pampas</option>
-                    <option value="PE">Peru / Andes</option>
-                  </optgroup>
-                  <optgroup label="── Middle East & Africa ─────">
-                    <option value="AE">UAE / Gulf States</option>
-                    <option value="SA">Saudi Arabia</option>
-                    <option value="EG">Egypt / Nile Delta</option>
-                    <option value="NG">Nigeria — Niger Delta</option>
-                    <option value="ZA-WC">South Africa</option>
-                    <option value="KE">Kenya / East Africa</option>
-                    <option value="MA">Morocco / North Africa</option>
-                  </optgroup>
-                  <optgroup label="── South Asia ───────────────">
-                    <option value="IN-MH">India — Maharashtra</option>
-                    <option value="IN-GJ">India — Gujarat</option>
-                    <option value="IN-TN">India — Tamil Nadu</option>
-                    <option value="PK">Pakistan — Indus Plain</option>
-                    <option value="BD">Bangladesh — Bay of Bengal</option>
-                  </optgroup>
-                  <optgroup label="── East &amp; Southeast Asia ──">
-                    <option value="CN-SD">China — East Coast</option>
-                    <option value="CN-NW">China — Northwest</option>
-                    <option value="JP">Japan</option>
-                    <option value="KR">South Korea</option>
-                    <option value="SG">Singapore / Malaysia</option>
-                    <option value="VN">Vietnam — Mekong Delta</option>
-                    <option value="PH">Philippines</option>
-                    <option value="ID">Indonesia</option>
-                    <option value="TH">Thailand</option>
-                  </optgroup>
-                  <optgroup label="── Australia / Pacific ──────">
-                    <option value="AU-WA">Western Australia</option>
-                    <option value="AU-QLD">Australia — Queensland</option>
-                    <option value="AU-NSW">Australia — New South Wales</option>
-                    <option value="NZ">New Zealand</option>
-                  </optgroup>
-                  <optgroup label="── Global ───────────────────">
-                    <option value="global">Global / Multiple Regions</option>
-                  </optgroup>
-                </select>
-              </div>
-            </div>
-            <button type="submit" class="demo-submit" id="demoBtn">
-              🔬 Run live analysis — instant, no card required
-            </button>
-            <p style="font-size:11px;color:var(--subtle);margin-top:10px;text-align:center">Preview tier — A–E rating, top hazards, scenario summary. <a href="app.html" style="color:var(--green);font-weight:600;text-decoration:none">Access full platform →</a></p>
-          </form>
-        </div>
+    <div class="fade-up" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-top:40px">
 
-        <!-- Email capture — shown after score renders -->
-        <div id="emailCapture" style="display:none;margin-top:16px;padding:20px 24px;background:var(--green-dim);border:1.5px solid var(--border2);border-radius:12px;align-items:center;gap:16px;flex-wrap:wrap">
-          <div style="flex:1;min-width:200px">
-            <div style="font-size:14px;font-weight:700;margin-bottom:4px">Ready to run the full analysis?</div>
-            <div style="font-size:12px;color:var(--muted)">The complete platform has 25 IPCC AR6 hazards, CBAM liability, MACC engine, CSRD double materiality, and GPS-resolved asset scoring. All automated.</div>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-            <a href="app.html" style="padding:11px 22px;border-radius:8px;background:var(--green);color:#fff;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;display:inline-block">Access Platform →</a>
-            <button onclick="sendDemoEmail()" style="padding:11px 18px;border-radius:8px;background:transparent;color:var(--green);font-size:13px;font-weight:600;border:1.5px solid var(--green);cursor:pointer;white-space:nowrap">Request access by email</button>
-          </div>
-          <input id="demo-email-input" type="email" placeholder="your@company.com" style="display:none">
-        </div>
-
-        <!-- What's included -->
-        <div class="demo-what">
-          <div class="demo-what-title">What you'll see in your free analysis</div>
-          <div class="demo-include">
-            <div class="di-item"><span class="di-check">✓</span><div><strong>CRI Rating (A–E)</strong> — composite climate risk score with pillar breakdown (Physical / Transition / Financial)</div></div>
-            <div class="di-item"><span class="di-check">✓</span><div><strong>Top 3 physical hazards</strong> — site-specific hazard profile for your primary region</div></div>
-            <div class="di-item"><span class="di-check">✓</span><div><strong>Scenario EV table</strong> — enterprise value under NZE vs Current Policies (illustrative)</div></div>
-            <div class="di-item"><span class="di-check">✓</span><div><strong>Carbon cost exposure</strong> — indicative carbon cost as % of revenue</div></div>
-            <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">GPS-resolved asset-level breakdown <em>(Professional)</em></div></div>
-            <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">TCFD / IFRS S2 / CSRD disclosure report <em>(Professional)</em></div></div>
-            <div class="di-item"><span class="di-lock">🔒</span><div style="color:var(--subtle)">25-year financial trajectory + export package <em>(Professional)</em></div></div>
-          </div>
-          <div class="demo-note">Full platform access is available now at <a href="app.html" style="color:var(--green);font-weight:700;text-decoration:none">climrisk.io/app.html</a>. Contact <a href="mailto:shri@climrisk.io" style="color:var(--green);font-weight:700;text-decoration:none">shri@climrisk.io</a> to receive access credentials. We respond within one business day.</div>
-        </div>
+      <div class="card" style="padding:24px">
+        <div style="font-size:28px;margin-bottom:10px">🌡</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Physical Risk</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">25 IPCC AR6 hazard categories scored GPS-precise across NGFS Phase 4 warming pathways. Flood depth in metres. Wet-bulb temperature in °C. Real engineering units, not abstract scores.</div>
       </div>
 
-      <!-- Demo output (revealed after submit) -->
-      <div class="demo-output" id="demoOutput">
-        <div class="do-header">
-          <div>
-            <div class="do-company" id="out-company">Meridian Chemicals AG</div>
-            <div class="do-meta" id="out-meta">Chemicals · SSP3-7.0 · 2030 · CRI Engine v0.4</div>
-          </div>
-          <div class="do-badges">
-            <span class="do-badge">GPS-resolved</span>
-            <span class="do-badge">Preview Tier</span>
-            <span class="do-badge live-indicator"><div class="live-dot" style="background:#fff;border:1px solid rgba(255,255,255,.5)"></div>Live output</span>
-          </div>
-        </div>
-        <div class="do-body">
-          <!-- Rating column -->
-          <div class="do-rating-col">
-            <div class="do-letter C" id="out-letter">C</div>
-            <div>
-              <div class="do-r-label" id="out-rating-label">Elevated Climate Risk</div>
-              <div class="do-r-score" id="out-score">Composite: 54 / 100</div>
-            </div>
-            <div class="do-pillars">
-              <div class="do-pillar">
-                <div class="do-p-label"><span>Physical</span><span id="pp-physical">Moderate</span></div>
-                <div class="do-p-bar"><div class="do-p-fill" id="pf-physical" style="width:42%;background:var(--amber)"></div></div>
-              </div>
-              <div class="do-pillar">
-                <div class="do-p-label"><span>Transition</span><span id="pp-transition">Elevated</span></div>
-                <div class="do-p-bar"><div class="do-p-fill" id="pf-transition" style="width:62%;background:var(--amber)"></div></div>
-              </div>
-              <div class="do-pillar">
-                <div class="do-p-label"><span>Financial</span><span id="pp-financial">Elevated</span></div>
-                <div class="do-p-bar"><div class="do-p-fill" id="pf-financial" style="width:58%;background:var(--red)"></div></div>
-              </div>
-            </div>
-            <div style="font-size:11px;color:var(--subtle);line-height:1.5;text-align:left;width:100%">
-              <strong style="color:var(--muted)">Top hazards:</strong><br>
-              <span id="out-tophaz">Coastal Flood · Heat Stress · Water Stress</span>
-            </div>
-          </div>
-
-          <!-- Metrics + scenarios -->
-          <div class="do-content-col">
-            <div class="do-metrics">
-              <div class="do-m">
-                <div class="do-m-lbl">Enterprise Value (CP)</div>
-                <div class="do-m-val" id="out-ev" style="color:var(--text)">$10.7B</div>
-                <div class="do-m-sub">Current Policies baseline</div>
-              </div>
-              <div class="do-m">
-                <div class="do-m-lbl">EV at Risk</div>
-                <div class="do-m-val" id="out-evar" style="color:var(--red)">38.2%</div>
-                <div class="do-m-sub">NZE vs Current Policies</div>
-              </div>
-              <div class="do-m">
-                <div class="do-m-lbl">Carbon Cost 2030</div>
-                <div class="do-m-val" id="out-cc" style="color:var(--amber)">$148M</div>
-                <div class="do-m-sub" id="out-cc-pct">8.4% of EBITDA (NZE)</div>
-              </div>
-            </div>
-
-            <!-- Scenario table -->
-            <div>
-              <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase">Scenario EV Summary (illustrative)</div>
-              <div class="do-scenarios">
-                <div class="do-sc-head"><span>Scenario</span><span>EV ($B)</span><span>WACC</span><span>Rating</span></div>
-                <div class="do-sc-row"><span class="do-sc-name" style="color:var(--green)">🟢 NZE 2050</span><span class="do-sc-ev" id="sc-nze">$6.6B</span><span style="color:var(--muted)">9.1%</span><span class="tag tag-g" style="font-size:10px">B</span></div>
-                <div class="do-sc-row"><span class="do-sc-name" style="color:var(--amber)">🟡 Delayed Trans.</span><span class="do-sc-ev" id="sc-dt">$9.2B</span><span style="color:var(--muted)">8.7%</span><span class="tag tag-a" style="font-size:10px">C</span></div>
-                <div class="do-sc-row"><span class="do-sc-name" style="color:var(--red)">🔴 Current Policies</span><span class="do-sc-ev" id="sc-cp">$10.7B</span><span style="color:var(--muted)">8.2%</span><span class="tag tag-r" style="font-size:10px">D</span></div>
-              </div>
-            </div>
-
-            <!-- Hazard chips -->
-            <div>
-              <div style="font-size:12px;font-weight:700;color:var(--muted);margin-bottom:8px;letter-spacing:.05em;text-transform:uppercase">Top physical hazards — <span id="out-region-lbl">Netherlands / North Sea</span></div>
-              <div class="do-hazards-row" id="out-hazards">
-                <span class="do-hz"><div class="do-hz-sev" style="background:var(--red)"></div>🌊 Coastal Flood — High</span>
-                <span class="do-hz"><div class="do-hz-sev" style="background:var(--amber)"></div>🌡 Heat Stress — Elevated</span>
-                <span class="do-hz"><div class="do-hz-sev" style="background:var(--amber)"></div>💧 Water Stress — Moderate</span>
-                <span class="do-hz"><div class="do-hz-sev" style="background:var(--green)"></div>🌿 Wildfire — Low</span>
-              </div>
-            </div>
-
-            <div class="do-upgrade">
-              <div class="do-upgrade-text">
-                This is the preview tier. The full platform has more.
-                <span>GPS asset-level breakdown · 25 IPCC AR6 hazards · CBAM liability · MACC engine · CSRD double materiality · TCFD / IFRS S2 disclosure report</span>
-              </div>
-              <a href="app.html" class="do-upgrade-btn" style="text-decoration:none;display:inline-block">Access Full Platform →</a>
-            </div>
-          </div>
-        </div>
+      <div class="card" style="padding:24px">
+        <div style="font-size:28px;margin-bottom:10px">🏗</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Site Assessment</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Compare up to 3 candidate sites for new construction. Decade-by-decade climate trajectory to 2075. Engineering design specs and CapEx uplift delta between standard and climate-resilient build.</div>
       </div>
+
+      <div class="card" style="padding:24px">
+        <div style="font-size:28px;margin-bottom:10px">🇪🇺</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">CBAM Liability</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">EU Carbon Border Adjustment Mechanism certificate cost calculated to 2030. EU ETS price projections, embedded carbon by energy source, compliance action checklist. Full obligation from January 2026.</div>
+      </div>
+
+      <div class="card" style="padding:24px">
+        <div style="font-size:28px;margin-bottom:10px">📉</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">MACC and SLL Structuring</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Marginal abatement cost curve ranked by EUR per tonne CO2e. Identifies which decarbonisation projects pay for themselves at today's carbon price. SLL margin ratchet table to LMA SLL Principles 2023.</div>
+      </div>
+
+      <div class="card" style="padding:24px">
+        <div style="font-size:28px;margin-bottom:10px">⚖</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Double Materiality</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">CSRD ESRS 1 compliant inside-out and outside-in assessment with threshold documentation and full audit trail. Covers all ESRS E1 disclosure requirements for the 2026 reporting cycle.</div>
+      </div>
+
+      <div class="card" style="padding:24px">
+        <div style="font-size:28px;margin-bottom:10px">🔗</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Supply Chain Intelligence</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">CBAM true cost per supplier, EPD triage, procurement exposure scoring. Physical hazard screening at the supplier asset level with financial exposure in USD.</div>
+      </div>
+
+      <div class="card" style="padding:24px">
+        <div style="font-size:28px;margin-bottom:10px">📊</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px">Multi-Framework Disclosure</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">TCFD, IFRS S2, CSRD ESRS E1, BRSR Core, and PCAF financed emissions — all generated from one input session. Board-ready outputs with methodology citations and audit trail.</div>
+      </div>
+
+      <div class="card" style="padding:24px;border-color:var(--green);background:var(--green-dim)">
+        <div style="font-size:28px;margin-bottom:10px">✦</div>
+        <div style="font-size:15px;font-weight:700;margin-bottom:6px;color:var(--green)">90% Automated</div>
+        <div style="font-size:13px;color:var(--muted);line-height:1.6">Hazard scoring, financial damage, NGFS carbon cost, CBAM estimation, MACC, double materiality, and supply chain triage all run automatically. Analyst time drops from weeks to hours.</div>
+      </div>
+
+    </div>
+
+    <div class="fade-up" style="margin-top:48px;text-align:center;padding:40px;background:linear-gradient(135deg,rgba(29,158,117,0.08),rgba(29,158,117,0.04));border:1px solid rgba(29,158,117,0.2);border-radius:16px">
+      <p style="font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:12px">Ready to use now</p>
+      <h3 style="font-size:clamp(20px,3vw,28px);font-weight:800;margin-bottom:12px;letter-spacing:-.02em">Access the full platform.</h3>
+      <p style="font-size:14px;color:var(--muted);margin-bottom:28px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.7">Contact us to receive access credentials. We respond within one business day. Acquisition and licensing enquiries also welcome.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="app.html" style="display:inline-block;background:var(--green);color:#fff;font-size:15px;font-weight:700;padding:14px 36px;border-radius:10px;text-decoration:none;letter-spacing:.01em">Access Platform →</a>
+        <a href="mailto:shri@climrisk.io?subject=ClimRisk Platform Access Request" style="display:inline-block;background:transparent;color:var(--green);font-size:15px;font-weight:600;padding:14px 36px;border-radius:10px;text-decoration:none;border:1.5px solid var(--green)">Request credentials →</a>
+      </div>
+      <p style="font-size:11px;color:var(--subtle);margin-top:16px">Access code: contact <a href="mailto:shri@climrisk.io" style="color:var(--green);text-decoration:none;font-weight:600">shri@climrisk.io</a> · Acquisition enquiries: use the same address</p>
     </div>
   </div>
 </section>
@@ -1950,7 +1779,7 @@ footer{
       <div class="fc-head">Product</div>
       <a href="app.html" style="color:#1d9e75;font-weight:700">Access Platform →</a>
       <a href="#engine">CRI Engine</a>
-      <a href="#demo">Live Demo</a>
+      <a href="#platform">Platform</a>
       <a href="#pricing">Engagement</a>
     </div>
     <div class="footer-col">
@@ -2823,101 +2652,7 @@ var SECTOR_MULT = {
 var RATING_LETTERS = {A:'#0ea5e9',B:'#16a34a',C:null,D:'#dc2626',E:'#7c3aed'};
 
 /* ── RUN DEMO ───────────────────────────────────── */
-var _lastDemoData = {};
 
-function runDemo(e) {
-  e.preventDefault();
-  var btn = document.getElementById('demoBtn');
-  btn.disabled = true;
-  btn.textContent = '⦿ Analysing…';
-
-  var company = document.getElementById('d-company').value || 'Your Company';
-  var sector  = document.getElementById('d-sector').value  || 'Other';
-  var revenue = parseFloat(document.getElementById('d-revenue').value) || 4200;
-  var region  = document.getElementById('d-region').value  || 'global';
-  _lastDemoData = {company:company,sector:sector,region:region,revenue:revenue};
-
-  // Show score FIRST — no email popup, email capture appears after score
-  setTimeout(function() {
-    renderDemoOutput(company, sector, revenue, region);
-    btn.disabled = false;
-    btn.textContent = '✓ Analysis complete — see results below';
-    var ecb = document.getElementById('emailCapture');
-    if (ecb) setTimeout(function(){ ecb.style.display='flex'; }, 900);
-  }, 1600);
-}
-
-function sendDemoEmail() {
-  var email = (document.getElementById('demo-email-input').value || '').trim();
-  if (!email || !email.includes('@')) { document.getElementById('demo-email-input').focus(); return; }
-  var d = _lastDemoData;
-  var body = 'Demo lead\nCompany: '+d.company+'\nSector: '+d.sector+'\nRegion: '+d.region+'\nRevenue: $'+d.revenue+'M\nEmail: '+email;
-  var a = document.createElement('a');
-  a.href = 'mailto:shri@climrisk.io?subject='+encodeURIComponent('ClimRisk demo lead — '+d.company)+'&body='+encodeURIComponent(body);
-  a.style.display='none'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  document.getElementById('emailCapture').innerHTML = '<div style="font-size:13px;font-weight:600;color:var(--green)">✓ Got it — we\'ll send your engine link to <strong>'+email+'</strong> within 1 business day.</div>';
-}
-
-function renderDemoOutput(company, sector, revenue, region) {
-  var d   = DEMO_DATA[region] || DEMO_DATA['global'];
-  var sm  = SECTOR_MULT[sector] || SECTOR_MULT['Other'];
-
-  // Compute simple EV from revenue
-  var ebitdaM  = revenue * 0.22;                   // ~22% EBITDA margin
-  var wacc     = 0.082 + sm.wacc * 0.01;
-  var baseEV   = (ebitdaM / 1000) / (wacc + 0.005) * 0.9;  // rough EV in $B
-  var cpEV     = +Math.max(baseEV, 0.5).toFixed(1);
-  var nzeEV    = +(cpEV * sm.nze).toFixed(1);
-  var dtEV     = +(cpEV * sm.dt).toFixed(1);
-  var evAtRisk = +(((cpEV - nzeEV) / cpEV) * 100).toFixed(1);
-  var ccM      = +(ebitdaM * 0.083).toFixed(0);
-  var ccPct    = +(ccM / ebitdaM * 100).toFixed(1);
-
-  // Adjust composite for sector
-  var compAdj = d.composite + (sm.wacc > 1 ? 8 : sm.wacc > 0.8 ? 3 : -2);
-  compAdj = Math.min(90, Math.max(15, Math.round(compAdj)));
-  var rating = compAdj>=75?'E':compAdj>=55?'D':compAdj>=35?'C':compAdj>=18?'B':'A';
-  var ratingLabels = {A:'Low Climate Risk',B:'Moderate Climate Risk',C:'Elevated Climate Risk',D:'High Climate Risk',E:'Very High Climate Risk'};
-  var ratingCols   = {A:'#0ea5e9',B:'var(--green)',C:'var(--amber)',D:'var(--red)',E:'#7c3aed'};
-
-  // Populate DOM
-  el('out-company').textContent    = company;
-  el('out-meta').textContent       = sector + ' · ' + d.region + ' · SSP3-7.0 · 2030 · CRI Engine v0.4';
-  el('out-letter').textContent     = rating;
-  el('out-letter').className       = 'do-letter';
-  el('out-letter').style.background= ratingCols[rating];
-  el('out-rating-label').textContent = ratingLabels[rating];
-  el('out-score').textContent      = 'Composite: ' + compAdj + ' / 100';
-  el('out-ev').textContent         = '$' + cpEV + 'B';
-  el('out-evar').textContent       = evAtRisk + '%';
-  el('out-cc').textContent         = '$' + ccM + 'M';
-  el('out-cc-pct').textContent     = ccPct + '% of EBITDA (NZE)';
-  el('sc-nze').textContent         = '$' + nzeEV + 'B';
-  el('sc-dt').textContent          = '$' + dtEV + 'B';
-  el('sc-cp').textContent          = '$' + cpEV + 'B';
-  el('out-region-lbl').textContent = d.region;
-  el('out-tophaz').textContent     = d.topHaz;
-
-  // Pillar bars
-  el('pp-physical').textContent    = d.physLabel;
-  el('pf-physical').style.width    = d.physPct;
-  el('pf-physical').style.background = d.physCol;
-  el('pp-transition').textContent  = d.transLabel;
-  el('pf-transition').style.width  = d.transPct;
-  el('pf-transition').style.background = d.transCol;
-  el('pp-financial').textContent   = d.finLabel;
-  el('pf-financial').style.width   = d.finPct;
-  el('pf-financial').style.background = d.finCol;
-
-  // Hazard chips
-  el('out-hazards').innerHTML = d.hazards.map(function(h) {
-    return '<span class="do-hz"><div class="do-hz-sev" style="background:'+h.col+'"></div>'+h.icon+' '+h.name+' — '+h.sev+'</span>';
-  }).join('');
-
-  // Show output panel
-  var out = document.getElementById('demoOutput');
-  out.classList.add('visible');
-  setTimeout(function(){ out.scrollIntoView({behavior:'smooth',block:'start'}); }, 100);
 }
 
 function el(id) { return document.getElementById(id); }
