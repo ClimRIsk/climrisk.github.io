@@ -1,10 +1,17 @@
 """Top-level entry points for the CRI engine.
 
-Two functions are exposed:
+Three functions are exposed:
 
 run(company, scenario, ...)
     The original single-scenario path. Returns a full RunResults with
     valuation. Backward-compatible — existing code unchanged.
+
+run_full(company, ...)
+    Convenience function that runs all three NGFS scenarios, computes the
+    composite CRI rating, and returns a FullRunResult. Pillar scores
+    (exposure_score, transition_score, financial_score, adaptive_score) are
+    written back into each RunResults object so callers never get None there.
+    This is the recommended entry point for the web platform and API layer.
 
 run_scoped(company, scope, ...)
     The new modular path. The caller specifies which pillars they need
@@ -40,6 +47,7 @@ from __future__ import annotations
 import hashlib
 import json
 import uuid
+from dataclasses import dataclass, field
 
 from .. import scenarios as _scen
 from ..data.schemas import Company, RunResults, Scenario, YearResult
@@ -49,6 +57,38 @@ from ..financial.metrics import climate_adjusted_wacc, compute_year
 from ..operations.company import simulate
 from ..outcomes.physical_report import build_physical_report
 from ..outcomes.transition_report import build_transition_report
+
+
+# ---------------------------------------------------------------------------
+# FullRunResult — returned by run_full()
+# ---------------------------------------------------------------------------
+
+@dataclass
+class FullRunResult:
+    """Results of a full three-scenario CRI run with composite rating.
+
+    Attributes
+    ----------
+    company_id  : Company identifier.
+    results     : Dict with keys "nze", "delayed", "cp" → RunResults.
+                  Each RunResults has its four pillar score fields populated.
+    rating      : Full RatingResult (letter, pillar scores, sector rank, etc.)
+    """
+    company_id: str
+    results: dict  # "nze" | "delayed" | "cp" → RunResults
+    rating: object  # RatingResult (avoid circular import at class-definition time)
+
+    @property
+    def cp(self) -> RunResults:
+        return self.results["cp"]
+
+    @property
+    def nze(self) -> RunResults:
+        return self.results["nze"]
+
+    @property
+    def delayed(self) -> RunResults:
+        return self.results["delayed"]
 
 
 def _input_hash(scenario: Scenario, company: Company) -> str:
@@ -126,6 +166,80 @@ def run(
         ebitda_compression_2040_pct=_compression(2040),
         input_hash=_input_hash(scenario, company),
         scenario_version=scenario.version,
+    )
+
+
+# ---------------------------------------------------------------------------
+# run_full — recommended entry point for platform + API
+# ---------------------------------------------------------------------------
+
+def run_full(
+    company: Company,
+    model_version: str = "0.3.0",
+) -> FullRunResult:
+    """Run all three NGFS scenarios and compute the composite CRI rating.
+
+    This is the recommended entry point for the web platform and API layer.
+    It runs NZE 2050, Delayed Transition, and Current Policies in sequence,
+    then calls RatingEngine to compute physical / transition / financial /
+    adaptive pillar scores and writes them back into each RunResults object.
+    Callers are guaranteed that RunResults.exposure_score etc. are never None.
+
+    Parameters
+    ----------
+    company      : Fully populated Company (assets, financials, emissions).
+    model_version: Engine version string embedded in output provenance.
+
+    Returns
+    -------
+    FullRunResult with .results dict (keys "nze", "delayed", "cp") and
+    .rating (RatingResult). Access individual RunResults via .nze / .cp etc.
+
+    Example
+    -------
+    >>> full = run_full(company)
+    >>> print(full.rating.rating, full.rating.composite_score)
+    >>> print(full.cp.exposure_score, full.cp.transition_score)
+    """
+    from ..outcomes.ratings import RatingEngine
+
+    # Step 1: run CP first — its enterprise_value becomes baseline_npv for the
+    # other two scenarios so npv_impact_pct is correctly signed.
+    r_cp  = run(company, _scen.CURRENT_POLICIES, model_version=model_version)
+    baseline_ev = r_cp.enterprise_value if r_cp.enterprise_value > 0 else None
+
+    r_nze = run(company, _scen.NZE_2050,
+                baseline_npv=baseline_ev, model_version=model_version)
+    r_dt  = run(company, _scen.DELAYED_TRANSITION,
+                baseline_npv=baseline_ev, model_version=model_version)
+
+    # Step 2: compute composite rating across all three scenarios
+    engine = RatingEngine()
+    rating = engine.rate(
+        company_name=company.name,
+        sector=company.sector,
+        nze_results=r_nze,
+        dt_results=r_dt,
+        cp_results=r_cp,
+        data_quality=company.data_quality,
+    )
+
+    # Step 3: back-populate pillar scores into every RunResults so downstream
+    # consumers never see None in exposure_score / transition_score / etc.
+    # adaptive_score: measures headroom — how far the company is from Critical (100).
+    # Higher adaptive_score = more buffer before reaching a Critical (E) rating.
+    adaptive = max(0.0, 100.0 - rating.composite_score)
+
+    for r in (r_nze, r_dt, r_cp):
+        r.exposure_score   = round(rating.physical.score, 2)
+        r.transition_score = round(rating.transition.score, 2)
+        r.financial_score  = round(rating.financial.score, 2)
+        r.adaptive_score   = round(adaptive, 2)
+
+    return FullRunResult(
+        company_id=company.id,
+        results={"nze": r_nze, "delayed": r_dt, "cp": r_cp},
+        rating=rating,
     )
 
 

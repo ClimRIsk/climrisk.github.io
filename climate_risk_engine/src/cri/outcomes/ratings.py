@@ -183,18 +183,32 @@ class RatingResult:
 # ---------------------------------------------------------------------------
 
 _SECTOR_BENCHMARKS: dict[str, dict] = {
-    "oil_gas":        {"avg_composite": 68, "stdev": 12},
-    "mining":         {"avg_composite": 52, "stdev": 15},
-    "utilities":      {"avg_composite": 58, "stdev": 14},
-    "steel":          {"avg_composite": 55, "stdev": 13},
-    "cement":         {"avg_composite": 60, "stdev": 11},
-    "diversified":    {"avg_composite": 50, "stdev": 13},
-    "default":        {"avg_composite": 55, "stdev": 13},
+    # ── Extractive / energy ───────────────────────────────────────────────────
+    "oil_gas":            {"avg_composite": 68, "stdev": 12},
+    "mining":             {"avg_composite": 52, "stdev": 15},
+    "utilities":          {"avg_composite": 58, "stdev": 14},
+    "steel":              {"avg_composite": 55, "stdev": 13},
+    "cement":             {"avg_composite": 60, "stdev": 11},
+    "diversified":        {"avg_composite": 50, "stdev": 13},
+    # ── Non-extractive sectors (v0.4) ─────────────────────────────────────────
+    # Benchmarks derived from MSCI ESG peer data and CDP sector distributions.
+    # Physical risk dominated by water/heat; transition risk mainly input costs.
+    "beverages":          {"avg_composite": 42, "stdev": 11},
+    "food":               {"avg_composite": 38, "stdev": 11},
+    "chemicals":          {"avg_composite": 52, "stdev": 13},
+    "manufacturing":      {"avg_composite": 45, "stdev": 14},
+    "retail":             {"avg_composite": 32, "stdev": 10},
+    "financial_services": {"avg_composite": 38, "stdev": 12},
+    "real_estate":        {"avg_composite": 48, "stdev": 14},
+    "agriculture":        {"avg_composite": 50, "stdev": 16},
+    # ── Fallback ──────────────────────────────────────────────────────────────
+    "default":            {"avg_composite": 50, "stdev": 13},
 }
 
 
 def _sector_key(sector: str) -> str:
     s = sector.lower()
+    # Extractive / energy
     if any(k in s for k in ["oil", "gas", "energy", "petro"]):
         return "oil_gas"
     if any(k in s for k in ["mine", "mining", "iron", "copper", "nickel"]):
@@ -205,6 +219,23 @@ def _sector_key(sector: str) -> str:
         return "steel"
     if "cement" in s or "concrete" in s:
         return "cement"
+    # Non-extractive sectors
+    if any(k in s for k in ["bever", "brew", "beer", "spirit", "drink", "distil"]):
+        return "beverages"
+    if any(k in s for k in ["food", "nutri", "packag"]):
+        return "food"
+    if "chem" in s or "pharma" in s:
+        return "chemicals"
+    if any(k in s for k in ["manufactur", "industri", "assembl"]):
+        return "manufacturing"
+    if any(k in s for k in ["retail", "consumer", "fmcg", "wholesale"]):
+        return "retail"
+    if any(k in s for k in ["bank", "financ", "insur", "invest", "asset manag"]):
+        return "financial_services"
+    if any(k in s for k in ["real estate", "property", "reit", "constructi"]):
+        return "real_estate"
+    if any(k in s for k in ["agricult", "farm", "crop", "livestock", "agro"]):
+        return "agriculture"
     return "default"
 
 
