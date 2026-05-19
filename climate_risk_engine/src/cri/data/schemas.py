@@ -45,8 +45,19 @@ class HazardType(str, Enum):
 
 
 class Commodity(str, Enum):
-    """Commodity segments we support. Expand as sectors are added."""
+    """Commodity segments we support.
 
+    Two groups:
+    - Extractive / energy: iron_ore → electricity (original set)
+    - Non-extractive sectors: beverages → agriculture (v0.4 expansion)
+
+    For non-extractive assets the 'price' in scenario curves represents a
+    revenue-per-unit proxy (e.g. USD/hl for beverages, USD/tonne for food)
+    so that the asset simulation (volume × price = revenue) still works
+    correctly without requiring a separate revenue-based model path.
+    """
+
+    # ── Extractive and energy commodities ────────────────────────────────────
     IRON_ORE = "iron_ore"
     COPPER = "copper"
     ALUMINIUM = "aluminium"
@@ -57,6 +68,16 @@ class Commodity(str, Enum):
     REFINED_PRODUCTS = "refined_products"
     CEMENT = "cement"
     ELECTRICITY = "electricity"
+
+    # ── Non-extractive sector proxies (v0.4) ─────────────────────────────────
+    BEVERAGES = "beverages"                    # beer, spirits, soft drinks — USD/hl
+    FOOD = "food"                              # food manufacturing/processing — USD/tonne
+    CHEMICALS = "chemicals"                    # specialty + commodity chemicals — USD/tonne
+    MANUFACTURING = "manufacturing"            # general industrial — USD/unit
+    RETAIL = "retail"                          # consumer retail — USD/basket equiv.
+    FINANCIAL_SERVICES = "financial_services"  # banks, insurers — USD/loan notional
+    REAL_ESTATE = "real_estate"                # commercial + residential — USD/sqm/year
+    AGRICULTURE = "agriculture"                # crop + livestock — USD/tonne crop equiv.
 
 
 class EmissionsScope(str, Enum):
