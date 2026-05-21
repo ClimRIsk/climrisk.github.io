@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Company",
-  description: "ClimRisk B.V. — financial infrastructure for climate risk. Amsterdam. Founded by Shrinivash Kannan.",
+  description: "ClimRisk B.V. — financial infrastructure for climate risk. Amsterdam. Founded by Shrinivash D Kannan.",
 };
 
 const ROADMAP = [
@@ -28,7 +28,16 @@ export default function CompanyPage() {
             produces qualitative ratings. We produce dollars, euros, and basis points.
           </p>
           <p className="text-slate-500 leading-relaxed mb-10">
-            Founded by Shrinivash Kannan. Based in Amsterdam.
+            Founded by{" "}
+            <a
+              href="https://www.linkedin.com/in/shrinivashdkannan"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-300 hover:text-white underline underline-offset-2 decoration-slate-600 hover:decoration-white transition-colors"
+            >
+              Shrinivash D Kannan
+            </a>
+            . Based in Amsterdam.
             ClimRisk B.V. · KVK 95420134.
           </p>
           <div className="flex flex-wrap gap-4 mb-12">
