@@ -1,0 +1,56 @@
+name: Deploy climrisk.io
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: climrisk-web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: climrisk-web
+
+      - name: Build Next.js static export
+        run: npm run build
+        working-directory: climrisk-web
+
+      # Keep the existing platform HTML files accessible at their current URLs
+      - name: Copy platform app files into build output
+        run: |
+          cp app.html          climrisk-web/out/app.html
+          cp dashboard.html    climrisk-web/out/dashboard.html
+          cp CRI_Demo.html     climrisk-web/out/CRI_Demo.html
+        continue-on-error: true   # graceful if any file was removed
+
+      # GitHub Pages needs a CNAME file for the custom domain
+      - name: Write CNAME
+        run: echo "climrisk.io" > climrisk-web/out/CNAME
+
+      # GitHub Pages ignores folders starting with _ by default.
+      # Next.js puts assets in _next/ — this disables Jekyll processing
+      # so GitHub Pages serves the files as-is.
+      - name: Add .nojekyll
+        run: touch climrisk-web/out/.nojekyll
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: climrisk-web/out
+          cname: climrisk.io
