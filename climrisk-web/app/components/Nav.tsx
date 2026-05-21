@@ -35,9 +35,16 @@ export default function Nav() {
       <nav className="max-w-7xl mx-auto px-6 flex items-center h-16 gap-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-green-800 flex items-center justify-center text-white font-black text-sm tracking-tight group-hover:shadow-green-glow transition-all">
-            CR
-          </div>
+          <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-opacity group-hover:opacity-90">
+            <circle cx="18" cy="18" r="18" fill="#0d1b2a"/>
+            <circle cx="18" cy="18" r="16.2" stroke="#38bdf8" strokeWidth="0.9" fill="none"/>
+            <line x1="14" y1="5" x2="14" y2="11" stroke="#f59e0b" strokeWidth="1.6" strokeLinecap="round"/>
+            <rect x="7"  y="21" width="4" height="9"  rx="1.2" fill="#38bdf8" opacity="0.82"/>
+            <rect x="13" y="17" width="4" height="13" rx="1.2" fill="#38bdf8" opacity="0.95"/>
+            <rect x="19" y="14" width="4" height="16" rx="1.2" fill="#38bdf8" opacity="0.82"/>
+            <path d="M5 18 C8 13,12 23,18 18 C24 13,28 20,31 17" stroke="#7dd3fc" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
+            <circle cx="25" cy="10" r="4" fill="#f59e0b" opacity="0.96"/>
+          </svg>
           <span className="text-white font-bold text-lg tracking-tight">
             Clim<span className="text-green-500">Risk</span>
           </span>
