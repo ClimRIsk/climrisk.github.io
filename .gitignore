@@ -40,3 +40,10 @@ npm-debug.log*
 *.pem
 secrets.*
 config.local.*
+
+# Next.js
+.next/
+out/
+
+# Climate engine cache
+climate_risk_engine/src/cri/.cache/
