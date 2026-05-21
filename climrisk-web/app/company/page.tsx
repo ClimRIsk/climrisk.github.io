@@ -30,7 +30,7 @@ export default function CompanyPage() {
           <p className="text-slate-500 leading-relaxed mb-10">
             Founded by{" "}
             <a
-              href="https://www.linkedin.com/in/shrinivashdkannan"
+              href="https://www.linkedin.com/in/shrinivash-dhamodhara-kannan/"
               target="_blank"
               rel="noopener noreferrer"
               className="text-slate-300 hover:text-white underline underline-offset-2 decoration-slate-600 hover:decoration-white transition-colors"
