@@ -15,6 +15,11 @@ from ..data.companies_seed import all_seed as get_all_companies
 from ..engine.orchestrator import run as run_engine
 from ..engine.orchestrator import run_scoped as run_scoped_engine
 from ..engine.scope import ReportScope
+from ..data.schemas import (
+    CarbonPricePath,
+    Scenario,
+    ScenarioFamily,
+)
 from ..scenarios import (
     CURRENT_POLICIES,
     DELAYED_TRANSITION,
@@ -33,6 +38,7 @@ from .schemas import (
     PhysicalYearOut,
     RatingRequest,
     RatingResponse,
+    CustomScenarioParams,
     RunRequest,
     RunResponse,
     ScenarioResponse,
@@ -69,6 +75,26 @@ SCENARIO_REGISTRY = {
 }
 
 COMPANY_REGISTRY = get_all_companies()
+
+# Custom scenarios created via POST /scenarios are stored here at runtime.
+# Not persisted across restarts; persistence is a Phase 2 feature.
+CUSTOM_SCENARIO_REGISTRY: dict[str, Scenario] = {}
+
+
+def _build_custom_scenario(params: CustomScenarioParams, scenario_id: str = 'custom') -> Scenario:
+    """Build a Scenario from a CustomScenarioParams request body."""
+    return Scenario(
+        id=scenario_id,
+        name=params.name,
+        family=ScenarioFamily.CUSTOM,
+        horizon=(2026, 2050),
+        description=params.description,
+        version='0.4.0',
+        carbon_prices=[CarbonPricePath(region='global', path=params.carbon_price_path)],
+        commodity_curves=CURRENT_POLICIES.commodity_curves,
+        risk_premium_bps=params.risk_premium_bps,
+        abatement_targets=params.abatement_targets,
+    )
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -116,31 +142,76 @@ def run_simulation(request: RunRequest) -> RunResponse:
 
     Returns full RunResults including per-year trajectory and valuation metrics.
     """
-    # Validate company_id
-    if request.company_id.lower() not in COMPANY_REGISTRY:
+    scenario_id = request.scenario_id.lower()
+    company_id = request.company_id.lower()
+
+    if company_id not in COMPANY_REGISTRY:
         raise HTTPException(
             status_code=404,
             detail=f"Company '{request.company_id}' not found. "
             f"Available: {list(COMPANY_REGISTRY.keys())}",
         )
 
-    # Validate scenario_id
-    if request.scenario_id.lower() not in SCENARIO_REGISTRY:
+    # Resolve scenario: named NGFS | saved custom | inline custom
+    if scenario_id in SCENARIO_REGISTRY:
+        scenario = SCENARIO_REGISTRY[scenario_id]
+    elif scenario_id in CUSTOM_SCENARIO_REGISTRY:
+        scenario = CUSTOM_SCENARIO_REGISTRY[scenario_id]
+    elif scenario_id == 'custom':
+        if not request.custom_scenario:
+            raise HTTPException(
+                status_code=422,
+                detail=(
+                    "scenario_id='custom' requires a 'custom_scenario' block with "
+                    "at minimum a 'carbon_price_path' dict mapping years to USD/tCO2e prices."
+                ),
+            )
+        scenario = _build_custom_scenario(request.custom_scenario)
+    else:
+        available = list(SCENARIO_REGISTRY.keys()) + list(CUSTOM_SCENARIO_REGISTRY.keys()) + ['custom']
         raise HTTPException(
             status_code=404,
-            detail=f"Scenario '{request.scenario_id}' not found. "
-            f"Available: {list(SCENARIO_REGISTRY.keys())}",
+            detail=f"Scenario '{request.scenario_id}' not found. Available: {available}",
         )
 
-    # Get company and scenario
-    company = COMPANY_REGISTRY[request.company_id.lower()]
-    scenario = SCENARIO_REGISTRY[request.scenario_id.lower()]
-
-    # Run the engine
+    company = COMPANY_REGISTRY[company_id]
     results = run_engine(company=company, scenario=scenario)
-
     return RunResponse(**results.model_dump())
 
+
+
+@app.post("/scenarios", status_code=201)
+def create_custom_scenario(params: CustomScenarioParams) -> ScenarioResponse:
+    """Persist a custom scenario in the runtime registry.
+
+    After creation the scenario can be referenced by its auto-generated id in
+    subsequent POST /runs calls without re-sending the full carbon_price_path.
+    Registry is in-memory and resets on server restart (Phase 2: persistence).
+    """
+    import re as _re
+    slug = _re.sub(r"[^a-z0-9]+", "_", params.name.lower()).strip("_")
+    scenario_id = f"custom_{slug}"
+    if scenario_id in CUSTOM_SCENARIO_REGISTRY:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Custom scenario '{scenario_id}' already exists. Use a different name.",
+        )
+    scenario = _build_custom_scenario(params, scenario_id=scenario_id)
+    CUSTOM_SCENARIO_REGISTRY[scenario_id] = scenario
+    return ScenarioResponse(
+        id=scenario_id, name=scenario.name, description=scenario.description,
+        family=scenario.family.value, version=scenario.version,
+    )
+
+
+@app.delete("/scenarios/{scenario_id}", status_code=204)
+def delete_custom_scenario(scenario_id: str) -> None:
+    """Remove a custom scenario from the runtime registry."""
+    if scenario_id in SCENARIO_REGISTRY:
+        raise HTTPException(status_code=403, detail=f"Cannot delete built-in NGFS scenario '{scenario_id}'.")
+    if scenario_id not in CUSTOM_SCENARIO_REGISTRY:
+        raise HTTPException(status_code=404, detail=f"Custom scenario '{scenario_id}' not found.")
+    del CUSTOM_SCENARIO_REGISTRY[scenario_id]
 
 # ── Scoped / modular run ─────────────────────────────────────────────────────
 

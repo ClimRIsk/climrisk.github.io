@@ -138,6 +138,13 @@ class Scenario(BaseModel):
     # Additional risk premium (bps on WACC) applied under this scenario
     risk_premium_bps: int = 0
 
+    # ── Custom abatement path ──────────────────────────────────────────────────
+    # When set, overrides the hard-coded _SCENARIO_TARGETS lookup in abatement.py.
+    # Dict maps milestone years to required cumulative abatement fraction (0–1).
+    # e.g. {2030: 0.30, 2040: 0.60, 2050: 0.90}
+    # Only used when family == ScenarioFamily.CUSTOM (ignored for named scenarios).
+    abatement_targets: Optional[Dict[int, float]] = None
+
     @field_validator("horizon")
     @classmethod
     def _valid_horizon(cls, v: tuple[int, int]) -> tuple[int, int]:

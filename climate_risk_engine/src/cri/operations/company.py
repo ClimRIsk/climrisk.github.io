@@ -110,7 +110,9 @@ def _asset_contribution(
     # near 1.0 (only ~5% abated by 2030). This avoids double-charging:
     # companies should not pay both full transition capex AND full carbon tax
     # on emissions that the capex is specifically deployed to eliminate.
-    remaining_emissions_frac = coverage_after_abatement(scenario.family, year)
+    remaining_emissions_frac = coverage_after_abatement(
+        scenario.family, year, custom_targets=scenario.abatement_targets
+    )
 
     priced_emissions = (s1 + s2) * remaining_emissions_frac * \
         asset.emissions.carbon_price_coverage * (
@@ -280,7 +282,8 @@ def simulate_year(
     # Scope 1+2 baseline emissions and the scenario's carbon price path.
     total_s1s2 = sum(c["scope1"] + c["scope2"] for c in contributions)
     agg_transition_capex = compute_transition_capex(
-        scenario.family, year, total_s1s2, drivers.carbon_price
+        scenario.family, year, total_s1s2, drivers.carbon_price,
+        custom_targets=scenario.abatement_targets
     )
 
     revenue_by_commodity: dict[str, float] = {}
