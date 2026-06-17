@@ -28,12 +28,66 @@ class CompanyResponse(BaseModel):
     region: str
 
 
+class CustomScenarioParams(BaseModel):
+    """Full custom scenario specification supplied inline by the caller.
+
+    Used when scenario_id == "custom" in POST /runs.
+    All named NGFS scenarios (nze_2050, delayed_transition, current_policies)
+    ignore this object entirely.
+
+    carbon_price_path  — year → USD/tCO2e for every year in the horizon.
+                         Missing years are interpolated from neighbours; years
+                         before the first key use that first value.
+    risk_premium_bps   — WACC add-on for this scenario (basis points). Default 100.
+    abatement_targets  — milestone year → required cumulative abatement fraction.
+                         e.g. {2030: 0.25, 2040: 0.55, 2050: 0.85}
+                         If omitted, the CUSTOM family default is used
+                         ({2030: 0.20, 2040: 0.50, 2050: 0.75}).
+    name               — human-readable label surfaced in reports.
+    description        — optional free-text description.
+    """
+
+    carbon_price_path: Dict[int, float]
+    risk_premium_bps: int = 100
+    abatement_targets: Optional[Dict[int, float]] = None
+    name: str = "Custom Scenario"
+    description: str = ""
+
+    @field_validator("carbon_price_path")
+    @classmethod
+    def _at_least_one_year(cls, v: Dict[int, float]) -> Dict[int, float]:
+        if not v:
+            raise ValueError("carbon_price_path must contain at least one year entry.")
+        for yr, price in v.items():
+            if price < 0:
+                raise ValueError(f"Carbon price for year {yr} cannot be negative.")
+        return v
+
+    @field_validator("abatement_targets")
+    @classmethod
+    def _valid_abatement(cls, v: Optional[Dict[int, float]]) -> Optional[Dict[int, float]]:
+        if v is None:
+            return v
+        for yr, frac in v.items():
+            if not (0.0 <= frac <= 1.0):
+                raise ValueError(
+                    f"Abatement fraction for year {yr} must be between 0 and 1, got {frac}."
+                )
+        return v
+
+
 class RunRequest(BaseModel):
-    """Request body for POST /runs."""
+    """Request body for POST /runs.
+
+    For named NGFS scenarios, supply only company_id and scenario_id.
+    For a fully custom scenario, set scenario_id="custom" and supply
+    the custom_scenario block with your own carbon price path, WACC premium,
+    and abatement targets.
+    """
 
     company_id: str
-    scenario_id: str
-    carbon_price_override: Optional[float] = None
+    scenario_id: str       # "nze_2050" | "delayed_transition" | "current_policies" | "custom"
+    custom_scenario: Optional[CustomScenarioParams] = None
 
 
 class HealthResponse(BaseModel):
