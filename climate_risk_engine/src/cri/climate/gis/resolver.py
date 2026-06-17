@@ -517,6 +517,57 @@ EQUIPMENT_SENSITIVITY: dict[str, dict[str, float]] = {
         "cyclone": 0.8,
         "heat_stress": 0.9,
     },
+    # ── Industrial manufacturing / heavy industry ─────────────────────────
+    "steel_plant": {
+        "heat_stress": 1.4,         # blast furnace cooling load; worker heat exposure
+        "water_stress": 1.8,        # continuous cooling water demand (BF-BOF ~10 m³/t steel)
+        "flood_riverine": 1.5,      # riverside locations (Jamshedpur, Kalinganagar)
+        "flood_coastal": 1.6,       # IJmuiden North Sea coastal exposure
+        "sea_level": 1.4,           # IJmuiden elevation ~3m ASL
+        "subsidence": 1.3,          # clay-rich North Sea delta
+        "freeze_thaw_cycle": 1.2,   # Netherlands / UK: pipe-work, ladle cracking
+        "compound_flood": 1.7,      # IJmuiden compound coastal+riverine risk
+        "cyclone": 0.8,             # enclosed heavy structures
+        "drought": 1.3,             # process water & cooling tower stress
+        "extreme_cold": 0.9,
+    },
+    "cement_plant": {
+        "heat_stress": 1.5,         # kiln operations + worker exposure in India
+        "water_stress": 1.9,        # high process water need (grinding + cooling)
+        "drought": 1.6,             # water scarcity exacerbates ops risk
+        "flood_riverine": 1.2,      # India monsoon flash flooding
+        "dust_storm": 1.4,          # open clinker/limestone stockpiles
+        "cyclone": 1.1,             # Bay of Bengal exposure for Andhra Pradesh
+        "freeze_thaw_cycle": 0.8,   # mostly tropical/subtropical locations
+        "wildfire": 0.7,            # non-combustible process
+        "lightning": 1.1,           # exposed silos and conveyor gantries
+    },
+    "airport_terminal": {
+        "heat_stress": 1.5,         # tarmac heat + terminal cooling; flight cancellations
+        "flood_coastal": 1.5,       # JFK/LAX sea-level exposure
+        "flood_riverine": 1.3,      # flash flood runway inundation
+        "sea_level": 1.3,           # coastal airports (JFK, LAX)
+        "cyclone": 1.4,             # ATL: hurricane track; JFK: storm surge
+        "tornado": 1.3,             # MSP, ATL: tornado corridor
+        "compound_flood": 1.4,      # compound coastal + storm surge events
+        "wildfire": 1.2,            # LAX: Southern California wildfire smoke
+        "extreme_cold": 1.3,        # MSP: de-icing disruption
+        "freeze_thaw_cycle": 1.2,   # runway / taxiway cracking
+        "dust_storm": 0.9,
+    },
+    "port_terminal": {
+        "flood_coastal": 2.0,       # primary risk for marine terminals
+        "sea_level": 1.8,           # chronic inundation risk
+        "cyclone": 1.8,             # Miami: hurricane direct hit risk
+        "compound_flood": 2.0,      # compound coastal + surge events
+        "marine_heatwave": 1.4,     # coral bleaching → Caribbean destination risk
+        "saltwater_intrusion": 1.5, # port infrastructure corrosion
+        "heat_stress": 1.2,         # operational staff + cargo damage
+        "flood_riverine": 1.3,      # Hamburg: Elbe storm surge
+        "extratropical_cyclone": 1.4,  # Southampton, Hamburg: storm tracks
+        "subsidence": 1.3,          # port reclaimed land
+        "wildfire": 0.6,
+    },
 }
 
 # Default sensitivity (no equipment type specified or unknown type)
