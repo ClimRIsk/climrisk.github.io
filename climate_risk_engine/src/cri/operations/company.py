@@ -103,7 +103,17 @@ def _asset_contribution(
     s2 = volume * asset.emissions.scope2_intensity
     s3 = volume * asset.emissions.scope3_intensity
 
-    priced_emissions = (s1 + s2) * asset.emissions.carbon_price_coverage * (
+    # Abatement offset: transition_capex purchases real emission reductions.
+    # Once infrastructure is in place, the company pays carbon cost only on
+    # REMAINING (unabated) emissions. coverage_after_abatement(year) = 1 at
+    # baseline, declining to 0.05 by 2050 under NZE 2050. Under CP it stays
+    # near 1.0 (only ~5% abated by 2030). This avoids double-charging:
+    # companies should not pay both full transition capex AND full carbon tax
+    # on emissions that the capex is specifically deployed to eliminate.
+    remaining_emissions_frac = coverage_after_abatement(scenario.family, year)
+
+    priced_emissions = (s1 + s2) * remaining_emissions_frac * \
+        asset.emissions.carbon_price_coverage * (
         1 - asset.emissions.free_allocation
     )
     carbon_cost = priced_emissions * drivers.carbon_price
