@@ -175,9 +175,13 @@ def _asset_contribution(
     # Here we compute the potential writedown; orchestrator sums across assets.
     stranded_writedown = 0.0
     if is_stranded:
-        baseline_revenue = asset.baseline_production * asset.baseline_unit_cost
         remaining_value_frac = 0.75  # assume 15y remaining of a 20y asset life
-        stranded_writedown = baseline_revenue * remaining_value_frac
+        # Use carrying_value (book value) when available — that field is documented
+        # specifically for writedown calculations. Fall back to cost-based proxy.
+        if asset.carrying_value > 0:
+            stranded_writedown = asset.carrying_value * remaining_value_frac
+        else:
+            stranded_writedown = asset.baseline_production * asset.baseline_unit_cost * remaining_value_frac
 
     return {
         "commodity": asset.commodity.value,
@@ -205,6 +209,7 @@ def _segment_contribution(
     segment: SegmentBaseline,
     drivers: TransitionDrivers,
     year: int,
+    scenario: Scenario,
 ) -> dict:
     shift = demand_shift(drivers, segment.commodity)
     elasticity = drivers.commodity_elasticity.get(segment.commodity, 1.0)
@@ -222,7 +227,12 @@ def _segment_contribution(
     s2 = volume * segment.emissions.scope2_intensity
     s3 = volume * segment.emissions.scope3_intensity
 
-    priced_emissions = (s1 + s2) * segment.emissions.carbon_price_coverage * (
+    # Apply abatement offset — mirrors asset path so segments don't double-charge
+    # transition capex AND full carbon tax on emissions that capex is deployed to abate.
+    remaining_emissions_frac = coverage_after_abatement(
+        scenario.family, year, custom_targets=scenario.abatement_targets
+    )
+    priced_emissions = (s1 + s2) * remaining_emissions_frac * segment.emissions.carbon_price_coverage * (
         1 - segment.emissions.free_allocation
     )
     carbon_cost = priced_emissions * drivers.carbon_price
@@ -265,7 +275,7 @@ def simulate_year(
     # Segments can be used alongside assets (for bits of the business we
     # haven't modelled asset-by-asset yet)
     contributions.extend(
-        _segment_contribution(s, drivers, year) for s in company.segments
+        _segment_contribution(s, drivers, year, scenario) for s in company.segments
     )
 
     agg_revenue = sum(c["revenue"] for c in contributions)
@@ -278,11 +288,22 @@ def simulate_year(
         c["asset_name"] for c in contributions if c.get("is_stranded", False)
     ]
 
-    # Transition capex — computed from abatement module using company-level
-    # Scope 1+2 baseline emissions and the scenario's carbon price path.
-    total_s1s2 = sum(c["scope1"] + c["scope2"] for c in contributions)
+    # Transition capex uses BASELINE (pre-demand-shift) scope 1+2 emissions so
+    # abatement volumes are not understated in years when commodity demand has
+    # already declined. Current-year emissions would undercount the abatement
+    # infrastructure needed relative to the company's original emission profile.
+    baseline_s1s2 = (
+        sum(
+            a.baseline_production * (a.emissions.scope1_intensity + a.emissions.scope2_intensity)
+            for a in company.assets
+        )
+        + sum(
+            s.volume_baseline * (s.emissions.scope1_intensity + s.emissions.scope2_intensity)
+            for s in company.segments
+        )
+    )
     agg_transition_capex = compute_transition_capex(
-        scenario.family, year, total_s1s2, drivers.carbon_price,
+        scenario.family, year, baseline_s1s2, drivers.carbon_price,
         custom_targets=scenario.abatement_targets
     )
 
