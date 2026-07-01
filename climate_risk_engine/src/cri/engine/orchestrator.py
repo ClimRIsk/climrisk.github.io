@@ -321,22 +321,45 @@ def run_scoped(
     # Step 4: Financial valuation (DCF across all scenarios)
     # -------------------------------------------------------------------
     if scope.needs_valuation:
-        valuation = {}
-        for label, scenario, ops in [
+        valuation: dict[str, RunResults] = {}
+        baseline_ebitda = company.financials.ebitda
+
+        def _compression(yrs: list[YearResult], year: int) -> float | None:
+            match = next((yr for yr in yrs if yr.year == year), None)
+            if match is None or baseline_ebitda == 0:
+                return None
+            return match.ebitda / baseline_ebitda - 1.0
+
+        for label, scen, ops in [
             ("nze",     nze_scenario, ops_nze),
             ("delayed", dly_scenario, ops_dly),
             ("cp",      cp_scenario,  ops_cp),
         ]:
-            # Thread prev_revenue for working capital change
             yrs: list[YearResult] = []
             prev_rev2: float | None = None
             for o in ops:
                 yr = compute_year(company, o, prev_revenue=prev_rev2)
                 yrs.append(yr)
                 prev_rev2 = o.revenue
-            wacc = climate_adjusted_wacc(company, scenario)
+            wacc = climate_adjusted_wacc(company, scen)
             dcf = value(company, yrs, wacc)
-            valuation[label] = run(company, scenario, model_version=model_version)
+            valuation[label] = RunResults(
+                run_id=run_id,
+                scenario_id=scen.id,
+                company_id=company.id,
+                model_version=model_version,
+                years=yrs,
+                npv_fcf=dcf.npv_fcf,
+                terminal_value=dcf.terminal_value,
+                enterprise_value=dcf.enterprise_value,
+                equity_value=dcf.equity_value,
+                implied_share_price=dcf.implied_share_price,
+                wacc_used=dcf.wacc_used,
+                ebitda_compression_2030_pct=_compression(yrs, 2030),
+                ebitda_compression_2040_pct=_compression(yrs, 2040),
+                input_hash=_input_hash(scen, company),
+                scenario_version=scen.version,
+            )
         result.valuation_results = valuation
 
     # -------------------------------------------------------------------
@@ -348,11 +371,19 @@ def run_scoped(
             nze_r = result.valuation_results["nze"]
             dly_r = result.valuation_results["delayed"]
             cp_r  = result.valuation_results["cp"]
-            # baseline_npv = CP enterprise value (no-action baseline)
+            # Attach baseline_npv (CP EV) to NZE and DT for npv_impact_pct,
+            # using model_copy to avoid re-running the full simulation.
             baseline = cp_r.enterprise_value
-            nze_r2 = run(company, nze_scenario, baseline_npv=baseline)
-            dly_r2 = run(company, dly_scenario, baseline_npv=baseline)
-            result.rating_result = rate(nze_r2, dly_r2, cp_r)
+            if baseline > 0:
+                nze_r = nze_r.model_copy(update={
+                    "baseline_npv": baseline,
+                    "npv_impact_pct": nze_r.enterprise_value / baseline - 1.0,
+                })
+                dly_r = dly_r.model_copy(update={
+                    "baseline_npv": baseline,
+                    "npv_impact_pct": dly_r.enterprise_value / baseline - 1.0,
+                })
+            result.rating_result = rate(nze_r, dly_r, cp_r)
         except Exception:
             pass   # rating is additive — a failure here doesn't break the run
 

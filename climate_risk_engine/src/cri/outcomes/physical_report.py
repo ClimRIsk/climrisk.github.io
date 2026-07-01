@@ -47,7 +47,7 @@ from ..operations.company import OperationalYear
 #   Elevated  2–5% of revenue     → score 40–60
 #   High      5–8% of revenue     → score 60–80
 #   Critical  > 8% of revenue     → score 80–100
-PHYSICAL_SCORE_REV_CAP = 0.08   # 8% annual revenue loss → score 100
+PHYSICAL_SCORE_REV_CAP = 0.015  # 1.5% annual revenue loss → score 100 (matches ratings.py v0.3)
 
 _LABEL_THRESHOLDS = [
     (20,  "Low"),
@@ -121,7 +121,6 @@ def _weighted_physical_score(
 
 def _find_peak(
     ops_cp: list[OperationalYear],
-    baseline_revenue: float,
 ) -> tuple[int, float, str]:
     """Find the year + hazard with the highest physical loss under CP scenario."""
     if not ops_cp:
@@ -267,7 +266,7 @@ def build_physical_report(
     label = _score_label(score)
 
     # Peak loss under worst-case (Current Policies)
-    peak_year, peak_usd, peak_hazard = _find_peak(ops_cp, baseline_revenue)
+    peak_year, peak_usd, peak_hazard = _find_peak(ops_cp)
 
     # Adaptation capex totals
     total_adapt_nze = sum(y.adaptation_capex for y in years_nze)
