@@ -65,9 +65,10 @@ SSP scenarios
 
 from __future__ import annotations
 
+import datetime
 import math
 from dataclasses import dataclass, field
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 from .ssp_scenarios import (
     SSPScenario, SSP_SCENARIOS, NGFS_TO_SSP,
@@ -97,6 +98,13 @@ def _get_open_meteo():
         return get_projection, compute_warming_delta
     except Exception:
         return None, None
+
+def _get_live_conditions_fn():
+    try:
+        from .live_conditions import get_live_conditions
+        return get_live_conditions
+    except Exception:
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -521,6 +529,24 @@ def _fetch_live_climate(
     return result
 
 
+def _fetch_live_conditions(region: str, lat: float, lon: float):
+    """
+    Fetch a live-conditions snapshot (current temp/precip anomaly vs
+    seasonal norms) for the given region/coordinates.
+
+    Returns a ``live_conditions.LiveConditions`` instance, or None if the
+    live weather API is unavailable — callers must treat None as "no live
+    signal, use the lookup-table/climatology path unchanged."
+    """
+    get_live_conditions = _get_live_conditions_fn()
+    if get_live_conditions is None:
+        return None
+    try:
+        return get_live_conditions(region, lat, lon)
+    except Exception:
+        return None
+
+
 def _haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     """Great-circle distance between two lat/lon points in km."""
     R = 6371.0
@@ -796,15 +822,61 @@ class AssetHazardProfile:
     live_baseline: Optional[dict] = None      # NASA POWER observed baseline
     live_projection: Optional[dict] = None    # Open-Meteo CMIP6 projection delta
 
+    # Live current-conditions snapshot — only populated when assessing the
+    # CURRENT calendar year (see PhysicalHazardEngine.assess()). None for
+    # any future-year assessment or when the live weather API is unavailable.
+    live_conditions_meta: Optional[dict] = None
+
+    # Static GIS spatial profile (elevation, coastal distance, Köppen zone,
+    # matched hazard-zone geometry) — populated whenever coordinates are
+    # provided, independent of assessment year.
+    gis_profile_meta: Optional[dict] = None
+
+    # GIS × live-conditions intersection — hazard zones currently showing a
+    # matching live signal (see gis_intersection.py). Same current-year-only
+    # gating as live_conditions_meta.
+    compound_flags_meta: Optional[list] = None
+
 
 # ---------------------------------------------------------------------------
 # Core hazard computation functions
 # ---------------------------------------------------------------------------
 
+def _apply_compound_flags(
+    hazard: str, severity: float, prob: float,
+    compound_flags: Optional[list] = None,
+) -> tuple[float, float, str]:
+    """
+    Apply any CompoundRiskFlags (GIS zone × live condition intersection)
+    matching this hazard. Sums severity deltas and multiplies probability
+    multipliers across all matching flags — in practice at most one or two
+    flags ever match a given hazard, so this rarely stacks more than once.
+
+    Returns (severity, prob, note) — note is "" if nothing matched.
+    """
+    if not compound_flags:
+        return severity, prob, ""
+    matching = [f for f in compound_flags if f.hazard == hazard]
+    if not matching:
+        return severity, prob, ""
+
+    sev_delta = sum(f.severity_delta for f in matching)
+    prob_mult = 1.0
+    for f in matching:
+        prob_mult *= f.prob_multiplier
+
+    severity = max(0.0, severity + sev_delta)
+    prob = prob * prob_mult
+    labels = ", ".join(f.label for f in matching)
+    note = f"; GIS×live intersection: {labels} (severity {sev_delta:+.2f}, prob ×{prob_mult:.2f})"
+    return severity, prob, note
+
+
 def _heat_stress(region: str, ssp: SSPScenario, year: int,
                  heat_factor: float = 1.0,
                  live_warming_c: Optional[float] = None,
-                 live_baseline_t2m_max_c: Optional[float] = None) -> HazardScore:
+                 live_baseline_t2m_max_c: Optional[float] = None,
+                 live_conditions: Optional[Any] = None) -> HazardScore:
     """
     Heat stress: WBGT exceedance, extreme heat days.
 
@@ -817,6 +889,14 @@ def _heat_stress(region: str, ssp: SSPScenario, year: int,
       - WRI_BASELINE regional heat_baseline
       - IPCC AR6 Ch11 GMST warming trajectory
       - Sub-grid heat_factor (lapse rate correction)
+
+    Live current-conditions nudge (current calendar year only):
+      - live_conditions: a live_conditions.LiveConditions snapshot. When
+        provided, a small hard-capped delta (±0.4 severity, ±25% probability)
+        is applied on top of the projection above, reflecting an active
+        heatwave/cool spell right now. Caller is responsible for only
+        passing this for the current calendar year — trend_2030/trend_2050
+        never see it.
 
     Source: NASA POWER MERRA-2 baseline; Open-Meteo MRI-AGCM3.2-S CMIP6;
             IPCC AR6 Ch11.3; WMO standard atmosphere lapse rate.
@@ -841,6 +921,19 @@ def _heat_stress(region: str, ssp: SSPScenario, year: int,
     adjusted_baseline = live_severity_base * heat_factor
     severity = min(5.0, adjusted_baseline * met_mult * (1 + warming * 0.35))
     prob = min(0.95, base_prob * freq_mult * heat_factor)
+
+    live_note = ""
+    if live_conditions is not None:
+        from .live_conditions import live_severity_nudge
+        sev_delta, prob_mult = live_severity_nudge("heat_stress", live_conditions)
+        severity = min(5.0, max(0.0, severity + sev_delta))
+        prob = min(0.95, prob * prob_mult)
+        if live_conditions.heat_anomaly_c is not None:
+            live_note = (
+                f"; live conditions: today's max {live_conditions.heat_anomaly_c:+.1f}°C "
+                f"vs seasonal norm (severity {sev_delta:+.2f}, prob ×{prob_mult:.2f})"
+            )
+
     # Empirical calibration (v0.4): PMC scoping review (Hasan et al 2022) finds
     # 0.3–10% productivity loss per 1°C WBGT increase across industrial sectors.
     # Outdoor/heavy-industry workers (mining, construction) show up to 60% loss
@@ -866,13 +959,15 @@ def _heat_stress(region: str, ssp: SSPScenario, year: int,
             f"{baseline_src}; lapse correction {heat_factor:.3f}; "
             f"warming {warming:.2f}°C; freq mult {freq_mult:.2f}×; "
             f"obs hot days {met_b.hot_days_above_35c:.0f}/yr; met calib {met_mult:.2f}×"
+            f"{live_note}"
         ),
     )
 
 
 def _flood_riverine(region: str, ssp: SSPScenario, year: int, lulc: str,
                     flood_factor: float = 1.0,
-                    live_precip_delta_pct: Optional[float] = None) -> HazardScore:
+                    live_precip_delta_pct: Optional[float] = None,
+                    compound_flags: Optional[list] = None) -> HazardScore:
     """
     Riverine (fluvial) flood: heavy precip + river system.
     Sources: WRI Aqueduct + IPCC AR6 Ch11.4 Clausius-Clapeyron + WMO precipitation normals.
@@ -909,6 +1004,11 @@ def _flood_riverine(region: str, ssp: SSPScenario, year: int, lulc: str,
     pv_idx = precip_variability_index(region)
     severity = min(5.0, adjusted_baseline * precip_change * runoff_mult * (0.7 + 0.3 * pv_idx))
     prob = min(0.90, adjusted_baseline / 5.0 * precip_change * 0.25)
+
+    severity, prob, compound_note = _apply_compound_flags("flood_riverine", severity, prob, compound_flags)
+    severity = min(5.0, severity)
+    prob = min(0.90, prob)
+
     # Empirical calibration (v0.4): Frontiers Water (2023) industrial vulnerability
     # study finds 2–8% annual production loss for high-exposure processing facilities.
     # Zurich Re (2012) 550-company survey: 49% of firms reported lost productivity
@@ -941,6 +1041,7 @@ def _flood_riverine(region: str, ssp: SSPScenario, year: int, lulc: str,
         notes=(
             f"Grid baseline {baseline:.2f} × sub-grid correction {flood_factor:.2f} = adjusted {adjusted_baseline:.2f}; "
             f"precip change {precip_src}; runoff {runoff_mult:.1f}× (LULC: {lulc}); variability {pv_idx:.2f}"
+            f"{compound_note}"
         ),
     )
 
@@ -1149,7 +1250,8 @@ def _wildfire(region: str, ssp: SSPScenario, year: int, lulc: str) -> HazardScor
 
 
 def _cyclone(region: str, ssp: SSPScenario, year: int, is_coastal: bool,
-             is_cyclone_belt_override: bool | None = None) -> HazardScore:
+             is_cyclone_belt_override: bool | None = None,
+             compound_flags: Optional[list] = None) -> HazardScore:
     """
     Tropical cyclone / hurricane intensity and track frequency.
     Source: IBTRACS historical + IPCC AR6 Ch11.7; Knutson et al. 2020.
@@ -1183,6 +1285,11 @@ def _cyclone(region: str, ssp: SSPScenario, year: int, is_coastal: bool,
     # intensity +5% per °C for Category 4–5 events).
     prob = min(0.40, base_prob * (1 - 0.03 * warming))
     severity = min(5.0, 3.0 * intensity_change)
+
+    severity, prob, compound_note = _apply_compound_flags("cyclone", severity, prob, compound_flags)
+    severity = min(5.0, severity)
+    prob = min(0.40, prob)
+
     # Empirical calibration (v0.4): BSEE Gulf of Mexico data (2005–2024) shows
     # Hurricanes Katrina/Rita caused 30% and 21% annual production loss from
     # offshore oil assets respectively (9 months post-storm).
@@ -1209,12 +1316,14 @@ def _cyclone(region: str, ssp: SSPScenario, year: int, is_coastal: bool,
         data_source="IBTrACS v4 + WMO 1991-2020 observed landfall p + IPCC AR6 Ch11.7; Knutson et al. 2020; BSEE GoM shut-in data 2005-2024; SPE/JPT empirical storm production model",
         notes=(
             f"Blended base prob {base_prob:.3f} (IBTrACS {_ibtracs_base:.2f} + met obs {met_cyclone_p:.2f}); "
-            f"intensity +{(intensity_change-1)*100:.1f}% vs baseline"
+            f"intensity +{(intensity_change-1)*100:.1f}% vs baseline{compound_note}"
         ),
     )
 
 
-def _drought(region: str, ssp: SSPScenario, year: int) -> HazardScore:
+def _drought(region: str, ssp: SSPScenario, year: int,
+             live_conditions: Optional[Any] = None,
+             compound_flags: Optional[list] = None) -> HazardScore:
     """
     Meteorological + hydrological drought intensity and duration.
     Sources: WRI Aqueduct (baseline) + IPCC AR6 Ch11.6 (PDSI) + WMO observed return periods.
@@ -1222,6 +1331,12 @@ def _drought(region: str, ssp: SSPScenario, year: int) -> HazardScore:
     Calibration: the annual drought probability is anchored to the observed
     drought return period from met baselines (e.g. CL-02 returns every 3yr
     vs CA-QC every 12yr), giving meaningfully different event probabilities.
+
+    Live current-conditions nudge (current calendar year only): when
+    ``live_conditions`` is provided and flags a trailing-14-day precipitation
+    deficit, severity/probability get a small hard-capped bump (see
+    live_conditions.live_severity_nudge). Caller must only pass this for the
+    current calendar year.
     """
     baseline = WRI_BASELINE.get(region, WRI_BASELINE["global"])["drought"]
     warming = ssp.regional_warming(year, region)
@@ -1232,6 +1347,23 @@ def _drought(region: str, ssp: SSPScenario, year: int) -> HazardScore:
     obs_return = observed_drought_return(region)                # years between events
     base_drought_prob = min(0.40, 1.0 / max(obs_return, 1.0))  # e.g. 1/3 = 0.33 for CL-02
     prob = min(0.80, base_drought_prob * drought_mult)
+
+    live_note = ""
+    if live_conditions is not None:
+        from .live_conditions import live_severity_nudge
+        sev_delta, prob_mult = live_severity_nudge("drought", live_conditions)
+        severity = min(5.0, max(0.0, severity + sev_delta))
+        prob = min(0.80, prob * prob_mult)
+        if live_conditions.precip_deficit_flag:
+            live_note = (
+                f"; live conditions: 14-day precip deficit flagged "
+                f"({live_conditions.precip_trailing14d_mm:.1f}mm trailing) "
+                f"(severity {sev_delta:+.2f}, prob ×{prob_mult:.2f})"
+            )
+
+    severity, prob, compound_note = _apply_compound_flags("drought", severity, prob, compound_flags)
+    prob = min(0.80, prob)
+
     # Empirical calibration (v0.4): CRU Group water-mining study + Antofagasta/Anglo
     # American operational data from Chilean Atacama drought events:
     #   - Los Pelambres copper mine: 24% production drop in Q1 2022 (drought-driven)
@@ -1258,6 +1390,7 @@ def _drought(region: str, ssp: SSPScenario, year: int) -> HazardScore:
         notes=(
             f"Drought mult {drought_mult:.2f}× at {warming:.2f}°C; "
             f"observed return period {obs_return:.0f}yr; base annual prob {base_drought_prob:.3f}"
+            f"{live_note}{compound_note}"
         ),
     )
 
@@ -1571,7 +1704,8 @@ def _flash_flood(region: str, ssp: SSPScenario, year: int, lulc: str,
 
 
 def _permafrost_thaw(region: str, ssp: SSPScenario, year: int,
-                    is_permafrost_override: bool | None = None) -> HazardScore:
+                    is_permafrost_override: bool | None = None,
+                    compound_flags: Optional[list] = None) -> HazardScore:
     """
     Permafrost thaw — ground instability for infrastructure in Arctic/subarctic.
 
@@ -1606,6 +1740,11 @@ def _permafrost_thaw(region: str, ssp: SSPScenario, year: int,
     warming = ssp.regional_warming(year, region) * 2.5
     severity = min(5.0, baseline * (1 + warming * 0.30))
     prob = min(0.90, baseline / 5.0 * (1 + warming * 0.20))
+
+    severity, prob, compound_note = _apply_compound_flags("permafrost_thaw", severity, prob, compound_flags)
+    severity = min(5.0, severity)
+    prob = min(0.90, prob)
+
     # Empirical calibration (v0.4): Hjort et al 2022 (Nature Reviews Earth)
     # projects 30–50% of current Arctic infrastructure at high hazard risk by 2050.
     # IOPscience permafrost infrastructure cost study (Russia): annual repair costs
@@ -1628,7 +1767,7 @@ def _permafrost_thaw(region: str, ssp: SSPScenario, year: int,
         data_source="IPCC AR6 Ch9.5.2; AMAP 2021 Permafrost Atlas; Hjort et al 2022 (Nature Reviews Earth); IOPscience Russia infra cost study; empirical recal v0.4",
         notes=(
             f"Baseline coverage {baseline:.2f}/5; Arctic-amplified warming "
-            f"{warming:.2f}°C (2.5× global mean); progressive active-layer deepening"
+            f"{warming:.2f}°C (2.5× global mean); progressive active-layer deepening{compound_note}"
         ),
     )
 
@@ -2262,6 +2401,21 @@ class PhysicalHazardEngine:
                 # GIS resolver failure is non-fatal — fall back to region tables
                 gis_attrs = None
 
+        gis_profile_meta: Optional[dict] = None
+        if gis_attrs is not None:
+            gis_profile_meta = {
+                "elevation_m": gis_attrs.elevation_m,
+                "coastal_km": gis_attrs.coastal_km,
+                "koppen_zone": gis_attrs.koppen_zone,
+                "is_arid": gis_attrs.is_arid,
+                "is_permafrost": gis_attrs.is_permafrost,
+                "is_cyclone_belt": gis_attrs.is_cyclone_belt,
+                "is_floodplain": gis_attrs.is_floodplain,
+                "mean_winter_temp": gis_attrs.mean_winter_temp,
+                "matched_zones": gis_attrs.matched_zones,
+                "source": gis_attrs.source,
+            }
+
         # Resolve spatial context — uses lat/lon for asset-level downscaling
         spatial = _resolve_spatial_context(lat, lon, region, elevation_override)
         elevation = spatial["elevation_m"]
@@ -2294,6 +2448,45 @@ class PhysicalHazardEngine:
                 live_warming_c = live_data["warming_c"]
                 live_baseline_t2m_max_c = live_data["baseline_t2m_max_c"]
                 live_precip_delta_pct = live_data.get("precip_delta_pct")
+
+        # ── Live current-conditions snapshot (CURRENT calendar year only) ────────────
+        # Only fetched/applied when assessing the present year — a 2030/2050 run is
+        # never touched by "what's the weather doing today," which keeps the v0.4
+        # calibration (trend_2030/trend_2050 and all future-year runs) unchanged.
+        live_conditions = None
+        if lat is not None and lon is not None and _depth == 0 and year == datetime.date.today().year:
+            live_conditions = _fetch_live_conditions(region, lat, lon)
+
+        live_conditions_meta: Optional[dict] = None
+        if live_conditions is not None:
+            live_conditions_meta = {
+                "observed_at": live_conditions.observed_at,
+                "current_temp_c": live_conditions.current_temp_c,
+                "heat_anomaly_c": live_conditions.heat_anomaly_c,
+                "precip_trailing14d_mm": live_conditions.precip_trailing14d_mm,
+                "precip_deficit_flag": live_conditions.precip_deficit_flag,
+                "wind_speed_ms": live_conditions.wind_speed_ms,
+                "source": live_conditions.source,
+            }
+
+        # ── GIS × live-conditions intersection (compound risk flags) ─────────────────
+        # A static hazard zone (cyclone belt, permafrost, arid, floodplain) currently
+        # showing a matching live signal. Only computed when both GIS and live data
+        # are available — i.e. current-year assessments with coordinates.
+        compound_flags: list = []
+        if gis_attrs is not None and live_conditions is not None:
+            from .gis_intersection import compute_compound_flags
+            compound_flags = compute_compound_flags(gis_attrs, live_conditions)
+
+        compound_flags_meta: Optional[list] = None
+        if compound_flags:
+            compound_flags_meta = [
+                {
+                    "id": f.id, "label": f.label, "description": f.description,
+                    "severity": f.severity, "hazard": f.hazard,
+                }
+                for f in compound_flags
+            ]
 
         # ── Assemble live baseline / projection metadata for audit trail ─────────────
         live_baseline_meta: Optional[dict] = None
@@ -2339,10 +2532,12 @@ class PhysicalHazardEngine:
             "heat_stress":            _heat_stress(region, scenario, year,
                                           heat_factor=sg["heat_factor"],
                                           live_warming_c=live_warming_c,
-                                          live_baseline_t2m_max_c=live_baseline_t2m_max_c),
+                                          live_baseline_t2m_max_c=live_baseline_t2m_max_c,
+                                          live_conditions=live_conditions),
             "flood_riverine":         _flood_riverine(region, scenario, year, lulc,
                                           flood_factor=sg["flood_factor"],
-                                          live_precip_delta_pct=live_precip_delta_pct),
+                                          live_precip_delta_pct=live_precip_delta_pct,
+                                          compound_flags=compound_flags),
             "flood_coastal":          _flood_coastal(region, scenario, year, is_coastal, elevation, coastal_factor),
             "sea_level_rise":         _sea_level_rise(region, scenario, year, is_coastal, elevation, coastal_factor),
             "saltwater_intrusion":    _saltwater_intrusion(region, scenario, year, is_coastal, elevation, coastal_factor),
@@ -2350,8 +2545,11 @@ class PhysicalHazardEngine:
             "wildfire":               _wildfire(region, scenario, year, lulc),
             # GIS: is_cyclone_belt_override enables risk when IBTrACS confirms belt
             "cyclone":                _cyclone(region, scenario, year, is_coastal,
-                                          is_cyclone_belt_override=gis_is_cyclone_belt),
-            "drought":                _drought(region, scenario, year),
+                                          is_cyclone_belt_override=gis_is_cyclone_belt,
+                                          compound_flags=compound_flags),
+            "drought":                _drought(region, scenario, year,
+                                          live_conditions=live_conditions,
+                                          compound_flags=compound_flags),
             "water_stress":           _water_stress(region, scenario, year,
                                           water_stress_factor=sg["water_stress_factor"]),
             # ── New 15 (v0.4) — GIS overrides passed where relevant ───────────
@@ -2365,7 +2563,8 @@ class PhysicalHazardEngine:
             "flash_flood":            _flash_flood(region, scenario, year, lulc, elevation_m=elevation),
             # GIS: NSIDC permafrost extent enables risk beyond PERMAFROST_REGIONS set
             "permafrost_thaw":        _permafrost_thaw(region, scenario, year,
-                                          is_permafrost_override=gis_is_permafrost),
+                                          is_permafrost_override=gis_is_permafrost,
+                                          compound_flags=compound_flags),
             # GIS: Köppen + WRI Aqueduct dryland flag extends dust-storm applicability
             "dust_storm":             _dust_storm(region, scenario, year,
                                           is_arid_override=gis_is_arid),
@@ -2473,6 +2672,9 @@ class PhysicalHazardEngine:
             downscaling_method=downscaling_str,
             live_baseline=live_baseline_meta,
             live_projection=live_projection_meta,
+            live_conditions_meta=live_conditions_meta,
+            gis_profile_meta=gis_profile_meta,
+            compound_flags_meta=compound_flags_meta,
         )
 
     def assess_trajectory(
