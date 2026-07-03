@@ -5,7 +5,7 @@ from __future__ import annotations
 import tempfile
 from pathlib import Path
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import FastAPI, File, Form, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -27,11 +27,17 @@ from ..scenarios import (
 )
 from .schemas import (
     AssetInput,
+    AssetSummary,
     CompanyResponse,
+    CompoundRiskFlagResponse,
     DisclosureRequest,
     DisclosureResponse,
+    GISAttributesResponse,
     HazardYearOut,
     HealthResponse,
+    IntersectionResponse,
+    LiveConditionsResponse,
+    ObservedTrendResponse,
     PhysicalHazardReportResponse,
     PhysicalReportRequest,
     PhysicalRiskOut,
@@ -131,9 +137,110 @@ def list_companies() -> list[CompanyResponse]:
                 name=company.name,
                 sector=company.sector,
                 region=company.hq_region,
+                assets=[
+                    AssetSummary(
+                        id=asset.id,
+                        name=asset.name,
+                        region=asset.region,
+                        lat=asset.lat,
+                        lon=asset.lon,
+                    )
+                    for asset in company.assets
+                ],
             )
         )
     return companies
+
+
+@app.get("/climate/live-conditions", response_model=LiveConditionsResponse)
+def get_live_conditions_endpoint(
+    region: str = Query(..., description="CRI region code, e.g. AU-WA"),
+    lat: float = Query(..., description="Asset latitude"),
+    lon: float = Query(..., description="Asset longitude"),
+) -> LiveConditionsResponse:
+    """Live current-weather snapshot at an asset's coordinates.
+
+    Backed by the free Open-Meteo Forecast API (no key required), cached
+    for 3 hours. Returns 503 if the live weather API is unavailable.
+    """
+    from ..climate.live_conditions import get_live_conditions
+
+    live = get_live_conditions(region, lat, lon)
+    if live is None:
+        raise HTTPException(status_code=503, detail="Live weather API unavailable")
+    return LiveConditionsResponse(**dataclasses.asdict(live))
+
+
+@app.get("/climate/gis-attributes", response_model=GISAttributesResponse)
+def get_gis_attributes_endpoint(
+    lat: float = Query(..., description="Asset latitude"),
+    lon: float = Query(..., description="Asset longitude"),
+    equipment_type: str | None = Query(None, description="Equipment type for sensitivity multipliers"),
+) -> GISAttributesResponse:
+    """Static spatial hazard profile at a coordinate.
+
+    Backed by the embedded GIS resolver (elevation, coastal distance, Köppen
+    zone, permafrost/cyclone-belt/floodplain flags, matched zone geometry) —
+    no live API call, always available.
+    """
+    from ..climate.gis import resolve as gis_resolve
+
+    attrs = gis_resolve(lat, lon, equipment_type)
+    return GISAttributesResponse(**dataclasses.asdict(attrs))
+
+
+@app.get("/climate/intersection", response_model=IntersectionResponse)
+def get_intersection_endpoint(
+    region: str = Query(..., description="CRI region code, e.g. AU-WA"),
+    lat: float = Query(..., description="Asset latitude"),
+    lon: float = Query(..., description="Asset longitude"),
+    equipment_type: str | None = Query(None, description="Equipment type for sensitivity multipliers"),
+) -> IntersectionResponse:
+    """GIS profile + live conditions + compound risk flags at a coordinate.
+
+    The "intersection" view: static hazard zones (cyclone belt, permafrost,
+    arid, floodplain) currently showing a matching live signal. If the live
+    weather API is unavailable, ``live`` is null and ``compound_flags`` is
+    empty — the GIS profile is still returned (it has no live dependency).
+    """
+    from ..climate.gis import resolve as gis_resolve
+    from ..climate.gis_intersection import compute_compound_flags
+    from ..climate.live_conditions import get_live_conditions
+
+    gis_attrs = gis_resolve(lat, lon, equipment_type)
+    live = get_live_conditions(region, lat, lon)
+    flags = compute_compound_flags(gis_attrs, live)
+
+    return IntersectionResponse(
+        region=region,
+        lat=lat,
+        lon=lon,
+        gis=GISAttributesResponse(**dataclasses.asdict(gis_attrs)),
+        live=LiveConditionsResponse(**dataclasses.asdict(live)) if live is not None else None,
+        compound_flags=[
+            CompoundRiskFlagResponse(**dataclasses.asdict(f)) for f in flags
+        ],
+    )
+
+
+@app.get("/climate/observed-trend", response_model=ObservedTrendResponse)
+def get_observed_trend_endpoint(
+    region: str = Query(..., description="CRI region code, e.g. AU-WA"),
+    lat: float = Query(..., description="Asset latitude"),
+    lon: float = Query(..., description="Asset longitude"),
+    start_year: int = Query(2015, description="First year of the observed trend window"),
+) -> ObservedTrendResponse:
+    """Observed annual temperature/precipitation trend vs the WMO 1991-2020 baseline.
+
+    Backed by the free Open-Meteo Historical Weather API (no key required),
+    cached for 7 days. Returns 503 if the archive API is unavailable.
+    """
+    from ..climate.live_conditions import get_observed_trend
+
+    trend = get_observed_trend(region, lat, lon, start_year=start_year)
+    if trend is None:
+        raise HTTPException(status_code=503, detail="Historical weather API unavailable")
+    return ObservedTrendResponse(**dataclasses.asdict(trend))
 
 
 @app.post("/runs", response_model=RunResponse)

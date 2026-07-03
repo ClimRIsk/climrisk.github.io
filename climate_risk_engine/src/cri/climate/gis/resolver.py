@@ -377,21 +377,24 @@ def _in_arid_zone(lat: float, lon: float) -> bool:
 
 # Flood-plain proximity: major river delta / alluvial plain zones.
 # Rough approximation — low elevation + within 200 km of coast or large river.
+
+# River delta bounding boxes (Ganges, Mekong, Mississippi, Rhine, Niger, Zambezi)
+_DELTA_BOXES: list[tuple[float, float, float, float]] = [
+    (21.0, 25.0, 88.0, 92.0),    # Ganges–Brahmaputra delta
+    (9.0, 11.0, 105.0, 107.5),   # Mekong delta
+    (28.0, 32.0, -92.0, -88.0),  # Mississippi delta
+    (51.5, 52.0, 3.5, 5.5),      # Rhine delta (NL)
+    (4.5, 6.0, 5.0, 7.5),        # Niger delta
+    (-18.5, -17.0, 35.5, 36.5),  # Zambezi delta
+]
+
+
 def _in_floodplain(lat: float, lon: float, elevation_m: int, coastal_km: float) -> bool:
     """Simple heuristic: low elevation AND proximity to coast or river delta."""
     if elevation_m > 50:
         return False
     if coastal_km < 200:
         return True
-    # River delta bounding boxes (Ganges, Mekong, Mississippi, Rhine, Niger, Zambezi)
-    _DELTA_BOXES = [
-        (21.0, 25.0, 88.0, 92.0),    # Ganges–Brahmaputra delta
-        (9.0, 11.0, 105.0, 107.5),   # Mekong delta
-        (28.0, 32.0, -92.0, -88.0),  # Mississippi delta
-        (51.5, 52.0, 3.5, 5.5),      # Rhine delta (NL)
-        (4.5, 6.0, 5.0, 7.5),        # Niger delta
-        (-18.5, -17.0, 35.5, 36.5),  # Zambezi delta
-    ]
     for la_min, la_max, lo_min, lo_max in _DELTA_BOXES:
         if la_min <= lat <= la_max and lo_min <= lon <= lo_max:
             return True
@@ -582,6 +585,46 @@ def get_equipment_sensitivity(equipment_type: Optional[str]) -> dict[str, float]
 
 
 # ---------------------------------------------------------------------------
+# Matched-zone geometry — which box(es) a coordinate falls inside, for map
+# rendering and compound-flag ("intersection") logic.
+# ---------------------------------------------------------------------------
+
+def _matched_zones(lat: float, lon: float) -> list[dict]:
+    """Return every static hazard-zone bounding box containing (lat, lon)."""
+    zones: list[dict] = []
+
+    def _box(la_min: float, la_max: float, lo_min: float, lo_max: float) -> dict:
+        return {"bounds": [[la_min, lo_min], [la_max, lo_max]]}
+
+    for la_min, la_max, lo_min, lo_max in _COASTAL_STRIPS:
+        if la_min <= lat <= la_max and lo_min <= lon <= lo_max:
+            zones.append({"type": "coastal_strip", "label": "Coastal region (approximate)",
+                          **_box(la_min, la_max, lo_min, lo_max)})
+
+    for la_min, la_max, lo_min, lo_max in _CYCLONE_BOXES:
+        if la_min <= lat <= la_max and lo_min <= lon <= lo_max:
+            zones.append({"type": "cyclone_belt", "label": "Tropical cyclone belt",
+                          **_box(la_min, la_max, lo_min, lo_max)})
+
+    for la_min, la_max, lo_min, lo_max in _PERMAFROST_BOXES:
+        if la_min <= lat <= la_max and lo_min <= lon <= lo_max:
+            zones.append({"type": "permafrost", "label": "Permafrost extent",
+                          **_box(la_min, la_max, lo_min, lo_max)})
+
+    for la_min, la_max, lo_min, lo_max in _ARID_BOXES:
+        if la_min <= lat <= la_max and lo_min <= lon <= lo_max:
+            zones.append({"type": "arid_zone", "label": "Arid / dryland belt",
+                          **_box(la_min, la_max, lo_min, lo_max)})
+
+    for la_min, la_max, lo_min, lo_max in _DELTA_BOXES:
+        if la_min <= lat <= la_max and lo_min <= lon <= lo_max:
+            zones.append({"type": "river_delta", "label": "River delta / alluvial plain",
+                          **_box(la_min, la_max, lo_min, lo_max)})
+
+    return zones
+
+
+# ---------------------------------------------------------------------------
 # Public dataclass
 # ---------------------------------------------------------------------------
 
@@ -612,6 +655,13 @@ class AssetGISAttributes:
 
     # Equipment sensitivity multipliers (keyed by hazard slug)
     equipment_sensitivity: dict[str, float] = field(default_factory=dict)
+
+    # Matched hazard-zone geometry — the bounding box(es) of every static
+    # zone table this coordinate falls inside. Consumed by the frontend map
+    # to draw the zone(s) an asset sits in, and by gis_intersection.py to
+    # label which zones are "active" for compound-flag logic.
+    # Each entry: {"type": str, "label": str, "bounds": [[lat_min, lon_min], [lat_max, lon_max]]}
+    matched_zones: list[dict] = field(default_factory=list)
 
     # Source provenance
     source: str = "embedded_tables_v1"
@@ -649,6 +699,7 @@ def resolve(
     cy = _in_cyclone_belt(lat, lon)
     fp = _in_floodplain(lat, lon, elev, coast)
     sensitivity = get_equipment_sensitivity(equipment_type)
+    zones = _matched_zones(lat, lon)
 
     return AssetGISAttributes(
         lat=lat,
@@ -662,5 +713,6 @@ def resolve(
         is_floodplain=fp,
         mean_winter_temp=mwt,
         equipment_sensitivity=sensitivity,
+        matched_zones=zones,
         source="embedded_tables_v1",
     )

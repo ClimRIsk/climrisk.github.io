@@ -1,4 +1,4 @@
-import { Company, RunResult, Scenario, ScenarioType, EBITDABridgeData, FCFData, EmissionsData } from '@/types/index';
+import { Company, RunResult, Scenario, ScenarioType, EBITDABridgeData, FCFData, EmissionsData, LiveConditions, ObservedTrend, Intersection } from '@/types/index';
 import { companies, scenarios, mockRunResult } from './mockData';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
@@ -100,6 +100,83 @@ export async function postRun(
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetches live current weather conditions at an asset's coordinates.
+ * Makes a real API call to GET /climate/live-conditions.
+ */
+export async function getLiveConditions(
+  region: string,
+  lat: number,
+  lon: number
+): Promise<LiveConditions> {
+  const params = new URLSearchParams({ region, lat: String(lat), lon: String(lon) });
+  const response = await fetch(`${API_BASE}/climate/live-conditions?${params}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetches the observed annual temperature/precipitation trend vs the WMO
+ * baseline at an asset's coordinates. Makes a real API call to
+ * GET /climate/observed-trend.
+ */
+export async function getObservedTrend(
+  region: string,
+  lat: number,
+  lon: number,
+  startYear: number = 2015
+): Promise<ObservedTrend> {
+  const params = new URLSearchParams({
+    region,
+    lat: String(lat),
+    lon: String(lon),
+    start_year: String(startYear),
+  });
+  const response = await fetch(`${API_BASE}/climate/observed-trend?${params}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status} ${response.statusText}`);
+  }
+
+  return response.json();
+}
+
+/**
+ * Fetches the GIS profile + live conditions + compound risk flags at an
+ * asset's coordinates. Makes a real API call to GET /climate/intersection.
+ */
+export async function getIntersection(
+  region: string,
+  lat: number,
+  lon: number,
+  equipmentType?: string
+): Promise<Intersection> {
+  const params = new URLSearchParams({ region, lat: String(lat), lon: String(lon) });
+  if (equipmentType) {
+    params.set('equipment_type', equipmentType);
+  }
+  const response = await fetch(`${API_BASE}/climate/intersection?${params}`, {
+    method: 'GET',
+    headers: { 'Content-Type': 'application/json' },
   });
 
   if (!response.ok) {
