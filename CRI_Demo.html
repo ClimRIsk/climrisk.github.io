@@ -156,12 +156,37 @@ tbody tr:hover{background:var(--surf2)}
 .rb{height:5px;background:var(--border);border-radius:3px;margin-top:5px;overflow:hidden}
 .rf{height:100%;border-radius:3px}
 
-/* Hazard tiles */
-.ht-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
-.ht{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:14px;text-align:center;box-shadow:var(--sh)}
-.ht-icon{font-size:20px}
-.ht-name{font-size:12px;font-weight:600;color:var(--text);margin-top:7px}
-.ht-desc{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4}
+/* Hazard compact list + detail drawer */
+.hz-list{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:12px}
+.hz-group-label{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin:10px 0 2px}
+.hz-group-label:first-child{margin-top:0}
+.hz-row{display:flex;align-items:center;gap:9px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 10px;cursor:pointer;transition:border-color .15s,background .15s}
+.hz-row:hover{border-color:#7c3aed;background:var(--surf2)}
+.hz-row .hz-icon{font-size:15px;flex-shrink:0}
+.hz-row .hz-name{font-size:12px;font-weight:600;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hz-chevron{font-size:13px;color:var(--subtle);flex-shrink:0}
+.hz-new-chip{font-size:9px;font-weight:700;color:#7c3aed;background:#7c3aed1a;border-radius:8px;padding:1px 6px;flex-shrink:0}
+
+.hz-drawer-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:110;display:none}
+.hz-drawer-overlay.on{display:block}
+.hz-drawer{position:fixed;top:0;right:-380px;width:360px;max-width:90vw;height:100%;background:var(--surface);box-shadow:-8px 0 32px rgba(0,0,0,.25);z-index:111;transition:right .2s ease;display:flex;flex-direction:column}
+.hz-drawer.on{right:0}
+.hz-drawer-head{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+.hz-drawer-icon{font-size:26px}
+.hz-drawer-head h3{font-size:15px;font-weight:700;color:var(--text)}
+.hz-drawer-close{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:2px 6px}
+.hz-drawer-close:hover{color:var(--text)}
+.hz-drawer-body{padding:18px 20px;overflow-y:auto;font-size:12px;color:var(--muted);line-height:1.7}
+.hz-drawer-body .hz-tag{display:inline-block;font-size:10px;font-weight:700;color:var(--muted);background:var(--surf2);border-radius:10px;padding:2px 9px;margin-bottom:12px}
+.hz-drawer-body strong{color:var(--text)}
+.hz-drawer-body .hz-na{margin-top:12px;padding:10px 12px;background:var(--amber-bg);color:var(--amber);border-radius:6px;font-size:11px;line-height:1.6}
+
+/* Collapsible info toggle */
+.info-toggle{border:1px solid var(--border);border-radius:var(--r);margin-bottom:16px;overflow:hidden}
+.info-toggle-head{display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--surf2);cursor:pointer;user-select:none;font-size:12px;font-weight:700;color:var(--text)}
+.info-toggle-head .itc{margin-left:auto;font-size:10px;color:var(--muted);font-weight:600}
+.info-toggle-body{padding:14px}
+.info-toggle-body.collapsed{display:none}
 
 /* Scenario legend */
 .sleg{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
@@ -391,7 +416,8 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 @media(max-width:860px){
   .c4{grid-template-columns:repeat(2,1fr)}
   .c2{grid-template-columns:1fr}
-  .ht-grid{grid-template-columns:repeat(2,1fr)}
+  .hz-list{grid-template-columns:1fr}
+  .hz-drawer{width:100%;right:-100%}
 }
 
 /* ─── Integrated Risk Report ─────────────────── */
@@ -1690,61 +1716,82 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <div id="p-physical" class="panel">
       <div class="ph"><h1>Physical Climate Risk Hazards</h1><p>25-hazard SSP/IPCC AR6 asset-level assessment · GIS lat/lon resolver · Equipment sensitivity matrix · NASA LULC · WRI Aqueduct · SRTM elevation</p></div>
 
-      <!-- 25-hazard icon grid -->
-      <div class="ht-grid" style="grid-template-columns:repeat(5,1fr)">
-        <!-- Core 10 -->
-        <div class="ht"><div class="ht-icon">🌡</div><div class="ht-name">Heat Stress</div><div class="ht-desc">WBGT · labour loss</div></div>
-        <div class="ht"><div class="ht-icon">🌊</div><div class="ht-name">Riverine Flood</div><div class="ht-desc">Clausius-Clapeyron precip</div></div>
-        <div class="ht"><div class="ht-icon">🏖</div><div class="ht-name">Coastal Flood</div><div class="ht-desc">Storm surge + SLR</div></div>
-        <div class="ht"><div class="ht-icon">📈</div><div class="ht-name">Sea Level Rise</div><div class="ht-desc">Chronic inundation</div></div>
-        <div class="ht"><div class="ht-icon">🧂</div><div class="ht-name">Saltwater Intrusion</div><div class="ht-desc">Groundwater salinisation</div></div>
-        <div class="ht"><div class="ht-icon">⛰</div><div class="ht-name">Landslide</div><div class="ht-desc">Terrain + LULC cover</div></div>
-        <div class="ht"><div class="ht-icon">🔥</div><div class="ht-name">Wildfire</div><div class="ht-desc">FWI · NASA FIRMS</div></div>
-        <div class="ht"><div class="ht-icon">🌀</div><div class="ht-name">Cyclone</div><div class="ht-desc">IBTRACS · Knutson 2020</div></div>
-        <div class="ht"><div class="ht-icon">☀</div><div class="ht-name">Drought</div><div class="ht-desc">PDSI scaling · IPCC</div></div>
-        <div class="ht"><div class="ht-icon">💧</div><div class="ht-name">Water Stress</div><div class="ht-desc">WRI Aqueduct 4.0</div></div>
-        <!-- New 15 (v0.4) — badge indicates GIS-resolved -->
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🥶</div><div class="ht-name">Extreme Cold</div><div class="ht-desc">Cold waves · frost disruption</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🧊</div><div class="ht-name">Blade Icing</div><div class="ht-desc">IEA Wind Task 19 · ERA5 MWT</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌪</div><div class="ht-name">Extratropical Cyclone</div><div class="ht-desc">Mid-lat storm systems</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">⚡</div><div class="ht-name">Flash Flood</div><div class="ht-desc">Convective precipitation</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🏔</div><div class="ht-name">Permafrost Thaw</div><div class="ht-desc">NSIDC · Arctic amplification</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌬</div><div class="ht-name">Dust Storm</div><div class="ht-desc">WMO SDS-WAS · Köppen</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌨</div><div class="ht-name">Hail</div><div class="ht-desc">CAPE instability · IPCC AR6</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌩</div><div class="ht-name">Lightning</div><div class="ht-desc">Romps et al 2014 scaling</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🪨</div><div class="ht-name">Subsidence</div><div class="ht-desc">Groundwater · clay shrinkage</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🧱</div><div class="ht-name">Freeze-Thaw Cycle</div><div class="ht-desc">Infrastructure cracking</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌧</div><div class="ht-name">Compound Flood</div><div class="ht-desc">Joint riverine+coastal 1.3×</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🏔</div><div class="ht-name">Avalanche</div><div class="ht-desc">Elevation &gt;800m · wet-snow</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🐠</div><div class="ht-name">Marine Heatwave</div><div class="ht-desc">Oliver et al 2021 · SST</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🏔</div><div class="ht-name">GLOF</div><div class="ht-desc">Glacial lake outburst</div></div>
-        <div class="ht" style="border-top:2px solid #7c3aed20"><div class="ht-icon">🌪</div><div class="ht-name">Tornado</div><div class="ht-desc">CAPE · Tornado Alley</div></div>
-      </div>
-      <div style="font-size:10px;color:#7c3aed;margin:-4px 0 12px;padding:5px 10px;background:#f5f3ff;border-radius:5px;border-left:3px solid #7c3aed">
-        <strong>v0.4 — 25 IPCC AR6 Hazards:</strong> Core 10 (original) + 15 new (purple border) including equipment-specific hazards (blade icing for wind turbines, permafrost for pipelines). GIS resolver uses real lat/lon → elevation, coastal distance, Köppen zone, permafrost extent, ERA5 winter temperatures.
+      <!-- 25-hazard compact list — click a row for detail -->
+      <div class="hz-list">
+        <div class="hz-group-label">Core 10 — TCFD-Aligned Hazards</div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌡" data-name="Heat Stress" data-group="core" data-tag="WBGT · labour loss" data-detail="Extreme-heat exposure affecting outdoor labour productivity, equipment thermal limits, and cooling energy demand."><span class="hz-icon">🌡</span><span class="hz-name">Heat Stress</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌊" data-name="Riverine Flood" data-group="core" data-tag="Clausius-Clapeyron precip" data-detail="Fluvial flooding driven by intensifying heavy-precipitation events under a warming atmosphere."><span class="hz-icon">🌊</span><span class="hz-name">Riverine Flood</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🏖" data-name="Coastal Flood" data-group="core" data-tag="Storm surge + SLR" data-detail="Storm-surge inundation compounded by chronic sea-level rise at low-lying coastal sites." data-na="Inherently a coastal hazard — not applicable at inland sites (&gt;80km from coast, elevation &gt;20m)."><span class="hz-icon">🏖</span><span class="hz-name">Coastal Flood</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="📈" data-name="Sea Level Rise" data-group="core" data-tag="Chronic inundation" data-detail="Long-term, permanent inundation risk from rising mean sea level." data-na="Inherently a coastal hazard — not applicable at inland sites (&gt;80km from coast, elevation &gt;20m)."><span class="hz-icon">📈</span><span class="hz-name">Sea Level Rise</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🧂" data-name="Saltwater Intrusion" data-group="core" data-tag="Groundwater salinisation" data-detail="Saline water encroaching into coastal aquifers and process water supplies." data-na="Inherently a coastal hazard — not applicable at inland sites (&gt;80km from coast, elevation &gt;20m)."><span class="hz-icon">🧂</span><span class="hz-name">Saltwater Intrusion</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="⛰" data-name="Landslide" data-group="core" data-tag="Terrain + LULC cover" data-detail="Slope failure risk driven by terrain steepness, precipitation intensity, and land-cover stability." data-na="Not applicable on flat terrain (GPS slope factor &lt;0.25)."><span class="hz-icon">⛰</span><span class="hz-name">Landslide</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🔥" data-name="Wildfire" data-group="core" data-tag="FWI · NASA FIRMS" data-detail="Fire-weather-index-driven wildfire risk to assets, supply routes, and air-quality-dependent operations."><span class="hz-icon">🔥</span><span class="hz-name">Wildfire</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌀" data-name="Cyclone" data-group="core" data-tag="IBTRACS · Knutson 2020" data-detail="Tropical cyclone wind and storm-surge risk for coastal and near-coastal assets."><span class="hz-icon">🌀</span><span class="hz-name">Cyclone</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="☀" data-name="Drought" data-group="core" data-tag="PDSI scaling · IPCC" data-detail="Meteorological and hydrological drought affecting water-dependent operations."><span class="hz-icon">☀</span><span class="hz-name">Drought</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="💧" data-name="Water Stress" data-group="core" data-tag="WRI Aqueduct 4.0" data-detail="Chronic freshwater scarcity risk to process water supply and operating costs."><span class="hz-icon">💧</span><span class="hz-name">Water Stress</span><span class="hz-chevron">›</span></div>
+
+        <div class="hz-group-label">v0.4 Extended — 15 Additional Hazards</div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🥶" data-name="Extreme Cold" data-group="v04" data-tag="Cold waves · frost disruption" data-detail="Sub-zero cold-wave events disrupting operations and increasing equipment failure risk."><span class="hz-icon">🥶</span><span class="hz-name">Extreme Cold</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🧊" data-name="Blade Icing" data-group="v04" data-tag="IEA Wind Task 19 · ERA5 MWT" data-detail="Freeze-thaw icing risk to wind-turbine blades and transmission infrastructure."><span class="hz-icon">🧊</span><span class="hz-name">Blade Icing</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌪" data-name="Extratropical Cyclone" data-group="v04" data-tag="Mid-lat storm systems" data-detail="Mid-latitude storm systems bringing damaging wind and flooding outside the tropics."><span class="hz-icon">🌪</span><span class="hz-name">Extratropical Cyclone</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="⚡" data-name="Flash Flood" data-group="v04" data-tag="Convective precipitation" data-detail="Rapid-onset flooding from short, intense convective rainfall events."><span class="hz-icon">⚡</span><span class="hz-name">Flash Flood</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🏔" data-name="Permafrost Thaw" data-group="v04" data-tag="NSIDC · Arctic amplification" data-detail="Ground-stability loss from thawing permafrost, affecting foundations and pipelines."><span class="hz-icon">🏔</span><span class="hz-name">Permafrost Thaw</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌬" data-name="Dust Storm" data-group="v04" data-tag="WMO SDS-WAS · Köppen" data-detail="Aeolian dust transport affecting equipment, visibility, and worker health in arid zones."><span class="hz-icon">🌬</span><span class="hz-name">Dust Storm</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌨" data-name="Hail" data-group="v04" data-tag="CAPE instability · IPCC AR6" data-detail="Large-hail impact risk to equipment, vehicles, and exposed infrastructure."><span class="hz-icon">🌨</span><span class="hz-name">Hail</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌩" data-name="Lightning" data-group="v04" data-tag="Romps et al 2014 scaling" data-detail="Direct lightning-strike risk and associated wildfire ignition potential."><span class="hz-icon">🌩</span><span class="hz-name">Lightning</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🪨" data-name="Subsidence" data-group="v04" data-tag="Groundwater · clay shrinkage" data-detail="Ground-sinking risk from groundwater extraction or clay-soil shrink-swell cycles."><span class="hz-icon">🪨</span><span class="hz-name">Subsidence</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🧱" data-name="Freeze-Thaw Cycle" data-group="v04" data-tag="Infrastructure cracking" data-detail="Repeated freeze-thaw cycling causing progressive cracking of concrete and piping."><span class="hz-icon">🧱</span><span class="hz-name">Freeze-Thaw Cycle</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌧" data-name="Compound Flood" data-group="v04" data-tag="Joint riverine+coastal 1.3×" data-detail="Simultaneous riverine and coastal flooding, which compounds non-additively."><span class="hz-icon">🌧</span><span class="hz-name">Compound Flood</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🏔" data-name="Avalanche" data-group="v04" data-tag="Elevation &gt;800m · wet-snow" data-detail="Snow avalanche risk for mountain-terrain assets above the elevation threshold."><span class="hz-icon">🏔</span><span class="hz-name">Avalanche</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🐠" data-name="Marine Heatwave" data-group="v04" data-tag="Oliver et al 2021 · SST" data-detail="Anomalously warm ocean temperatures affecting marine operations and aquaculture."><span class="hz-icon">🐠</span><span class="hz-name">Marine Heatwave</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🏔" data-name="GLOF" data-group="v04" data-tag="Glacial lake outburst" data-detail="High-energy glacial lake outburst flood risk in mountain/glacial terrain."><span class="hz-icon">🏔</span><span class="hz-name">GLOF</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
+        <div class="hz-row" onclick="openHazardDetail(this)" data-icon="🌪" data-name="Tornado" data-group="v04" data-tag="CAPE · Tornado Alley" data-detail="Rotating convective wind risk concentrated in known tornado-prone corridors."><span class="hz-icon">🌪</span><span class="hz-name">Tornado</span><span class="hz-new-chip">v0.4</span><span class="hz-chevron">›</span></div>
       </div>
 
-      <!-- IPCC AR6 alignment banner -->
-      <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:14px;font-size:12px;color:#1e40af;line-height:1.6">
-        <strong>📋 IPCC AR6 Hazard Category Alignment</strong> — This engine covers all 10 acute &amp; chronic physical hazard categories identified by IPCC AR6 WG1 Ch.11 and WGII Ch.3–4 as financially material:
-        <span style="display:inline-flex;flex-wrap:wrap;gap:6px;margin-top:6px">
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Heat Stress (Ch.11.3)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Riverine Flood (Ch.11.5)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Coastal Flood (Ch.11.5)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Sea Level Rise (Ch.9)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Saltwater Intrusion (Ch.9)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Landslide (Ch.11.5)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Wildfire (Ch.11.6)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Cyclone/TC (Ch.11.7)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Drought (Ch.11.6)</span>
-          <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Water Stress (Ch.11.6)</span>
-        </span>
-        <div style="margin-top:8px;font-size:11px;color:#3b82f6">
-          ℹ️ <strong>Why some hazards show "Not applicable":</strong> Coastal Flood, Sea Level Rise, and Saltwater Intrusion are <em>inherently coastal hazards</em> per IPCC definitions — they do not affect inland sites (&gt;80 km from coast or elevation &gt;20 m). This is geophysically correct behaviour, not a data gap. Landslide is not applicable on flat terrain (GPS slope factor &lt;0.25). These results reflect site-specific GPS-resolved assessments aligned with IPCC AR6 methodology.
+      <!-- Hazard detail drawer (populated by openHazardDetail) -->
+      <div class="hz-drawer-overlay" id="hz-drawer-overlay" onclick="closeHazardDetail()"></div>
+      <div class="hz-drawer" id="hz-drawer">
+        <div class="hz-drawer-head">
+          <span class="hz-drawer-icon" id="hz-drawer-icon"></span>
+          <h3 id="hz-drawer-title"></h3>
+          <button class="hz-drawer-close" onclick="closeHazardDetail()">✕</button>
+        </div>
+        <div class="hz-drawer-body" id="hz-drawer-body"></div>
+      </div>
+
+      <!-- Collapsible info: v0.4 coverage notes, IPCC alignment, methodology -->
+      <div class="info-toggle">
+        <div class="info-toggle-head" onclick="_physInfoToggle()">
+          <span>ℹ️ About this view — v0.4 hazard coverage, IPCC AR6 alignment, methodology</span>
+          <span class="itc" id="phys-info-chevron">▸ Expand</span>
+        </div>
+        <div class="info-toggle-body collapsed" id="phys-info-body">
+          <div style="font-size:11px;color:#7c3aed;margin-bottom:12px;padding:8px 10px;background:#f5f3ff;border-radius:5px;border-left:3px solid #7c3aed">
+            <strong>v0.4 — 25 IPCC AR6 Hazards:</strong> Core 10 (original) + 15 new including equipment-specific hazards (blade icing for wind turbines, permafrost for pipelines). GIS resolver uses real lat/lon → elevation, coastal distance, Köppen zone, permafrost extent, ERA5 winter temperatures.
+          </div>
+
+          <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:12px;color:#1e40af;line-height:1.6">
+            <strong>📋 IPCC AR6 Hazard Category Alignment</strong> — This engine covers all 10 acute &amp; chronic physical hazard categories identified by IPCC AR6 WG1 Ch.11 and WGII Ch.3–4 as financially material:
+            <span style="display:inline-flex;flex-wrap:wrap;gap:6px;margin-top:6px">
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Heat Stress (Ch.11.3)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Riverine Flood (Ch.11.5)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Coastal Flood (Ch.11.5)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Sea Level Rise (Ch.9)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Saltwater Intrusion (Ch.9)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Landslide (Ch.11.5)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Wildfire (Ch.11.6)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Cyclone/TC (Ch.11.7)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Drought (Ch.11.6)</span>
+              <span style="background:#dbeafe;border-radius:4px;padding:2px 7px">Water Stress (Ch.11.6)</span>
+            </span>
+            <div style="margin-top:8px;font-size:11px;color:#3b82f6">
+              ℹ️ <strong>Why some hazards show "Not applicable":</strong> Coastal Flood, Sea Level Rise, and Saltwater Intrusion are <em>inherently coastal hazards</em> per IPCC definitions — they do not affect inland sites (&gt;80 km from coast or elevation &gt;20 m). This is geophysically correct behaviour, not a data gap. Landslide is not applicable on flat terrain (GPS slope factor &lt;0.25). These results reflect site-specific GPS-resolved assessments aligned with IPCC AR6 methodology.
+            </div>
+          </div>
+
+          <div class="note" style="margin-bottom:0"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. <strong>Per-asset physical risk score = mean applicable severity × 20 (0–100 scale).</strong> <strong>Portfolio score = equal-weighted average across all assets</strong> — every asset's hazard is equally material for regulatory risk disclosure (TCFD / IFRS S2 / CSRD), regardless of its carrying value. CV-weighting would suppress risk by allowing safe high-value assets to dilute high-risk smaller sites, which is the opposite of what risk identification requires. Financial exposure ($M at risk) is separately quantified as Σ(carrying_value × annual_loss_pct) — this is where asset value is correctly applied, to quantify dollar impact rather than to hide risk. This formula matches the Climate Rating physical pillar exactly. The Climate Rating composite = physical × 35% + transition × 35% + financial × 30%. SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission. <strong>Spatial downscaling (25 km → 1 km):</strong> Open-Meteo's CMIP6 Climate Change API (MRI-AGCM3.2-S, 0.25° / ~25 km resolution) provides projections at the asset's actual grid cell — not interpolated from distant regional centroids. The warming delta is computed as <em>T_future − T_historical</em> within the same model and grid cell, which eliminates the systematic 10–20°C GCM mean-state bias that arises when comparing CMIP6 output directly to reanalysis. The raw delta is SSP-scaled via IPCC AR6 WG1 Table 4.5 GMST ratios and added to the NASA POWER MERRA-2 observed baseline (0.5° / ~55 km, 2001–2020). WRI Aqueduct regional baselines are blended from the nearest available regions (capped at 2000 km; with full coverage for Europe, Americas, Asia-Pacific, and China provinces). Sub-grid terrain corrections — elevation lapse rate, coastal proximity, urban heat island, slope factor, river proximity — are applied at 1 km precision. See the 🔬 Downscaling tab in the Portfolio Map above for the grid-cell visualisation.</span></div>
         </div>
       </div>
-
-      <div class="note"><strong>Methodology</strong><span>Joint annual production loss = 1 − ∏(1 − pᵢ) across all applicable hazards per asset. <strong>Per-asset physical risk score = mean applicable severity × 20 (0–100 scale).</strong> <strong>Portfolio score = equal-weighted average across all assets</strong> — every asset's hazard is equally material for regulatory risk disclosure (TCFD / IFRS S2 / CSRD), regardless of its carrying value. CV-weighting would suppress risk by allowing safe high-value assets to dilute high-risk smaller sites, which is the opposite of what risk identification requires. Financial exposure ($M at risk) is separately quantified as Σ(carrying_value × annual_loss_pct) — this is where asset value is correctly applied, to quantify dollar impact rather than to hide risk. This formula matches the Climate Rating physical pillar exactly. The Climate Rating composite = physical × 35% + transition × 35% + financial × 30%. SSP scenarios from IPCC AR6 WG1; LULC proxy from NASA MODIS/HLS; elevation from SRTM/Copernicus DEM. <strong>Model scope:</strong> Baseline hazard values calibrated from WRI Aqueduct 4.0 regional statistics and IPCC AR6 published impact functions covering 80+ country/region codes. GPS coordinates trigger site-level modifiers (coastal distance, elevation, slope, river proximity). This is a parameterised assessment framework built on peer-reviewed science — not a live geospatial API query. Suitable for TCFD, IFRS S2, CSRD, ECB, and EBA Pillar 3 disclosure support; review by a qualified risk professional is recommended before regulatory submission. <strong>Spatial downscaling (25 km → 1 km):</strong> Open-Meteo's CMIP6 Climate Change API (MRI-AGCM3.2-S, 0.25° / ~25 km resolution) provides projections at the asset's actual grid cell — not interpolated from distant regional centroids. The warming delta is computed as <em>T_future − T_historical</em> within the same model and grid cell, which eliminates the systematic 10–20°C GCM mean-state bias that arises when comparing CMIP6 output directly to reanalysis. The raw delta is SSP-scaled via IPCC AR6 WG1 Table 4.5 GMST ratios and added to the NASA POWER MERRA-2 observed baseline (0.5° / ~55 km, 2001–2020). WRI Aqueduct regional baselines are blended from the nearest available regions (capped at 2000 km; with full coverage for Europe, Americas, Asia-Pacific, and China provinces). Sub-grid terrain corrections — elevation lapse rate, coastal proximity, urban heat island, slope factor, river proximity — are applied at 1 km precision. See the 🔬 Downscaling tab in the Portfolio Map above for the grid-cell visualisation.</span></div>
 
       <!-- ── CRI COMPUTATION TRACE ─────────────────────────────────────── -->
       <div id="cri-trace-panel" style="display:none">
@@ -8259,6 +8306,31 @@ function updateRiskPreview(region, lat, lon) {
     ' <span class="map-risk '+dl.cls+'">Drought '+dl.l+'</span>'+
     ' <span class="map-risk '+hl.cls+'">Heat '+hl.l+'</span>'+
     '</div>';
+}
+
+// ── Hazard detail drawer + collapsible info toggle ──
+function openHazardDetail(rowEl) {
+  var d = rowEl.dataset;
+  el('hz-drawer-icon').textContent = d.icon;
+  el('hz-drawer-title').textContent = d.name;
+  var groupLabel = d.group === 'v04' ? 'v0.4 Extended Hazard' : 'Core Hazard · TCFD-Aligned';
+  var body = '<span class="hz-tag">' + groupLabel + '</span>' +
+    '<p>' + d.detail + '</p>' +
+    '<p style="margin-top:12px"><strong>Methodology / data source:</strong> ' + d.tag + '</p>';
+  if (d.na) {
+    body += '<div class="hz-na">⚠️ ' + d.na + '</div>';
+  }
+  el('hz-drawer-body').innerHTML = body;
+  el('hz-drawer').classList.add('on');
+  el('hz-drawer-overlay').classList.add('on');
+}
+function closeHazardDetail() {
+  el('hz-drawer').classList.remove('on');
+  el('hz-drawer-overlay').classList.remove('on');
+}
+function _physInfoToggle() {
+  var collapsed = el('phys-info-body').classList.toggle('collapsed');
+  el('phys-info-chevron').textContent = collapsed ? '▸ Expand' : '▾ Collapse';
 }
 
 // ── Asset CRUD ─────────────────────────────────────
