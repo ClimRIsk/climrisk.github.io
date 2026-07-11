@@ -778,7 +778,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 
   <!-- Access Request Modal -->
   <div id="gate-signup" style="background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:460px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
-    <div style="font-size:36px;margin-bottom:10px">🌍</div>
+    <div id="gate-gem" ondblclick="(function(){try{localStorage.setItem(_GATE_STORAGE_KEY,_OWNER_TOKEN);}catch(e){}; _gateHide();})()" style="font-size:36px;margin-bottom:10px;cursor:default;user-select:none" title="">🌍</div>
     <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK · CRI ENGINE v0.4</div>
     <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 8px">Request Engine Access</h2>
     <p style="font-size:13px;color:#64748b;margin:0 0 28px;line-height:1.7">GPS-precise climate risk · TCFD · IFRS S2 · CSRD<br>We review all requests and respond within 1 business day.</p>
@@ -4159,15 +4159,30 @@ var _GATE_STORAGE_KEY = 'cri_license_token_v1';
 // Owner permanent bypass — never hits Supabase; set via URL param or DevTools console
 var _OWNER_TOKEN = 'climrisk-owner-shri-permanent-9x7k2m';
 
-// Auto-set owner token if URL contains ?unlock=climrisk-owner
-(function() {
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('unlock') === 'climrisk-owner') {
-    localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN);
-    // Clean URL without reload
-    try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
-  }
+// Tri-redundant owner bypass: URL param + localStorage + keyboard shortcut + dblclick
+var _OWNER_BYPASSED = (function() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('unlock') === 'climrisk-owner') {
+      try { localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN); } catch(e) {}
+      try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
+      return true;
+    }
+    if (localStorage.getItem(_GATE_STORAGE_KEY) === _OWNER_TOKEN) return true;
+  } catch(e) {}
+  return false;
 })();
+
+// Keyboard shortcut: Ctrl+Shift+O while gate is visible
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'O') {
+    var g = document.getElementById('cri-gate');
+    if (g && g.style.display !== 'none') {
+      try { localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN); } catch(e) {}
+      _gateHide();
+    }
+  }
+});
 
 function _gateHeaders() {
   return { 'Content-Type':'application/json', 'apikey':_GATE_KEY, 'Authorization':'Bearer '+_GATE_KEY };
@@ -4296,7 +4311,8 @@ function _gateShowPending(email) {
 
 // Boot — runs immediately
 (function _gateInit() {
-  var token = localStorage.getItem(_GATE_STORAGE_KEY);
+  if (_OWNER_BYPASSED) { _gateHide(); return; }
+  var token; try { token = localStorage.getItem(_GATE_STORAGE_KEY); } catch(e) {}
   if (token) { _gateValidate(token); } else { _gateShowSignup(); }
 })();
 

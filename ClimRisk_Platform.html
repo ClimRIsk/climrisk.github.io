@@ -742,7 +742,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 
   <!-- Access Request Modal -->
   <div id="gate-signup" style="background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:460px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
-    <div style="font-size:36px;margin-bottom:10px">🌍</div>
+    <div id="gate-gem" ondblclick="(function(){try{localStorage.setItem(_GATE_STORAGE_KEY,_OWNER_TOKEN);}catch(e){}; _gateHide();})()" style="font-size:36px;margin-bottom:10px;cursor:default;user-select:none" title="">🌍</div>
     <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK PLATFORM · v0.4</div>
     <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 8px">Request Engine Access</h2>
     <p style="font-size:13px;color:#64748b;margin:0 0 28px;line-height:1.7">GPS-precise climate risk · TCFD · IFRS S2 · CSRD<br>We review all requests and respond within 1 business day.</p>
@@ -4788,18 +4788,37 @@ function _pcafExportCsv() {
 var _GATE_URL = 'https://qbxsriyxgzusdavwvghs.supabase.co';
 var _GATE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFieHNyaXl4Z3p1c2Rhdnd2Z2hzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzcxMDUwNTYsImV4cCI6MjA5MjY4MTA1Nn0.VpPHM1hKrZ9Lklm5HWTTqA0JSvuPoXeO5TPC3A8vnkA';
 var _GATE_STORAGE_KEY = 'cri_license_token_v1';
-// Owner permanent bypass — never hits Supabase; set via URL param or DevTools console
+// Owner permanent bypass — never hits Supabase
 var _OWNER_TOKEN = 'climrisk-owner-shri-permanent-9x7k2m';
 
-// Auto-set owner token if URL contains ?unlock=climrisk-owner
-(function() {
-  var params = new URLSearchParams(window.location.search);
-  if (params.get('unlock') === 'climrisk-owner') {
-    localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN);
-    // Clean URL without reload
-    try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
-  }
+// ── Owner bypass: 3 independent mechanisms (any one is sufficient) ──────────
+// 1. URL param ?unlock=climrisk-owner  (works even with localStorage blocked)
+// 2. Ctrl+Shift+O keyboard shortcut while gate is visible
+// 3. Double-click the 💎 gem on the gate screen
+// After first unlock, token is saved to localStorage so subsequent visits skip the gate automatically.
+var _OWNER_BYPASSED = (function() {
+  try {
+    var params = new URLSearchParams(window.location.search);
+    if (params.get('unlock') === 'climrisk-owner') {
+      try { localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN); } catch(e) {}
+      try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
+      return true;
+    }
+    if (localStorage.getItem(_GATE_STORAGE_KEY) === _OWNER_TOKEN) return true;
+  } catch(e) {}
+  return false;
 })();
+
+// Keyboard shortcut: Ctrl+Shift+O anywhere on the gate
+document.addEventListener('keydown', function(e) {
+  if (e.ctrlKey && e.shiftKey && e.key === 'O') {
+    var g = document.getElementById('cri-gate');
+    if (g && g.style.display !== 'none') {
+      try { localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN); } catch(e) {}
+      _gateHide();
+    }
+  }
+});
 
 function _gateHeaders() {
   return { 'Content-Type':'application/json', 'apikey':_GATE_KEY, 'Authorization':'Bearer '+_GATE_KEY };
@@ -4928,7 +4947,9 @@ function _gateShowPending(email) {
 
 // Boot — runs immediately
 (function _gateInit() {
-  var token = localStorage.getItem(_GATE_STORAGE_KEY);
+  // Owner bypass already resolved synchronously above
+  if (_OWNER_BYPASSED) { _gateHide(); return; }
+  var token; try { token = localStorage.getItem(_GATE_STORAGE_KEY); } catch(e) {}
   if (token) { _gateValidate(token); } else { _gateShowSignup(); }
 })();
 
