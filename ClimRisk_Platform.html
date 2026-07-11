@@ -1843,6 +1843,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 
       <div class="cc"><div class="cc-title">Production Loss by Asset (%) — Joint Probability</div><div class="ch h220"><canvas id="hazC"></canvas></div></div>
       <div class="cc" id="phys-trend-box" style="display:none"><div class="cc-title" id="phys-trend-title">Hazard Severity Trend 2026–2050 · Primary Asset · All SSP Scenarios</div><div class="ch h260"><canvas id="hazTrendC"></canvas></div></div>
+      <div id="phys-fin-costs"></div>
     </div>
 
     <!-- TRANSITION RISK -->
@@ -5028,6 +5029,14 @@ var HZ_ICONS = {'Heat Stress':'🌡','Riverine Flood':'🌊','Coastal Flood':'�
 var SEV_COL = function(s){return s>=3.5?'#b91c1c':s>=2.5?'#b45309':s>=1.5?'#ca8a04':'#16a34a';};
 var SEV_LBL = function(s){return s>=3.5?'High':s>=2.5?'Elevated':s>=1.5?'Moderate':'Low';};
 
+function _fcCard(val, label, sub, col) {
+  return '<div class="cc" style="margin:0;padding:14px;text-align:center;min-width:0">'+
+    '<div style="font-size:20px;font-weight:700;color:'+col+'">'+val+'</div>'+
+    '<div style="font-size:11px;color:var(--muted);margin-top:3px">'+label+'</div>'+
+    '<div style="font-size:10px;color:var(--subtle)">'+sub+'</div>'+
+    '</div>';
+}
+
 function renderPh() {
   var cid = co();
   if (!cid || !COS[cid] || !HAZ[cid]) {
@@ -5141,7 +5150,98 @@ function renderPh() {
 
   // Show detail for first asset by default
   if (assetProfiles.length) showAssetDetailFromProf(assetProfiles[0]);
+
+  // ── Financial Cost Translation ─────────────────────────────────────────
+  (function() {
+    var fcEl = el('phys-fin-costs');
+    if (!fcEl) return;
+    var cd2 = COS[cid];
+    // Map SSP to scenario run key for revenue/EBITDA lookup
+    var ssp2 = ssp;
+    var scenKey2 = ssp2==='ssp126'?'nze_2050':(ssp2==='ssp245'?'delayed_transition':'current_policies');
+    var scenRun2 = cd2.runs[scenKey2] || cd2.runs['nze_2050'];
+    var yrList2 = (scenRun2||{}).years || [];
+    var yrObj2 = yrList2.find(function(y){return y.year===yr;}) || yrList2[yrList2.length-1] || {revenue:10,ebitda:4};
+    var totalRevM = (yrObj2.revenue||10) * 1000;   // $M
+    var totalEbitdaM = (yrObj2.ebitda||4) * 1000;  // $M
+    var nA2 = assetProfiles.length || 1;
+    var revPerAssetM = totalRevM / nA2;
+
+    // Sector multipliers
+    var sect2 = cd2.sector || 'Other';
+    var CV_MULT  = {'Mining':3.5,'Iron Ore':3.5,'Copper':3.5,'Coal':3.0,'Oil & Gas':2.5,'Natural Gas':2.5,'Energy/Utilities':4.0,'Real Estate':6.0,'Agriculture':2.0,'Food & Beverage':1.5,'Transport & Logistics':2.5,'Other':2.0};
+    var DMG_COEFF= {'Mining':0.015,'Iron Ore':0.015,'Copper':0.016,'Coal':0.014,'Oil & Gas':0.018,'Natural Gas':0.020,'Energy/Utilities':0.025,'Real Estate':0.030,'Agriculture':0.035,'Other':0.020};
+    var cvMult2 = CV_MULT[sect2]  || 2.0;
+    var dmgC2   = DMG_COEFF[sect2]|| 0.020;
+
+    var tProd=0, tDmg=0, tEmer=0, tAdapt=0;
+    var rows2 = assetProfiles.map(function(ap) {
+      var a2=ap.meta, pr2=ap.prof;
+      var lp2  = pr2.annual_loss_pct || 0;
+      var sev2 = Math.min((pr2.score||0)/100, 1);
+      var cvM2 = a2.cv ? +a2.cv : revPerAssetM * cvMult2;
+      var prod2  = revPerAssetM * lp2;
+      var dmg2   = cvM2 * sev2 * dmgC2;
+      var emer2  = prod2 * 0.10;
+      var adapt2 = cvM2 * lp2 * 2;
+      tProd+=prod2; tDmg+=dmg2; tEmer+=emer2; tAdapt+=adapt2;
+      var tot2 = prod2+dmg2+emer2;
+      var tc2  = tot2>500?'#ef4444':tot2>100?'#f59e0b':'#16a34a';
+      var topH2 = (pr2.top_hazards||[]).slice(0,2).join(', ')||'—';
+      return '<tr>'+
+        '<td style="font-weight:600;border-left:3px solid '+tc2+'">'+a2.asset+'</td>'+
+        '<td style="font-size:11px;color:var(--muted)">'+topH2+'</td>'+
+        '<td style="font-weight:700;color:#ef4444">'+_fmtCostM(prod2)+'</td>'+
+        '<td style="font-weight:600;color:#f59e0b">'+_fmtCostM(dmg2)+'</td>'+
+        '<td style="color:var(--muted)">'+_fmtCostM(emer2)+'</td>'+
+        '<td style="color:#9333ea">'+_fmtCostM(adapt2)+'/5yr</td>'+
+        '<td style="font-weight:700;color:'+tc2+'">'+_fmtCostM(tot2)+'</td>'+
+        '</tr>';
+    });
+    var eImpact = totalEbitdaM>0 ? (tProd/totalEbitdaM*100) : 0;
+    var eCol2 = eImpact>10?'#ef4444':eImpact>5?'#f59e0b':'#16a34a';
+    fcEl.innerHTML =
+      '<div class="cc" style="margin-top:14px">'+
+      '<div class="cc-title">💰 Physical Risk — Annual Financial Cost Estimates · '+cd2.name+' · '+yr+' · '+ssp2.toUpperCase()+'</div>'+
+      '<div style="font-size:11px;color:var(--muted);padding:7px 10px;background:var(--surf2);border-radius:5px;margin-bottom:12px;border-left:3px solid var(--accent)">'+
+      '<strong>How it\'s computed:</strong> Production loss = hazard annual_loss_pct × (revenue ÷ asset count). '+
+      'Asset damage = carrying value (CV) × normalised severity × '+sect2+' damage coefficient ('+((dmgC2*100).toFixed(1))+'%). '+
+      'Emergency response = 10% of production loss. Adaptation capex = CV × loss% × 2 (5yr forward estimate). '+
+      'CV proxy = revenue/asset × '+cvMult2.toFixed(1)+'× (or direct input from Data Integration). '+
+      'Sources: IPCC AR6 impact functions · WRI Aqueduct 4.0 · sector P&L benchmarks. '+
+      'These are indicative annual expected-value estimates for TCFD / IFRS S2 scenario disclosure support.'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">'+
+      _fcCard(_fmtCostM(tProd),'Annual Production Loss','revenue × hazard loss%','#ef4444')+
+      _fcCard(_fmtCostM(tDmg),'Asset Damage (Acute)','CV × severity × dmg coeff','#f59e0b')+
+      _fcCard(_fmtCostM(tEmer),'Emergency Response','≈10% of production loss','#6b7280')+
+      _fcCard('−'+eImpact.toFixed(1)+'%','EBITDA Impact','production loss ÷ EBITDA',eCol2)+
+      '</div>'+
+      '<table><thead><tr>'+
+      '<th>Asset</th><th>Top Hazards</th>'+
+      '<th style="color:#ef4444">Prod. Loss/yr</th>'+
+      '<th style="color:#f59e0b">Asset Damage</th>'+
+      '<th>Emerg. Response</th>'+
+      '<th style="color:#9333ea">Adapt. Capex</th>'+
+      '<th>Total Exposure</th>'+
+      '</tr></thead><tbody>'+
+      rows2.join('')+
+      '<tr style="background:var(--surf2);font-weight:700;border-top:2px solid var(--brd)">'+
+      '<td colspan="2">Portfolio Total ('+yr+')</td>'+
+      '<td style="color:#ef4444">'+_fmtCostM(tProd)+'</td>'+
+      '<td style="color:#f59e0b">'+_fmtCostM(tDmg)+'</td>'+
+      '<td>'+_fmtCostM(tEmer)+'</td>'+
+      '<td style="color:#9333ea">'+_fmtCostM(tAdapt)+'/5yr</td>'+
+      '<td style="color:'+eCol2+'">'+_fmtCostM(tProd+tDmg+tEmer)+'</td>'+
+      '</tr></tbody></table>'+
+      '<div style="margin-top:8px;padding:8px 12px;background:var(--surf2);border-radius:5px;font-size:11px;color:var(--subtle)">'+
+      '⚠️ Indicative estimates based on parameterised hazard severity. For event-specific modelling with supply chain disruption and credit spread widening, use the <a onclick="document.querySelector(\'[data-p=cascade]\').click()" style="color:var(--accent);cursor:pointer;font-weight:600">🌊 Scenario Cascade</a> panel.'+
+      '</div>'+
+      '</div>';
+  })();
 }
+
+function _fmtCostM(v){return v>=1000?'$'+(v/1000).toFixed(2)+'B':'$'+v.toFixed(1)+'M';}
 
 function showAssetDetail(assetName) {
   var cid = co(), assets = HAZ[cid];
