@@ -4151,6 +4151,93 @@ async function downloadPhysicalRiskReport() {
     'This assessment covers all 10 acute and chronic physical hazard categories identified by IPCC AR6 WG1 Chapter 11 and WGII Chapters 3–4 as financially material. ' +
     'It does not include transition risk (carbon pricing, commodity demand shift) or financial valuation. For a full three-pillar CRI assessment, see the Climate Rating panel.';
 
+  // ── Financial cost computation ─────────────────────────────────────────
+  var _dmgCoeff = {'Agriculture':0.035,'Food & Beverage':0.030,'Beverages':0.030,'Real Estate':0.030,'Energy':0.025,'Utilities':0.025,'Oil & Gas':0.018,'Mining':0.015,'Chemicals':0.022,'Transport':0.020,'Default':0.025};
+  var _revMult  = {'Agriculture':4.0,'Food & Beverage':3.0,'Beverages':3.0,'Real Estate':6.0,'Energy':4.0,'Utilities':4.0,'Oil & Gas':2.5,'Mining':3.5,'Chemicals':2.8,'Transport':2.2,'Default':2.0};
+  var _cvEst    = {'Agriculture':80,'Food & Beverage':120,'Beverages':120,'Real Estate':200,'Energy':150,'Utilities':150,'Oil & Gas':180,'Mining':100,'Chemicals':130,'Transport':90,'Default':100};
+  function _fmtM(v){return v>=1000?'$'+(v/1000).toFixed(2)+'B':'$'+Math.abs(v).toFixed(1)+'M';}
+
+  var assetFinCosts = assetResults.map(function(r) {
+    var a = r.asset; var p = r.prof;
+    var comm = a.commodity || sector || 'Default';
+    var dc = _dmgCoeff[comm] || _dmgCoeff['Default'];
+    var rm = _revMult[comm] || _revMult['Default'];
+    var cv = +(a.cv||0) || (_cvEst[comm]||_cvEst['Default']);
+    var revenue = cv / rm;
+    var ebitda = revenue * 0.20;
+    var prodLoss = revenue * (p.annual_loss_pct||0);
+    var assetDmg = cv * (p.score/100) * dc;
+    var emergency = prodLoss * 0.10;
+    var adaptation = assetDmg * 0.30;
+    var ebitdaPct = ebitda > 0 ? (prodLoss / ebitda) * 100 : 0;
+    var totalCost = prodLoss + assetDmg + emergency;
+    return {
+      name:(a.asset||a.name||'Asset'), region:(a.region||''), cv:cv,
+      prodLoss:prodLoss, assetDmg:assetDmg, emergency:emergency,
+      adaptation:adaptation, ebitdaPct:ebitdaPct, totalCost:totalCost,
+      topHazards:(p.top_hazards||[]).slice(0,3)
+    };
+  });
+  var totalProdLoss = assetFinCosts.reduce(function(s,r){return s+r.prodLoss;},0);
+  var totalAssetDmg = assetFinCosts.reduce(function(s,r){return s+r.assetDmg;},0);
+  var totalEmergency= assetFinCosts.reduce(function(s,r){return s+r.emergency;},0);
+  var totalAdapt    = assetFinCosts.reduce(function(s,r){return s+r.adaptation;},0);
+  var totalFinCost  = totalProdLoss + totalAssetDmg + totalEmergency;
+
+  // ── Multi-scenario comparison (2030 / 2050 / 2100) ────────────────────
+  var _sspSet    = ['ssp126','ssp245','ssp370','ssp585'];
+  var _sspNames  = {ssp126:'SSP1-2.6 · Net Zero 2050',ssp245:'SSP2-4.5 · Delayed Transition',ssp370:'SSP3-7.0 · Current Policies',ssp585:'SSP5-8.5 · Hot House World'};
+  var _sspTemp   = {ssp126:'~0.85°C',ssp245:'~1.35°C',ssp370:'~1.70°C',ssp585:'~2.00°C'};
+  var _sspCols   = {ssp126:'#15803d',ssp245:'#b45309',ssp370:'#c2410c',ssp585:'#b91c1c'};
+  var _horizons  = [2030,2050,2100];
+
+  var scenarioMatrix = _sspSet.map(function(sc) {
+    var byHorizon = _horizons.map(function(h) {
+      var scores = hList.map(function(a) {
+        var prof={score:0,annual_loss_pct:0};
+        try{prof=assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,sc,h,a.commodity||_auditCoSector);}catch(e){}
+        return prof;
+      });
+      var avgScore = scores.length ? Math.round(scores.reduce(function(s,v){return s+(v.score||0);},0)/scores.length*10)/10 : 0;
+      var expM = assetResults.reduce(function(s,r,i){
+        var cv2=+(r.asset.cv||0)||(_cvEst[r.asset.commodity||'Default']||100);
+        return s+cv2*(scores[i]?scores[i].annual_loss_pct||0:0);
+      },0);
+      return {score:avgScore, expM:Math.round(expM*10)/10};
+    });
+    return {ssp:sc, name:_sspNames[sc], temp:_sspTemp[sc], color:_sspCols[sc], byHorizon:byHorizon};
+  });
+
+  // ── Adaptation recommendations by hazard ──────────────────────────────
+  var _adaptMeasures = {
+    'Riverine Flood':     ['Flood barriers & berms ($2–8M/site)','Elevated storage & critical equipment ($0.5–2M)','Drainage system upgrade ($1–4M)','Supply chain dual-sourcing (operational)'],
+    'Flash Flood':        ['Permeable surfacing & retention ponds ($1–3M)','Early-warning sensors & evacuation routes ($0.3–1M)','Waterproof electrical enclosures ($0.2–0.8M)'],
+    'Coastal Flood':      ['Seawall / revetment construction ($5–20M/site)','Tidal gate installation ($3–12M)','Asset relocation assessment (strategic)'],
+    'Sea Level Rise':     ['Long-term relocation planning (strategic)','Raised foundations for new builds ($1–5M)','Adaptive coastal management ($2–8M)'],
+    'Heat Stress':        ['HVAC cooling upgrade ($0.5–3M/building)','Cool roof coating ($0.1–0.5M)','Shift to night-shift production schedules (operational)'],
+    'Drought':            ['Water recycling & closed-loop systems ($1–5M)','Rainwater harvesting ($0.3–1.5M)','Drought-tolerant sourcing (agricultural inputs)'],
+    'Water Stress':       ['Water efficiency audit & metering ($0.1–0.5M)','Alternative water sourcing (borehole/recycled) ($1–3M)','Process water reduction targets (operational)'],
+    'Wildfire':           ['Defensible space clearing (annual maintenance)','Fire-resistant cladding & roofing ($0.5–2M)','On-site water storage for firefighting ($0.3–1M)'],
+    'Cyclone':            ['Wind-rated roofing & cladding ($1–4M)','Backup power with 72h autonomy ($0.5–2M)','Emergency response plan & drills (operational)'],
+    'Landslide':          ['Slope stabilisation / retaining walls ($2–8M)','Ground movement sensors ($0.2–0.8M)','Vegetation restoration on slopes (low-cost)'],
+    'Saltwater Intrusion':['Freshwater storage buffers ($0.5–2M)','Desalination or reverse-osmosis unit ($1–5M)','Corrosion-resistant materials ($0.3–1.5M)'],
+    'Freeze-Thaw Cycle':  ['Frost-resistant infrastructure materials ($0.5–2M)','Pipe insulation & heat tracing ($0.2–1M)','Seasonal maintenance protocols (operational)'],
+    'Compound Flood':     ['Integrated flood-surge barriers ($5–15M)','Combined early-warning system ($0.5–2M)'],
+  };
+
+  var adaptRows = topPortfolioHazards.slice(0,6).map(function(h,i) {
+    var measures = _adaptMeasures[h] || ['Site-specific engineering assessment required'];
+    var urgency = i<2 ? 'Immediate (0–2yr)' : i<4 ? 'Near-term (2–5yr)' : 'Medium-term (5–10yr)';
+    var urgCol  = i<2 ? '#b91c1c' : i<4 ? '#c2410c' : '#b45309';
+    return '<tr style="border-bottom:1px solid #f3f4f6;vertical-align:top">'+
+      '<td style="padding:10px 12px;font-weight:700;font-size:13px">'+(HAZARD_ICONS[h]||'·')+' '+h+'</td>'+
+      '<td style="padding:10px 12px"><span style="background:'+urgCol+'22;color:'+urgCol+';font-size:11px;font-weight:700;padding:2px 8px;border-radius:10px">'+urgency+'</span></td>'+
+      '<td style="padding:10px 12px;font-size:12px;color:#374151"><ul style="margin:0;padding-left:16px">'+
+        measures.map(function(m){return '<li style="margin-bottom:3px">'+m+'</li>';}).join('')+
+      '</ul></td>'+
+    '</tr>';
+  }).join('');
+
   // ── Build HTML ─────────────────────────────────────────────────────────
   var hazardHeaderCols = HAZARD_NAMES.map(function(h){ return '<th style="padding:8px 4px;text-align:center;font-size:10px;color:#6b7280;letter-spacing:.03em;border-bottom:1px solid #e5e7eb;min-width:44px">'+HAZARD_ICONS[h]+'<br>'+h.replace(' ',' ')+'</th>'; }).join('');
 
@@ -4291,6 +4378,140 @@ async function downloadPhysicalRiskReport() {
         '<p style="font-size:11px;color:#9ca3af">'+( assetResults.length-gpsAssets.length)+' asset'+(assetResults.length-gpsAssets.length!==1?'s':'')+' without GPS coordinates not shown. Add lat/lon in Company Setup for site-specific maps.</p>' : '')+
       '</div>'
     : '')+
+
+    // ── SECTION: Financial Cost Analysis ─────────────────────────────────
+    '<div class="section">'+
+      '<h2>💰 Financial Cost Analysis</h2>'+
+      '<p style="font-size:12px;color:#6b7280;margin:0 0 14px">Annual expected losses under '+sspLabel+' at '+yr+' horizon. Production loss = annual_loss_pct × est. revenue per asset. Asset damage = carrying value × (score/100) × sector damage coefficient. Emergency response = 10% of production loss.</p>'+
+      // KPI summary row
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px">'+
+        '<div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:8px;padding:14px;text-align:center">'+
+          '<div style="font-size:22px;font-weight:800;color:#b91c1c">'+_fmtM(totalProdLoss)+'</div>'+
+          '<div style="font-size:11px;color:#6b7280;margin-top:3px">Annual Production Loss</div>'+
+          '<div style="font-size:10px;color:#9ca3af">Revenue × annual loss %</div>'+
+        '</div>'+
+        '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:14px;text-align:center">'+
+          '<div style="font-size:22px;font-weight:800;color:#c2410c">'+_fmtM(totalAssetDmg)+'</div>'+
+          '<div style="font-size:11px;color:#6b7280;margin-top:3px">Asset Damage Exposure</div>'+
+          '<div style="font-size:10px;color:#9ca3af">CV × score × damage coeff</div>'+
+        '</div>'+
+        '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:14px;text-align:center">'+
+          '<div style="font-size:22px;font-weight:800;color:#b45309">'+_fmtM(totalEmergency)+'</div>'+
+          '<div style="font-size:11px;color:#6b7280;margin-top:3px">Emergency Response Cost</div>'+
+          '<div style="font-size:10px;color:#9ca3af">10% of production loss</div>'+
+        '</div>'+
+        '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;text-align:center">'+
+          '<div style="font-size:22px;font-weight:800;color:#15803d">'+_fmtM(totalAdapt)+'</div>'+
+          '<div style="font-size:11px;color:#6b7280;margin-top:3px">Est. Adaptation Investment</div>'+
+          '<div style="font-size:10px;color:#9ca3af">30% of asset damage exposure</div>'+
+        '</div>'+
+      '</div>'+
+      // Per-asset cost table
+      '<div style="overflow-x:auto"><table>'+
+        '<thead><tr>'+
+          '<th>Asset</th>'+
+          '<th style="text-align:right">Carrying Value ($M est.)</th>'+
+          '<th style="text-align:right">Production Loss</th>'+
+          '<th style="text-align:right">Asset Damage</th>'+
+          '<th style="text-align:right">Emergency</th>'+
+          '<th style="text-align:right">EBITDA Impact</th>'+
+          '<th style="text-align:right">Total Annual Cost</th>'+
+        '</tr></thead>'+
+        '<tbody>'+
+        assetFinCosts.map(function(r){
+          var eiCol = r.ebitdaPct>=20?'#b91c1c':r.ebitdaPct>=10?'#c2410c':r.ebitdaPct>=5?'#b45309':'#374151';
+          return '<tr style="border-bottom:1px solid #f3f4f6">'+
+            '<td style="padding:10px 12px;font-weight:600;font-size:13px">'+r.name+'<br><span style="font-size:10px;color:#9ca3af;font-weight:400">'+r.region+'</span></td>'+
+            '<td style="padding:10px 12px;text-align:right;font-size:12px;color:#6b7280">$'+r.cv.toFixed(0)+'M</td>'+
+            '<td style="padding:10px 12px;text-align:right;font-size:12px;font-weight:700;color:#b91c1c">'+_fmtM(r.prodLoss)+'</td>'+
+            '<td style="padding:10px 12px;text-align:right;font-size:12px;font-weight:700;color:#c2410c">'+_fmtM(r.assetDmg)+'</td>'+
+            '<td style="padding:10px 12px;text-align:right;font-size:12px;color:#b45309">'+_fmtM(r.emergency)+'</td>'+
+            '<td style="padding:10px 12px;text-align:right;font-size:12px;font-weight:700;color:'+eiCol+'">'+r.ebitdaPct.toFixed(1)+'%</td>'+
+            '<td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:800;color:#111827">'+_fmtM(r.totalCost)+'</td>'+
+          '</tr>';
+        }).join('')+
+        '<tr style="background:#f9fafb;border-top:2px solid #e5e7eb">'+
+          '<td style="padding:10px 12px;font-weight:800;font-size:13px">Portfolio Total</td>'+
+          '<td style="padding:10px 12px;text-align:right;font-size:12px;color:#6b7280">—</td>'+
+          '<td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:800;color:#b91c1c">'+_fmtM(totalProdLoss)+'</td>'+
+          '<td style="padding:10px 12px;text-align:right;font-size:13px;font-weight:800;color:#c2410c">'+_fmtM(totalAssetDmg)+'</td>'+
+          '<td style="padding:10px 12px;text-align:right;font-size:12px;font-weight:700;color:#b45309">'+_fmtM(totalEmergency)+'</td>'+
+          '<td style="padding:10px 12px;text-align:right;color:#9ca3af">—</td>'+
+          '<td style="padding:10px 12px;text-align:right;font-size:14px;font-weight:900;color:#111827">'+_fmtM(totalFinCost)+'</td>'+
+        '</tr>'+
+        '</tbody></table></div>'+
+      '<p style="font-size:10px;color:#9ca3af;margin-top:8px">Carrying value estimated from sector CV multiples where not provided. Damage coefficient: Beverages/Food 3.0%, Energy 2.5%, Agriculture 3.5%, Oil &amp; Gas 1.8%, Mining 1.5%. EBITDA margin assumed 20% of revenue. All figures are parameterised estimates for climate risk disclosure purposes, not audited financials.</p>'+
+    '</div>'+
+
+    // ── SECTION: Multi-Scenario Comparison ───────────────────────────────
+    '<div class="section">'+
+      '<h2>🔀 Scenario Cascade Analysis</h2>'+
+      '<p style="font-size:12px;color:#6b7280;margin:0 0 14px">Portfolio physical risk score and annual financial exposure across all four IPCC SSP pathways at 2030, 2050, and 2100 horizons. Current scenario highlighted.</p>'+
+      '<div style="overflow-x:auto"><table>'+
+        '<thead><tr>'+
+          '<th>Pathway</th>'+
+          '<th style="text-align:center">Warming</th>'+
+          '<th style="text-align:center" colspan="2">2030</th>'+
+          '<th style="text-align:center" colspan="2">2050</th>'+
+          '<th style="text-align:center" colspan="2">2100</th>'+
+        '</tr>'+
+        '<tr style="background:#f9fafb">'+
+          '<th></th><th></th>'+
+          '<th style="text-align:center;font-size:10px;color:#9ca3af;font-weight:600">Score</th>'+
+          '<th style="text-align:center;font-size:10px;color:#9ca3af;font-weight:600">Exp ($M)</th>'+
+          '<th style="text-align:center;font-size:10px;color:#9ca3af;font-weight:600">Score</th>'+
+          '<th style="text-align:center;font-size:10px;color:#9ca3af;font-weight:600">Exp ($M)</th>'+
+          '<th style="text-align:center;font-size:10px;color:#9ca3af;font-weight:600">Score</th>'+
+          '<th style="text-align:center;font-size:10px;color:#9ca3af;font-weight:600">Exp ($M)</th>'+
+        '</tr></thead>'+
+        '<tbody>'+
+        scenarioMatrix.map(function(sc) {
+          var isCurrent = sc.ssp === ssp;
+          var bg = isCurrent ? 'background:#fffbeb' : '';
+          return '<tr style="border-bottom:1px solid #f3f4f6;'+bg+'">'+
+            '<td style="padding:10px 12px">'+
+              '<div style="font-weight:700;font-size:12px;color:'+sc.color+'">'+sc.name+'</div>'+
+              (isCurrent?'<span style="font-size:10px;background:#fde68a;color:#92400e;padding:1px 6px;border-radius:8px;font-weight:700">Current Analysis</span>':'')+
+            '</td>'+
+            '<td style="padding:10px 12px;text-align:center;font-size:12px;color:'+sc.color+';font-weight:700">'+sc.temp+'</td>'+
+            sc.byHorizon.map(function(h) {
+              var sc2=h.score>=80?'#b91c1c':h.score>=60?'#c2410c':h.score>=40?'#b45309':h.score>=20?'#1d4ed8':'#15803d';
+              return '<td style="padding:10px 8px;text-align:center;font-size:12px;font-weight:700;color:'+sc2+'">'+h.score+'</td>'+
+                     '<td style="padding:10px 8px;text-align:center;font-size:11px;color:#374151">'+_fmtM(h.expM)+'</td>';
+            }).join('')+
+          '</tr>';
+        }).join('')+
+        '</tbody></table></div>'+
+      '<p style="font-size:10px;color:#9ca3af;margin-top:8px">Score = equal-weighted average physical risk score (0–100) across all portfolio assets. Exposure = Σ(CV × annual_loss_pct). All pathways use the same asset base; scenario divergence reflects SSP-scaled hazard intensification.</p>'+
+    '</div>'+
+
+    // ── SECTION: Adaptation Roadmap ───────────────────────────────────────
+    (adaptRows ? '<div class="section">'+
+      '<h2>🛡 Adaptation Roadmap</h2>'+
+      '<p style="font-size:12px;color:#6b7280;margin:0 0 14px">Priority adaptation measures for dominant portfolio hazards. Estimated cost ranges are indicative for planning purposes and vary significantly by asset size, geography, and existing infrastructure.</p>'+
+      '<table>'+
+        '<thead><tr><th style="min-width:140px">Hazard</th><th style="min-width:120px">Urgency</th><th>Recommended Measures & Indicative Costs</th></tr></thead>'+
+        '<tbody>'+adaptRows+'</tbody>'+
+      '</table>'+
+      '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px">'+
+        '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px">'+
+          '<div style="font-size:13px;font-weight:800;color:#15803d;margin-bottom:4px">💡 Cost-Benefit Indication</div>'+
+          '<div style="font-size:12px;color:#374151">Est. annual risk exposure without adaptation: <strong>'+_fmtM(totalFinCost)+'</strong></div>'+
+          '<div style="font-size:12px;color:#374151;margin-top:4px">Est. adaptation investment required: <strong>'+_fmtM(totalAdapt)+'</strong></div>'+
+          '<div style="font-size:11px;color:#6b7280;margin-top:6px">Effective adaptation typically reduces annual losses by 40–70%, implying positive NPV over a 10-year horizon for high-risk assets.</div>'+
+        '</div>'+
+        '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px">'+
+          '<div style="font-size:13px;font-weight:800;color:#1d4ed8;margin-bottom:4px">📋 Regulatory Alignment</div>'+
+          '<div style="font-size:11px;color:#374151;line-height:1.6">'+
+            '· <strong>TCFD</strong> — Risk management & metrics/targets pillars<br>'+
+            '· <strong>IFRS S2</strong> — Physical risk exposure & resilience strategy<br>'+
+            '· <strong>CSRD ESRS E1</strong> — E1-9 physical risk & adaptation plans<br>'+
+            '· <strong>ECB Climate Stress Test</strong> — Transition & physical scenarios<br>'+
+            '· <strong>EBA Pillar 3 ESG</strong> — Physical risk disclosures'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+    '</div>' : '')+
 
     // Data sources
     '<div class="section">'+
