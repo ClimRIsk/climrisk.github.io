@@ -5055,6 +5055,175 @@ async function downloadPhysicalRiskReport() {
       '</div>'+
     '</div>'+
 
+    // ── SECTION: Sensitivity Analysis ──────────────────────────────────
+    (function() {
+      // 1. SCENARIO MATRIX: 4 SSPs × 3 horizons → portfolio score grid
+      var _saSsps   = ['ssp126','ssp245','ssp370','ssp585'];
+      var _saYears  = [2030, 2050, 2100];
+      var _saLabels = {ssp126:'SSP1-2.6 (1.5°C)',ssp245:'SSP2-4.5 (2°C)',ssp370:'SSP3-7.0 (3°C)',ssp585:'SSP5-8.5 (4.5°C)'};
+      var _saColors = {ssp126:'#15803d',ssp245:'#b45309',ssp370:'#c2410c',ssp585:'#b91c1c'};
+      // Build matrix: _saMatrix[ssp][year] = weighted portfolio score
+      var _saMatrix = {};
+      _saSsps.forEach(function(s) {
+        _saMatrix[s] = {};
+        _saYears.forEach(function(y) {
+          var tot = 0, wt = 0;
+          assetResults.forEach(function(r) {
+            var a = r.asset;
+            var p = assessHazardsSector(a.region||a.country||'global', +a.lat||null, +a.lon||null, s, y, sector||'Default');
+            var w = +(a.cv||0)||100;
+            tot += (p.score||0) * w;
+            wt  += w;
+          });
+          _saMatrix[s][y] = wt ? Math.round(tot/wt*10)/10 : 0;
+        });
+      });
+
+      // 2. FORMULA SENSITIVITY: vary peak weight from 20% to 80%
+      var _saWeights = [0.20, 0.35, 0.50, 0.65, 0.80];
+      var _saFormScore = _saWeights.map(function(pw) {
+        var tot = 0, wt = 0;
+        assetResults.forEach(function(r) {
+          var prof = r.profile || r.prof || {};
+          var peakS = prof.peak_hazard ? prof.peak_hazard.sev : 0;
+          var allH  = (prof.hazards||[]).filter(function(h){return h.applicable && h.sev>0;});
+          var avgS  = allH.length ? allH.reduce(function(s,h){return s+h.sev;},0)/allH.length : 0;
+          var sc    = Math.min(100, (pw*peakS + (1-pw)*avgS)*20);
+          var w     = +(r.asset.cv||0)||100;
+          tot += sc*w; wt += w;
+        });
+        return {pw: Math.round(pw*100), score: wt ? Math.round(tot/wt*10)/10 : 0};
+      });
+
+      // 3. TORNADO: single-hazard perturbation (±20% sev on each active hazard)
+      var _allHazardNames = ['Heat Stress','Riverine Flood','Coastal Flood','Water Stress','Wildfire','Drought','Cyclone','Sea Level Rise','Landslide','Saltwater Intrusion'];
+      var _baseScore = portfolioScore;
+      var _tornado = _allHazardNames.map(function(hName) {
+        function _perturbScore(delta) {
+          var tot=0, wt=0;
+          assetResults.forEach(function(r) {
+            var prof = r.profile || r.prof || {};
+            var allH = (prof.hazards||[]).filter(function(h){return h.applicable;});
+            var pertH = allH.map(function(h){ return {h:h.h, sev: h.h===hName ? Math.min(5,Math.max(0,h.sev+delta)) : h.sev}; });
+            var active = pertH.filter(function(h){return h.sev>0;});
+            if (!active.length) { wt+=+(r.asset.cv||0)||100; return; }
+            var avgS = active.reduce(function(s,h){return s+h.sev;},0)/active.length;
+            var peakS = Math.max.apply(null, active.map(function(h){return h.sev;}));
+            var sc = Math.min(100,(0.5*peakS+0.5*avgS)*20);
+            var w = +(r.asset.cv||0)||100;
+            tot+=sc*w; wt+=w;
+          });
+          return wt ? Math.round(tot/wt*10)/10 : 0;
+        }
+        // Only show hazards that actually exist with sev>0 in any asset
+        var isActive = assetResults.some(function(r){
+          return ((r.profile||r.prof||{}).hazards||[]).some(function(h){return h.h===hName && h.applicable && h.sev>0;});
+        });
+        if (!isActive) return null;
+        var up   = _perturbScore(+1.0);  // +20% sev shift (≈1 point on 1–5 scale)
+        var down = _perturbScore(-1.0);
+        return {name:hName, up:up, down:down, range: Math.round((up-down)*10)/10};
+      }).filter(Boolean).sort(function(a,b){return b.range-a.range;}).slice(0,8);
+
+      // helper
+      function _saCell(s) {
+        var col = s>=70?'#b91c1c':s>=50?'#c2410c':s>=40?'#b45309':s>=20?'#1d4ed8':'#15803d';
+        var bg  = s>=70?'#fff1f2':s>=50?'#fff7ed':s>=40?'#fffbeb':s>=20?'#eff6ff':'#f0fdf4';
+        return '<td style="text-align:center;padding:8px 12px;background:'+bg+'"><span style="font-weight:800;font-size:13px;color:'+col+'">'+s.toFixed(1)+'</span></td>';
+      }
+      var _maxTornRange = _tornado.length ? _tornado[0].range : 1;
+
+      return '<div class="section">'+
+        '<h2>🎛️ Sensitivity Analysis</h2>'+
+        '<p style="font-size:12px;color:#6b7280;margin:0 0 18px">How does the portfolio risk score change under different modelling assumptions? Three lenses: scenario pathway, score formula, and individual hazard perturbation.</p>'+
+
+        // ── LENS 1: Scenario Matrix
+        '<h3 style="font-size:13px;font-weight:700;color:#374151;margin:0 0 10px">1 · Scenario Pathway Matrix — Portfolio Score (all assets, CV-weighted)</h3>'+
+        '<p style="font-size:11px;color:#9ca3af;margin:0 0 10px">Each cell = portfolio composite score under that SSP × time horizon combination. Your selected scenario is <strong>'+ssp.toUpperCase()+' / '+yr+'</strong>.</p>'+
+        '<div style="overflow-x:auto"><table>'+
+          '<thead><tr>'+
+            '<th style="text-align:left;padding:8px 12px">Scenario</th>'+
+            _saYears.map(function(y){return '<th style="text-align:center;padding:8px 12px">'+y+'</th>';}).join('')+
+            '<th style="text-align:center;padding:8px 12px">Δ 2030→2100</th>'+
+          '</tr></thead><tbody>'+
+          _saSsps.map(function(s){
+            var rowCurrent = (s===ssp);
+            return '<tr style="border-bottom:1px solid #f3f4f6;'+(rowCurrent?'background:#fefce8;':'')+'">'+
+              '<td style="padding:8px 12px;font-weight:'+(rowCurrent?700:400)+';color:'+_saColors[s]+'">'+
+                (rowCurrent?'★ ':'')+_saLabels[s]+
+              '</td>'+
+              _saYears.map(function(y){
+                var isCurrent = rowCurrent && y===yr;
+                return '<td style="text-align:center;padding:8px 12px;'+(isCurrent?'outline:2px solid '+_saColors[s]+';outline-offset:-2px;':'')+'background:'+
+                  (_saMatrix[s][y]>=70?'#fff1f2':_saMatrix[s][y]>=50?'#fff7ed':_saMatrix[s][y]>=40?'#fffbeb':_saMatrix[s][y]>=20?'#eff6ff':'#f0fdf4')+'">'+
+                  '<span style="font-weight:'+(isCurrent?800:600)+';font-size:13px;color:'+
+                  (_saMatrix[s][y]>=70?'#b91c1c':_saMatrix[s][y]>=50?'#c2410c':_saMatrix[s][y]>=40?'#b45309':_saMatrix[s][y]>=20?'#1d4ed8':'#15803d')+'">'+
+                  _saMatrix[s][y].toFixed(1)+'</span></td>';
+              }).join('')+
+              '<td style="text-align:center;padding:8px 12px;font-size:12px;font-weight:700;color:'+(_saMatrix[s][2100]-_saMatrix[s][2030]>=0?'#b91c1c':'#15803d')+'">'+
+                (_saMatrix[s][2100]-_saMatrix[s][2030]>=0?'+':'')+(_saMatrix[s][2100]-_saMatrix[s][2030]).toFixed(1)+
+              '</td>'+
+            '</tr>';
+          }).join('')+
+          '</tbody></table></div>'+
+        '<p style="font-size:10px;color:#9ca3af;margin:6px 0 22px">★ = selected scenario. All 12 combinations computed by CRI engine on same asset register.</p>'+
+
+        // ── LENS 2: Formula Sensitivity
+        '<h3 style="font-size:13px;font-weight:700;color:#374151;margin:0 0 10px">2 · Score Formula Sensitivity — Peak Weight (α)</h3>'+
+        '<p style="font-size:11px;color:#6b7280;margin:0 0 10px">Current formula: <code style="background:#f3f4f6;padding:2px 5px;border-radius:3px">score = α × peak_sev × 20 + (1−α) × mean_sev × 20</code>, α = 0.50. Range shown for α ∈ {0.20, 0.35, 0.50, 0.65, 0.80}.</p>'+
+        '<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:8px;flex-wrap:wrap">'+
+          _saFormScore.map(function(f){
+            var isCur = f.pw===50;
+            var colH = Math.round(f.score/100*120);
+            var col = f.score>=70?'#b91c1c':f.score>=50?'#c2410c':f.score>=40?'#b45309':f.score>=20?'#1d4ed8':'#15803d';
+            return '<div style="text-align:center;flex:1;min-width:60px">'+
+              '<div style="font-size:11px;font-weight:'+(isCur?700:400)+';color:'+(isCur?col:'#6b7280');+'margin-bottom:4px">'+f.score.toFixed(1)+'</div>'+
+              '<div style="width:100%;height:'+Math.max(8,Math.round(f.score*1.2))+'px;background:'+col+';border-radius:4px 4px 0 0;opacity:'+(isCur?1:0.55)+'"></div>'+
+              '<div style="font-size:10px;margin-top:4px;color:'+(isCur?'#374151':'#9ca3af')+';font-weight:'+(isCur?700:400)+'">α='+(f.pw/100).toFixed(2)+(isCur?' ★':'')+'</div>'+
+            '</div>';
+          }).join('')+
+        '</div>'+
+        '<p style="font-size:10px;color:#9ca3af;margin:0 0 22px">Score range across all formula variants: '+
+          Math.min.apply(null,_saFormScore.map(function(f){return f.score;})).toFixed(1)+' – '+
+          Math.max.apply(null,_saFormScore.map(function(f){return f.score;})).toFixed(1)+
+          '. A higher α penalises portfolios with one extreme hazard more severely.</p>'+
+
+        // ── LENS 3: Tornado Chart
+        '<h3 style="font-size:13px;font-weight:700;color:#374151;margin:0 0 10px">3 · Hazard Perturbation Tornado — Impact of ±1.0 Severity Shift</h3>'+
+        '<p style="font-size:11px;color:#6b7280;margin:0 0 10px">Each hazard severity is independently shifted by +1.0 (↑) and −1.0 (↓) on the 0–5 scale, with all others held constant. Shows which hazards drive portfolio score most.</p>'+
+        (_tornado.length ? (
+          '<div style="margin-bottom:6px;display:grid;grid-template-columns:140px 1fr 1fr 60px;gap:4px;font-size:10px;font-weight:700;color:#9ca3af;border-bottom:1px solid #e5e7eb;padding-bottom:4px">'+
+            '<span>Hazard</span><span style="text-align:right;padding-right:8px">Score if sev −1</span><span>Score if sev +1</span><span style="text-align:center">Range</span>'+
+          '</div>'+
+          _tornado.map(function(t,i) {
+            var barWid  = Math.round(Math.max(4,(t.range/_maxTornRange)*45));
+            var barWidD = Math.round(Math.max(4,((_baseScore-t.down)/_maxTornRange)*45));
+            var barWidU = Math.round(Math.max(4,((t.up-_baseScore)/_maxTornRange)*45));
+            var col     = i===0?'#b91c1c':i<=2?'#c2410c':'#b45309';
+            var icon    = HAZARD_ICONS[t.name]||'⚡';
+            return '<div style="display:grid;grid-template-columns:140px 1fr 1fr 60px;gap:4px;align-items:center;padding:5px 0;border-bottom:1px solid #f9fafb">'+
+              '<span style="font-size:11px;font-weight:600;color:#374151">'+icon+' '+t.name+'</span>'+
+              '<div style="display:flex;justify-content:flex-end;align-items:center;gap:4px;padding-right:8px">'+
+                '<span style="font-size:11px;color:#15803d;font-weight:600">'+t.down.toFixed(1)+'</span>'+
+                '<div style="width:'+barWidD+'px;height:8px;background:#15803d;border-radius:2px;opacity:0.7"></div>'+
+              '</div>'+
+              '<div style="display:flex;align-items:center;gap:4px">'+
+                '<div style="width:'+barWidU+'px;height:8px;background:'+col+';border-radius:2px;opacity:0.7"></div>'+
+                '<span style="font-size:11px;color:'+col+';font-weight:600">'+t.up.toFixed(1)+'</span>'+
+              '</div>'+
+              '<span style="text-align:center;font-size:11px;font-weight:800;color:'+col+'">'+t.range.toFixed(1)+'</span>'+
+            '</div>';
+          }).join('')+
+          '<div style="display:grid;grid-template-columns:140px 1fr 1fr 60px;gap:4px;align-items:center;padding:6px 0;border-top:2px solid #e5e7eb;margin-top:4px">'+
+            '<span style="font-size:11px;font-weight:700;color:#374151">Baseline (selected)</span>'+
+            '<div style="display:flex;justify-content:flex-end;padding-right:8px"><span style="font-size:13px;font-weight:800;color:#374151">'+_baseScore.toFixed(1)+'</span></div>'+
+            '<span></span><span></span>'+
+          '</div>'
+        ) : '<p style="font-size:12px;color:#9ca3af">Insufficient hazard data for perturbation analysis.</p>')+
+        '<p style="font-size:10px;color:#9ca3af;margin-top:10px">Perturbation = ±1.0 on 0–5 severity scale (≈20% shift). All other hazards held fixed. Higher range = model is more sensitive to uncertainty in that hazard\'s projection. Strongest driver indicates where additional monitoring investment is most valuable.</p>'+
+      '</div>';
+    })()+
+
     // Data sources
     '<div class="section">'+
       '<h2>📚 Data Sources & Methodology</h2>'+
