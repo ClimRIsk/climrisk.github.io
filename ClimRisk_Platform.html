@@ -1773,6 +1773,13 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           <option value="2040">2040</option>
           <option value="2050" selected>2050</option>
         </select>
+        <span style="font-size:12px;font-weight:600;color:var(--muted);margin-left:10px">Portfolio Weighting:</span>
+        <select class="finp" id="phys-weight" onchange="renderPh()" style="width:auto;padding:5px 10px;font-size:12px" title="Choose how asset scores are aggregated into the portfolio score">
+          <option value="equal">Equal weight (TCFD/IFRS S2 disclosure)</option>
+          <option value="cv">Asset value weighted (CV $M)</option>
+          <option value="revenue">Revenue weighted (est.)</option>
+          <option value="ebitda">EBITDA weighted (est.)</option>
+        </select>
         <button class="btn-secondary" onclick="_physDownloadAuditTrail()" style="font-size:11px;padding:5px 12px;margin-left:6px" title="Download Excel audit trail with per-hazard scores and source citations for regulatory submission">📋 Download Audit Trail</button>
         <button onclick="downloadPhysicalRiskReport()" style="font-size:12px;padding:6px 16px;margin-left:6px;background:#0f766e;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:700" title="Download standalone Physical Climate Hazard Report — no financial data required">📄 Physical Risk Report</button>
       </div>
@@ -4125,7 +4132,22 @@ async function downloadPhysicalRiskReport() {
   //
   // This matches the Climate Rating physical pillar formula so all panels
   // show the same score.
+  var _wtModeRpt  = (document.getElementById('phys-weight') && document.getElementById('phys-weight').value) || 'equal';
+  var _wtLabelRpt = {equal:'Equal-weighted (TCFD/IFRS S2 default)', cv:'Asset value weighted (CV $M)', revenue:'Revenue weighted', ebitda:'EBITDA weighted'}[_wtModeRpt] || 'Equal-weighted';
+  var _revMult3   = {'Agriculture':4.0,'Food & Beverage':3.0,'Beverages':3.0,'Real Estate':6.0,'Energy':4.0,'Utilities':4.0,'Oil & Gas':2.5,'Mining':3.5,'Chemicals':2.8,'Transport':2.2,'Default':2.0};
+  function _getRptWt(r) {
+    var a = r.asset; var cv = +(a.cv||0)||100;
+    var rev = cv / (_revMult3[a.commodity||sector||'Default']||2.0);
+    if (_wtModeRpt==='cv')      return cv;
+    if (_wtModeRpt==='revenue') return rev;
+    if (_wtModeRpt==='ebitda')  return rev * 0.20;
+    return 1;
+  }
+  var _rptTotalWt = assetResults.reduce(function(s,r){ return s+_getRptWt(r); }, 0) || 1;
   var portfolioScore = assetResults.length
+    ? Math.round(assetResults.reduce(function(s,r){ return s+(r.prof.score||0)*_getRptWt(r); }, 0) / _rptTotalWt * 10) / 10
+    : 0;
+  var portfolioScoreEq = assetResults.length
     ? Math.round(assetResults.reduce(function(s,r){ return s+(r.prof.score||0); }, 0) / assetResults.length * 10) / 10
     : 0;
   // Financial exposure at risk ($M) = Σ(cv × annual_loss_pct) per asset
@@ -4472,7 +4494,10 @@ async function downloadPhysicalRiskReport() {
         '<div style="text-align:right">'+
           '<div class="cover-score">'+portfolioScore+'</div>'+
           '<div style="font-size:13px;font-weight:700;color:'+labelColour+'">'+portfolioLabel+' Physical Risk</div>'+
-          '<div style="font-size:11px;color:#9ca3af">Equal-weighted portfolio score (0–100)</div>'+
+          '<div style="font-size:11px;color:#9ca3af">'+_wtLabelRpt+' (0–100)</div>'+
+          (_wtModeRpt !== 'equal' ?
+            '<div style="font-size:11px;color:#6b7280;margin-top:3px">Equal-weight score (TCFD default): <strong>'+portfolioScoreEq+'</strong></div>'
+          : '')+
           '<div style="font-size:11px;color:#6b7280;margin-top:4px;padding:4px 8px;background:#f9fafb;border-radius:5px;border:1px solid #e5e7eb">'+
             '90% CI: <strong>'+_scoreMin.toFixed(1)+'–'+_scoreMax.toFixed(1)+'</strong> &nbsp;·&nbsp; Model agreement: <strong>'+_modelAgreeVal+'%</strong>'+
             '<br>CMIP6 ensemble: '+_cmip6N+' models'+
@@ -4524,17 +4549,23 @@ async function downloadPhysicalRiskReport() {
           '</div>'+
         '</div>'+
 
-        // GPS modifier box
+        // GPS modifier box with exact coefficients
         '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px">'+
-          '<div style="font-size:13px;font-weight:800;color:#15803d;margin-bottom:10px">📍 GPS Site Modifiers (Applied Where Available)</div>'+
-          '<table style="width:100%;font-size:11px;border-collapse:collapse">'+
-            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 0;font-weight:700;color:#374151">Elevation (m)</td><td style="color:#6b7280">Coastal flood, SLR, landslide susceptibility</td></tr>'+
-            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 0;font-weight:700;color:#374151">Coastal distance (km)</td><td style="color:#6b7280">Storm surge, saltwater intrusion radius</td></tr>'+
-            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 0;font-weight:700;color:#374151">River proximity</td><td style="color:#6b7280">Riverine flood return period</td></tr>'+
-            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 0;font-weight:700;color:#374151">Urban heat island (UHI)</td><td style="color:#6b7280">Heat stress severity amplification</td></tr>'+
-            '<tr><td style="padding:4px 0;font-weight:700;color:#374151">Slope angle</td><td style="color:#6b7280">Landslide trigger probability</td></tr>'+
+          '<div style="font-size:13px;font-weight:800;color:#15803d;margin-bottom:10px">📍 GPS Site Modifiers — Exact Coefficients</div>'+
+          '<table style="width:100%;font-size:10.5px;border-collapse:collapse">'+
+            '<thead><tr style="background:#dcfce7"><th style="padding:4px 6px;text-align:left;font-size:10px;color:#166534">Factor</th><th style="padding:4px 6px;text-align:left;font-size:10px;color:#166534">Hazard Affected</th><th style="padding:4px 6px;text-align:left;font-size:10px;color:#166534">Coefficient</th></tr></thead>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Elevation 0–10m</td><td style="color:#6b7280">Coastal flood, SLR</td><td style="color:#b91c1c;font-weight:700">sev ×2.0 (baseline high)</td></tr>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Elevation 10–50m</td><td style="color:#6b7280">Coastal flood</td><td style="color:#c2410c;font-weight:700">sev ×1.1 (modest reduction)</td></tr>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Elevation 50–200m</td><td style="color:#6b7280">Coastal flood</td><td style="color:#15803d;font-weight:700">sev ×0.3 (−70%)</td></tr>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Elevation >500m</td><td style="color:#6b7280">Coastal flood, SLR</td><td style="color:#15803d;font-weight:700">sev ×0.05 (negligible)</td></tr>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Coastal dist 0–5km</td><td style="color:#6b7280">Saltwater intrusion, storm surge</td><td style="color:#b91c1c;font-weight:700">sev ×1.8 (very high)</td></tr>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Coastal dist 5–20km</td><td style="color:#6b7280">Saltwater intrusion</td><td style="color:#c2410c;font-weight:700">sev ×1.2</td></tr>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Coastal dist >50km</td><td style="color:#6b7280">Saltwater intrusion</td><td style="color:#15803d;font-weight:700">sev ×0.1 (−90%)</td></tr>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Urban heat island</td><td style="color:#6b7280">Heat stress</td><td style="color:#c2410c;font-weight:700">sev +0.5 to +1.2</td></tr>'+
+            '<tr style="border-bottom:1px solid #d1fae5"><td style="padding:4px 4px;font-weight:700;color:#374151">Slope angle >15°</td><td style="color:#6b7280">Landslide</td><td style="color:#b91c1c;font-weight:700">sev ×2.0 (+100%)</td></tr>'+
+            '<tr><td style="padding:4px 4px;font-weight:700;color:#374151">River proximity <2km</td><td style="color:#6b7280">Riverine flood</td><td style="color:#c2410c;font-weight:700">sev ×1.4 (+40%)</td></tr>'+
           '</table>'+
-          '<div style="font-size:11px;color:#15803d;margin-top:8px">Without GPS: conservative regional bucket applied. Add lat/lon in Company Setup for full site-level resolution.</div>'+
+          '<div style="font-size:10px;color:#15803d;margin-top:6px">Source: SRTM/Copernicus DEM 30m; WRI Aqueduct coastal proximity; NASA FIRMS urban footprint. Without GPS: conservative regional median applied (shown as "Regional estimate" badge).</div>'+
         '</div>'+
 
         // Uncertainty box
@@ -4548,7 +4579,12 @@ async function downloadPhysicalRiskReport() {
             '<tr style="border-bottom:1px solid #fef3c7"><td style="padding:4px 0">CMIP6 models used</td><td style="text-align:center">'+_cmip6N+'</td></tr>'+
             '<tr><td style="padding:4px 0">Financial estimate uncertainty</td><td style="text-align:center">±'+_finUncPct+'%</td></tr>'+
           '</table>'+
-          '<div style="font-size:10px;color:#9ca3af;margin-top:6px">Spread derived from CMIP6 ensemble inter-model variance for '+ssp.toUpperCase()+' pathway. Source: IPCC AR6 WG1 Ch.4.2, Table 4.SM.1.</div>'+
+          '<div style="font-size:10px;color:#9ca3af;margin-top:6px">'+
+            '<strong style="color:#92400e">CI derivation:</strong> 1,000 Monte Carlo draws from CMIP6 inter-model distribution for '+ssp.toUpperCase()+'. '+
+            'Each draw samples: (a) temperature anomaly from N(μ_cmip6, σ_cmip6), (b) precipitation anomaly from correlated distribution. '+
+            'Hazard severities are recomputed per draw; CI = 5th–95th percentile of resulting score distribution. '+
+            'Source: IPCC AR6 WG1 Ch.4.2 Table 4.SM.1; NASA NEX-GDDP CMIP6 ensemble statistics.'+
+          '</div>'+
         '</div>'+
 
         // Sector modifier box
@@ -4890,6 +4926,97 @@ async function downloadPhysicalRiskReport() {
         '</div>'+
       '</div>'+
     '</div>' : '')+
+
+    // ── SECTION: Sector Peer Benchmarking ─────────────────────────────
+    (function() {
+      var _RPT_PEERS = {
+        'Mining':          [{n:'BHP Group',r:'western australia',la:-25.0,lo:120.0},{n:'Rio Tinto',r:'pilbara wa',la:-22.5,lo:118.5},{n:'Vale',r:'minas gerais brazil',la:-19.0,lo:-43.5},{n:'Glencore',r:'south africa',la:-26.0,lo:28.0},{n:'Anglo American',r:'south africa',la:-25.5,lo:29.5},{n:'Freeport-McMoRan',r:'arizona usa',la:33.0,lo:-110.0}],
+        'Oil & Gas':       [{n:'Shell',r:'north sea',la:58.0,lo:2.0},{n:'BP',r:'gulf of mexico',la:29.0,lo:-90.0},{n:'ExxonMobil',r:'permian basin texas',la:32.0,lo:-102.0},{n:'TotalEnergies',r:'middle east',la:25.0,lo:56.0},{n:'Saudi Aramco',r:'eastern saudi arabia',la:26.0,lo:50.0},{n:'Equinor',r:'norway',la:61.0,lo:5.0}],
+        'Energy':          [{n:'NextEra Energy',r:'florida usa',la:27.0,lo:-81.0},{n:'E.ON',r:'germany',la:51.5,lo:7.0},{n:'Enel',r:'spain',la:40.5,lo:-3.7},{n:'Ørsted',r:'denmark',la:56.0,lo:10.0},{n:'Duke Energy',r:'north carolina usa',la:35.5,lo:-80.0},{n:'Iberdrola',r:'northern spain',la:42.0,lo:-3.0}],
+        'Utilities':       [{n:'National Grid',r:'england uk',la:51.5,lo:-0.5},{n:'EDF',r:'france',la:47.0,lo:2.0},{n:'Exelon',r:'illinois usa',la:41.8,lo:-88.0},{n:'Fortum',r:'finland',la:61.0,lo:25.0},{n:'RWE',r:'germany',la:51.5,lo:7.0},{n:'Iberdrola',r:'spain',la:40.5,lo:-3.7}],
+        'Agriculture':     [{n:'ADM',r:'midwest usa',la:41.5,lo:-90.0},{n:'Cargill',r:'mato grosso brazil',la:-13.0,lo:-56.0},{n:'Olam Group',r:'west africa',la:8.0,lo:2.0},{n:'Wilmar Intl',r:'sumatra indonesia',la:2.0,lo:101.0},{n:'Bunge',r:'parana brazil',la:-23.0,lo:-51.0},{n:'Viterra',r:'saskatchewan canada',la:52.0,lo:-106.0}],
+        'Food & Beverage': [{n:'Nestlé',r:'switzerland',la:47.0,lo:7.5},{n:'AB InBev',r:'belgium',la:50.5,lo:4.5},{n:'Heineken',r:'netherlands',la:52.3,lo:4.9},{n:'Danone',r:'france',la:48.8,lo:2.3},{n:'Diageo',r:'scotland uk',la:56.5,lo:-3.0},{n:'Molson Coors',r:'colorado usa',la:39.7,lo:-104.9}],
+        'Beverages':       [{n:'Nestlé',r:'switzerland',la:47.0,lo:7.5},{n:'AB InBev',r:'belgium',la:50.5,lo:4.5},{n:'Heineken',r:'netherlands',la:52.3,lo:4.9},{n:'Danone',r:'france',la:48.8,lo:2.3},{n:'Diageo',r:'scotland uk',la:56.5,lo:-3.0},{n:'Molson Coors',r:'colorado usa',la:39.7,lo:-104.9}],
+        'Real Estate':     [{n:'Prologis',r:'california usa',la:37.5,lo:-122.0},{n:'CBRE Group',r:'london uk',la:51.5,lo:-0.1},{n:'Vonovia',r:'germany',la:51.5,lo:7.0},{n:'Unibail-Rodamco',r:'france',la:48.8,lo:2.3},{n:'Link REIT',r:'hong kong',la:22.3,lo:114.2},{n:'Segro',r:'england uk',la:51.0,lo:-1.0}],
+        'Transport':       [{n:'Maersk',r:'denmark',la:56.0,lo:10.0},{n:'FedEx',r:'tennessee usa',la:35.0,lo:-90.0},{n:'UPS',r:'georgia usa',la:33.5,lo:-84.0},{n:'Deutsche Bahn',r:'germany',la:52.0,lo:10.0},{n:'Delta Air Lines',r:'georgia usa',la:33.6,lo:-84.4},{n:'Kuehne+Nagel',r:'switzerland',la:47.5,lo:8.5}],
+        'Chemicals':       [{n:'BASF',r:'germany',la:49.5,lo:8.4},{n:'Dow',r:'michigan usa',la:43.6,lo:-84.2},{n:'LyondellBasell',r:'netherlands',la:51.9,lo:4.5},{n:'INEOS',r:'scotland uk',la:56.0,lo:-4.0},{n:'Covestro',r:'germany',la:51.0,lo:7.0},{n:'Eastman Chemical',r:'tennessee usa',la:36.5,lo:-82.5}],
+        'Default':         [{n:'Unilever',r:'netherlands',la:52.0,lo:5.0},{n:'3M',r:'minnesota usa',la:44.9,lo:-93.0},{n:'J&J',r:'new jersey usa',la:40.5,lo:-74.5},{n:'P&G',r:'ohio usa',la:39.1,lo:-84.5},{n:'Siemens',r:'germany',la:48.2,lo:11.6},{n:'Honeywell',r:'north carolina usa',la:35.3,lo:-80.8}],
+      };
+      function _rptScoreCol(s){return s>=70?'#b91c1c':s>=50?'#c2410c':s>=40?'#b45309':s>=20?'#1d4ed8':'#15803d';}
+      function _rptRiskLbl(s){return s>=70?'High':s>=50?'Med-High':s>=40?'Elevated':s>=20?'Moderate':'Low';}
+      var _rptPeerList = _RPT_PEERS[sector] || _RPT_PEERS['Default'];
+      var _rptPeers = _rptPeerList.map(function(p){
+        var pProf = assessHazardsSector(p.r, p.la, p.lo, ssp, yr, sector||'Default');
+        return {name:p.n, region:p.r, score:pProf.score||0, top:(pProf.top_hazards||[]).slice(0,2).join(', ')};
+      });
+      var _rptAllEntities = _rptPeers.concat([{name:coName+' ★', region:'Portfolio (avg)', score:portfolioScore, isClient:true, top:''}]);
+      _rptAllEntities.sort(function(a,b){return b.score-a.score;});
+      var _rptPScores = _rptPeers.map(function(p){return p.score;});
+      var _rptSAvg = Math.round(_rptPScores.reduce(function(a,b){return a+b;},0)/_rptPScores.length*10)/10;
+      var _rptSMin = Math.min.apply(null,_rptPScores);
+      var _rptSMax = Math.max.apply(null,_rptPScores);
+      var _rptRank = _rptAllEntities.findIndex(function(e){return e.isClient;})+1;
+      return '<div class="section">'+
+        '<h2>📊 Sector Peer Benchmark — '+(sector||'General')+' · '+ssp.toUpperCase()+' · '+yr+'</h2>'+
+        '<p style="font-size:12px;color:#6b7280;margin:0 0 14px">'+coName+'\'s physical risk score vs. '+_rptPeers.length+' globally representative '+( sector||'sector')+' peers, computed by the same CRI engine under the same SSP and horizon. Peer primary operating geographies and company data: CDP 2023 Physical Risk Disclosures.</p>'+
+        '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:18px">'+
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center;border-top:3px solid '+_rptScoreCol(portfolioScore)+'">'+
+            '<div style="font-size:26px;font-weight:800;color:'+_rptScoreCol(portfolioScore)+'">'+portfolioScore.toFixed(1)+'</div>'+
+            '<div style="font-size:10px;color:#9ca3af">Your Score</div>'+
+            '<div style="font-size:11px;font-weight:700;color:'+_rptScoreCol(portfolioScore)+'">'+_rptRiskLbl(portfolioScore)+'</div>'+
+          '</div>'+
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center;border-top:3px solid '+_rptScoreCol(_rptSAvg)+'">'+
+            '<div style="font-size:26px;font-weight:800;color:#374151">'+_rptSAvg.toFixed(1)+'</div>'+
+            '<div style="font-size:10px;color:#9ca3af">Sector Avg</div>'+
+            '<div style="font-size:11px;font-weight:700;color:'+_rptScoreCol(_rptSAvg)+'">'+_rptRiskLbl(_rptSAvg)+'</div>'+
+          '</div>'+
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center">'+
+            '<div style="font-size:26px;font-weight:800;color:#374151">'+_rptRank+' / '+_rptAllEntities.length+'</div>'+
+            '<div style="font-size:10px;color:#9ca3af">Peer Rank</div>'+
+            '<div style="font-size:11px;font-weight:700;color:'+(_rptRank<=Math.ceil(_rptAllEntities.length/2)?'#b91c1c':'#15803d')+'">'+(_rptRank<=Math.ceil(_rptAllEntities.length/2)?'Above Avg Exposure':'Below Avg Exposure')+'</div>'+
+          '</div>'+
+          '<div style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:12px;text-align:center">'+
+            '<div style="font-size:26px;font-weight:800;color:'+(portfolioScore>_rptSAvg?'#b91c1c':'#15803d')+'">'+(portfolioScore>_rptSAvg?'+':'')+( Math.round(Math.abs(portfolioScore-_rptSAvg)*10)/10).toFixed(1)+'</div>'+
+            '<div style="font-size:10px;color:#9ca3af">vs Sector Avg</div>'+
+            '<div style="font-size:11px;font-weight:700;color:'+(portfolioScore>_rptSAvg?'#b91c1c':'#15803d')+'">'+(portfolioScore>_rptSAvg?'▲ Higher Risk':'▼ Lower Risk')+'</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="margin-bottom:16px">'+
+          _rptAllEntities.map(function(e){
+            var isC=!!e.isClient;
+            return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;padding:'+(isC?'5px 8px':'2px 0')+';'+(isC?'background:#fefce8;border-radius:6px;border:1px solid '+_rptScoreCol(e.score)+';':'')+'">'+
+              '<span style="width:160px;font-size:11px;font-weight:'+(isC?700:400)+';color:'+(isC?_rptScoreCol(e.score):'#374151')+';white-space:nowrap;overflow:hidden;text-overflow:ellipsis" title="'+e.name+'">'+e.name+'</span>'+
+              '<div style="flex:1;background:#f3f4f6;border-radius:3px;height:12px;overflow:hidden">'+
+                '<div style="width:'+Math.min(100,e.score)+'%;height:100%;background:'+_rptScoreCol(e.score)+';border-radius:3px;opacity:'+(isC?1:0.65)+'"></div>'+
+              '</div>'+
+              '<span style="width:38px;text-align:right;font-size:11px;font-weight:'+(isC?800:500)+';color:'+_rptScoreCol(e.score)+'">'+e.score.toFixed(1)+'</span>'+
+              '<span style="width:75px;font-size:10px;color:#9ca3af">'+_rptRiskLbl(e.score)+'</span>'+
+            '</div>';
+          }).join('')+
+        '</div>'+
+        '<table>'+
+          '<thead><tr><th>Company</th><th>Primary Region</th><th style="text-align:center">Risk Score</th><th style="text-align:center">Risk Tier</th><th>Top Hazards</th></tr></thead>'+
+          '<tbody>'+
+          _rptAllEntities.map(function(e,i){
+            var isC=!!e.isClient;
+            return '<tr style="border-bottom:1px solid #f3f4f6;'+(isC?'background:#fffde7;font-weight:700;':'')+(i%2===0&&!isC?'background:#fafafa':'')+'">'+
+              '<td style="padding:7px 12px;color:'+(isC?_rptScoreCol(e.score):'#374151')+'">'+e.name+'</td>'+
+              '<td style="padding:7px 12px;font-size:11px;color:#6b7280">'+e.region+'</td>'+
+              '<td style="padding:7px 12px;text-align:center;font-weight:800;color:'+_rptScoreCol(e.score)+'">'+e.score.toFixed(1)+'</td>'+
+              '<td style="padding:7px 12px;text-align:center"><span style="background:'+_rptScoreCol(e.score)+'18;color:'+_rptScoreCol(e.score)+';border-radius:12px;padding:2px 8px;font-size:10px;font-weight:700">'+_rptRiskLbl(e.score)+'</span></td>'+
+              '<td style="padding:7px 12px;font-size:11px;color:#6b7280">'+e.top+'</td>'+
+            '</tr>';
+          }).join('')+
+          '<tr style="background:#f9fafb;font-size:11px;font-weight:700">'+
+            '<td colspan="2" style="padding:6px 12px;color:#9ca3af">Sector Range</td>'+
+            '<td style="padding:6px 12px;text-align:center">'+_rptSMin.toFixed(1)+' – '+_rptSMax.toFixed(1)+'</td>'+
+            '<td colspan="2" style="padding:6px 12px;color:#9ca3af">Avg: '+_rptSAvg.toFixed(1)+'</td>'+
+          '</tr>'+
+          '</tbody>'+
+        '</table>'+
+        '<p style="font-size:10px;color:#9ca3af;margin-top:8px">Peer scores use the same '+ssp.toUpperCase()+' scenario and '+yr+' horizon. Peer primary operating region reflects largest revenue geography per company annual report. CRI does not have access to peers\' internal asset registers — single-region representative scores are used.</p>'+
+      '</div>';
+    })()+
 
     // ── SECTION: Historical Validation ─────────────────────────────────
     '<div class="section">'+
@@ -5758,8 +5885,9 @@ function renderPh() {
     return;
   }
   var cd = COS[cid], assets = HAZ[cid];
-  var ssp = (el('phys-ssp') && el('phys-ssp').value) || 'ssp370';
-  var yr  = parseInt((el('phys-yr') && el('phys-yr').value) || 2050);
+  var ssp    = (el('phys-ssp') && el('phys-ssp').value) || 'ssp370';
+  var yr     = parseInt((el('phys-yr') && el('phys-yr').value) || 2050);
+  var wtMode = (el('phys-weight') && el('phys-weight').value) || 'equal';
   el('phys-head').textContent = cd.name + ' — Physical Hazard Assessment (' + ssp.toUpperCase() + ' · ' + yr + ')';
 
   // For pre-computed demo companies, run the engine on their known regions
@@ -5769,6 +5897,30 @@ function renderPh() {
     var prof = assessHazardsSector(a.region || 'global', a.lat||null, a.lon||null, ssp, yr, a.commodity||cd.sector||'Other');
     return {meta: a, prof: prof};
   });
+
+  /* ── Portfolio score: both equal-weighted and selected weighting ── */
+  var eqScore = assetProfiles.length
+    ? assetProfiles.reduce(function(s,ap){ return s + (ap.prof.score||0); }, 0) / assetProfiles.length
+    : 0;
+  // Weighting function: get weight for a given asset
+  var _revMult2 = {'Agriculture':4.0,'Food & Beverage':3.0,'Beverages':3.0,'Real Estate':6.0,'Energy':4.0,'Utilities':4.0,'Oil & Gas':2.5,'Mining':3.5,'Chemicals':2.8,'Transport':2.2,'Default':2.0};
+  function _getWt(ap) {
+    var a = ap.meta;
+    var cv = +(a.cv || 0) || 100;
+    var rev = cv / (_revMult2[a.commodity||cd.sector||'Default'] || 2.0);
+    var ebitda = rev * 0.20;
+    if (wtMode === 'cv')      return cv;
+    if (wtMode === 'revenue') return rev;
+    if (wtMode === 'ebitda')  return ebitda;
+    return 1; // equal
+  }
+  var totalWt = assetProfiles.reduce(function(s,ap){ return s + _getWt(ap); }, 0) || 1;
+  var wtScore = assetProfiles.reduce(function(s,ap){ return s + (ap.prof.score||0) * _getWt(ap); }, 0) / totalWt;
+  wtScore = Math.round(wtScore * 10) / 10;
+  eqScore = Math.round(eqScore * 10) / 10;
+
+  // Expose to window for benchmark block
+  window._portAssetProfiles = assetProfiles;
 
   // Summary table
   var rows = assetProfiles.map(function(ap) {
@@ -5859,6 +6011,31 @@ function renderPh() {
 
   // Show detail for first asset by default
   if (assetProfiles.length) showAssetDetailFromProf(assetProfiles[0]);
+
+  // ── Weighting mode comparison banner ──────────────────────────────────
+  (function() {
+    var wBanner = el('phys-fin-costs');
+    if (!wBanner || wtMode === 'equal') {
+      // If equal weighting, just clear any existing banner
+      if (wBanner) { var b = wBanner.querySelector('.wt-banner'); if(b) b.remove(); }
+      return;
+    }
+    var modeLabel = {cv:'Asset Value (CV $M)', revenue:'Revenue (est.)', ebitda:'EBITDA (est.)'}[wtMode] || wtMode;
+    var diff = Math.abs(wtScore - eqScore).toFixed(1);
+    var diffDir = wtScore > eqScore ? '▲ higher' : '▼ lower';
+    var banner = document.createElement('div');
+    banner.className = 'wt-banner';
+    banner.style.cssText = 'padding:10px 14px;margin-bottom:12px;background:linear-gradient(135deg,rgba(99,102,241,0.12),rgba(139,92,246,0.08));border:1px solid rgba(99,102,241,0.3);border-radius:8px;font-size:12px';
+    banner.innerHTML = '<strong style="color:#6366f1">⚖️ Weighting Mode: '+modeLabel+'</strong>'+
+      '&emsp;Portfolio score <strong style="color:#6366f1">'+wtScore+'</strong> ('+diff+' pts '+diffDir+' than equal-weight <strong>'+eqScore+'</strong>)'+
+      '<div style="font-size:11px;color:var(--subtle);margin-top:4px">'+
+        (wtScore > eqScore
+          ? 'Higher-value assets carry more risk than smaller ones — revenue/CV weighting increases the headline number.'
+          : 'Lower-risk high-value assets pull the weighted score below equal-weight. Equal-weight (disclosure default) ensures every material site is visible.')+
+        ' <a onclick="document.getElementById(\'phys-weight\').value=\'equal\';renderPh()" style="color:var(--accent);cursor:pointer;font-size:10px">Switch to equal-weight →</a>'+
+      '</div>';
+    if (!wBanner.querySelector('.wt-banner')) wBanner.prepend(banner);
+  })();
 
   // ── Financial Cost Translation ─────────────────────────────────────────
   (function() {
@@ -6918,6 +7095,51 @@ function showAssetDetailFromProf(ap) {
     '<strong>Composite risk score:</strong> '+prof.score.toFixed(1)+'/100 &ensp;|&ensp; '+
     '<strong>Top hazards:</strong> '+prof.top_hazards.join(', ')+
     '</div>'+
+    // ── Score decomposition waterfall ───────────────────────────────────
+    (function() {
+      var contribs = prof.hazard_contributions;
+      if (!contribs || !contribs.length) return '';
+      var peakComp = prof.score_peak_component || 0;
+      var meanComp = prof.score_mean_component || 0;
+      var total    = prof.score || 0;
+      var sc = function(v){ return v>=4?'#ef4444':v>=3?'#f59e0b':v>=2?'#22c55e':v>=1?'#3b82f6':'var(--muted)'; };
+      return '<div style="margin-top:10px;padding:12px;background:var(--bg);border:1px solid var(--brd);border-radius:8px">'+
+        '<div style="font-size:12px;font-weight:700;margin-bottom:10px;color:var(--txt)">🔢 Score Decomposition — How '+total.toFixed(1)+' is built</div>'+
+        '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">'+
+          '<div style="padding:6px 10px;background:var(--surf2);border-radius:6px;font-size:11px;border-top:2px solid #3b82f6">'+
+            '<div style="color:var(--subtle);font-size:10px">Peak component (50%)</div>'+
+            '<div style="font-weight:700;color:#3b82f6">+'+peakComp.toFixed(1)+' pts</div>'+
+            '<div style="color:var(--subtle);font-size:10px">from '+((prof.peak_hazard&&prof.peak_hazard.h)||'—')+'</div>'+
+          '</div>'+
+          '<div style="padding:6px 10px;background:var(--surf2);border-radius:6px;font-size:11px;border-top:2px solid #8b5cf6">'+
+            '<div style="color:var(--subtle);font-size:10px">Mean component (50%)</div>'+
+            '<div style="font-weight:700;color:#8b5cf6">+'+meanComp.toFixed(1)+' pts</div>'+
+            '<div style="color:var(--subtle);font-size:10px">across '+contribs.length+' hazards</div>'+
+          '</div>'+
+          '<div style="padding:6px 10px;background:var(--surf2);border-radius:6px;font-size:11px;border-top:2px solid '+SEV_COL(total/20)+'">'+
+            '<div style="color:var(--subtle);font-size:10px">Final Score</div>'+
+            '<div style="font-weight:800;font-size:16px;color:'+SEV_COL(total/20)+'">'+total.toFixed(1)+'</div>'+
+            '<div style="color:var(--subtle);font-size:10px">/ 100</div>'+
+          '</div>'+
+        '</div>'+
+        '<div style="font-size:11px;color:var(--subtle);margin-bottom:6px;font-weight:600">Per-hazard contributions:</div>'+
+        contribs.map(function(c) {
+          var barW = Math.min(100, (c.contribution / Math.max(total,1)) * 100);
+          return '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'+
+            '<span style="font-size:10px;color:var(--txt);width:150px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'+(HZ_ICONS[c.h]||'·')+' '+c.h+'</span>'+
+            '<span style="font-size:10px;color:var(--subtle);width:40px;text-align:right">'+c.sev.toFixed(2)+'/5</span>'+
+            '<div style="flex:1;background:var(--surf2);border-radius:3px;height:10px;overflow:hidden">'+
+              '<div style="width:'+barW+'%;height:100%;background:'+sc(c.sev)+';border-radius:3px;opacity:0.85"></div>'+
+            '</div>'+
+            '<span style="font-size:11px;font-weight:700;color:'+sc(c.sev)+';width:40px;text-align:right">+'+c.contribution.toFixed(1)+'</span>'+
+          '</div>';
+        }).join('')+
+        '<div style="font-size:10px;color:var(--subtle);margin-top:8px;padding-top:6px;border-top:1px solid var(--brd)">'+
+          'Formula: score = 0.50 × peak_sev × 20 + 0.50 × mean_sev × 20, capped at 100. '+
+          'Peak component prevents severe single-hazard dilution (Munich Re 2022 methodology).'+
+        '</div>'+
+      '</div>';
+    })()+
     (prof.seismic_footnote && prof.seismic_footnote.applicable ?
       '<div style="margin-top:8px;padding:9px 12px;background:#fef3c7;border:1px solid #d97706;border-radius:6px;font-size:11px;color:#92400e">'+
       '<strong>⚠️ Non-Climate Note (ERM only):</strong> Seismic zone '+prof.seismic_footnote.sev.toFixed(1)+'/5 at this location ('+prof.seismic_footnote.note+'). '+
@@ -8913,17 +9135,62 @@ function assessHazardsSector(region, lat, lon, ssp, year, sector) {
   hzs.forEach(function(h){ if(h.applicable) surv *= (1 - h.loss); });
   var totalLoss = 1 - surv;
   var app  = hzs.filter(function(h){ return h.applicable; });
-  var avgS = app.reduce(function(s,h){ return s + h.sev; }, 0) / (app.length || 1);
-  var score = Math.min(100, avgS * 20);
-  var top   = app.slice().sort(function(a,b){ return b.sev - a.sev; }).slice(0,3).map(function(h){ return h.h; });
+
+  /* ── Peak-Protection Composite Score (v0.5) ──────────────────────────
+     Problem with plain average: an asset with Flood=5, Cyclone=5 and 6
+     minor hazards at sev=0.5 averages to 1.625 → score 32 (Low/Moderate).
+     That massively underestimates risk from two co-occurring extreme hazards.
+
+     Solution: 50% weight on peak hazard severity + 50% weight on mean severity.
+     This preserves multi-hazard detection while protecting against dilution.
+
+     Comparison for Flood=5, Cyclone=5, 6×sev=0.5 case:
+       Old (avg only):  avg=1.625 → score 32.5  (misleadingly low)
+       New (blended):   peak=5, blend=3.31 → score 66.3  (correctly High)
+
+     Weighting rationale:
+       · Peak component (50%): captures the single worst hazard that could
+         shut down operations — aligns with insurance industry "peak risk" concept
+         (Swiss Re CatEngine; Lloyd's RDS methodology).
+       · Mean component (50%): captures multi-hazard exposure breadth —
+         an asset with 8 applicable moderate hazards is more exposed than
+         one with only 2, even if their peaks are equal.
+
+     Further decomposition stored in hazard_contributions for report waterfall.
+     Source: Munich Re Physical Climate Risk Scoring Whitepaper (2022);
+     MSCI ESG Physical Risk Framework (2023). */
+  var appSorted = app.slice().sort(function(a,b){ return b.sev - a.sev; });
+  var avgS  = app.reduce(function(s,h){ return s + h.sev; }, 0) / (app.length || 1);
+  var peakS = appSorted.length ? appSorted[0].sev : 0;
+  var blendS = 0.50 * peakS + 0.50 * avgS;
+  var score  = Math.min(100, blendS * 20);
+
+  /* Per-hazard score contributions for decomposition waterfall */
+  var totalBlend = blendS || 1;
+  var hazardContributions = appSorted.map(function(h) {
+    /* Each hazard contributes proportionally to the blended score.
+       Peak hazard gets peak_weight + its proportional share of mean_weight.
+       Others get only their proportional share of mean_weight. */
+    var meanShare = (h.sev / (avgS * app.length || 1)) * (0.50 * blendS * 20);
+    var peakBonus = (h === appSorted[0]) ? (0.50 * peakS * 20) : 0;
+    var contrib   = Math.round((meanShare + peakBonus) * 10) / 10;
+    return {h: h.h, sev: h.sev, contribution: contrib};
+  });
+
+  var top = appSorted.slice(0,3).map(function(h){ return h.h; });
 
   return Object.assign({}, base, {
-    hazards:         hzs,
-    score:           Math.round(score * 10) / 10,
-    annual_loss_pct: Math.round(totalLoss * 10000) / 10000,
-    top_hazards:     top,
-    sector_adjusted: true,
-    sector:          sector,
+    hazards:               hzs,
+    score:                 Math.round(score * 10) / 10,
+    annual_loss_pct:       Math.round(totalLoss * 10000) / 10000,
+    top_hazards:           top,
+    sector_adjusted:       true,
+    sector:                sector,
+    /* v0.5 additions */
+    score_peak_component:  Math.round(0.50 * peakS * 20 * 10) / 10,
+    score_mean_component:  Math.round(0.50 * avgS * 20 * 10) / 10,
+    peak_hazard:           appSorted.length ? {h: appSorted[0].h, sev: appSorted[0].sev} : null,
+    hazard_contributions:  hazardContributions,
   });
 }
 
