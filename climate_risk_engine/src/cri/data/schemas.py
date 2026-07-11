@@ -86,6 +86,74 @@ class EmissionsScope(str, Enum):
     SCOPE_3 = "scope_3"
 
 
+class PhysicalDataQuality(str, Enum):
+    """Data quality tier for physical hazard assessment per asset.
+
+    LIVE              — NASA POWER observed baseline + Open-Meteo CMIP6 live
+                        projection both succeeded; delta-downscaling applied.
+    REGIONAL_BASELINE — lat/lon provided but live API unavailable; regional
+                        WRI/GIS lookup with elevation correction.
+    GLOBAL_FALLBACK   — No coordinates; global region-code lookup only.
+    """
+    LIVE = "live"
+    REGIONAL_BASELINE = "regional_baseline"
+    GLOBAL_FALLBACK = "global_fallback"
+
+
+# ---------------------------------------------------------------------------
+# Physical hazard provenance models
+# ---------------------------------------------------------------------------
+
+
+class HazardProvenance(BaseModel):
+    """Data lineage record for a single hazard at a single asset.
+
+    Tells the reader exactly where the score came from and whether any
+    live observational data (satellite, API) was incorporated.
+    """
+
+    hazard: str
+    data_source: str                # e.g. "WRI Aqueduct 3.0 embedded", "NASA POWER 2.3"
+    notes: str = ""
+    is_live: bool = False           # True when score used live API data (not embedded table)
+    observed_active: bool = False   # True when satellite/GDACS confirms active event now
+
+
+class AssetPhysicalProvenance(BaseModel):
+    """Full data-lineage record for physical hazard assessment on one asset.
+
+    Attached to RunResults.physical_hazard_detail so any consumer can audit
+    exactly what data underpins each hazard score — which layer fired, whether
+    live climate APIs responded, and whether real-time satellite observations
+    were incorporated.
+    """
+
+    asset_id: str
+    asset_name: str
+    region: str
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+    elevation_m: float = 0.0
+
+    # Overall data quality classification
+    data_quality: PhysicalDataQuality = PhysicalDataQuality.GLOBAL_FALLBACK
+
+    # Downscaling method applied (e.g. "delta_cmip6_nasa_power", "embedded_tables_v1")
+    downscaling_method: str = ""
+    # Effective spatial resolution (e.g. "0.25deg NASA POWER", "25km WRI Aqueduct")
+    spatial_resolution: str = ""
+
+    # Per-hazard lineage records (only for applicable hazards)
+    hazard_provenance: Dict[str, HazardProvenance] = Field(default_factory=dict)
+
+    # Raw live-API payloads (None if APIs were unavailable)
+    live_baseline: Optional[Dict] = None     # NASA POWER climatological normals
+    live_projection: Optional[Dict] = None   # Open-Meteo CMIP6 delta
+
+    # Real-time satellite observation summary (None if not attempted)
+    satellite_observations: Optional[Dict] = None
+
+
 # ---------------------------------------------------------------------------
 # Scenario layer
 # ---------------------------------------------------------------------------
@@ -348,3 +416,121 @@ class RunResults(BaseModel):
     # Provenance
     input_hash: str = ""
     scenario_version: str = ""
+
+    # Physical hazard data lineage — one record per asset, attached by run_full().
+    # None when the engine is invoked via run() directly (not run_full()).
+    physical_hazard_detail: Optional[List[AssetPhysicalProvenance]] = None
+
+
+# ---------------------------------------------------------------------------
+# Scenario cascade result models
+# ---------------------------------------------------------------------------
+
+
+class CostCategory(str, Enum):
+    """Top-level cost category for itemised cascade output."""
+    PHYSICAL_DAMAGE = "physical_damage"          # Structural / equipment damage
+    INVENTORY_LOSS = "inventory_loss"            # Raw material / finished goods
+    PRODUCTION_LOSS = "production_loss"          # Lost output / margin
+    SUPPLY_CHAIN = "supply_chain"                # Input shortages, logistics
+    EMERGENCY_RESPONSE = "emergency_response"    # Crisis management, temporary fixes
+    ENERGY_UTILITY = "energy_utility"            # Extra power, water, fuel costs
+    LABOUR = "labour"                            # Overtime, evacuation, safety
+    RECOVERY_CAPEX = "recovery_capex"            # Repair and rebuild investment
+    INSURANCE = "insurance"                      # Deductibles, premium increase
+    CONSEQUENTIAL = "consequential"              # Contract penalties, lost customers
+    FINANCIAL = "financial"                      # Covenant breach, refinancing cost
+
+
+class CostItem(BaseModel):
+    """Single itemised financial cost line from a scenario cascade.
+
+    Every number here must have a traceable assumption — ``source_assumption``
+    records the methodology so analysts can audit and challenge individual lines.
+    """
+    category: CostCategory
+    description: str                            # Human-readable line item name
+    amount_usd: float                           # Estimated cost in USD
+    duration_note: str = ""                     # e.g. "30 days × AUD 85k/day"
+    confidence: str = "medium"                  # "low" | "medium" | "high"
+    source_assumption: str = ""                 # Methodology / data source
+
+
+class AssetCascadeResult(BaseModel):
+    """Full financial impact cascade for one asset under one physical event."""
+
+    asset_id: str
+    asset_name: str
+    region: str
+    commodity: str
+
+    # Hazard severity after event multipliers have been applied (0–5 scale)
+    event_hazard_severity: Dict[str, float] = Field(default_factory=dict)
+    # Hazards that are materially elevated by this event
+    activated_hazards: List[str] = Field(default_factory=list)
+
+    # Itemised cost breakdown
+    cost_items: List[CostItem] = Field(default_factory=list)
+
+    # Aggregated by category
+    total_physical_damage_usd: float = 0.0
+    total_production_loss_usd: float = 0.0
+    total_supply_chain_usd: float = 0.0
+    total_emergency_response_usd: float = 0.0
+    total_recovery_capex_usd: float = 0.0
+    total_consequential_usd: float = 0.0
+    total_impact_usd: float = 0.0
+
+    production_loss_pct: float = 0.0           # Fraction of annual output lost
+    recovery_months: int = 0                    # Estimated months to full recovery
+
+    # Asset-level narrative (1-2 sentences)
+    narrative: str = ""
+
+
+class ScenarioCascadeResult(BaseModel):
+    """Company-wide financial cascade from a single physical climate event.
+
+    This is the primary output of ScenarioCascadeEngine.run().  It contains
+    per-asset breakdowns, company-level aggregates, and a structured narrative
+    that can be used directly in investor reporting or credit committee briefs.
+    """
+
+    company_id: str
+    company_name: str
+    event_id: str
+    event_name: str
+    event_driver: str
+    event_duration_months: int
+    reference_year: int
+
+    # Per-asset results
+    asset_results: List[AssetCascadeResult] = Field(default_factory=list)
+
+    # ── Company-level aggregates ──────────────────────────────────────────────
+    total_physical_damage_usd: float = 0.0
+    total_production_loss_usd: float = 0.0
+    total_supply_chain_usd: float = 0.0
+    total_emergency_response_usd: float = 0.0
+    total_recovery_capex_usd: float = 0.0
+    total_consequential_usd: float = 0.0
+    grand_total_impact_usd: float = 0.0
+
+    # ── Financial index metrics ───────────────────────────────────────────────
+    # All expressed as fractions (0.15 = 15%) relative to company baseline
+    ebitda_impact_pct: float = 0.0             # EBITDA compression
+    revenue_impact_pct: float = 0.0            # Revenue reduction
+    capex_burden_pct: float = 0.0              # Recovery capex / baseline capex
+    # Credit proxy: excess cost as spread over baseline WACC (bps)
+    implied_credit_spread_bps: float = 0.0
+    # Estimated months to restore full company-wide operational capacity
+    recovery_months: int = 0
+
+    # ── Scenario narrative ────────────────────────────────────────────────────
+    scenario_narrative: str = ""
+    key_vulnerabilities: List[str] = Field(default_factory=list)
+    # Historical analogs used for calibration
+    historical_analogs: List[str] = Field(default_factory=list)
+
+    # ── Cost breakdown summary (all items, all assets flattened) ─────────────
+    all_cost_items: List[CostItem] = Field(default_factory=list)
