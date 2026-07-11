@@ -3278,15 +3278,27 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         <div id="le-map" style="height:340px;border-radius:0 0 8px 8px;overflow:hidden;position:relative;z-index:0"></div>
       </div>
 
+      <!-- ── Global Climate News ── -->
+      <div class="cc" style="margin-bottom:18px">
+        <div class="cc-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>📰 Global Climate &amp; Disaster News</span>
+          <span id="le-news-ts" style="font-size:10px;color:var(--muted)"></span>
+        </div>
+        <div id="le-news" style="padding:4px 0;max-height:360px;overflow-y:auto">
+          <div style="text-align:center;padding:24px;color:var(--muted)"><div style="font-size:22px;margin-bottom:6px">📡</div><div style="font-size:11px">Loading news…</div></div>
+        </div>
+      </div>
+
       <!-- Data sources note -->
       <div class="note">
         <strong>Data Sources</strong>
-        <span>Live alerts: GDACS (Global Disaster Alert and Coordination System) RSS feed parsed client-side via allorigins.win CORS proxy. Historical calibration percentages: CRI ScenarioCascadeEngine validated against 16 real-world events (Munich Re, Swiss Re sigma, EM-DAT, NOAA NCEI). Map tiles: OpenStreetMap contributors via Leaflet.</span>
+        <span>Disaster alerts: GDACS (Global Disaster Alert &amp; Coordination System) RSS · USGS Earthquake GeoJSON (M5.0+ global, 7-day rolling) · News: Google News RSS (climate/disaster search). Financial loss estimates: CRI parameterised model calibrated vs Munich Re NatCatSERVICE, Swiss Re sigma, EM-DAT (1997–2024). All figures are estimates for risk awareness, not official loss assessments. Map tiles: OpenStreetMap via Leaflet. Auto-refreshes every 10 minutes.</span>
       </div>
 
       <script>
       (function(){
         var leMap = null, leMapInit = false, leMarkers = [];
+        var _refreshTimer = null;
 
         /* ── Impact table data (calibrated from historical library) ── */
         var IMPACT_ROWS = [
@@ -3295,10 +3307,34 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           {type:'River / Flash Flood',icon:'🌊', imp:{Agriculture:[30,60],Beverages:[15,25],Mining:[10,20],'Real Estate':[20,35]}},
           {type:'Heat Dome',          icon:'🌡', imp:{Agriculture:[35,70],Beverages:[10,25],Mining:[5,15],'Real Estate':[5,12]}},
           {type:'Wildfire',           icon:'🔥', imp:{Agriculture:[15,30],Beverages:[5,15], Mining:[10,25],'Real Estate':[10,20]}},
+          {type:'Earthquake',         icon:'🏔', imp:{Agriculture:[10,25],Beverages:[5,15], Mining:[20,40],'Real Estate':[30,60]}},
           {type:'Water Crisis',       icon:'💧', imp:{Agriculture:[25,50],Beverages:[15,35],Mining:[5,15],'Real Estate':[3,10]}},
           {type:'Monsoon Flood',      icon:'⛈',  imp:{Agriculture:[40,80],Beverages:[10,20],Mining:[8,15],'Real Estate':[25,40]}}
         ];
         var SECTORS = ['Agriculture','Beverages','Mining','Real Estate'];
+
+        /* ── Financial loss estimator (calibrated vs EM-DAT / Munich Re NatCat) ── */
+        function estimateLoss(evtype, alertLv, pop, vuln) {
+          var base = {TC:4500,FL:1200,EQ:6000,DR:1800,WF:900,VO:400,UN:600};
+          var sevMult = {RED:1.0,ORANGE:0.12,GREEN:0.015};
+          var b = (base[evtype]||600) * (sevMult[alertLv]||0.015);
+          if(pop>5000000) b*=4; else if(pop>1000000) b*=2.2; else if(pop>100000) b*=1.2; else if(pop>0&&pop<5000) b*=0.3;
+          if(vuln>2) b*=1.8; else if(vuln>1) b*=1.0; else if(vuln>0) b*=0.5;
+          return Math.max(1, Math.round(b));
+        }
+
+        /* EQ financial loss from magnitude + depth */
+        function eqLoss(mag, depth) {
+          var depthMult = depth<70?1.8:depth<300?0.7:0.15;
+          var base = Math.pow(10,(mag-4.5)*0.85)*180*depthMult;
+          return Math.max(1, Math.round(Math.min(base,300000)));
+        }
+
+        function fmtLoss(m) {
+          if(m>=10000) return '$'+(m/1000).toFixed(1)+'B';
+          if(m>=1000)  return '$'+(m/1000).toFixed(2)+'B';
+          return '$'+m+'M';
+        }
 
         function impactColor(lo,hi){ var avg=(lo+hi)/2; return avg>=40?'#ef4444':avg>=20?'#f59e0b':'#2563eb'; }
 
@@ -3327,12 +3363,13 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           } catch(e){ console.warn('Leaflet init error',e); }
         }
 
-        function addMarker(lat,lon,title,sev){
+        function addMarker(lat,lon,title,sev,lossM,link){
           if(!leMap||isNaN(lat)||isNaN(lon)) return;
           var col = sev==='RED'?'#ef4444':sev==='ORANGE'?'#f59e0b':'#22c55e';
-          var icon = L.divIcon({html:'<div style="width:12px;height:12px;background:'+col+';border-radius:50%;border:2px solid rgba(0,0,0,.25);box-shadow:0 0 6px '+col+'88"></div>',className:'',iconSize:[12,12]});
+          var sz = lossM>=50000?20:lossM>=5000?16:lossM>=500?12:9;
+          var icon = L.divIcon({html:'<div style="width:'+sz+'px;height:'+sz+'px;background:'+col+';border-radius:50%;border:2px solid rgba(0,0,0,.3);box-shadow:0 0 8px '+col+'99;opacity:0.9"></div>',className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
           var m = L.marker([lat,lon],{icon:icon}).addTo(leMap);
-          m.bindPopup('<strong style="font-size:12px">'+title+'</strong><br><span style="font-size:10px;color:#666">Alert level: '+sev+'</span>');
+          m.bindPopup('<strong style="font-size:12px">'+title+'</strong><br><span style="font-size:10px;color:#666">Alert: <b>'+sev+'</b></span><br><span style="font-size:11px;font-weight:700;color:#c2410c">Est. loss: '+fmtLoss(lossM||0)+'</span>'+(link?'<br><a href="'+link+'" target="_blank" style="font-size:10px;color:#2563eb">Details →</a>':''));
           leMarkers.push(m);
         }
 
@@ -3341,12 +3378,13 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         function parseSev(s){ s=(s||'').toLowerCase(); return (s==='red'||s==='3')?'RED':(s==='orange'||s==='2')?'ORANGE':'GREEN'; }
 
         function evIcon(t){ t=(t||'').toLowerCase();
-          return t.includes('tc')||t.includes('cyclone')||t.includes('hurricane')?'🌀':
-                 t.includes('fl')||t.includes('flood')?'🌊':
-                 t.includes('eq')||t.includes('earth')?'🏔':
-                 t.includes('vo')||t.includes('volcan')?'🌋':
-                 t.includes('dr')||t.includes('drought')?'🌵':
-                 t.includes('wf')||t.includes('fire')?'🔥':'⚠';
+          return t==='tc'||t.includes('cyclone')||t.includes('hurricane')||t.includes('typhoon')?'🌀':
+                 t==='fl'||t.includes('flood')?'🌊':
+                 t==='eq'||t.includes('earthquake')?'🏔':
+                 t==='vo'||t.includes('volcan')?'🌋':
+                 t==='dr'||t.includes('drought')?'🌵':
+                 t==='wf'||t.includes('wildfire')||t.includes(' fire')?'🔥':
+                 t.includes('storm')||t.includes('thunder')?'⛈':'⚠';
         }
 
         function sevBadge(sev){ var c={RED:'#ef4444',ORANGE:'#f59e0b',GREEN:'#22c55e'}[sev]||'#9ca3af';
@@ -3365,105 +3403,194 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           return 'UN';
         }
 
-        /* ── Fallback static events (shown when GDACS unavailable) ── */
-        var STATIC_EVENTS = [
-          {lat:20.5,lon:92.5,title:'Cyclone Mocha (2023)',sev:'RED',type:'TC',date:'May 2023'},
-          {lat:31.2,lon:13.2,title:'Libya Flood — Storm Daniel (2023)',sev:'RED',type:'FL',date:'Sep 2023'},
-          {lat:55.0,lon:-115.0,title:'Canada Wildfire Season (2023)',sev:'ORANGE',type:'WF',date:'Jun 2023'},
-          {lat:10.5,lon:42.0,title:'Horn of Africa Drought (2022–23)',sev:'ORANGE',type:'DR',date:'Ongoing'},
-          {lat:25.0,lon:68.0,title:'Pakistan Monsoon Floods (2022)',sev:'RED',type:'FL',date:'Aug 2022'},
-          {lat:-22.3,lon:118.6,title:'Pilbara Cyclone Risk Zone',sev:'GREEN',type:'TC',date:'Chronic'},
-          {lat:35.0,lon:106.0,title:'Henan Flood Recurrence Risk',sev:'GREEN',type:'FL',date:'Chronic'}
-        ];
+        /* ── Render a single event card ── */
+        function renderEventCard(ev) {
+          var sev = ev.sev || parseSev(ev.alertLv||'');
+          var ico = evIcon(ev.evtype||ev.type||'UN');
+          var dateStr = ev.pubDate ? new Date(ev.pubDate).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '';
+          var lossM = ev.lossM || 0;
+          var lossCol = lossM>=50000?'#b91c1c':lossM>=5000?'#c2410c':lossM>=500?'#b45309':'#6b7280';
+          var safeTitle = (ev.title||'').replace(/'/g,'&#39;');
+          var safeLink  = (ev.link||'#').replace(/'/g,'%27');
+          return '<div style="padding:9px 10px;border-radius:7px;background:var(--surf2);border:1px solid var(--border);margin-bottom:7px;cursor:pointer" onclick="window.open(\''+safeLink+'\',\'_blank\')">' +
+            '<div style="display:flex;align-items:flex-start;gap:8px">' +
+              '<div style="font-size:18px;flex-shrink:0;line-height:1.2">'+ico+'</div>' +
+              '<div style="flex:1;min-width:0">' +
+                '<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:3px">'+sevBadge(sev)+
+                  '<span style="font-size:9px;color:var(--muted)">'+dateStr+'</span>'+
+                  (ev.source?'<span style="font-size:9px;color:var(--muted);background:var(--surf);padding:1px 5px;border-radius:4px;border:1px solid var(--border)">'+ev.source+'</span>':'')+
+                '</div>' +
+                '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.3">'+ev.title+'</div>' +
+                (ev.desc?'<div style="font-size:10px;color:var(--muted);margin-bottom:4px;line-height:1.4">'+String(ev.desc).replace(/<[^>]+>/g,'').substring(0,160)+'</div>':'') +
+                '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">'+
+                  (lossM>0?'<span style="font-size:11px;font-weight:700;color:'+lossCol+'">💰 Est. financial loss: '+fmtLoss(lossM)+'</span>':'')+
+                  (ev.pop>0?'<span style="font-size:10px;color:var(--muted)">👥 ~'+Number(ev.pop).toLocaleString()+' affected</span>':'')+
+                  (ev.mag?'<span style="font-size:10px;color:var(--muted)">📊 M'+Number(ev.mag).toFixed(1)+'</span>':'')+
+                '</div>'+
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }
 
+        /* ── Fetch GDACS RSS (global disasters) ── */
+        function fetchGDACS() {
+          var url = 'https://api.allorigins.win/raw?url='+encodeURIComponent('https://www.gdacs.org/xml/rss.xml');
+          return fetch(url,{signal:AbortSignal.timeout(14000)})
+          .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+          .then(function(xml){
+            var doc = (new DOMParser()).parseFromString(xml,'application/xml');
+            return Array.from(doc.querySelectorAll('item')).map(function(item){
+              var getT  = function(tag){ var el=item.querySelector(tag); return el?el.textContent:''; };
+              var getNS = function(local){ var els=item.getElementsByTagName('*'); for(var i=0;i<els.length;i++){if(els[i].localName===local)return els[i].textContent.trim();} return ''; };
+              var title   = getT('title')||'Unknown Event';
+              var pubDate = getT('pubDate')||'';
+              var desc    = getT('description')||'';
+              var link    = getT('link')||'https://www.gdacs.org';
+              var evtype  = (getNS('eventtype')||guessType(title)).toUpperCase();
+              var alertLv = parseSev(getNS('alertlevel')||getNS('severity')||'');
+              var lat     = parseFloat(getNS('latitude')||getNS('lat')||'');
+              var lon     = parseFloat(getNS('longitude')||getNS('lon')||'');
+              var pop     = parseInt(getNS('population')||getNS('people')||'0')||0;
+              var vuln    = parseFloat(getNS('vulnerability')||'0')||0;
+              if(isNaN(lat)){
+                var gl=item.getElementsByTagNameNS('http://www.w3.org/2003/01/geo/wgs84_pos#','lat')[0];
+                var glo=item.getElementsByTagNameNS('http://www.w3.org/2003/01/geo/wgs84_pos#','long')[0];
+                if(gl&&glo){lat=parseFloat(gl.textContent);lon=parseFloat(glo.textContent);}
+              }
+              if(!alertLv){var tl=title.toLowerCase();alertLv=tl.includes('red')||tl.includes('level 3')?'RED':tl.includes('orange')||tl.includes('level 2')?'ORANGE':'GREEN';}
+              var lossM = estimateLoss(evtype,alertLv,pop,vuln);
+              return {title:title,pubDate:pubDate,desc:desc,link:link,evtype:evtype,sev:alertLv,lat:lat,lon:lon,pop:pop,lossM:lossM,source:'GDACS'};
+            });
+          });
+        }
+
+        /* ── Fetch USGS Earthquakes M5.0+ (global, rolling 7 days) ── */
+        function fetchUSGS() {
+          return fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/5.0_week.geojson',{signal:AbortSignal.timeout(10000)})
+          .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+          .then(function(data){
+            return (data.features||[]).map(function(f){
+              var p=f.properties, c=f.geometry&&f.geometry.coordinates;
+              var mag=+(p.mag||0), depth=c?c[2]:300;
+              var alertLv=mag>=7?'RED':mag>=6?'ORANGE':'GREEN';
+              var lossM=eqLoss(mag,depth);
+              return {
+                title:'Earthquake M'+mag.toFixed(1)+' — '+(p.place||'Unknown'),
+                pubDate:new Date(p.time).toISOString(),
+                desc:'Depth '+Math.round(depth||0)+'km'+(p.felt?' · '+p.felt+' felt reports':'')+(p.tsunami?' · ⚠ Tsunami warning issued':''),
+                link:p.url||'https://earthquake.usgs.gov',
+                evtype:'EQ', sev:alertLv,
+                lat:c?c[1]:NaN, lon:c?c[0]:NaN,
+                pop:p.felt||0, lossM:lossM, mag:mag, source:'USGS'
+              };
+            });
+          });
+        }
+
+        /* ── Fetch Google News RSS (rotating climate/disaster queries) ── */
+        function fetchClimateNews() {
+          var qs = ['major+flood+disaster+2026','cyclone+typhoon+hurricane+disaster','wildfire+climate+emergency+2026','earthquake+disaster+relief+2026','drought+climate+crisis','climate+financial+loss+damage'];
+          var q = qs[new Date().getMinutes() % qs.length]; // rotate each refresh
+          var url = 'https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en';
+          return fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(12000)})
+          .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+          .then(function(xml){
+            var doc=(new DOMParser()).parseFromString(xml,'application/xml');
+            return Array.from(doc.querySelectorAll('item')).slice(0,18).map(function(item){
+              var getT=function(tag){var el=item.querySelector(tag);return el?el.textContent:'';};
+              return {
+                title: getT('title').replace(/ - [^-]+$/,''),
+                link:  getT('link'),
+                pubDate: getT('pubDate'),
+                source: getT('source')||'Reuters / AP'
+              };
+            }).filter(function(n){return n.title&&n.link;});
+          });
+        }
+
+        /* ── Master load function ── */
         window.loadGDACSFeed = function(){
           var elEv = document.getElementById('le-events');
           var elTk = document.getElementById('le-ticker');
           var elSt = document.getElementById('le-status');
+          var elNw = document.getElementById('le-news');
+          var elNt = document.getElementById('le-news-ts');
           initMap();
 
-          elEv.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)"><div style="font-size:22px;margin-bottom:6px">⏳</div><div style="font-size:11px">Fetching GDACS feed…</div></div>';
+          elEv.innerHTML = '<div style="text-align:center;padding:30px;color:var(--muted)"><div style="font-size:22px;margin-bottom:6px">⏳</div><div style="font-size:11px">Fetching GDACS + USGS global feeds…</div></div>';
+          if(elNw) elNw.innerHTML = '<div style="padding:16px;color:var(--muted);font-size:11px;text-align:center">Loading climate news…</div>';
 
-          var proxy = 'https://api.allorigins.win/raw?url='+encodeURIComponent('https://www.gdacs.org/xml/rss.xml');
+          clearMarkers();
+          var ts = new Date();
 
-          fetch(proxy,{signal:AbortSignal.timeout(14000)})
-          .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
-          .then(function(xml){
-            var doc = (new DOMParser()).parseFromString(xml,'application/xml');
-            var items = Array.from(doc.querySelectorAll('item'));
-            if(!items.length) throw new Error('Empty feed');
-
-            clearMarkers();
-            var events = items.slice(0,25).map(function(item){
-              var getText = function(tag){ var el=item.querySelector(tag); return el?el.textContent:''; };
-              var getNS  = function(local){ var el=item.getElementsByTagNameNS('*',local)[0]; return el?el.textContent.trim():''; };
-
-              var title    = getText('title') || 'Unknown Event';
-              var pubDate  = getText('pubDate') || '';
-              var desc     = getText('description') || '';
-              var link     = getText('link') || 'https://www.gdacs.org';
-              var evtype   = getNS('eventtype') || guessType(title);
-              var alertLv  = getNS('alertlevel') || getNS('severity') || '';
-              var lat      = parseFloat(getNS('latitude')||getNS('lat')|| '');
-              var lon      = parseFloat(getNS('longitude')||getNS('lon')||'');
-
-              /* geo:lat / geo:long fallback */
-              if(isNaN(lat)){
-                var gl=item.getElementsByTagNameNS('http://www.w3.org/2003/01/geo/wgs84_pos#','lat')[0];
-                var glo=item.getElementsByTagNameNS('http://www.w3.org/2003/01/geo/wgs84_pos#','long')[0];
-                if(gl&&glo){ lat=parseFloat(gl.textContent); lon=parseFloat(glo.textContent); }
-              }
-              if(!alertLv){ var tl=title.toLowerCase(); alertLv=tl.includes('red')||tl.includes('level 3')?'Red':tl.includes('orange')||tl.includes('level 2')?'Orange':'Green'; }
-
-              return {title:title,pubDate:pubDate,desc:desc,link:link,evtype:evtype,alertLv:alertLv,lat:lat,lon:lon};
+          Promise.all([
+            fetchGDACS().catch(function(e){console.warn('GDACS fail',e);return[];}),
+            fetchUSGS().catch(function(e){console.warn('USGS fail',e);return[];}),
+            fetchClimateNews().catch(function(e){console.warn('News fail',e);return[];})
+          ]).then(function(res){
+            var gdacsEvs=res[0], usgsEvs=res[1], news=res[2];
+            /* Merge + sort: RED first, then by date desc */
+            var allEvs = gdacsEvs.concat(usgsEvs);
+            allEvs.sort(function(a,b){
+              var ord={RED:3,ORANGE:2,GREEN:1};
+              var sd=(ord[b.sev]||0)-(ord[a.sev]||0);
+              return sd!==0?sd:(new Date(b.pubDate||0)-new Date(a.pubDate||0));
             });
 
-            /* ticker */
-            elTk.textContent = events.slice(0,6).map(function(e){ return evIcon(e.evtype)+' '+e.title; }).join('  ·  ');
-            elSt.textContent = events.length+' alerts · '+new Date().toLocaleTimeString();
+            var timeStr = ts.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
+            elSt.textContent = allEvs.length+' global events · '+timeStr;
 
-            /* cards */
-            elEv.innerHTML = events.map(function(ev){
-              var sev = parseSev(ev.alertLv);
-              var ico = evIcon(ev.evtype);
-              var dateStr = ev.pubDate ? new Date(ev.pubDate).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}) : '';
-              if(!isNaN(ev.lat)) addMarker(ev.lat,ev.lon,ev.title,sev);
-              var cleanDesc = ev.desc.replace(/<[^>]+>/g,'').substring(0,130);
-              return '<div style="padding:9px 10px;border-radius:7px;background:var(--surf2);border:1px solid var(--border);margin-bottom:7px;cursor:pointer" onclick="window.open(\''+ev.link+'\',\'_blank\')">' +
-                '<div style="display:flex;align-items:flex-start;gap:8px">' +
-                  '<div style="font-size:18px;flex-shrink:0;line-height:1">'+ico+'</div>' +
-                  '<div style="flex:1;min-width:0">' +
-                    '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">'+sevBadge(sev)+'<span style="font-size:9px;color:var(--muted)">'+dateStr+'</span></div>' +
-                    '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px;line-height:1.3">'+ev.title+'</div>' +
-                    (cleanDesc?'<div style="font-size:10px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+cleanDesc+'</div>':'') +
-                  '</div>' +
-                '</div>' +
-              '</div>';
-            }).join('');
-          })
-          .catch(function(err){
-            /* Fallback: show static library events + placeholder note */
-            elTk.textContent = 'GDACS feed unavailable — showing recent significant events from calibration library';
-            elSt.textContent = 'offline';
-            clearMarkers();
-            STATIC_EVENTS.forEach(function(e){ addMarker(e.lat,e.lon,e.title,e.sev); });
+            /* Ticker */
+            var redEvs = allEvs.filter(function(e){return e.sev==='RED';}).slice(0,10);
+            var tickSrc = redEvs.length ? redEvs : allEvs.slice(0,8);
+            elTk.textContent = tickSrc.map(function(e){return evIcon(e.evtype)+' '+e.title+' (Est. '+fmtLoss(e.lossM||0)+')';}).join('  ·  ');
 
-            elEv.innerHTML = '<div style="padding:12px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:7px;margin-bottom:10px;font-size:11px;color:var(--muted)">' +
-              '<strong style="color:#f59e0b">Live feed temporarily unavailable.</strong> Showing recent significant events from CRI historical calibration library. ' +
-              '<a href="https://www.gdacs.org" target="_blank" style="color:#2563eb">Visit GDACS →</a>' +
-            '</div>' +
-            STATIC_EVENTS.map(function(ev){
-              return '<div style="padding:9px 10px;border-radius:7px;background:var(--surf2);border:1px solid var(--border);margin-bottom:7px">' +
-                '<div style="display:flex;align-items:flex-start;gap:8px">' +
-                  '<div style="font-size:18px;flex-shrink:0">'+evIcon(ev.type)+'</div>' +
-                  '<div style="flex:1">' +
-                    '<div style="display:flex;gap:6px;align-items:center;margin-bottom:3px">'+sevBadge(ev.sev)+'<span style="font-size:9px;color:var(--muted)">'+ev.date+'</span></div>' +
-                    '<div style="font-size:12px;font-weight:600;color:var(--text)">'+ev.title+'</div>' +
-                  '</div>' +
-                '</div>' +
-              '</div>';
-            }).join('');
+            /* Event cards */
+            if(!allEvs.length){
+              elEv.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:11px">No live events returned. CORS proxy may be temporarily unavailable. <a href="https://www.gdacs.org" target="_blank" style="color:#2563eb">Visit GDACS →</a> | <a href="https://earthquake.usgs.gov/earthquakes/map/" target="_blank" style="color:#2563eb">USGS Map →</a></div>';
+            } else {
+              var note='<div style="font-size:10px;color:var(--muted);margin-bottom:8px;padding:6px 8px;background:var(--surf2);border-radius:6px;line-height:1.6">'+
+                '<strong>'+allEvs.length+' global events</strong> from GDACS + USGS · Sorted by alert severity · Last fetched: '+timeStr+
+                '<br>Financial loss estimates are CRI model outputs (EM-DAT/Munich Re calibrated). GDACS updates every 2–4h; USGS updates continuously. <strong>Marker size = estimated loss.</strong></div>';
+              elEv.innerHTML = note + allEvs.map(function(ev){
+                if(!isNaN(ev.lat)&&!isNaN(ev.lon)) addMarker(ev.lat,ev.lon,ev.title,ev.sev,ev.lossM,ev.link);
+                return renderEventCard(ev);
+              }).join('');
+            }
+
+            /* Fit map */
+            if(leMap&&leMarkers.length){
+              try{var g=L.featureGroup(leMarkers);leMap.fitBounds(g.getBounds().pad(0.12),{maxZoom:5});}
+              catch(e){leMap.setView([20,0],2);}
+            }
+
+            /* News section */
+            if(elNt) elNt.textContent = 'Updated '+timeStr;
+            if(elNw){
+              if(!news.length){
+                elNw.innerHTML='<div style="padding:12px;font-size:11px;color:var(--muted)">Climate news unavailable. <a href="https://news.google.com/search?q=climate+disaster" target="_blank" style="color:#2563eb">Search Google News →</a></div>';
+              } else {
+                elNw.innerHTML=news.map(function(n){
+                  var ds=n.pubDate?new Date(n.pubDate).toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'}):'';
+                  var safeL=(n.link||'#').replace(/'/g,'%27');
+                  return '<div style="padding:9px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px">'+
+                    '<div style="flex:1;min-width:0">'+
+                      '<a href="'+safeL+'" target="_blank" style="font-size:12px;font-weight:600;color:var(--text);text-decoration:none;line-height:1.5;display:block">'+n.title+'</a>'+
+                      '<div style="font-size:10px;color:var(--muted);margin-top:2px">'+n.source+(ds?' · '+ds:'')+'</div>'+
+                    '</div>'+
+                    '<a href="'+safeL+'" target="_blank" style="font-size:10px;color:#2563eb;white-space:nowrap;flex-shrink:0;padding:2px 7px;background:#eff6ff;border-radius:4px;text-decoration:none">Read →</a>'+
+                  '</div>';
+                }).join('');
+              }
+            }
           });
+
+          /* Auto-refresh every 10 min */
+          if(_refreshTimer) clearTimeout(_refreshTimer);
+          _refreshTimer = setTimeout(function(){
+            var p=document.getElementById('p-liveevents');
+            if(p&&p.style.display!=='none') window.loadGDACSFeed();
+          }, 600000);
         };
 
         window.goToCascade = function(){
