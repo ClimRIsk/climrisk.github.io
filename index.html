@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="description" content="ClimRisk — Climate Intelligence for Financial Decisions">
 <title>ClimRisk · Climate Intelligence Platform</title>
-<link rel="icon" href="logo.svg" type="image/svg+xml">
+<link rel="icon" href="logo.png" type="image/png">
 <style>
 /* ── RESET & BASE ── */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -37,7 +37,7 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
   border-bottom:1px solid transparent}
 #nav.scrolled{background:rgba(0,0,12,0.88);backdrop-filter:blur(24px);
   border-bottom-color:var(--border)}
-.nav-logo img{height:60px;width:60px;object-fit:contain}
+.nav-logo img{height:140px;width:140px;object-fit:contain}
 .nav-links{display:flex;align-items:center;gap:4px;margin-left:28px}
 .nav-links a{padding:6px 13px;border-radius:7px;font-size:13px;font-weight:500;
   color:var(--muted);transition:all .18s}
@@ -451,7 +451,7 @@ input[type=range].dlab-range::-webkit-slider-thumb{-webkit-appearance:none;
 /* ── FOOTER ── */
 footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 32px}
 .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px}
-.foot-logo img{height:80px;width:80px;object-fit:contain;margin-bottom:12px}
+.foot-logo img{height:180px;width:180px;object-fit:contain;margin-bottom:16px}
 .foot-tagline{font-size:13px;color:var(--muted);line-height:1.6;max-width:240px}
 .foot-col h5{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;
   color:var(--muted);margin-bottom:14px}
@@ -485,8 +485,9 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
 
 <!-- ── NAV ── -->
 <nav id="nav">
-  <div class="nav-logo"><a href="#hero"><img src="logo.svg" alt="ClimRisk"></a></div>
+  <div class="nav-logo"><a href="#hero"><img src="logo.png" alt="ClimRisk"></a></div>
   <div class="nav-links">
+    <a href="#about">About</a>
     <a href="#live-planet-sec">Live Planet</a>
     <a href="#dlab">Decision Lab</a>
     <a href="#features">Platform</a>
@@ -1190,6 +1191,54 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
   </div>
 </section>
 
+
+<!-- ABOUT SECTION -->
+<section id="about">
+  <div class="section-inner">
+    <div class="sec-label" style="justify-content:center;display:flex"><span class="dot"></span>About ClimRisk</div>
+    <h2 class="sec-title fade-up" style="text-align:center">The Intelligence Layer Between<br><span style="color:var(--em)">Climate Science</span> and <span style="color:var(--blue)">Financial Decisions</span></h2>
+    <div class="about-grid">
+      <div class="about-logo-wrap fade-left">
+        <div class="about-logo-glow"></div>
+        <img src="logo.png" alt="ClimRisk">
+      </div>
+      <div class="about-content fade-right">
+        <p>ClimRisk is a specialist climate financial intelligence firm that translates peer-reviewed climate science into asset-level financial risk — expressed in dollars, not degrees.</p>
+        <p>We bridge the gap between IPCC AR6 physical hazard data and the balance sheets of banks, insurers, asset managers, and corporations operating in climate-exposed sectors worldwide.</p>
+        <p>Our methodology is grounded in NGFS Phase 4 scenarios, Aqueduct Water Risk data, and CMIP6 climate projections — integrated into a proprietary scoring engine delivering audit-ready, IFRS S2 and TCFD-aligned outputs.</p>
+        <div class="about-pillars">
+          <div class="about-pillar">
+            <div class="about-pillar-icon">🔬</div>
+            <div class="about-pillar-title">Science-Grade Methodology</div>
+            <div class="about-pillar-text">Every hazard score traceable to IPCC AR6, ERA5 reanalysis, and peer-reviewed physical risk literature.</div>
+          </div>
+          <div class="about-pillar">
+            <div class="about-pillar-icon">💰</div>
+            <div class="about-pillar-title">Financial Translation</div>
+            <div class="about-pillar-text">Risk scores converted to revenue at risk, asset impairment, and enterprise value impact via proven DCF frameworks.</div>
+          </div>
+          <div class="about-pillar">
+            <div class="about-pillar-icon">📋</div>
+            <div class="about-pillar-title">Disclosure Ready</div>
+            <div class="about-pillar-text">Reports structured for TCFD, IFRS S2, CSRD, and SEC climate disclosure requirements out of the box.</div>
+          </div>
+          <div class="about-pillar">
+            <div class="about-pillar-icon">🌍</div>
+            <div class="about-pillar-title">Global Coverage</div>
+            <div class="about-pillar-text">Asset-level analysis across 180+ countries at 0.25° grid precision — from open-pit mines to coastal port terminals.</div>
+          </div>
+        </div>
+        <div class="about-stats-row">
+          <div><div class="about-stat-num">180+</div><div class="about-stat-lbl">Countries covered</div></div>
+          <div><div class="about-stat-num">26</div><div class="about-stat-lbl">Hazard types</div></div>
+          <div><div class="about-stat-num">4</div><div class="about-stat-lbl">NGFS scenarios</div></div>
+          <div><div class="about-stat-num">IFRS S2</div><div class="about-stat-lbl">Disclosure aligned</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ── SECTION 12: TODAY'S INTELLIGENCE ── -->
 <section id="today">
   <div class="section-inner">
@@ -1258,7 +1307,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
   <div class="section-inner">
     <div class="foot-grid">
       <div>
-        <div class="foot-logo"><img src="logo.svg" alt="ClimRisk"></div>
+        <div class="foot-logo"><img src="logo.png" alt="ClimRisk"></div>
         <p class="foot-tagline">Climate intelligence for financial decisions. Physical risk quantified in dollars. Science-grade. Audit-ready.</p>
       </div>
       <div class="foot-col">
@@ -1270,7 +1319,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
       </div>
       <div class="foot-col">
         <h5>Company</h5>
-        <a href="#">About</a>
+        <a href="#about">About</a>
         <a href="#">Research</a>
         <a href="#">Careers</a>
         <a href="#">Press</a>
@@ -1345,12 +1394,32 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
 /* Footer */
 footer{background:var(--bg2);border-top:1px solid var(--border);padding:64px 0 32px}
 .foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:48px;margin-bottom:48px}
-.foot-logo img{height:80px;width:auto;display:block;margin-bottom:16px}
+.foot-logo img{height:180px;width:auto;display:block;margin-bottom:16px}
 .foot-tagline{font-size:14px;color:var(--muted);line-height:1.7;max-width:260px}
 .foot-col h5{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--text2);margin-bottom:16px}
 .foot-col a{display:block;font-size:14px;color:var(--muted);margin-bottom:10px;text-decoration:none;transition:.2s}
 .foot-col a:hover{color:#fff}
 .foot-bottom{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--border);padding-top:24px;font-size:12px;color:var(--muted)}
+
+/* About Section */
+#about{padding:120px 0;background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);position:relative;overflow:hidden}
+#about::before{content:'';position:absolute;top:-200px;right:-200px;width:600px;height:600px;background:radial-gradient(circle,rgba(16,185,129,.06) 0%,transparent 70%);pointer-events:none}
+.about-grid{display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:center;margin-top:64px}
+.about-logo-wrap{display:flex;align-items:center;justify-content:center;position:relative}
+.about-logo-wrap img{width:100%;max-width:460px;height:auto;object-fit:contain;filter:drop-shadow(0 0 60px rgba(16,185,129,.3))}
+.about-logo-glow{position:absolute;width:320px;height:320px;border-radius:50%;background:radial-gradient(circle,rgba(16,185,129,.12) 0%,transparent 70%);animation:glow-pulse 3s ease-in-out infinite;pointer-events:none}
+@keyframes glow-pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
+.about-content p{font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:18px}
+.about-pillars{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
+.about-pillar{padding:18px;background:var(--glass);border:1px solid var(--border);border-radius:14px;backdrop-filter:blur(12px)}
+.about-pillar-icon{font-size:26px;margin-bottom:8px}
+.about-pillar-title{font-size:13px;font-weight:800;margin-bottom:5px}
+.about-pillar-text{font-size:12px;color:var(--muted);line-height:1.6}
+.about-stats-row{display:flex;gap:28px;margin-top:28px;padding-top:28px;border-top:1px solid var(--border);flex-wrap:wrap}
+.about-stat-num{font-size:30px;font-weight:900;color:var(--em);line-height:1}
+.about-stat-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:3px}
+@media(max-width:768px){.about-grid{grid-template-columns:1fr;gap:40px}.about-pillars{grid-template-columns:1fr}.about-stats-row{gap:16px}}
+
 /* HK bars */
 .hk-bar-wrap{display:flex;align-items:center;gap:12px}
 .hk-bar-label{font-size:12px;font-weight:700;color:var(--text2);width:80px;flex-shrink:0}
