@@ -189,6 +189,7 @@ a{color:inherit;text-decoration:none}
   <div class="ld-title">CRI Live Planet</div>
   <div class="ld-sub" id="ld-msg">Loading climate intelligence dataset…</div>
   <div class="ld-bar"><div class="ld-fill"></div></div>
+  <button id="skip-btn" onclick="hideLoading()" style="display:none;margin-top:16px;padding:6px 16px;border-radius:6px;font-size:11px;font-weight:600;color:#64748b;border:1px solid rgba(255,255,255,.1);background:transparent;cursor:pointer;font-family:inherit">Skip loading →</button>
 </div>
 
 <!-- NAV -->
@@ -336,7 +337,53 @@ a{color:inherit;text-decoration:none}
 </div>
 
 <!-- GLOBE + DATA SCRIPTS -->
-<script src="//unpkg.com/globe.gl@2/dist/globe.gl.min.js"></script>
+<script>
+// ── Non-blocking Globe.gl loader ─────────────────────────────────────────────
+document.getElementById('ld-msg').textContent = 'Downloading 3D globe engine…';
+var _globeReady = false;
+var _loadTimeout = setTimeout(function(){
+  if(!_globeReady) {
+    document.getElementById('ld-msg').textContent = 'Still loading… (large file ~2MB)';
+  }
+}, 6000);
+// Show skip button after 8 seconds
+var _skipTimer = setTimeout(function(){
+  var sb = document.getElementById('skip-btn');
+  if(sb) sb.style.display='inline-block';
+}, 8000);
+var _hardTimeout = setTimeout(function(){
+  if(!_globeReady) {
+    document.getElementById('ld-msg').innerHTML = 'Globe engine timed out.<br><span style="font-size:12px;color:#64748b">Try refreshing — CDN may be slow</span>';
+    document.getElementById('loading').style.cursor='pointer';
+    document.getElementById('loading').onclick=()=>location.reload();
+  }
+}, 18000);
+
+function _onGlobeReady() {
+  _globeReady = true;
+  clearTimeout(_loadTimeout);
+  clearTimeout(_hardTimeout);
+  document.getElementById('ld-msg').textContent = 'Fetching country boundary data…';
+  startApp();
+}
+
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdn.jsdelivr.net/npm/globe.gl@2.30.0/dist/globe.gl.min.js';
+  s.onload = _onGlobeReady;
+  s.onerror = function(){
+    document.getElementById('ld-msg').textContent = 'Retrying with backup CDN…';
+    var s2 = document.createElement('script');
+    s2.src = 'https://unpkg.com/globe.gl@2.30.0/dist/globe.gl.min.js';
+    s2.onload = _onGlobeReady;
+    s2.onerror = function(){
+      document.getElementById('ld-msg').innerHTML = 'Failed to load 3D engine.<br><button onclick="location.reload()" style="margin-top:8px;padding:6px 14px;border-radius:6px;background:#3b82f6;color:#fff;border:none;cursor:pointer;font-family:inherit">Refresh</button>';
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+})();
+</script>
 <script>
 // ── COUNTRY DATA ─────────────────────────────────────────────────────────────
 // Sources: EM-DAT (emdat.be), World Bank Climate Portal, IPCC AR6, NOAA
@@ -521,6 +568,13 @@ function initGlobe(geoJson) {
   geoData = geoJson;
   const el = document.getElementById('globe-el');
 
+  // Safety: ensure Globe.gl actually loaded
+  if(typeof Globe === 'undefined') {
+    document.getElementById('ld-msg').innerHTML = 'Globe engine unavailable.<br><button onclick="location.reload()" style="margin-top:8px;padding:6px 14px;border-radius:6px;background:#3b82f6;color:#fff;border:none;cursor:pointer;font-family:inherit">Retry</button>';
+    return;
+  }
+
+  try {
   globe = Globe()(el)
     .globeImageUrl('//unpkg.com/three-globe/example/img/earth-night.jpg')
     .bumpImageUrl('//unpkg.com/three-globe/example/img/earth-topology.png')
@@ -558,6 +612,10 @@ function initGlobe(geoJson) {
   updateGlobe();
   buildEventsStrip();
   hideLoading();
+  } catch(err) {
+    console.error('Globe init error:', err);
+    document.getElementById('ld-msg').innerHTML = 'Render error: '+err.message+'<br><button onclick="location.reload()" style="margin-top:8px;padding:6px 14px;border-radius:6px;background:#3b82f6;color:#fff;border:none;cursor:pointer;font-family:inherit">Retry</button>';
+  }
 }
 
 function polyColor(d) {
@@ -857,23 +915,41 @@ function shareView() {
   navigator.clipboard.writeText(url).then(()=>alert('URL copied!')).catch(()=>prompt('Copy link:',url));
 }
 
-// ── BOOTSTRAP ───────────────────────────────────────────────────────────────
-document.getElementById('ld-msg').textContent = 'Fetching country boundary data…';
-document.getElementById('tl-year-disp').textContent = '2024';
+// ── BOOTSTRAP (called after Globe.gl loads) ──────────────────────────────────
+function startApp() {
+  document.getElementById('tl-year-disp').textContent = '2024';
 
-const GEOJSON_URL = 'https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson';
-fetch(GEOJSON_URL)
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById('ld-msg').textContent = 'Rendering globe…';
-    initGlobe(data);
-  })
-  .catch(err => {
-    console.warn('GeoJSON fetch failed:', err);
-    document.getElementById('ld-msg').textContent = 'Using simplified globe mode…';
-    // Fallback: init globe without polygons, just with events
-    initGlobe({type:'FeatureCollection',features:[]});
-  });
+  const GEOJSON_URL = 'https://raw.githubusercontent.com/vasturiano/globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson';
+  
+  // Try primary, then backup GeoJSON sources
+  const tryFetch = (url) => fetch(url, {signal: AbortSignal.timeout ? AbortSignal.timeout(12000) : undefined})
+    .then(r => { if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); });
+  
+  document.getElementById('ld-msg').textContent = 'Loading country map data…';
+  
+  tryFetch(GEOJSON_URL)
+    .then(data => {
+      document.getElementById('ld-msg').textContent = 'Rendering globe…';
+      initGlobe(data);
+    })
+    .catch(err => {
+      console.warn('Primary GeoJSON failed:', err.message, '— trying backup…');
+      document.getElementById('ld-msg').textContent = 'Trying backup data source…';
+      // Backup: use a CDN-hosted natural earth dataset
+      return fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+        .then(r => r.json())
+        .then(topo => {
+          // world-atlas uses topojson — convert manually
+          // Fall through to simplified mode
+          throw new Error('topojson not handled');
+        })
+        .catch(() => {
+          console.warn('All GeoJSON sources failed — launching event-only mode');
+          document.getElementById('ld-msg').textContent = 'Launching event-only mode…';
+          initGlobe({type:'FeatureCollection',features:[]});
+        });
+    });
+}
 </script>
 </body>
 </html>
