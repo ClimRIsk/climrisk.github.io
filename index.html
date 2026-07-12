@@ -32,14 +32,14 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
 
 /* ── NAV ── */
 #nav{position:fixed;top:0;left:0;right:0;z-index:900;
-  display:flex;align-items:center;height:72px;padding:0 36px;
+  display:flex;align-items:center;min-height:100px;padding:12px 36px;
   transition:background .3s,backdrop-filter .3s,border-color .3s;
   border-bottom:1px solid transparent}
 #nav.scrolled{background:rgba(0,0,12,0.88);backdrop-filter:blur(24px);
   border-bottom-color:var(--border)}
-.nav-logo img{height:140px;width:140px;object-fit:contain}
+.nav-logo img{height:120px;width:auto;object-fit:contain;display:block}
 .nav-links{display:flex;align-items:center;gap:4px;margin-left:28px}
-.nav-links a{padding:6px 13px;border-radius:7px;font-size:13px;font-weight:500;
+.nav-links a{padding:6px 14px;border-radius:7px;font-size:14px;font-weight:600;
   color:var(--muted);transition:all .18s}
 .nav-links a:hover{color:var(--text);background:rgba(255,255,255,.05)}
 .nav-r{margin-left:auto;display:flex;gap:10px;align-items:center}
@@ -83,7 +83,7 @@ p.sec-sub{font-size:17px;color:var(--text2);line-height:1.7;max-width:620px;marg
 .hero-overlay{position:absolute;inset:0;z-index:2;
   background:radial-gradient(ellipse 80% 100% at 65% 50%,transparent 20%,rgba(0,0,9,.7) 70%),
   linear-gradient(to right,rgba(0,0,9,.75) 30%,transparent 65%)}
-.hero-content{position:relative;z-index:10;width:100%;padding:0 64px;
+.hero-content{position:relative;z-index:10;width:100%;padding:120px 64px 0;
   display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
 .hero-badge{display:inline-flex;align-items:center;gap:8px;padding:6px 16px;
   border-radius:20px;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);
