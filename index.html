@@ -237,11 +237,11 @@ footer{border-top:1px solid var(--border);padding:60px 48px 36px;max-width:1300p
 <nav id="nav">
   <div class="nav-logo"><div class="logo-g">CR</div><span>Clim<span class="cr">Risk</span></span></div>
   <div class="nav-links">
-    <a href="#live-planet">Live Planet</a>
-    <a href="#h2m">Risk Engine</a>
-    <a href="#arch">Architecture</a>
-    <a href="#dlab">Decision Lab</a>
-    <a href="#explain">Score</a>
+    <a href="javascript:void(0)" onclick="scrollTo_('live-planet')">Live Planet</a>
+    <a href="javascript:void(0)" onclick="scrollTo_('h2m')">Risk Engine</a>
+    <a href="javascript:void(0)" onclick="scrollTo_('arch')">Architecture</a>
+    <a href="javascript:void(0)" onclick="scrollTo_('dlab')">Decision Lab</a>
+    <a href="javascript:void(0)" onclick="scrollTo_('explain')">Score</a>
   </div>
   <div class="nav-r">
     <div class="badge-live"><div class="pulse-g"></div>LIVE DATA</div>
@@ -257,7 +257,7 @@ footer{border-top:1px solid var(--border);padding:60px 48px 36px;max-width:1300p
     <div class="hero-left">
       <div class="hero-eyebrow">⚡ NGFS Phase 4 · IPCC AR6 · CSRD Ready</div>
       <h1 class="hero-h1">The OS for<br/><span class="grad">Climate Risk</span><br/>Decisions</h1>
-      <p class="hero-sub">Physical climate risk translated into dollars. Asset-level precision. 10 hazards, 4 emission scenarios, 3 time horizons — in under 5 minutes.</p>
+      <p class="hero-sub">Physical climate risk translated into dollars. Asset-level precision. 25 hazards, 4 SSP scenarios, 3 time horizons — in under 5 minutes.</p>
       <div class="hero-btns">
         <button class="btn-hp" onclick="window.open('ClimRisk_Platform.html','_blank')">Open Platform ↗</button>
         <button class="btn-hg" onclick="window.open('live-planet.html','_blank')">🌍 Live Planet ↗</button>
@@ -270,6 +270,7 @@ footer{border-top:1px solid var(--border);padding:60px 48px 36px;max-width:1300p
         <span class="htag">SSP3-7.0</span>
         <span class="htag">SSP5-8.5</span>
         <span class="htag">CMIP6 Ensemble</span>
+        <span class="htag">25 Hazards</span>
         <span class="htag">Asset-Level</span>
       </div>
     </div>
@@ -391,7 +392,7 @@ footer{border-top:1px solid var(--border);padding:60px 48px 36px;max-width:1300p
     <div class="trust-grid fi">
       <div class="trust-cell"><div class="trust-val">91%</div><div class="trust-lbl">Hindcast Accuracy vs ERA5</div></div>
       <div class="trust-cell"><div class="trust-val">35</div><div class="trust-lbl">CMIP6 Climate Models</div></div>
-      <div class="trust-cell"><div class="trust-val">10</div><div class="trust-lbl">Physical Hazards Modelled</div></div>
+      <div class="trust-cell"><div class="trust-val">25</div><div class="trust-lbl">Physical Hazards Modelled</div></div>
       <div class="trust-cell"><div class="trust-val">&lt;5min</div><div class="trust-lbl">Full Portfolio Assessment</div></div>
     </div>
   </div>
@@ -1107,6 +1108,11 @@ window.addEventListener('scroll', function(){
   if(window.scrollY > 60) n.style.background = 'rgba(0,0,10,0.92)';
   else n.style.background = 'rgba(0,0,10,0.55)';
 });
+
+function scrollTo_(id) {
+  var el = document.getElementById(id);
+  if(el) el.scrollIntoView({behavior:'smooth'});
+}
 </script>
 </body>
 </html>
