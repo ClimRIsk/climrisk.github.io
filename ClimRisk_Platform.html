@@ -2667,11 +2667,12 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
               <th style="padding:7px 6px;text-align:right">Phys. Score</th>
               <th style="padding:7px 6px;text-align:right">Top Hazard</th>
               <th style="padding:7px 6px;text-align:right">PD Uplift</th>
-              <th style="padding:7px 6px;text-align:right">ECL Adj (M)</th>
+              <th style="padding:7px 6px;text-align:right">IFRS 9 ECL / FLI</th>
+              <th style="padding:7px 6px;text-align:center">IFRS 9 Stage</th>
               <th style="padding:7px 6px;text-align:center">Climate Rating</th>
             </tr></thead>
             <tbody id="lb-tbody">
-              <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--muted)">Import a loan book Excel file to begin assessment</td></tr>
+              <tr><td colspan="11" style="text-align:center;padding:40px;color:var(--muted)">Import a loan book Excel file to begin assessment</td></tr>
             </tbody>
           </table>
         </div>
@@ -3740,26 +3741,111 @@ function _lbProcessFile(input) {
 }
 
 function _lbAssessPortfolio() {
-  var ssp = (document.getElementById('lb-ssp') || {}).value || 'ssp370';
+  var ssp  = (document.getElementById('lb-ssp') || {}).value || 'ssp370';
   var year = +((document.getElementById('lb-yr') || {}).value || 2030);
-  var HIGH_CARBON = ['Oil & Gas','Coal','Steel','Cement','Chemicals','Mining','Utilities'];
+
+  // High-carbon sectors (ECB Guide 2020 + NGFS transition risk list)
+  var HIGH_CARBON = ['Oil & Gas','Coal','Steel','Cement','Chemicals','Mining',
+                     'Utilities','Aviation','Shipping','Aluminium','Fertilisers'];
+
+  // ── IFRS 9 FLI: Scenario probability weights (NGFS Phase 4 / EBA IFRS 9 ITS) ──
+  // Weights represent probability each scenario materialises over a 5-yr forward horizon
+  var _fliScenarios = [
+    {ssp:'ssp126', prob:0.15},   // Orderly transition — optimistic tail
+    {ssp:'ssp245', prob:0.45},   // Delayed transition — central case
+    {ssp:'ssp370', prob:0.25},   // Current policies
+    {ssp:'ssp585', prob:0.15}    // Hot house — adverse tail
+  ];
+
+  // ── Basel IV Standardised Risk Weights by Climate Rating ─────────────────────
+  // Mapped from climate ratings to CRR2 Article 122 risk weight buckets
+  var _rwByRating = {'A':0.20, 'B':0.50, 'C':1.00, 'D/E':1.50};
+  var _rwBaseline = 0.35; // Pre-climate proxy (BBB equivalent per Basel SA)
+
   _lbState.assessed = _lbState.data.map(function(r) {
-    var hz = { score: 25, top_hazards: ['—'] };
+    // ── Primary scenario hazard assessment ────────────────────────────
+    var hz = {score:25, top_hazards:['—']};
     try { hz = assessHazardsSector(r.region||'global', r.lat, r.lon, ssp, year, r.sector||'Other'); } catch(e) {}
+
     var physPd = hz.score >= 50 ? 0.030 : hz.score >= 30 ? 0.015 : 0.005;
     var isHighCarbon = HIGH_CARBON.some(function(s){ return (r.sector||'').indexOf(s) >= 0; });
-    var transPd = isHighCarbon ? 0.020 : 0.005;
-    var totalPd = Math.min(physPd + transPd, 0.10);
-    var lgd = r.ltv > 0 ? Math.max(0.1, Math.min(0.9, r.ltv)) : 0.45;
-    var eclAdj = +(r.loanM * totalPd * lgd).toFixed(3);
-    var rating = hz.score >= 50 ? 'D/E' : hz.score >= 35 ? 'C' : hz.score >= 20 ? 'B' : 'A';
-    var ratingCol = rating === 'D/E' ? '#e74c3c' : rating === 'C' ? '#e67e22' : rating === 'B' ? '#f1c40f' : '#27ae60';
+    var transPd  = isHighCarbon ? 0.020 : 0.005;
+    var totalPd  = Math.min(physPd + transPd, 0.10);
+    var lgd      = r.ltv > 0 ? Math.max(0.10, Math.min(0.90, r.ltv)) : 0.45;
+    var rating   = hz.score >= 50 ? 'D/E' : hz.score >= 35 ? 'C' : hz.score >= 20 ? 'B' : 'A';
+    var ratingCol = rating==='D/E'?'#e74c3c': rating==='C'?'#e67e22': rating==='B'?'#f1c40f':'#27ae60';
+
+    // ── IFRS 9 Three-Stage Classification ─────────────────────────────────────
+    // Source: IFRS 9 para 5.5.3 (SICR), ECB Guide on Climate Risks (2020) s.4.2
+    // Stage 3 — Credit-impaired: physScore ≥ 60 (severe multi-hazard exposure)
+    // Stage 2 — SICR triggered: physScore ≥ 30 OR totalPD > 1.5% OR high-carbon + transPD ≥ 2%
+    // Stage 1 — Performing: all others → 12-month ECL only
+    var ifrs9Stage;
+    var lgdS = lgd; // stressed LGD for Stage 3
+    if (hz.score >= 60) {
+      ifrs9Stage = 3;
+      lgdS = Math.min(lgd + 0.15, 0.90); // IFRS 9 para 5.5.17: credit-impaired LGD uplift
+    } else if (hz.score >= 30 || totalPd > 0.015 || (isHighCarbon && transPd >= 0.020)) {
+      ifrs9Stage = 2; // SICR: switch to lifetime ECL
+    } else {
+      ifrs9Stage = 1; // Performing: 12-month ECL
+    }
+
+    // IFRS 9 ECL formulas:
+    // Stage 1 → 12-month ECL  = EAD × PD_1yr  × LGD
+    // Stage 2/3 → Lifetime ECL = EAD × PD_life × LGD_stressed
+    // PD_lifetime formula: 1 − (1 − PD_annual)^n, n=5yr [EBA IFRS 9 ITS, avg maturity proxy]
+    var pd_life     = 1 - Math.pow(1 - totalPd, 5);
+    var ecl12m      = r.loanM * totalPd  * lgd;
+    var eclLifetime = r.loanM * pd_life  * lgdS;
+    var eclIfrs9    = ifrs9Stage === 1 ? ecl12m : eclLifetime;
+    var eclAdj      = +ecl12m.toFixed(3); // legacy field (12mo, for backward compat)
+
+    // ── IFRS 9 FLI: Probability-Weighted ECL ─────────────────────────────────
+    // Per IFRS 9 para B5.5.41–42: incorporate forward-looking macro-economic information
+    // using multiple scenarios weighted by their probability of occurrence (NGFS Phase 4)
+    var eclFli = 0;
+    _fliScenarios.forEach(function(sc) {
+      var hz_sc = {score:25};
+      try { hz_sc = assessHazardsSector(r.region||'global', r.lat, r.lon, sc.ssp, year, r.sector||'Other'); } catch(e) {}
+      var pd_sc   = hz_sc.score >= 50 ? 0.030 : hz_sc.score >= 30 ? 0.015 : 0.005;
+      var pd_sc_t = Math.min(pd_sc + transPd, 0.10);
+      var pd_sc_l = 1 - Math.pow(1 - pd_sc_t, 5);
+      var stg_sc  = hz_sc.score >= 60 ? 3 : (hz_sc.score >= 30 || pd_sc_t > 0.015 || (isHighCarbon && transPd >= 0.020)) ? 2 : 1;
+      var lgd_sc  = stg_sc === 3 ? Math.min(lgd + 0.15, 0.90) : lgd;
+      var ecl_sc  = stg_sc === 1 ? (r.loanM * pd_sc_t * lgd) : (r.loanM * pd_sc_l * lgd_sc);
+      eclFli += sc.prob * ecl_sc;
+    });
+
+    // ── Basel IV / ICAAP: Pillar 2 Capital Add-on ────────────────────────────
+    // Source: BCBS 559 (2021), ECB ICAAP Guide (2018), CRR2 Article 92 CET1 minimum
+    // Risk weights: Basel SA (CRR2 Art.122) mapped to climate ratings
+    // CET1 minimum + capital conservation buffer = 8% + 2.5% = 10.5%
+    var rwa_stressed  = r.loanM * _rwByRating[rating];
+    var rwa_baseline  = r.loanM * _rwBaseline;
+    var cet1Addon     = +Math.max(0, (rwa_stressed - rwa_baseline) * 0.105).toFixed(3);
+
     return Object.assign({}, r, {
-      physScore: Math.round(hz.score),
-      topHazard: (hz.top_hazards && hz.top_hazards[0]) || '—',
-      physPdUplift: physPd, transPdUplift: transPd, totalPdUplift: totalPd,
-      lgd: lgd, eclAdjM: eclAdj, climateRating: rating, ratingCol: ratingCol,
-      isHighCarbon: isHighCarbon
+      physScore:     Math.round(hz.score),
+      topHazard:     (hz.top_hazards && hz.top_hazards[0]) || '—',
+      physPdUplift:  physPd,
+      transPdUplift: transPd,
+      totalPdUplift: totalPd,
+      lgd:           lgd,
+      eclAdjM:       eclAdj,
+      // IFRS 9
+      ifrs9Stage:    ifrs9Stage,
+      ecl12m:        +ecl12m.toFixed(3),
+      eclLifetime:   +eclLifetime.toFixed(3),
+      eclIfrs9:      +eclIfrs9.toFixed(3),
+      eclFli:        +eclFli.toFixed(3),
+      // ICAAP
+      rwaStressed:   +rwa_stressed.toFixed(2),
+      cet1Addon:     cet1Addon,
+      // Other
+      climateRating: rating,
+      ratingCol:     ratingCol,
+      isHighCarbon:  isHighCarbon
     });
   });
 }
@@ -3770,25 +3856,33 @@ function renderLoanBook() {
   var ass = _lbState.assessed;
 
   // KPI calcs
-  var totalLoan   = ass.reduce(function(s,r){ return s + r.loanM; }, 0);
-  var totalEcl    = ass.reduce(function(s,r){ return s + r.eclAdjM; }, 0);
-  var highRisk    = ass.filter(function(r){ return r.physScore >= 35; });
-  var highRiskExp = highRisk.reduce(function(s,r){ return s + r.loanM; }, 0);
-  var brownAssets = ass.filter(function(r){ return r.isHighCarbon; });
-  var brownRatio  = totalLoan > 0 ? (brownAssets.reduce(function(s,r){ return s + r.loanM; },0) / totalLoan * 100) : 0;
-  var greenRatio  = 100 - brownRatio; // simplified GAR approximation
-  var avgPd       = ass.length ? (ass.reduce(function(s,r){ return s + r.totalPdUplift; },0) / ass.length * 100) : 0;
+  var totalLoan    = ass.reduce(function(s,r){ return s + r.loanM; }, 0);
+  var totalEcl     = ass.reduce(function(s,r){ return s + r.eclAdjM; }, 0);
+  var totalEclI9   = ass.reduce(function(s,r){ return s + r.eclIfrs9; }, 0);  // IFRS 9 staged ECL
+  var totalEclFli  = ass.reduce(function(s,r){ return s + r.eclFli; }, 0);    // FLI probability-weighted
+  var totalCet1    = ass.reduce(function(s,r){ return s + r.cet1Addon; }, 0); // ICAAP Pillar 2 add-on
+  var stg2plus     = ass.filter(function(r){ return r.ifrs9Stage >= 2; });
+  var stg2exp      = stg2plus.reduce(function(s,r){ return s + r.loanM; }, 0);
+  var highRisk     = ass.filter(function(r){ return r.physScore >= 35; });
+  var highRiskExp  = highRisk.reduce(function(s,r){ return s + r.loanM; }, 0);
+  var brownAssets  = ass.filter(function(r){ return r.isHighCarbon; });
+  var brownRatio   = totalLoan > 0 ? (brownAssets.reduce(function(s,r){ return s + r.loanM; },0) / totalLoan * 100) : 0;
+  var greenRatio   = 100 - brownRatio;
+  var avgPd        = ass.length ? (ass.reduce(function(s,r){ return s + r.totalPdUplift; },0) / ass.length * 100) : 0;
 
-  // KPI cards
-  var ratingBadge = function(col, label) {
-    return '<span style="background:' + col + '22;color:' + col + ';border:1px solid ' + col + '44;border-radius:4px;padding:2px 7px;font-size:11px;font-weight:700">' + label + '</span>';
-  };
+  // KPI cards — row 1: IFRS 9 + ICAAP
   var kpiEl = document.getElementById('lb-kpis');
   if (kpiEl) kpiEl.innerHTML =
-    cardHtml('Total Climate ECL', '$' + totalEcl.toFixed(1) + 'M', (totalLoan > 0 ? (totalEcl/totalLoan*100).toFixed(2) : '0') + '% of loan book', 'r') +
-    cardHtml('Brown Asset Ratio', brownRatio.toFixed(1) + '%', 'Green Asset Ratio: ' + greenRatio.toFixed(1) + '%', brownRatio > 30 ? 'r' : 'g') +
-    cardHtml('High-Risk Exposure', '$' + highRiskExp.toFixed(1) + 'M', highRisk.length + ' borrowers with phys. score ≥35', highRisk.length > 0 ? 'q' : 'g') +
-    cardHtml('Avg PD Uplift', avgPd.toFixed(2) + '%', 'Climate-adjusted probability of default', avgPd > 2 ? 'r' : 'q');
+    cardHtml('IFRS 9 Staged ECL', '$' + totalEclI9.toFixed(1) + 'M',
+      'Stage 2+: ' + stg2plus.length + ' borrowers · $' + stg2exp.toFixed(1) + 'M exposure', 'r') +
+    cardHtml('FLI Prob.-Weighted ECL', '$' + totalEclFli.toFixed(1) + 'M',
+      '4-scenario NGFS weighted · vs $' + totalEclI9.toFixed(1) + 'M point estimate',
+      totalEclFli > totalEclI9 ? 'r' : 'q') +
+    cardHtml('Pillar 2 CET1 Add-on', '$' + totalCet1.toFixed(1) + 'M',
+      'ICAAP climate capital · ' + (totalLoan>0?(totalCet1/totalLoan*100).toFixed(2):'0') + '% of book',
+      totalCet1 > totalLoan * 0.01 ? 'r' : 'q') +
+    cardHtml('Avg PD Uplift', avgPd.toFixed(2) + '%',
+      'Climate-adjusted PD · ' + highRisk.length + ' borrowers phys.score ≥35', avgPd > 2 ? 'r' : 'q');
 
   // Sector ECL chart
   var sectorEcl = {};
@@ -3814,9 +3908,13 @@ function renderLoanBook() {
   // Borrower table
   var tbody = document.getElementById('lb-tbody');
   if (tbody) {
-    var sorted = ass.slice().sort(function(a,b){ return b.eclAdjM - a.eclAdjM; });
+    var sorted = ass.slice().sort(function(a,b){ return b.eclIfrs9 - a.eclIfrs9; });
+    var _stgCol = {1:'#27ae60', 2:'#e67e22', 3:'#e74c3c'};
+    var _stgLbl = {1:'S1 · 12mo ECL', 2:'S2 · Lifetime ECL', 3:'S3 · Impaired'};
     tbody.innerHTML = sorted.map(function(r) {
-      var pdPct = (r.totalPdUplift * 100).toFixed(1) + '%';
+      var pdPct   = (r.totalPdUplift * 100).toFixed(1) + '%';
+      var stgCol  = _stgCol[r.ifrs9Stage] || '#9ca3af';
+      var stgLbl  = _stgLbl[r.ifrs9Stage] || 'S1';
       return '<tr style="border-bottom:1px solid var(--bd)">' +
         '<td style="padding:6px 10px;font-weight:600">' + (r.borrower||'—') + '</td>' +
         '<td style="padding:6px 10px;color:var(--muted)">' + r.sector + '</td>' +
@@ -3826,7 +3924,9 @@ function renderLoanBook() {
         '<td style="padding:6px;text-align:right;font-weight:600;color:' + (r.physScore>=50?'#e74c3c':r.physScore>=30?'#e67e22':'#27ae60') + '">' + r.physScore + '</td>' +
         '<td style="padding:6px;text-align:right;color:var(--muted);font-size:10px">' + r.topHazard + '</td>' +
         '<td style="padding:6px;text-align:right">' + pdPct + '</td>' +
-        '<td style="padding:6px;text-align:right;font-weight:600;color:#e74c3c">$' + r.eclAdjM.toFixed(2) + 'M</td>' +
+        '<td style="padding:6px;text-align:right;font-weight:600;color:#e74c3c">$' + r.eclIfrs9.toFixed(2) + 'M' +
+          '<div style="font-size:9px;color:var(--muted);font-weight:400">FLI: $' + r.eclFli.toFixed(2) + 'M</div></td>' +
+        '<td style="padding:6px;text-align:center"><span style="background:' + stgCol + '22;color:' + stgCol + ';border:1px solid ' + stgCol + '44;border-radius:4px;padding:2px 6px;font-size:10px;font-weight:700">' + stgLbl + '</span></td>' +
         '<td style="padding:6px;text-align:center"><span style="background:' + r.ratingCol + '22;color:' + r.ratingCol + ';border:1px solid ' + r.ratingCol + '44;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700">' + r.climateRating + '</span></td>' +
       '</tr>';
     }).join('');
@@ -3835,12 +3935,30 @@ function renderLoanBook() {
   // Regulatory summary
   var regEl = document.getElementById('lb-reg');
   if (regEl) regEl.innerHTML = [
-    {title:'ECB Climate Risk Guide', value: highRisk.length + ' high-risk borrowers', note:'Require enhanced due diligence under ECB 2020 climate risk guidance', col:'#3498db'},
-    {title:'EBA Pillar 3 Disclosure', value: '$' + totalEcl.toFixed(1) + 'M ECL uplift', note:'Disclose climate risk ECL adjustment in annual Pillar 3 report (EBA GL 2022/03)', col:'#9b59b6'},
-    {title:'Green Asset Ratio (GAR)', value: greenRatio.toFixed(1) + '% green', note:'Simplified GAR — taxonomy-aligned lending vs total; target ≥20% under EU Taxonomy', col:'#27ae60'},
-    {title:'SFDR Article 8/9', value: brownRatio.toFixed(1) + '% brown assets', note:'Classify ESG funds by Article 8 (promotes) or Article 9 (sustainable objective)', col:'#e67e22'},
-    {title:'Basel IV Climate Risk', value: avgPd.toFixed(2) + '% avg PD uplift', note:'Forward-looking PD uplift embedded in credit risk framework per BCBS 559', col:'#e74c3c'},
-    {title:'CSRD / ESRS E1', value: ass.length + ' borrowers assessed', note:'Value chain GHG & physical risk disclosure required for in-scope entities', col:'#1abc9c'},
+    {title:'IFRS 9 — Stage 2+ Exposure',
+     value: '$' + stg2exp.toFixed(1) + 'M · ' + stg2plus.length + ' borrowers',
+     note:'IFRS 9 para 5.5.3 SICR: physScore ≥30 or PD uplift >1.5% triggers lifetime ECL. Staged ECL: $' + totalEclI9.toFixed(1) + 'M vs $' + totalEcl.toFixed(1) + 'M point-in-time.',
+     col:'#e74c3c'},
+    {title:'IFRS 9 FLI — Prob.-Weighted ECL',
+     value: '$' + totalEclFli.toFixed(1) + 'M',
+     note:'IFRS 9 B5.5.42: 4-scenario forward-looking overlay (NGFS Phase 4). Weights: SSP1-2.6 15%, SSP2-4.5 45%, SSP3-7.0 25%, SSP5-8.5 15%.',
+     col:'#9b59b6'},
+    {title:'ICAAP — Pillar 2 CET1 Add-on',
+     value: '$' + totalCet1.toFixed(1) + 'M capital',
+     note:'BCBS 559 / ECB ICAAP Guide 2018: incremental capital for climate-stressed RWA vs pre-climate baseline (SA risk weights: A=20%, B=50%, C=100%, D/E=150%). CET1+CCB=10.5%.',
+     col:'#e67e22'},
+    {title:'EBA Pillar 3 ESG Disclosure',
+     value: '$' + totalEclI9.toFixed(1) + 'M ECL uplift',
+     note:'EBA/ITS/2022/01 Table 1: Exposures to physical climate risks — disclose IFRS 9 staged climate ECL adjustment in annual Pillar 3 report.',
+     col:'#3498db'},
+    {title:'Green Asset Ratio (GAR)',
+     value: greenRatio.toFixed(1) + '% green · ' + brownRatio.toFixed(1) + '% brown',
+     note:'EU Taxonomy Regulation: taxonomy-aligned lending ÷ total eligible exposure. Target ≥20% GAR. SFDR Art.8/9 threshold at ≥30%/≥60% green.',
+     col:'#27ae60'},
+    {title:'Basel IV / BCBS 559',
+     value: avgPd.toFixed(2) + '% avg PD uplift',
+     note:'BCBS 559 (2021): forward-looking climate PD uplift in credit risk SA framework. Physical: score-banded; Transition: high-carbon sector overlay per ECB Guide (2020).',
+     col:'#1abc9c'},
   ].map(function(f) {
     return '<div style="background:var(--bg2);border:1px solid var(--bd);border-radius:8px;padding:12px 14px">' +
       '<div style="font-size:10px;font-weight:700;color:' + f.col + ';margin-bottom:4px">' + f.title + '</div>' +
@@ -3904,7 +4022,11 @@ function _lbDownloadAuditTrail() {
     'Overall Phys Score (0–100)','Annual Loss % (Joint Prob.)',
     'Top Hazard 1','Top Hazard 2','Top Hazard 3',
     'Physical PD Uplift (%)','Transition PD Uplift (%)','Total PD Uplift (%)',
-    'LGD Applied','ECL Adjustment (USD M)','Climate Rating',
+    'LGD Applied',
+    'IFRS 9 Stage (1/2/3)','ECL 12-Month (USD M)','ECL Lifetime (USD M)','IFRS 9 Staged ECL (USD M)',
+    'FLI Prob.-Weighted ECL (USD M)',
+    'RWA Stressed (USD M)','Pillar 2 CET1 Add-on (USD M)',
+    'Climate Rating',
     'Assessment Source: Physical Risk',
     'Assessment Source: Transition Risk'
   ];
@@ -3921,11 +4043,17 @@ function _lbDownloadAuditTrail() {
       hz.elevation_m||'', hz.coastal_dist_km||'',
       r.physScore, (hz.annual_loss_pct*100).toFixed(3)+'%',
       (hz.top_hazards||[])[0]||'—', (hz.top_hazards||[])[1]||'—', (hz.top_hazards||[])[2]||'—',
-      (r.physPdUplift||r.totalPdUplift*100*.6).toFixed(2)+'%',
-      (r.transPdUplift||r.totalPdUplift*100*.4).toFixed(2)+'%',
+      (r.physPdUplift*100||0).toFixed(2)+'%',
+      (r.transPdUplift*100||0).toFixed(2)+'%',
       (r.totalPdUplift*100).toFixed(2)+'%',
       (r.ltv||0.45).toFixed(2),
-      r.eclAdjM,
+      r.ifrs9Stage||1,
+      r.ecl12m||r.eclAdjM,
+      r.eclLifetime||r.eclAdjM,
+      r.eclIfrs9||r.eclAdjM,
+      r.eclFli||r.eclAdjM,
+      r.rwaStressed||'',
+      r.cet1Addon||'',
       r.climateRating,
       physSrc, transSrc
     ];
@@ -3958,14 +4086,33 @@ function _lbDownloadAuditTrail() {
     ['Annual Loss %','Joint probability: 1 − Π(1 − lossᵢ) across all applicable hazards'],
     ['GPS Resolution','If lat/lon provided: coastal distance, elevation, river proximity applied via SRTM proxy'],
     [''],
-    ['PD Uplift — ECB Methodology'],
+    ['PD Uplift — ECB Methodology (ECB Guide on Climate-Related Risks, 2020)'],
     ['Physical PD','Score ≥ 50 → +3.0%; Score ≥ 30 → +1.5%; Score < 30 → +0.5%'],
-    ['Transition PD','High-carbon sectors (Oil & Gas, Coal, Cement, Steel, Aviation, Shipping) → +2.0%; others → +0.5%'],
+    ['Transition PD','High-carbon sectors (Oil & Gas, Coal, Cement, Steel, Aviation, Shipping, Aluminium, Fertilisers) → +2.0%; others → +0.5%'],
     ['Total PD','min(physPD + transPD, 10%) — capped per ECB guidance'],
     [''],
-    ['ECL Calculation'],
-    ['Formula','ECL = Loan (USD M) × Total PD × LGD'],
-    ['LGD','If LTV provided: max(0.10, min(0.90, LTV)); else 45% (Basel IV unsecured proxy)'],
+    ['IFRS 9 Three-Stage ECL Model (IFRS 9 para 5.5.3 / EBA IFRS 9 ITS)'],
+    ['Stage Classification','Stage 3: physScore ≥ 60 (credit-impaired); Stage 2 SICR: physScore ≥ 30 OR totalPD > 1.5% OR high-carbon + transPD ≥ 2%; Stage 1: all others'],
+    ['Stage 1 ECL','12-month ECL = EAD × PD_annual × LGD (performing loans only)'],
+    ['Stage 2/3 ECL','Lifetime ECL = EAD × PD_lifetime × LGD_stressed'],
+    ['PD_lifetime Formula','1 − (1 − PD_annual)^5  [5-year average maturity proxy per EBA IFRS 9 ITS]'],
+    ['Stage 3 LGD','min(LGD + 15%, 90%) — credit-impaired uplift per IFRS 9 para 5.5.17'],
+    [''],
+    ['IFRS 9 FLI Probability-Weighted ECL (IFRS 9 para B5.5.41–42 / NGFS Phase 4)'],
+    ['Methodology','Run all 4 SSP scenarios per borrower; weight by scenario probability; sum to portfolio FLI ECL'],
+    ['Scenario Weights','SSP1-2.6: 15% (orderly transition); SSP2-4.5: 45% (delayed transition / central); SSP3-7.0: 25% (current policies); SSP5-8.5: 15% (hot house / adverse tail)'],
+    ['FLI ECL Formula','Σ(prob_i × ECL_i) across all 4 SSP scenarios, each with its own IFRS 9 staging applied'],
+    ['Source','NGFS Phase 4 Scenarios (2023); EBA IFRS 9 ITS; ECB Guide (2020) s.7.3'],
+    [''],
+    ['ICAAP Pillar 2 Climate Capital Add-on (BCBS 559 / ECB ICAAP Guide 2018)'],
+    ['Risk Weights (Basel SA)','Climate Rating A: 20%; B: 50%; C: 100%; D/E: 150% (CRR2 Art.122 mapping)'],
+    ['Baseline RWA','Loan × 35% (pre-climate BBB-equivalent proxy)'],
+    ['Stressed RWA','Loan × risk_weight[climateRating]'],
+    ['CET1 Add-on','max(0, stressed_RWA − baseline_RWA) × 10.5%  (CET1 min 8% + CCB 2.5% per CRR2 Art.92)'],
+    [''],
+    ['ECL Calculation (Legacy / Point-in-Time)'],
+    ['Formula','ECL_PIT = Loan × PD_annual × LGD  (shown for backward compatibility only; IFRS 9 staged ECL is the primary output)'],
+    ['LGD','If LTV provided: max(0.10, min(0.90, LTV)); else 45% (Basel IV unsecured proxy per CRR2 Art.161)'],
     [''],
     ['Climate Rating'],
     ['A','physScore < 20'],
