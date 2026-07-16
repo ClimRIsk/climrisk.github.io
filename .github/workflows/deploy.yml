@@ -33,9 +33,10 @@ jobs:
       # Keep the existing platform HTML files accessible at their current URLs
       - name: Copy platform app files into build output
         run: |
-          cp app.html          climrisk-web/out/app.html
-          cp dashboard.html    climrisk-web/out/dashboard.html
-          cp CRI_Demo.html     climrisk-web/out/CRI_Demo.html
+          cp app.html                climrisk-web/out/app.html
+          cp dashboard.html          climrisk-web/out/dashboard.html
+          cp CRI_Demo.html           climrisk-web/out/CRI_Demo.html
+          cp ClimRisk_Platform.html  climrisk-web/out/ClimRisk_Platform.html
         continue-on-error: true   # graceful if any file was removed
 
       # GitHub Pages needs a CNAME file for the custom domain
