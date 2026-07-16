@@ -3462,8 +3462,8 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
                 '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.3">'+ev.title+'</div>' +
                 (ev.desc?'<div style="font-size:10px;color:var(--muted);margin-bottom:4px;line-height:1.4">'+String(ev.desc).replace(/<[^>]+>/g,'').substring(0,160)+'</div>':'') +
                 '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">'+
-                  (lossM>0?'<span style="font-size:11px;font-weight:700;color:'+lossCol+'">💰 Est. financial loss: '+fmtLoss(lossM)+'</span>':'')+
-                  (ev.pop>0?'<span style="font-size:10px;color:var(--muted)">👥 ~'+Number(ev.pop).toLocaleString()+' affected</span>':'')+
+                  (lossM>0?'<span style="font-size:11px;font-weight:700;color:'+lossCol+'">💰 Est. loss: '+fmtLoss(lossM)+'</span>':'')+
+                  (ev.pop>=100?'<span style="font-size:10px;color:var(--muted)">👥 '+(ev.pop>=1e6?(ev.pop/1e6).toFixed(1)+'M':ev.pop>=1e3?Math.round(ev.pop/1e3)+'K':ev.pop)+' affected</span>':'')+
                   (ev.mag?'<span style="font-size:10px;color:var(--muted)">📊 M'+Number(ev.mag).toFixed(1)+'</span>':'')+
                 '</div>'+
               '</div>' +
@@ -3542,10 +3542,10 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
               var tl=title.toLowerCase();
               if(!cat&&(tl.includes('red ')||tl.includes('level 3'))) alertLv='RED';
               else if(!cat&&(tl.includes('orange')||tl.includes('level 2'))) alertLv='ORANGE';
-              /* population from description e.g. "130 thousand in MMI>=IV" */
+              /* population from description — anchor to "affecting X thousand/million" to avoid matching dates */
               var pop=0;
-              var pm=desc.match(/([\d,]+)\s*(thousand|million)?/i);
-              if(pm){ pop=parseInt((pm[1]||'0').replace(/,/g,''))*(pm[2]&&pm[2].toLowerCase()==='million'?1e6:pm[2]&&pm[2].toLowerCase()==='thousand'?1e3:1); }
+              var pm=desc.match(/affecting\s+([\d,]+)\s*(thousand|million)?/i);
+              if(pm){ pop=Math.max(0,parseInt((pm[1]||'0').replace(/,/g,''))*(pm[2]&&pm[2].toLowerCase()==='million'?1e6:pm[2]&&pm[2].toLowerCase()==='thousand'?1e3:1)); }
               var geo   = _geoFromTitle(title);
               var lossM = estimateLoss(evtype||'EQ', alertLv, pop, 0.5);
               return {title:title,pubDate:pubDate,desc:desc,link:link,
@@ -3556,9 +3556,9 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           });
         }
 
-        /* ── Fetch USGS Earthquakes M5.0+ (global, rolling 7 days) ── */
+        /* ── Fetch USGS Earthquakes M4.5+ (global, rolling 7 days) ── */
         function fetchUSGS() {
-          return fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/5.0_week.geojson',{signal:AbortSignal.timeout(10000)})
+          return fetch('https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/4.5_week.geojson',{signal:AbortSignal.timeout(12000)})
           .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
           .then(function(data){
             return (data.features||[]).map(function(f){
