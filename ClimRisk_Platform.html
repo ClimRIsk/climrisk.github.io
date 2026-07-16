@@ -3471,11 +3471,33 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           '</div>';
         }
 
+        /* ── CORS proxy waterfall — tries 3 proxies in order ── */
+        function corsGet(targetUrl, timeoutMs) {
+          timeoutMs = timeoutMs || 14000;
+          var proxies = [
+            'https://api.allorigins.win/raw?url=',
+            'https://corsproxy.io/?',
+            'https://api.codetabs.com/v1/proxy?quest='
+          ];
+          function tryNext(i) {
+            if (i >= proxies.length) return Promise.reject(new Error('All CORS proxies failed for: ' + targetUrl));
+            var proxyUrl = proxies[i] + encodeURIComponent(targetUrl);
+            return fetch(proxyUrl, {signal: AbortSignal.timeout(timeoutMs)})
+              .then(function(r) {
+                if (!r.ok) throw new Error('HTTP ' + r.status);
+                return r.text();
+              })
+              .catch(function(e) {
+                console.warn('CORS proxy #' + i + ' (' + proxies[i] + ') failed:', e.message, '— trying next…');
+                return tryNext(i + 1);
+              });
+          }
+          return tryNext(0);
+        }
+
         /* ── Fetch GDACS RSS (global disasters) ── */
         function fetchGDACS() {
-          var url = 'https://api.allorigins.win/raw?url='+encodeURIComponent('https://www.gdacs.org/xml/rss.xml');
-          return fetch(url,{signal:AbortSignal.timeout(14000)})
-          .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+          return corsGet('https://www.gdacs.org/xml/rss.xml', 14000)
           .then(function(xml){
             var doc = (new DOMParser()).parseFromString(xml,'application/xml');
             return Array.from(doc.querySelectorAll('item')).map(function(item){
@@ -3531,8 +3553,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           var qs = ['major+flood+disaster+2026','cyclone+typhoon+hurricane+disaster','wildfire+climate+emergency+2026','earthquake+disaster+relief+2026','drought+climate+crisis','climate+financial+loss+damage'];
           var q = qs[new Date().getMinutes() % qs.length]; // rotate each refresh
           var url = 'https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en';
-          return fetch('https://api.allorigins.win/raw?url='+encodeURIComponent(url),{signal:AbortSignal.timeout(12000)})
-          .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.text(); })
+          return corsGet(url, 12000)
           .then(function(xml){
             var doc=(new DOMParser()).parseFromString(xml,'application/xml');
             return Array.from(doc.querySelectorAll('item')).slice(0,18).map(function(item){
