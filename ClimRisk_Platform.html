@@ -3471,56 +3471,87 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           '</div>';
         }
 
-        /* ── CORS proxy waterfall — tries 3 proxies in order ── */
-        function corsGet(targetUrl, timeoutMs) {
-          timeoutMs = timeoutMs || 14000;
-          var proxies = [
-            'https://api.allorigins.win/raw?url=',
-            'https://corsproxy.io/?',
-            'https://api.codetabs.com/v1/proxy?quest='
-          ];
-          function tryNext(i) {
-            if (i >= proxies.length) return Promise.reject(new Error('All CORS proxies failed for: ' + targetUrl));
-            var proxyUrl = proxies[i] + encodeURIComponent(targetUrl);
-            return fetch(proxyUrl, {signal: AbortSignal.timeout(timeoutMs)})
-              .then(function(r) {
-                if (!r.ok) throw new Error('HTTP ' + r.status);
-                return r.text();
-              })
-              .catch(function(e) {
-                console.warn('CORS proxy #' + i + ' (' + proxies[i] + ') failed:', e.message, '— trying next…');
-                return tryNext(i + 1);
-              });
-          }
-          return tryNext(0);
+        /* ── rss2json: CORS-safe RSS→JSON bridge (no proxy needed) ── */
+        function _rss2json(feedUrl, timeoutMs) {
+          var api = 'https://api.rss2json.com/v1/api.json?rss_url=' + encodeURIComponent(feedUrl);
+          return fetch(api, {signal: AbortSignal.timeout(timeoutMs || 14000)})
+            .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+            .then(function(d){ if(d.status!=='ok') throw new Error('rss2json: '+(d.message||'error')); return d.items||[]; });
         }
 
-        /* ── Fetch GDACS RSS (global disasters) ── */
+        /* ── Country centroid lookup for map marker positioning ── */
+        var _CC = {
+          'afghanistan':[33.9,67.7],'albania':[41.2,20.2],'algeria':[28.0,2.6],
+          'angola':[-11.2,17.9],'argentina':[-38.4,-63.6],'australia':[-25.3,133.8],
+          'bangladesh':[23.7,90.4],'bolivia':[-16.3,-63.6],'brazil':[-14.2,-51.9],
+          'cambodia':[12.6,105.0],'cameroon':[3.8,11.5],'canada':[56.1,-106.3],
+          'chad':[15.5,18.7],'chile':[-35.7,-71.5],'china':[35.9,104.2],
+          'colombia':[4.6,-74.3],'congo':[-4.0,21.8],'cuba':[21.5,-77.8],
+          'ecuador':[-1.8,-78.2],'egypt':[26.8,30.8],'ethiopia':[9.1,40.5],
+          'france':[46.2,2.2],'ghana':[7.9,-1.0],'greece':[39.1,21.8],
+          'guatemala':[15.8,-90.2],'guinea':[11.0,-10.9],'haiti':[18.97,-72.29],
+          'honduras':[15.2,-86.2],'india':[20.6,79.0],'indonesia':[-0.8,113.9],
+          'iran':[32.4,53.7],'iraq':[33.2,43.7],'italy':[41.9,12.6],
+          'japan':[36.2,138.3],'kenya':[-0.0,37.9],'madagascar':[-18.8,46.9],
+          'malawi':[-13.3,34.3],'mali':[17.6,-4.0],'mexico':[23.6,-102.6],
+          'morocco':[31.8,-7.1],'mozambique':[-18.7,35.5],'myanmar':[21.9,96.0],
+          'nepal':[28.4,84.1],'new zealand':[-40.9,174.9],'nicaragua':[12.9,-85.2],
+          'niger':[17.6,8.1],'nigeria':[9.1,8.7],'pakistan':[30.4,69.3],
+          'papua new guinea':[-6.3,143.9],'peru':[-9.2,-75.0],'philippines':[12.9,121.8],
+          'russia':[61.5,105.3],'rwanda':[-1.9,29.9],'somalia':[5.2,46.2],
+          'south africa':[-30.6,22.9],'south sudan':[7.9,30.2],'spain':[40.5,-3.7],
+          'sri lanka':[7.9,80.8],'sudan':[12.9,30.2],'syria':[34.8,39.0],
+          'taiwan':[23.7,121.0],'tajikistan':[38.9,71.3],'tanzania':[-6.4,34.9],
+          'thailand':[15.9,101.0],'turkey':[38.9,35.2],'turkiye':[38.9,35.2],
+          'uganda':[1.4,32.3],'ukraine':[48.4,31.2],'usa':[37.1,-95.7],
+          'united states':[37.1,-95.7],'vanuatu':[-15.4,167.0],'venezuela':[6.4,-66.6],
+          'vietnam':[14.1,108.3],'yemen':[15.6,48.5],'zambia':[-13.1,27.9],
+          'zimbabwe':[-19.0,29.2]
+        };
+        function _geoFromTitle(title) {
+          var t = (title||'').toLowerCase();
+          // Try country names (longest first to avoid 'iran' matching 'ukraine')
+          var keys = Object.keys(_CC).sort(function(a,b){return b.length-a.length;});
+          for(var i=0;i<keys.length;i++){
+            if(t.indexOf(keys[i])!==-1){ var c=_CC[keys[i]]; return {lat:c[0],lon:c[1]}; }
+          }
+          if(t.indexOf('pacific')!==-1) return {lat:5,lon:170};
+          if(t.indexOf('atlantic')!==-1) return {lat:20,lon:-40};
+          if(t.indexOf('caribbean')!==-1) return {lat:15,lon:-70};
+          if(t.indexOf('mediterranean')!==-1) return {lat:35,lon:18};
+          if(t.indexOf('southeast asia')!==-1) return {lat:10,lon:107};
+          return {lat:NaN,lon:NaN};
+        }
+
+        /* ── Fetch GDACS events via rss2json (no CORS proxy needed) ── */
         function fetchGDACS() {
-          return corsGet('https://www.gdacs.org/xml/rss.xml', 14000)
-          .then(function(xml){
-            var doc = (new DOMParser()).parseFromString(xml,'application/xml');
-            return Array.from(doc.querySelectorAll('item')).map(function(item){
-              var getT  = function(tag){ var el=item.querySelector(tag); return el?el.textContent:''; };
-              var getNS = function(local){ var els=item.getElementsByTagName('*'); for(var i=0;i<els.length;i++){if(els[i].localName===local)return els[i].textContent.trim();} return ''; };
-              var title   = getT('title')||'Unknown Event';
-              var pubDate = getT('pubDate')||'';
-              var desc    = getT('description')||'';
-              var link    = getT('link')||'https://www.gdacs.org';
-              var evtype  = (getNS('eventtype')||guessType(title)).toUpperCase();
-              var alertLv = parseSev(getNS('alertlevel')||getNS('severity')||'');
-              var lat     = parseFloat(getNS('latitude')||getNS('lat')||'');
-              var lon     = parseFloat(getNS('longitude')||getNS('lon')||'');
-              var pop     = parseInt(getNS('population')||getNS('people')||'0')||0;
-              var vuln    = parseFloat(getNS('vulnerability')||'0')||0;
-              if(isNaN(lat)){
-                var gl=item.getElementsByTagNameNS('http://www.w3.org/2003/01/geo/wgs84_pos#','lat')[0];
-                var glo=item.getElementsByTagNameNS('http://www.w3.org/2003/01/geo/wgs84_pos#','long')[0];
-                if(gl&&glo){lat=parseFloat(gl.textContent);lon=parseFloat(glo.textContent);}
-              }
-              if(!alertLv){var tl=title.toLowerCase();alertLv=tl.includes('red')||tl.includes('level 3')?'RED':tl.includes('orange')||tl.includes('level 2')?'ORANGE':'GREEN';}
-              var lossM = estimateLoss(evtype,alertLv,pop,vuln);
-              return {title:title,pubDate:pubDate,desc:desc,link:link,evtype:evtype,sev:alertLv,lat:lat,lon:lon,pop:pop,lossM:lossM,source:'GDACS'};
+          return _rss2json('https://www.gdacs.org/xml/rss.xml', 14000)
+          .then(function(items){
+            return items.map(function(item){
+              var title  = item.title  || 'Unknown Event';
+              var desc   = item.description || item.content || '';
+              var link   = item.link   || 'https://www.gdacs.org';
+              var pubDate= item.pubDate|| '';
+              /* event type from categories e.g. ['EQ1'] or ['TC3'] */
+              var cat    = ((item.categories||[])[0]||'').toUpperCase();
+              var evtype = cat.replace(/\d+$/,'') || guessType(title);
+              var level  = parseInt(cat.replace(/\D/g,''))||1;
+              /* alert level from numeric suffix: 1=green, 2=orange, 3=red */
+              var alertLv= level>=3?'RED':level>=2?'ORANGE':'GREEN';
+              /* also scan title text for explicit colour words */
+              var tl=title.toLowerCase();
+              if(!cat&&(tl.includes('red ')||tl.includes('level 3'))) alertLv='RED';
+              else if(!cat&&(tl.includes('orange')||tl.includes('level 2'))) alertLv='ORANGE';
+              /* population from description e.g. "130 thousand in MMI>=IV" */
+              var pop=0;
+              var pm=desc.match(/([\d,]+)\s*(thousand|million)?/i);
+              if(pm){ pop=parseInt((pm[1]||'0').replace(/,/g,''))*(pm[2]&&pm[2].toLowerCase()==='million'?1e6:pm[2]&&pm[2].toLowerCase()==='thousand'?1e3:1); }
+              var geo   = _geoFromTitle(title);
+              var lossM = estimateLoss(evtype||'EQ', alertLv, pop, 0.5);
+              return {title:title,pubDate:pubDate,desc:desc,link:link,
+                      evtype:evtype||'EQ',sev:alertLv,
+                      lat:geo.lat,lon:geo.lon,
+                      pop:pop,lossM:lossM,source:'GDACS'};
             });
           });
         }
@@ -3548,21 +3579,21 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           });
         }
 
-        /* ── Fetch Google News RSS (rotating climate/disaster queries) ── */
+        /* ── Fetch Google News RSS via rss2json (no CORS proxy needed) ── */
         function fetchClimateNews() {
-          var qs = ['major+flood+disaster+2026','cyclone+typhoon+hurricane+disaster','wildfire+climate+emergency+2026','earthquake+disaster+relief+2026','drought+climate+crisis','climate+financial+loss+damage'];
-          var q = qs[new Date().getMinutes() % qs.length]; // rotate each refresh
-          var url = 'https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en';
-          return corsGet(url, 12000)
-          .then(function(xml){
-            var doc=(new DOMParser()).parseFromString(xml,'application/xml');
-            return Array.from(doc.querySelectorAll('item')).slice(0,18).map(function(item){
-              var getT=function(tag){var el=item.querySelector(tag);return el?el.textContent:'';};
+          var qs=['major+flood+disaster+2026','cyclone+typhoon+hurricane+disaster',
+                  'wildfire+climate+emergency+2026','earthquake+disaster+relief+2026',
+                  'drought+climate+crisis','climate+financial+loss+damage'];
+          var q=qs[new Date().getMinutes()%qs.length];
+          var feedUrl='https://news.google.com/rss/search?q='+q+'&hl=en-US&gl=US&ceid=US:en';
+          return _rss2json(feedUrl, 12000)
+          .then(function(items){
+            return items.slice(0,18).map(function(item){
               return {
-                title: getT('title').replace(/ - [^-]+$/,''),
-                link:  getT('link'),
-                pubDate: getT('pubDate'),
-                source: getT('source')||'Reuters / AP'
+                title: (item.title||'').replace(/ - [^-]+$/,''),
+                link:  item.link||'',
+                pubDate: item.pubDate||'',
+                source: item.author||'Reuters / AP'
               };
             }).filter(function(n){return n.title&&n.link;});
           });
