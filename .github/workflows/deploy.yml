@@ -30,9 +30,10 @@ jobs:
         run: npm run build
         working-directory: climrisk-web
 
-      # Override with our standalone HTML files — these take priority over Next.js output
-      - name: Copy standalone HTML files into build output
+      # Override with our standalone HTML files and assets
+      - name: Copy standalone files into build output
         run: |
+          cp logo.svg                climrisk-web/out/logo.svg
           cp index.html              climrisk-web/out/index.html
           cp live-planet.html        climrisk-web/out/live-planet.html
           cp app.html                climrisk-web/out/app.html
@@ -41,11 +42,9 @@ jobs:
           cp ClimRisk_Platform.html  climrisk-web/out/ClimRisk_Platform.html
         continue-on-error: true
 
-      # GitHub Pages needs a CNAME file for the custom domain
       - name: Write CNAME
         run: echo "climrisk.io" > climrisk-web/out/CNAME
 
-      # Next.js puts assets in _next/ — disable Jekyll so GitHub Pages serves as-is
       - name: Add .nojekyll
         run: touch climrisk-web/out/.nojekyll
 
