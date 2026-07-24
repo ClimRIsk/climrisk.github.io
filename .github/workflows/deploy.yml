@@ -30,9 +30,9 @@ jobs:
         run: npm run build
         working-directory: climrisk-web
 
-      # Override with our standalone HTML files and assets
       - name: Copy standalone files into build output
         run: |
+          cp logo.png                climrisk-web/out/logo.png
           cp logo.svg                climrisk-web/out/logo.svg
           cp index.html              climrisk-web/out/index.html
           cp live-planet.html        climrisk-web/out/live-planet.html
