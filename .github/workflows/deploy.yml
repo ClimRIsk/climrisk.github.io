@@ -30,9 +30,10 @@ jobs:
         run: npm run build
         working-directory: climrisk-web
 
-      # Keep the existing platform HTML files accessible at their current URLs
-      - name: Copy platform app files into build output
+      # Override with our standalone HTML files — these take priority over Next.js output
+      - name: Copy standalone HTML files into build output
         run: |
+          cp index.html              climrisk-web/out/index.html
           cp app.html                climrisk-web/out/app.html
           cp dashboard.html          climrisk-web/out/dashboard.html
           cp CRI_Demo.html           climrisk-web/out/CRI_Demo.html
@@ -43,9 +44,7 @@ jobs:
       - name: Write CNAME
         run: echo "climrisk.io" > climrisk-web/out/CNAME
 
-      # GitHub Pages ignores folders starting with _ by default.
-      # Next.js puts assets in _next/ — this disables Jekyll processing
-      # so GitHub Pages serves the files as-is.
+      # Next.js puts assets in _next/ — disable Jekyll so GitHub Pages serves as-is
       - name: Add .nojekyll
         run: touch climrisk-web/out/.nojekyll
 
