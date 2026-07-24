@@ -34,11 +34,12 @@ jobs:
       - name: Copy standalone HTML files into build output
         run: |
           cp index.html              climrisk-web/out/index.html
+          cp live-planet.html        climrisk-web/out/live-planet.html
           cp app.html                climrisk-web/out/app.html
           cp dashboard.html          climrisk-web/out/dashboard.html
           cp CRI_Demo.html           climrisk-web/out/CRI_Demo.html
           cp ClimRisk_Platform.html  climrisk-web/out/ClimRisk_Platform.html
-        continue-on-error: true   # graceful if any file was removed
+        continue-on-error: true
 
       # GitHub Pages needs a CNAME file for the custom domain
       - name: Write CNAME
