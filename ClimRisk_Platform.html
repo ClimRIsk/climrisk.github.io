@@ -3375,6 +3375,71 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           return '$'+m+'M';
         }
 
+        /* ─────────────────────────────────────────────────────────────────────
+           PORTFOLIO ASSET REGISTRY
+           16 assets across the 4 CRI demo companies — with GPS coordinates and
+           annual-revenue attribution (USD millions).  Only events that fall
+           within PORTFOLIO_RADIUS_KM of at least one asset are surfaced in the
+           Live Events panel.  Loss estimates use CRI revenue-at-risk fractions
+           instead of raw GDACS/geological loss models.
+           ───────────────────────────────────────────────────────────────────── */
+        var PORTFOLIO_ASSETS = [
+          // ── Carnival Corporation ────────────────────────────────────────────
+          {co:'Carnival Corp',  id:'portmiami',     name:'PortMiami Cruise Terminal',    lat:25.7741, lon:-80.1842, revM:7200},
+          {co:'Carnival Corp',  id:'port_canaveral',name:'Port Canaveral Terminal',      lat:28.4069, lon:-80.5950, revM:2100},
+          {co:'Carnival Corp',  id:'southampton',   name:'Southampton Cruise Terminal',  lat:50.9097, lon: -1.4044, revM:3600},
+          {co:'Carnival Corp',  id:'barcelona',     name:'Barcelona Cruise Port',        lat:41.3567, lon:  2.1701, revM:2400},
+          // ── Delta Air Lines ─────────────────────────────────────────────────
+          {co:'Delta Air Lines',id:'atl',           name:'Atlanta ATL Hub',              lat:33.6407, lon:-84.4277, revM:8500},
+          {co:'Delta Air Lines',id:'jfk',           name:'New York JFK Hub',             lat:40.6413, lon:-73.7781, revM:5200},
+          {co:'Delta Air Lines',id:'lax',           name:'Los Angeles LAX',              lat:33.9425, lon:-118.408, revM:3800},
+          {co:'Delta Air Lines',id:'lhr',           name:'London Heathrow Hub',          lat:51.4775, lon: -0.4614, revM:4100},
+          {co:'Delta Air Lines',id:'nrt',           name:'Tokyo Narita Hub',             lat:35.7720, lon:140.3929, revM:2900},
+          // ── Tata Steel ──────────────────────────────────────────────────────
+          {co:'Tata Steel',     id:'jamshedpur',    name:'Jamshedpur Steel Plant',       lat:22.8046, lon: 86.2029, revM:4200},
+          {co:'Tata Steel',     id:'ijmuiden',      name:'IJmuiden Steel Works',         lat:52.4600, lon:  4.6100, revM:5100},
+          {co:'Tata Steel',     id:'port_talbot',   name:'Port Talbot Steelworks',       lat:51.5890, lon: -3.8000, revM:1900},
+          {co:'Tata Steel',     id:'kalinganagar',  name:'Kalinganagar Plant (Odisha)',  lat:21.1026, lon: 85.5093, revM:2300},
+          // ── UltraTech Cement ────────────────────────────────────────────────
+          {co:'UltraTech',      id:'ultratech_mum', name:'Mumbai Operations Hub',        lat:19.0760, lon: 72.8777, revM:3100},
+          {co:'UltraTech',      id:'ultratech_guj', name:'Gujarat Cement Plants',        lat:22.2587, lon: 71.1924, revM:2800},
+          {co:'UltraTech',      id:'ultratech_raj', name:'Rajasthan Works (Kotputli)',   lat:27.7006, lon: 76.0390, revM:1900},
+        ];
+
+        /* Maximum distance (km) from a portfolio asset for an event to be shown */
+        var PORTFOLIO_RADIUS_KM = 500;
+
+        /* Revenue-at-risk fractions by event type × alert level (CRI calibration) */
+        var PORTFOLIO_IMPACT_FR = {
+          TC: {RED:0.42, ORANGE:0.16, GREEN:0.04},
+          FL: {RED:0.32, ORANGE:0.11, GREEN:0.03},
+          EQ: {RED:0.18, ORANGE:0.05, GREEN:0.01},
+          DR: {RED:0.20, ORANGE:0.07, GREEN:0.01},
+          WF: {RED:0.15, ORANGE:0.05, GREEN:0.01},
+          VO: {RED:0.12, ORANGE:0.04, GREEN:0.01},
+          UN: {RED:0.08, ORANGE:0.03, GREEN:0.01}
+        };
+
+        /* Haversine distance in km */
+        function haversineKm(lat1,lon1,lat2,lon2){
+          var R=6371, dLat=(lat2-lat1)*Math.PI/180, dLon=(lon2-lon1)*Math.PI/180;
+          var a=Math.sin(dLat/2)*Math.sin(dLat/2)+
+                Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+                Math.sin(dLon/2)*Math.sin(dLon/2);
+          return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+        }
+
+        /* Find nearest portfolio asset; returns {asset, distKm} or null */
+        function nearestAsset(evLat, evLon){
+          if(isNaN(evLat)||isNaN(evLon)) return null;
+          var best=null, bestDist=Infinity;
+          PORTFOLIO_ASSETS.forEach(function(a){
+            var d=haversineKm(evLat,evLon,a.lat,a.lon);
+            if(d<bestDist){bestDist=d; best={asset:a,distKm:Math.round(d)};}
+          });
+          return best;
+        }
+
         function impactColor(lo,hi){ var avg=(lo+hi)/2; return avg>=40?'#ef4444':avg>=20?'#f59e0b':'#2563eb'; }
 
         function renderMatrix(){
@@ -3402,13 +3467,20 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           } catch(e){ console.warn('Leaflet init error',e); }
         }
 
-        function addMarker(lat,lon,title,sev,lossM,link){
+        function addMarker(lat,lon,title,sev,lossM,link,nearest){
           if(!leMap||isNaN(lat)||isNaN(lon)) return;
           var col = sev==='RED'?'#ef4444':sev==='ORANGE'?'#f59e0b':'#22c55e';
           var sz = lossM>=50000?20:lossM>=5000?16:lossM>=500?12:9;
           var icon = L.divIcon({html:'<div style="width:'+sz+'px;height:'+sz+'px;background:'+col+';border-radius:50%;border:2px solid rgba(0,0,0,.3);box-shadow:0 0 8px '+col+'99;opacity:0.9"></div>',className:'',iconSize:[sz,sz],iconAnchor:[sz/2,sz/2]});
           var m = L.marker([lat,lon],{icon:icon}).addTo(leMap);
-          m.bindPopup('<strong style="font-size:12px">'+title+'</strong><br><span style="font-size:10px;color:#666">Alert: <b>'+sev+'</b></span><br><span style="font-size:11px;font-weight:700;color:#c2410c">Est. loss: '+fmtLoss(lossM||0)+'</span>'+(link?'<br><a href="'+link+'" target="_blank" style="font-size:10px;color:#2563eb">Details →</a>':''));
+          var lossLine = nearest
+            ? '<span style="font-size:11px;font-weight:700;color:#c2410c">💼 Revenue at risk: '+fmtLoss(lossM||0)+'</span>'+
+              '<br><span style="font-size:10px;color:#2563eb">📍 '+nearest.distKm+'km from '+nearest.asset.name+'</span>'
+            : '<span style="font-size:11px;font-weight:700;color:#c2410c">Est. loss: '+fmtLoss(lossM||0)+'</span>';
+          m.bindPopup('<strong style="font-size:12px">'+title+'</strong>'+
+            '<br><span style="font-size:10px;color:#666">Alert: <b>'+sev+'</b></span>'+
+            '<br>'+lossLine+
+            (link?'<br><a href="'+link+'" target="_blank" style="font-size:10px;color:#2563eb">Details →</a>':''));
           leMarkers.push(m);
         }
 
@@ -3462,7 +3534,13 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
                 '<div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px;line-height:1.3;word-break:break-word;overflow-wrap:anywhere">'+ev.title+'</div>' +
                 (ev.desc?'<div style="font-size:10px;color:var(--muted);margin-bottom:4px;line-height:1.4;word-break:break-word;overflow-wrap:anywhere">'+String(ev.desc).replace(/<[^>]+>/g,'').substring(0,160)+'</div>':'') +
                 '<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">'+
-                  (lossM>0?'<span style="font-size:11px;font-weight:700;color:'+lossCol+'">💰 Est. loss: '+fmtLoss(lossM)+'</span>':'')+
+                  (ev._nearest
+                    ? '<span style="font-size:11px;font-weight:700;color:'+lossCol+'">💼 Revenue at risk: '+fmtLoss(lossM)+'</span>'+
+                      '<span style="font-size:10px;color:#2563eb;background:#eff6ff;padding:2px 6px;border-radius:4px;border:1px solid #bfdbfe">'+
+                        '📍 '+ev._nearest.distKm+'km from '+ev._nearest.asset.name+
+                      '</span>'
+                    : (lossM>0?'<span style="font-size:11px;font-weight:700;color:'+lossCol+'">💰 Est. loss: '+fmtLoss(lossM)+'</span>':'')
+                  )+
                   (ev.pop>=100?'<span style="font-size:10px;color:var(--muted)">👥 '+(ev.pop>=1e6?(ev.pop/1e6).toFixed(1)+'M':ev.pop>=1e3?Math.round(ev.pop/1e3)+'K':ev.pop)+' affected</span>':'')+
                   (ev.mag?'<span style="font-size:10px;color:var(--muted)">📊 M'+Number(ev.mag).toFixed(1)+'</span>':'')+
                 '</div>'+
@@ -3620,31 +3698,67 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
             fetchClimateNews().catch(function(e){console.warn('News fail',e);return[];})
           ]).then(function(res){
             var gdacsEvs=res[0], usgsEvs=res[1], news=res[2];
-            /* Merge + sort: RED first, then by date desc */
-            var allEvs = gdacsEvs.concat(usgsEvs);
+            /* Merge all raw events */
+            var rawEvs = gdacsEvs.concat(usgsEvs);
+
+            /* ── Portfolio proximity filter ─────────────────────────────────────
+               Only surface events within PORTFOLIO_RADIUS_KM of a known asset.
+               Replace raw geological loss with CRI portfolio revenue-at-risk.   */
+            var allEvs = rawEvs.filter(function(ev){
+              if(isNaN(ev.lat)||isNaN(ev.lon)) return false;
+              var near = nearestAsset(ev.lat, ev.lon);
+              if(!near || near.distKm > PORTFOLIO_RADIUS_KM) return false;
+              // Annotate event with nearest asset + portfolio exposure
+              ev._nearest  = near;
+              var typeFr = PORTFOLIO_IMPACT_FR[ev.evtype] || PORTFOLIO_IMPACT_FR['UN'];
+              var fr     = typeFr[ev.sev] || 0.01;
+              // Attenuate by distance — full impact at 0 km, 0 at radius boundary
+              var distFactor = Math.max(0.05, 1 - near.distKm / PORTFOLIO_RADIUS_KM);
+              ev.lossM = Math.max(1, Math.round(near.asset.revM * fr * distFactor));
+              return true;
+            });
+
+            /* Sort: RED first, then by urgency (distKm asc) */
             allEvs.sort(function(a,b){
               var ord={RED:3,ORANGE:2,GREEN:1};
               var sd=(ord[b.sev]||0)-(ord[a.sev]||0);
-              return sd!==0?sd:(new Date(b.pubDate||0)-new Date(a.pubDate||0));
+              if(sd!==0) return sd;
+              return (a._nearest?a._nearest.distKm:999)-(b._nearest?b._nearest.distKm:999);
             });
 
             var timeStr = ts.toLocaleTimeString(undefined,{hour:'2-digit',minute:'2-digit'});
-            elSt.textContent = allEvs.length+' global events · '+timeStr;
+            var portfolioLabel = allEvs.length
+              ? allEvs.length+' portfolio event'+(allEvs.length!==1?'s':'')+' · '+timeStr
+              : 'No portfolio events · '+timeStr;
+            elSt.textContent = portfolioLabel;
 
-            /* Ticker */
+            /* Ticker — portfolio revenue at risk, not global loss */
             var redEvs = allEvs.filter(function(e){return e.sev==='RED';}).slice(0,10);
             var tickSrc = redEvs.length ? redEvs : allEvs.slice(0,8);
-            elTk.textContent = tickSrc.map(function(e){return evIcon(e.evtype)+' '+e.title+' (Est. '+fmtLoss(e.lossM||0)+')';}).join('  ·  ');
+            elTk.textContent = tickSrc.length
+              ? tickSrc.map(function(e){
+                  return evIcon(e.evtype)+' '+e.title+
+                    (e._nearest?' · 📍'+e._nearest.distKm+'km from '+e._nearest.asset.name+' · At risk: '+fmtLoss(e.lossM||0):'');
+                }).join('  ·  ')
+              : 'No active events affecting portfolio assets';
 
             /* Event cards */
             if(!allEvs.length){
-              elEv.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:11px">No live events returned. CORS proxy may be temporarily unavailable. <a href="https://www.gdacs.org" target="_blank" style="color:#2563eb">Visit GDACS →</a> | <a href="https://earthquake.usgs.gov/earthquakes/map/" target="_blank" style="color:#2563eb">USGS Map →</a></div>';
+              elEv.innerHTML='<div style="text-align:center;padding:28px 24px;color:var(--muted);font-size:12px;line-height:1.7">'+
+                '<div style="font-size:28px;margin-bottom:8px">✅</div>'+
+                '<strong style="color:var(--text)">No active events affecting portfolio assets</strong><br>'+
+                rawEvs.length+' global events checked · none within '+PORTFOLIO_RADIUS_KM+'km of a portfolio asset<br>'+
+                '<span style="font-size:10px">Sources: <a href="https://www.gdacs.org" target="_blank" style="color:#2563eb">GDACS</a> · '+
+                '<a href="https://earthquake.usgs.gov/earthquakes/map/" target="_blank" style="color:#2563eb">USGS</a></span></div>';
             } else {
               var note='<div style="font-size:10px;color:var(--muted);margin-bottom:8px;padding:6px 8px;background:var(--surf2);border-radius:6px;line-height:1.6">'+
-                '<strong>'+allEvs.length+' global events</strong> from GDACS + USGS · Sorted by alert severity · Last fetched: '+timeStr+
-                '<br>Financial loss estimates are CRI model outputs (EM-DAT/Munich Re calibrated). GDACS updates every 2–4h; USGS updates continuously. <strong>Marker size = estimated loss.</strong></div>';
+                '<strong>'+allEvs.length+' event'+(allEvs.length!==1?'s':'')+' within '+PORTFOLIO_RADIUS_KM+'km of a portfolio asset</strong>'+
+                ' ('+rawEvs.length+' global events screened) · Fetched: '+timeStr+
+                '<br>Revenue-at-risk = asset revenue × CRI impact fraction × proximity factor. '+
+                'Remote geological events (e.g. mid-ocean ridges) are excluded — no portfolio exposure. '+
+                '<strong>Marker size = portfolio revenue at risk.</strong></div>';
               elEv.innerHTML = note + allEvs.map(function(ev){
-                if(!isNaN(ev.lat)&&!isNaN(ev.lon)) addMarker(ev.lat,ev.lon,ev.title,ev.sev,ev.lossM,ev.link);
+                if(!isNaN(ev.lat)&&!isNaN(ev.lon)) addMarker(ev.lat,ev.lon,ev.title,ev.sev,ev.lossM,ev.link,ev._nearest);
                 return renderEventCard(ev);
               }).join('');
             }
