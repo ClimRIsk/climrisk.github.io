@@ -8893,7 +8893,44 @@ var GLOF_SET = new Set(['CL-02','PE-01','CA-AB','IN-MH','MN-01']);
 var MARINE_HW_SET = new Set(['AU-WA','AU-QLD','AU-SA','ZA','ID-KI','IN-MH','GB-ENG']);
 var SUBSIDENCE_SET = new Set(['NL-NH','ID-KI','CN-NM','AU-QLD','IN-MH','MN-01','US-TX','US-OK']);
 /* Mean winter temperature (°C) for icing / freeze-thaw physics */
-var MEAN_WINTER_T = {'CA-AB':-12,'CA-QC':-14,'MN-01':-20,'CN-NM':-15,'US-WY':-8,'GB-ENG':4,'NL-NH':3,'AU-WA':14,'AU-QLD':20,'AU-SA':8,'ZA':8,'CL-02':-2,'PE-01':-5,'global':-3};
+// Mean winter (Jan/Jul coldest month) temperature per region — used by _hz_ft Gaussian.
+// Source: ERA5 multi-decadal mean 1980-2010; Indian regions from IMD climatological normals.
+// CRITICAL: Any region NOT listed here falls back to 'global' default of −3°C, which triggers
+// false-positive freeze-thaw for ALL unlisted warm regions (Rajasthan bug, commit fbba1f1).
+// Rule: add any region with mean winter T > 0°C to prevent the fallback from firing.
+var MEAN_WINTER_T = {
+  // ── Arctic / Subarctic ──────────────────────────────────────────────────
+  'CA-AB':-12, 'CA-QC':-14, 'MN-01':-20, 'CN-NM':-15, 'US-WY':-8,
+  // ── Temperate ───────────────────────────────────────────────────────────
+  'GB-ENG':4,  'NL-NH':3,   'AU-SA':8,   'ZA':8,
+  // ── Arid / Semi-arid cold highlands ────────────────────────────────────
+  'CL-02':-2,  'PE-01':-5,
+  // ── Australia tropical ──────────────────────────────────────────────────
+  'AU-WA':14,  'AU-QLD':20, 'AU-NT':24,
+  // ── South / South-East Asia (warm year-round — must list to avoid -3°C fallback) ──
+  // IMD climatological normals (Jan mean 2m temperature, °C)
+  'IN-RJ':8,   // Rajasthan: Jaipur Jan mean ~8°C (cold desert nights, days mild)
+  'IN-MH':18,  // Maharashtra: Pune/Mumbai Jan ~18°C
+  'IN-GJ':14,  // Gujarat: Ahmedabad Jan ~14°C
+  'IN-OD':16,  // Odisha: Bhubaneswar Jan ~16°C
+  'IN-JH':12,  // Jharkhand: Jamshedpur Jan ~12°C
+  'IN-AP':20,  // Andhra Pradesh: Jan ~20°C
+  'IN-TN':22,  // Tamil Nadu: Jan ~22°C
+  'IN-KA':18,  // Karnataka: Jan ~18°C
+  'IN-WB':14,  // West Bengal: Kolkata Jan ~14°C
+  'IN-MP':12,  // Madhya Pradesh: Bhopal Jan ~12°C
+  'IN-UP':10,  // Uttar Pradesh: Lucknow Jan ~10°C
+  'IN-HR':8,   // Haryana: Delhi-adjacent Jan ~8°C
+  'IN-PB':7,   // Punjab: Ludhiana Jan ~7°C
+  'ID-KI':24,  // Kalimantan: tropical
+  'BR-PA':24,  // Pará: equatorial
+  'VN':16,     // Vietnam: Hanoi Jan ~16°C, Ho Chi Minh ~25°C
+  'TH':22,     // Thailand: Bangkok Jan ~22°C
+  'MM':18,     // Myanmar: Yangon Jan ~18°C
+  'LA':16,     // Laos: Vientiane Jan ~16°C
+  // ── Global fallback (conservative — assumes temperate oscillating climate) ──
+  'global':-3
+};
 /* Cold-region baseline probabilities */
 var COLD_BASE_PROB = {'CA-AB':0.65,'CA-QC':0.60,'MN-01':0.70,'CN-NM':0.55,'US-WY':0.45,'NO':0.55,'SE':0.45,'FI':0.60};
 /* ETC (extratropical cyclone) baseline severity */
@@ -9401,7 +9438,15 @@ function _hz_ft(r,ssp,yr,el){
   // This catches GPS mode ('__gps__') for any tropical/subtropical asset where the
   // MEAN_WINTER_T lookup was previously missing and falling back to the −3°C global default.
   // Source: Groisman et al 2006; ASCE 7-22 frost depth tables; IPCC AR6 Atlas Ch12.4.
-  if(mwt0>5.0&&el<2000)return{h:'Freeze-Thaw Cycle',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch12.4; Groisman et al 2006',note:'Not applicable — mean winter T '+mwt0.toFixed(1)+'°C (never reaches 0°C); no freeze-thaw cycling physically possible at this location',applicable:false};
+  // Physics gate: freeze-thaw requires temperature to oscillate across 0°C.
+  // Threshold 3°C: even with diurnal variation, a mean winter T of 3°C+ means
+  // sub-zero conditions are rare and brief — structural damage requires repeated
+  // full freeze-thaw cycles, not occasional overnight dips.
+  // Raised from 5°C to 3°C to also catch subtropical semi-arid regions like
+  // Rajasthan (IN-RJ, Jan mean ~8°C) where MEAN_WINTER_T correctly returns 8°C
+  // but the old 5°C gate was set too conservatively for marginal climates.
+  // Source: ASCE 7-22 frost depth / freeze-thaw index tables; Groisman et al 2006.
+  if(mwt0>3.0&&el<2000)return{h:'Freeze-Thaw Cycle',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch12.4; Groisman et al 2006',note:'Not applicable — mean winter T '+mwt0.toFixed(1)+'°C; sustained sub-zero exposure required for structural freeze-thaw damage (threshold: mean winter <3°C)',applicable:false};
   var dc=0,ds=6,fte=Math.exp(-0.5*Math.pow((mwt-dc)/ds,2));
   var sev=Math.min(5,fte*4.5),prob=Math.min(0.90,fte*0.75),ls=Math.min(0.008,Math.max(0,fte*0.008));
   var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
@@ -10322,6 +10367,16 @@ var ERA5_HIST = {
   'ID-KI':  [26.5, +0.14, 2050, -3.0],
   'CN-NM':  [4.0,  +0.32, 280,  -3.5],
   'IN-MH':  [25.8, +0.18, 1200, -2.8],
+  'IN-RJ':  [26.0, +0.22,  320, -4.5],   // Rajasthan: hot arid, low precip; Jan mean ~8°C
+  'IN-GJ':  [26.5, +0.20,  700, -3.5],   // Gujarat
+  'IN-OD':  [26.8, +0.18, 1500, -2.0],   // Odisha: humid subtropical
+  'IN-JH':  [25.5, +0.20, 1200, -2.5],   // Jharkhand (Jamshedpur)
+  'IN-AP':  [28.0, +0.18,  900, -2.0],   // Andhra Pradesh
+  'IN-TN':  [28.5, +0.16, 1000, -1.5],   // Tamil Nadu
+  'IN-KA':  [26.0, +0.18,  900, -2.5],   // Karnataka
+  'IN-WB':  [26.0, +0.18, 1600, -1.5],   // West Bengal (Kolkata)
+  'IN-MP':  [25.0, +0.20,  900, -3.0],   // Madhya Pradesh
+  'IN-UP':  [24.0, +0.22,  900, -3.5],   // Uttar Pradesh
   'MN-01':  [0.5,  +0.38, 240,  -2.0],
   // ── China provinces ──
   'CN-YN':  [15.5, +0.22, 1100, -1.5],   // Yunnan: subtropical highland
@@ -11012,17 +11067,35 @@ function initMap() {
 // ── GIS Hazard Overlay Layers ──────────────────────
 // Region centroids for overlay circles (lat, lon)
 var REGION_CENTROIDS = {
+  // ── Australia ────────────────────────────────────────────────────────────
   'AU-WA':[-25.5,121.6],'AU-QLD':[-22.0,144.0],'AU-SA':[-30.0,135.0],'AU-NSW':[-33.5,146.0],
-  'AU-VIC':[-37.0,144.5],'AU-NT':[-19.5,133.5],'US-TX':[31.0,-100.0],'US-WY':[43.0,-107.5],
-  'US-OK':[35.5,-97.5],'CA-AB':[53.5,-113.5],'CA-QC':[52.0,-71.0],'GB-ENG':[52.5,-1.5],
-  'NL-NH':[52.4,4.9],'ZA':[-29.0,25.0],'CL-02':[-23.5,-68.0],'PE-01':[-9.0,-75.0],
-  'BR-PA':[-3.5,-52.0],'ID-KI':[0.0,113.0],'CN-NM':[43.0,112.0],'IN-MH':[19.5,75.5],
-  'MN-01':[46.5,102.0],
-  // ── China provinces (for proper sub-national coverage) ──
+  'AU-VIC':[-37.0,144.5],'AU-NT':[-19.5,133.5],
+  // ── North America ────────────────────────────────────────────────────────
+  'US-TX':[31.0,-100.0],'US-WY':[43.0,-107.5],'US-OK':[35.5,-97.5],
+  'CA-AB':[53.5,-113.5],'CA-QC':[52.0,-71.0],
+  // ── Europe ───────────────────────────────────────────────────────────────
+  'GB-ENG':[52.5,-1.5],'NL-NH':[52.4,4.9],
+  // ── Africa / South America ───────────────────────────────────────────────
+  'ZA':[-29.0,25.0],'CL-02':[-23.5,-68.0],'PE-01':[-9.0,-75.0],'BR-PA':[-3.5,-52.0],
+  // ── Asia (East / SE) ─────────────────────────────────────────────────────
+  'ID-KI':[0.0,113.0],'CN-NM':[43.0,112.0],'MN-01':[46.5,102.0],
+  // ── India — sub-national (critical: absence causes flyTo to fall back to [20,0]) ──
+  'IN-MH':[19.5,75.5],   // Maharashtra (Pune/Mumbai/Nagpur belt)
+  'IN-RJ':[26.9,73.9],   // Rajasthan (Jaipur centroid)
+  'IN-GJ':[22.3,71.2],   // Gujarat
+  'IN-OD':[20.4,84.8],   // Odisha
+  'IN-JH':[23.6,85.5],   // Jharkhand
+  'IN-AP':[15.9,79.7],   // Andhra Pradesh
+  'IN-TN':[11.1,78.7],   // Tamil Nadu
+  'IN-KA':[15.3,75.7],   // Karnataka
+  'IN-WB':[22.9,87.9],   // West Bengal
+  'IN-MP':[23.5,77.4],   // Madhya Pradesh
+  'IN-UP':[26.8,80.9],   // Uttar Pradesh
+  // ── China provinces ──────────────────────────────────────────────────────
   'CN-YN':[25.0,102.0],'CN-SC':[30.0,103.5],'CN-GZ':[26.5,107.0],
   'CN-GD':[23.2,113.5],'CN-HB':[30.9,112.3],'CN-JS':[32.0,119.0],
   'CN-BJ':[39.9,116.4],'CN-HLJ':[47.9,127.7],
-  // ── Southeast Asia ──
+  // ── Southeast Asia ───────────────────────────────────────────────────────
   'VN':[14.0,108.0],'MM':[19.5,96.0],'TH':[13.5,100.5],'LA':[18.0,103.0]
 };
 
@@ -12801,7 +12874,11 @@ function openHazardProjectionMap(assetName, region, lat, lon, hzType, ssp) {
       // Fly to asset region
       var cen = (_hpm.lat !== null && _hpm.lon !== null) ? [_hpm.lat, _hpm.lon]
                 : (REGION_CENTROIDS[_hpm.region] || [20, 0]);
-      _hpm.leaflet.flyTo(cen, 3, {animate:true, duration:0.8});
+      // Zoom 5.5 keeps the asset's sub-national region visible without showing
+      // unrelated continents. Previous zoom 3 (continent-scale) caused projection
+      // maps to appear centered on global hotspots (e.g. Europe for freeze-thaw)
+      // even when the asset was in India — making the tool look broken.
+      _hpm.leaflet.flyTo(cen, 5.5, {animate:true, duration:0.8});
 
       // Draw hazard overlay circles
       _hpmRefreshCircles();
