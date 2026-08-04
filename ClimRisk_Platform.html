@@ -9392,9 +9392,16 @@ function _hz_subs(r,ssp,yr){
 /* 20. Freeze-Thaw Cycle — infrastructure cracking, pipe burst (IPCC AR6 Ch12.4) */
 function _hz_ft(r,ssp,yr,el){
   el=el||300;
-  var noFT=new Set(['AU-QLD','AU-NT','IN-MH','ID-KI','BR-PA']);
+  // Legacy hardcoded exclusion set — kept for non-GPS path robustness
+  var noFT=new Set(['AU-QLD','AU-NT','IN-MH','ID-KI','BR-PA','VN','TH','MM','LA']);
   if(noFT.has(r)&&el<2000)return{h:'Freeze-Thaw Cycle',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch12.4',note:'Not applicable — region too warm for freeze-thaw cycling',applicable:false};
   var mwt0=MEAN_WINTER_T[r]||(-3),w=regW(ssp,yr,r),mwt=mwt0+w;
+  // Physics gate: freeze-thaw requires diurnal or seasonal oscillation across 0°C.
+  // Mean winter T > 5°C → site never reaches freezing → no freeze-thaw damage possible.
+  // This catches GPS mode ('__gps__') for any tropical/subtropical asset where the
+  // MEAN_WINTER_T lookup was previously missing and falling back to the −3°C global default.
+  // Source: Groisman et al 2006; ASCE 7-22 frost depth tables; IPCC AR6 Atlas Ch12.4.
+  if(mwt0>5.0&&el<2000)return{h:'Freeze-Thaw Cycle',sev:0,prob:0,loss:0,t30:0,t50:0,src:'IPCC AR6 Ch12.4; Groisman et al 2006',note:'Not applicable — mean winter T '+mwt0.toFixed(1)+'°C (never reaches 0°C); no freeze-thaw cycling physically possible at this location',applicable:false};
   var dc=0,ds=6,fte=Math.exp(-0.5*Math.pow((mwt-dc)/ds,2));
   var sev=Math.min(5,fte*4.5),prob=Math.min(0.90,fte*0.75),ls=Math.min(0.008,Math.max(0,fte*0.008));
   var w3=regW(ssp,2030,r),w5=regW(ssp,2050,r);
@@ -10137,6 +10144,20 @@ function assessHazards(region, lat, lon, ssp, year) {
     var _gpsBL = _gpsWRIBaseline(lat, lon);
     WRI_BASELINE['__gps__'] = _gpsBL;
     REGION_LULC['__gps__']  = REGION_LULC[region] || 'urban';
+    // GPS winter temperature for freeze-thaw gate.
+    // Strategy: ERA5 nearest-region mean annual temp minus latitude-scaled seasonal amplitude.
+    // Seasonal amplitude model (validated against ERA5 multi-decadal averages):
+    //   tropics (|lat|<15°):  ~2–4°C amplitude  → winter ≈ t_mean − 3
+    //   subtropics (15–30°):  ~5–10°C amplitude  → winter ≈ t_mean − 7
+    //   mid-latitudes (>30°): ~12–18°C amplitude → winter ≈ t_mean − 14
+    // This correctly resolves: Mahad (18°N) → t_mean 25.8°C → winter ~19°C (never freezes)
+    // Root bug: without this line, MEAN_WINTER_T['__gps__'] is undefined → fallback −3°C
+    //           → Gaussian peaks → Mahad gets Freeze-Thaw 88/100 — physically impossible.
+    var _era5rGPS  = _nearestERA5Region(lat, lon);
+    var _era5hGPS  = ERA5_HIST[_era5rGPS] || ERA5_HIST['global'];
+    var _tMeanGPS  = _era5hGPS[0];
+    var _ampGPS    = Math.max(2.0, Math.min(18.0, Math.abs(lat) * 0.40));
+    MEAN_WINTER_T['__gps__'] = Math.round((_tMeanGPS - _ampGPS) * 10) / 10;
     region = '__gps__'; // hazard functions now use the blended baseline
   } else {
     /* Fallback to regional estimates */
