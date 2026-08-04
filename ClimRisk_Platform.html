@@ -7986,7 +7986,8 @@ function showAssetDetailFromProf(ap) {
     var hN = h.h.replace(/'/g,"\\'");
     var latV = (a.lat != null) ? a.lat : 'null';
     var lonV = (a.lon != null) ? a.lon : 'null';
-    var onclk = "openHazardProjectionMap('"+aN+"','"+rN+"',"+latV+","+lonV+",'"+hN+"','"+curSsp+"')";
+    var secV = (a.commodity||prof.sector||'Other').replace(/'/g,"\\'");
+    var onclk = "openHazardProjectionMap('"+aN+"','"+rN+"',"+latV+","+lonV+",'"+hN+"','"+curSsp+"','"+secV+"')";
     var mapBtn = '<button onclick="event.stopPropagation();'+onclk+'" '+
       'title="Open global projection map 2026–2070" '+
       'style="padding:4px 10px;border-radius:6px;border:1.5px solid '+col+';background:'+col+'18;color:'+col+';font-size:12px;font-weight:700;cursor:pointer;white-space:nowrap;">'+
@@ -8901,8 +8902,29 @@ var SUBSIDENCE_SET = new Set(['NL-NH','ID-KI','CN-NM','AU-QLD','IN-MH','MN-01','
 var MEAN_WINTER_T = {
   // ── Arctic / Subarctic ──────────────────────────────────────────────────
   'CA-AB':-12, 'CA-QC':-14, 'MN-01':-20, 'CN-NM':-15, 'US-WY':-8,
+  'US-MN':-12, 'US-ND':-13, 'US-MT':-7,  'US-WI':-8,  'US-SD':-8,
+  'US-IA':-7,  'US-NE':-6,  'US-MI':-5,  'US-IL':-4,  'US-CO':-4,
+  'US-NY':0,   'US-MA':-1,  'US-CT':0,   'US-PA':0,   'US-NJ':1,
+  'US-OH':-1,  'US-IN':-2,  'US-ID':-2,  'US-MO':-1,  'US-KS':-1,
+  'US-UT':-1,  'US-NV':2,   'US-OR':3,   'US-WA':2,   'US-DE':2,
+  'US-RI':-1,  'US-NH':-6,  'US-VT':-7,  'US-ME':-8,  'US-AK':-18,
+  'CA-ON':-8,  'CA-MB':-16, 'CA-SK':-14, 'CA-BC':-1,
   // ── Temperate ───────────────────────────────────────────────────────────
   'GB-ENG':4,  'NL-NH':3,   'AU-SA':8,   'ZA':8,
+  // ── US South / Southwest (warm winters — critical to list to avoid -3°C fallback) ──
+  // Source: NOAA 1991-2020 US Climate Normals (Jan mean 2m temperature, °C)
+  'US-TX':10,  'US-OK':4,   'US-GA':7,   'US-FL':15,  'US-CA':8,
+  'US-NC':5,   'US-VA':3,   'US-TN':4,   'US-AL':9,   'US-SC':8,
+  'US-MS':9,   'US-LA':12,  'US-AR':4,   'US-KY':2,   'US-WV':1,
+  'US-MD':2,   'US-NM':2,   'US-AZ':10,  'US-HI':22,
+  // ── Europe sub-national (Jan mean 2m temperature, °C) ────────────────────
+  // Source: ERA5 / Copernicus European Climate Assessment 1981-2010 normals
+  'DE-HH':1,   'DE-BY':-2,  'DE-NW':2,
+  'ES-CT':8,   'ES-MD':4,   'GB-WLS':4,  'GB-SCT':2,
+  'FR-IDF':3,  'IT-LOM':1,  'PL-MA':-4,
+  'NO-01':-6,  'SE-AB':-4,  'FI-01':-8,
+  'BE':2,      'CH':-1,     'AT':-2,     'DK':0,      'PT':10,
+  'RO':-2,     'CZ':-1,     'HU':-1,
   // ── Arid / Semi-arid cold highlands ────────────────────────────────────
   'CL-02':-2,  'PE-01':-5,
   // ── Australia tropical ──────────────────────────────────────────────────
@@ -10353,13 +10375,88 @@ var ERA5_HIST = {
   'AU-NSW': [17.4, +0.18, 620,  -1.8],
   'AU-VIC': [14.3, +0.17, 580,  -2.4],
   'AU-NT':  [27.6, +0.18, 520,  -3.5],
+  // ── United States — NOAA 1991-2020 Normals, IPCC AR6 WG2 Ch22 warming trends ──
   'US-TX':  [18.9, +0.19, 760,  -3.0],
   'US-WY':  [5.8,  +0.30, 380,  -2.0],
   'US-OK':  [16.2, +0.18, 850,  -2.5],
+  'US-GA':  [17.0, +0.18, 1250, -1.5],
+  'US-FL':  [22.5, +0.17, 1350, -2.0],
+  'US-CA':  [15.0, +0.22, 500,  -4.5],
+  'US-MN':  [5.5,  +0.32, 680,  +1.0],
+  'US-NY':  [9.0,  +0.25, 980,  +1.5],
+  'US-IL':  [10.5, +0.24, 900,  +0.5],
+  'US-OH':  [11.0, +0.22, 940,  +1.0],
+  'US-PA':  [10.5, +0.22, 1050, +1.5],
+  'US-MI':  [7.5,  +0.28, 820,  +1.0],
+  'US-NC':  [15.0, +0.18, 1200, -1.0],
+  'US-VA':  [13.0, +0.20, 1100, -0.5],
+  'US-TN':  [14.0, +0.18, 1300, -1.0],
+  'US-AL':  [17.0, +0.17, 1400, -1.5],
+  'US-SC':  [17.0, +0.17, 1300, -1.5],
+  'US-MS':  [17.5, +0.17, 1500, -2.0],
+  'US-LA':  [19.0, +0.16, 1650, -2.5],
+  'US-AR':  [15.5, +0.18, 1200, -2.0],
+  'US-MO':  [13.0, +0.20, 1000, -1.5],
+  'US-WI':  [7.0,  +0.28, 780,  +1.0],
+  'US-IA':  [9.5,  +0.28, 850,  +0.5],
+  'US-IN':  [11.5, +0.22, 1000, +0.5],
+  'US-KY':  [13.5, +0.20, 1200, -0.5],
+  'US-WV':  [12.0, +0.22, 1200,  0.0],
+  'US-MD':  [13.0, +0.22, 1050, +0.5],
+  'US-NJ':  [12.0, +0.25, 1100, +1.0],
+  'US-CT':  [10.0, +0.25, 1150, +1.0],
+  'US-MA':  [9.0,  +0.25, 1200, +1.0],
+  'US-CO':  [8.5,  +0.28, 400,  -3.0],
+  'US-NM':  [13.5, +0.22, 330,  -4.0],
+  'US-AZ':  [17.5, +0.25, 300,  -5.0],
+  'US-NV':  [11.0, +0.24, 230,  -4.5],
+  'US-OR':  [10.0, +0.18, 1150, -2.0],
+  'US-WA':  [9.5,  +0.18, 1200, -1.5],
+  'US-ID':  [8.0,  +0.22, 480,  -2.5],
+  'US-MT':  [5.0,  +0.32, 380,  -2.0],
+  'US-ND':  [4.5,  +0.38, 450,  -1.5],
+  'US-SD':  [7.0,  +0.32, 530,  -2.0],
+  'US-NE':  [10.5, +0.28, 600,  -2.5],
+  'US-KS':  [13.5, +0.22, 680,  -3.0],
+  'US-UT':  [10.5, +0.25, 360,  -3.5],
+  'US-DE':  [13.0, +0.22, 1100, +1.0],
+  'US-RI':  [10.0, +0.25, 1200, +1.0],
+  'US-NH':  [7.0,  +0.28, 1050, +1.5],
+  'US-VT':  [6.5,  +0.28, 1100, +1.5],
+  'US-ME':  [5.5,  +0.28, 1100, +1.5],
+  'US-HI':  [24.0, +0.15, 1800, -2.0],
+  'US-AK':  [-3.0, +0.50, 600,  +2.0],
+  // ── Canada ──────────────────────────────────────────────────────────────────
   'CA-AB':  [2.1,  +0.35, 420,  -1.5],
   'CA-QC':  [1.4,  +0.40, 870,  +0.8],
+  'CA-ON':  [5.5,  +0.35, 780,  +1.0],
+  'CA-BC':  [8.5,  +0.25, 1200, -1.0],
+  'CA-MB':  [1.0,  +0.38, 510,  -0.5],
+  'CA-SK':  [2.5,  +0.38, 420,  -1.5],
+  // ── Europe — ERA5 / Copernicus 1981-2010 normals, IPCC AR6 WG2 Ch13 trends ──
   'GB-ENG': [10.1, +0.22, 770,  +1.5],
   'NL-NH':  [10.0, +0.24, 780,  +2.0],
+  'DE-HH':  [9.0,  +0.25, 760,  +2.0],  // Hamburg: maritime, mild winters
+  'DE-BY':  [8.0,  +0.22, 900,  +1.0],  // Bavaria: continental, alpine precip
+  'DE-NW':  [10.0, +0.24, 800,  +1.5],  // N Rhine-Westphalia: mild, industrial
+  'ES-CT':  [14.5, +0.20, 650,  -3.0],  // Catalonia: warm Mediterranean
+  'ES-MD':  [14.5, +0.22, 450,  -3.5],  // Madrid: semi-arid continental
+  'GB-WLS': [10.0, +0.22, 1400, +1.5],  // Wales: maritime, very wet
+  'GB-SCT': [8.5,  +0.22, 1600, +2.0],  // Scotland: cooler, high precip
+  'FR-IDF': [11.0, +0.22, 640,  +0.5],  // Île-de-France: temperate
+  'IT-LOM': [12.5, +0.20, 900,  -1.5],  // Lombardy: Po valley, humid
+  'PL-MA':  [8.0,  +0.28, 750,  +0.5],  // Małopolska/Kraków: continental
+  'NO-01':  [6.0,  +0.30, 760,  +2.0],  // Oslo region: boreal, fjord
+  'SE-AB':  [7.0,  +0.30, 560,  +1.5],  // Stockholm: humid continental
+  'FI-01':  [5.0,  +0.35, 640,  +1.5],  // Helsinki: cold humid continental
+  'BE':     [10.5, +0.24, 850,  +1.5],  // Belgium: oceanic
+  'CH':     [9.0,  +0.22, 1050, +0.5],  // Switzerland: alpine
+  'AT':     [9.0,  +0.22, 1100, +0.5],  // Austria: continental + alpine
+  'DK':     [8.5,  +0.25, 700,  +2.0],  // Denmark: maritime
+  'PT':     [16.0, +0.20, 700,  -4.0],  // Portugal: warm Mediterranean
+  'RO':     [9.5,  +0.25, 640,  -1.5],  // Romania: continental
+  'CZ':     [9.0,  +0.25, 680,  +0.5],  // Czechia: continental
+  'HU':     [10.5, +0.25, 600,  -2.0],  // Hungary: continental
   'ZA':     [17.5, +0.20, 460,  -3.8],
   'CL-02':  [12.8, +0.15, 25,   -6.0],
   'PE-01':  [14.0, +0.10, 180,  -2.0],
@@ -11070,11 +11167,36 @@ var REGION_CENTROIDS = {
   // ── Australia ────────────────────────────────────────────────────────────
   'AU-WA':[-25.5,121.6],'AU-QLD':[-22.0,144.0],'AU-SA':[-30.0,135.0],'AU-NSW':[-33.5,146.0],
   'AU-VIC':[-37.0,144.5],'AU-NT':[-19.5,133.5],
-  // ── North America ────────────────────────────────────────────────────────
+  // ── United States (all major states — absence causes flyTo to fall back to [20,0] = Mali) ──
   'US-TX':[31.0,-100.0],'US-WY':[43.0,-107.5],'US-OK':[35.5,-97.5],
-  'CA-AB':[53.5,-113.5],'CA-QC':[52.0,-71.0],
-  // ── Europe ───────────────────────────────────────────────────────────────
-  'GB-ENG':[52.5,-1.5],'NL-NH':[52.4,4.9],
+  'US-GA':[33.7,-84.4], 'US-FL':[27.7,-81.6],  'US-CA':[36.5,-119.5],
+  'US-MN':[46.4,-94.6], 'US-NY':[42.9,-75.5],  'US-IL':[40.0,-89.2],
+  'US-OH':[40.4,-82.9], 'US-PA':[40.9,-77.8],  'US-MI':[44.3,-85.4],
+  'US-NC':[35.5,-79.3], 'US-VA':[37.4,-79.0],  'US-TN':[35.7,-86.5],
+  'US-AL':[32.8,-86.8], 'US-SC':[33.8,-81.2],  'US-MS':[32.7,-89.4],
+  'US-LA':[30.9,-91.8], 'US-AR':[34.9,-92.4],  'US-MO':[38.4,-92.5],
+  'US-WI':[44.4,-89.8], 'US-IA':[41.9,-93.4],  'US-IN':[39.8,-86.1],
+  'US-KY':[37.5,-85.3], 'US-WV':[38.5,-80.4],  'US-MD':[39.0,-76.8],
+  'US-NJ':[40.1,-74.7], 'US-CT':[41.6,-72.7],  'US-MA':[42.3,-71.8],
+  'US-CO':[39.0,-105.5],'US-NM':[34.4,-106.1], 'US-AZ':[34.3,-111.6],
+  'US-NV':[38.5,-116.5],'US-OR':[43.9,-120.6], 'US-WA':[47.4,-120.5],
+  'US-ID':[44.4,-114.6],'US-MT':[46.9,-110.4], 'US-ND':[47.5,-100.5],
+  'US-SD':[44.4,-100.3],'US-NE':[41.5,-99.9],  'US-KS':[38.7,-98.4],
+  'US-UT':[39.3,-111.1],'US-DE':[38.9,-75.5],  'US-RI':[41.7,-71.5],
+  'US-NH':[43.7,-71.6], 'US-VT':[44.0,-72.7],  'US-ME':[45.4,-69.2],
+  'US-HI':[20.5,-157.5],'US-AK':[64.2,-153.0],
+  // ── Canada ───────────────────────────────────────────────────────────────
+  'CA-AB':[53.5,-113.5],'CA-QC':[52.0,-71.0],  'CA-ON':[49.5,-85.0],
+  'CA-BC':[53.7,-127.6],'CA-MB':[55.0,-97.0],  'CA-SK':[54.5,-106.0],
+  // ── Europe (country + sub-national — absence causes map to drift to [20,0]) ──
+  'GB-ENG':[52.5,-1.5], 'NL-NH':[52.4,4.9],
+  'DE-HH':[53.5,10.0],  'DE-BY':[48.8,11.5],   'DE-NW':[51.5,7.5],
+  'ES-CT':[41.8,1.5],   'ES-MD':[40.4,-3.7],   'GB-WLS':[52.1,-3.8],
+  'GB-SCT':[56.5,-4.2], 'FR-IDF':[48.6,2.3],   'IT-LOM':[45.4,9.3],
+  'PL-MA':[50.0,19.9],  'NO-01':[59.9,10.8],   'SE-AB':[59.5,18.0],
+  'FI-01':[60.2,24.9],  'BE':[50.5,4.5],        'CH':[46.8,8.2],
+  'AT':[47.5,14.5],     'DK':[56.0,10.0],       'PT':[39.5,-8.0],
+  'RO':[45.9,24.9],     'CZ':[49.8,15.5],       'HU':[47.2,19.4],
   // ── Africa / South America ───────────────────────────────────────────────
   'ZA':[-29.0,25.0],'CL-02':[-23.5,-68.0],'PE-01':[-9.0,-75.0],'BR-PA':[-3.5,-52.0],
   // ── Asia (East / SE) ─────────────────────────────────────────────────────
@@ -12829,7 +12951,7 @@ function _hpmPreInit() {
 }
 
 /* Open the modal — map is already alive, just show and refresh */
-function openHazardProjectionMap(assetName, region, lat, lon, hzType, ssp) {
+function openHazardProjectionMap(assetName, region, lat, lon, hzType, ssp, sector) {
   // Stop any running animation
   _hpmStopPlay();
 
@@ -12839,6 +12961,7 @@ function openHazardProjectionMap(assetName, region, lat, lon, hzType, ssp) {
   _hpm.lon       = (lon !== null && lon !== undefined && lon !== 'null') ? parseFloat(lon) : null;
   _hpm.hzType    = hzType;
   _hpm.ssp       = ssp || 'ssp370';
+  _hpm.sector    = sector || 'Other';   // stored for sector-aware hazard gating
   _hpm.year      = 2026;
 
   // Header
@@ -12966,8 +13089,9 @@ function _hpmUpdateYear(year) {
   document.getElementById('hpm-yr-display').textContent = year;
   document.getElementById('hpm-yr-slider').value = year;
 
-  // Recompute asset hazard for stats
-  var h = computeHzScore(_hpm.region, _hpm.hzType, _hpm.ssp, year);
+  // Recompute asset hazard for stats — pass sector so gates (e.g. blade icing for non-wind)
+  // are correctly applied in the modal, matching the main hazard table.
+  var h = computeHzScore(_hpm.region, _hpm.hzType, _hpm.ssp, year, _hpm.sector);
   var warm = regW(_hpm.ssp, year, _hpm.region);
 
   document.getElementById('hpm-stat-sev').textContent  = h.applicable ? h.sev.toFixed(2) : 'N/A';
@@ -13016,7 +13140,7 @@ function _hpmBuildChart() {
 
   var datasets = ssps.map(function(s) {
     var data = years.map(function(yr) {
-      var h = computeHzScore(_hpm.region, _hpm.hzType, s.id, yr);
+      var h = computeHzScore(_hpm.region, _hpm.hzType, s.id, yr, _hpm.sector);
       return h.applicable ? Math.round(h.sev * 100) / 100 : null;
     });
     return {
