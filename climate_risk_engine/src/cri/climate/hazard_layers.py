@@ -148,6 +148,46 @@ WRI_BASELINE: dict[str, dict[str, float]] = {
                "drought": 3.0, "heat_baseline": 3.8},
     "MN-01":  {"water_stress": 3.5, "riverine_flood": 0.8, "coastal_flood": 0.0,
                "drought": 4.0, "heat_baseline": 2.8},
+    # ── India states — WRI Aqueduct 4.0 (2023) sub-national India layer ──────
+    "IN-JH":  {"water_stress": 2.5, "riverine_flood": 3.5, "coastal_flood": 0.0,
+               "drought": 1.8, "heat_baseline": 3.5},   # Jharkhand (Jamshedpur)
+    "IN-OD":  {"water_stress": 2.0, "riverine_flood": 3.8, "coastal_flood": 2.5,
+               "drought": 2.0, "heat_baseline": 3.8},   # Odisha (Kalinganagar)
+    "IN-RJ":  {"water_stress": 4.5, "riverine_flood": 0.8, "coastal_flood": 0.0,
+               "drought": 4.2, "heat_baseline": 4.2},   # Rajasthan (Aditya Works)
+    "IN-GJ":  {"water_stress": 3.8, "riverine_flood": 2.0, "coastal_flood": 2.5,
+               "drought": 3.5, "heat_baseline": 4.0},   # Gujarat
+    "IN-AP":  {"water_stress": 3.0, "riverine_flood": 2.5, "coastal_flood": 2.0,
+               "drought": 3.2, "heat_baseline": 3.8},   # Andhra Pradesh
+    "IN-KA":  {"water_stress": 3.2, "riverine_flood": 1.8, "coastal_flood": 0.5,
+               "drought": 3.0, "heat_baseline": 3.5},   # Karnataka
+    "IN-MP":  {"water_stress": 2.8, "riverine_flood": 2.0, "coastal_flood": 0.0,
+               "drought": 3.0, "heat_baseline": 3.8},   # Madhya Pradesh
+    # ── United Kingdom ────────────────────────────────────────────────────────
+    "GB-WLS": {"water_stress": 0.6, "riverine_flood": 2.2, "coastal_flood": 2.0,
+               "drought": 0.8, "heat_baseline": 0.8},   # Wales (Port Talbot)
+    "GB-SCT": {"water_stress": 0.4, "riverine_flood": 2.0, "coastal_flood": 1.8,
+               "drought": 0.5, "heat_baseline": 0.6},   # Scotland
+    # ── Continental Europe ────────────────────────────────────────────────────
+    "DE-HH":  {"water_stress": 0.8, "riverine_flood": 2.3, "coastal_flood": 2.5,
+               "drought": 0.8, "heat_baseline": 0.9},   # Hamburg (tidal Elbe, North Sea)
+    "ES-CT":  {"water_stress": 3.2, "riverine_flood": 1.0, "coastal_flood": 1.5,
+               "drought": 3.5, "heat_baseline": 2.5},   # Catalonia / Barcelona
+    "FR-IDF": {"water_stress": 1.2, "riverine_flood": 1.8, "coastal_flood": 0.5,
+               "drought": 1.5, "heat_baseline": 1.5},   # Île-de-France
+    # ── United States (additional states) ────────────────────────────────────
+    "US-FL":  {"water_stress": 1.5, "riverine_flood": 2.5, "coastal_flood": 3.5,
+               "drought": 1.8, "heat_baseline": 2.8},   # Florida (Miami; hurricane/SLR)
+    "US-GA":  {"water_stress": 1.8, "riverine_flood": 2.2, "coastal_flood": 1.5,
+               "drought": 2.0, "heat_baseline": 2.2},   # Georgia (Atlanta)
+    "US-NY":  {"water_stress": 1.0, "riverine_flood": 2.0, "coastal_flood": 2.5,
+               "drought": 1.0, "heat_baseline": 1.5},   # New York (JFK/LGA; coastal flood)
+    "US-CA":  {"water_stress": 3.8, "riverine_flood": 1.2, "coastal_flood": 1.5,
+               "drought": 3.8, "heat_baseline": 2.5},   # California (LAX; water/wildfire)
+    "US-MN":  {"water_stress": 1.2, "riverine_flood": 1.8, "coastal_flood": 0.0,
+               "drought": 1.5, "heat_baseline": 1.5},   # Minnesota (MSP)
+    "US-WA":  {"water_stress": 1.0, "riverine_flood": 1.8, "coastal_flood": 1.2,
+               "drought": 1.5, "heat_baseline": 1.5},   # Washington state (SEA)
     "global": {"water_stress": 2.0, "riverine_flood": 1.5, "coastal_flood": 1.0,
                "drought": 2.0, "heat_baseline": 2.0},
 }
@@ -163,6 +203,16 @@ COASTAL_REGIONS: set[str] = {
     "GB-ENG", "NL-NH", "US-TX", "US-OK",
     "IN-MH", "ID-KI", "BR-PA", "PE-01", "ZA",
     "CL-02",    # Atacama coast
+    # Added for demo company coverage
+    "GB-WLS",               # Port Talbot — Bristol Channel / Irish Sea coast
+    "DE-HH",                # Hamburg — tidal Elbe estuary, North Sea
+    "US-FL",                # Miami — Atlantic/Gulf coast, hurricane exposure
+    "US-NY",                # JFK/LGA — Long Island Sound / Atlantic coast
+    "US-CA",                # LAX — Pacific coast
+    "IN-OD",                # Odisha (Kalinganagar) — Bay of Bengal coast
+    "IN-GJ",                # Gujarat — Arabian Sea coast
+    "IN-AP",                # Andhra Pradesh — Bay of Bengal coast
+    "ES-CT",                # Barcelona — Mediterranean coast
 }
 
 # Cyclone-susceptible latitude bands (approx 5°–25° N/S)
@@ -171,6 +221,9 @@ CYCLONE_REGIONS: set[str] = {
     "IN-MH", "ID-KI", "BR-PA",
     "US-TX",   # Gulf hurricanes
     "ZA",      # Southern Indian Ocean
+    "US-FL",   # Florida / Atlantic + Gulf hurricane corridor
+    "IN-OD",   # Odisha — Bay of Bengal cyclone landfall (e.g. Fani 2019, Phailin 2013)
+    "IN-AP",   # Andhra Pradesh — Bay of Bengal cyclone exposure
 }
 
 # Landslide-prone regions (steep terrain, high precip)
@@ -191,6 +244,8 @@ WILDFIRE_REGIONS: set[str] = {
     "ZA", "CL-02",
     "CN-NM",   # Inner Mongolia grassland fires
     "MN-01",   # Mongolian steppe fires
+    "US-CA",   # California — among highest wildfire weather index globally (IPCC AR6 Ch12)
+    "IN-RJ",   # Rajasthan — dryland fire and Thar Desert fringe events
 }
 
 # ---------------------------------------------------------------------------
@@ -223,6 +278,7 @@ DUST_STORM_REGIONS: set[str] = {
     "CL-02",                      # Atacama aeolian transport
     "US-TX", "US-OK",             # Texas/Oklahoma Dust Bowl analog
     "IN-MH",                      # Thar desert fringe dust
+    "IN-RJ",                      # Rajasthan — core Thar Desert dust source region
 }
 
 # Hail-prone regions (large convective hail; supercell storms)
@@ -244,6 +300,10 @@ EXTRATROPICAL_CYCLONE_REGIONS: set[str] = {
     "ZA",                       # Cape Town extratropical cyclones
     "US-WY",                    # Northern Plains blizzard/extratropical systems
     "CL-02",                    # Chilean extratropical low-pressure systems
+    "GB-WLS",                   # Wales — Bristol Channel, Irish Sea storm track
+    "DE-HH",                    # Hamburg — North Sea extratropical cyclones
+    "US-NY",                    # New York — Nor'easters / Atlantic storm track
+    "US-MN",                    # Minnesota — mid-latitude winter cyclones / blizzards
 }
 
 # Tornado-prone regions (rotating convective mesocyclones)
@@ -314,6 +374,28 @@ REGION_ELEVATION_M: dict[str, float] = {
     "PE-01": 3000, "BR-PA": 50,
     "ID-KI": 80, "CN-NM": 1000, "IN-MH": 600,
     "MN-01": 1500,
+    # India states
+    "IN-JH": 180,   # Jamshedpur / Jharkhand
+    "IN-OD": 100,   # Kalinganagar / Odisha coastal
+    "IN-RJ": 400,   # Rajasthan plateau
+    "IN-GJ": 50,    # Gujarat coastal plain
+    "IN-AP": 100,   # Andhra Pradesh coastal
+    "IN-KA": 800,   # Karnataka Deccan Plateau
+    "IN-MP": 450,   # Madhya Pradesh plateau
+    # UK
+    "GB-WLS": 80,   # Port Talbot / South Wales coast
+    "GB-SCT": 150,  # Scotland
+    # Continental Europe
+    "DE-HH": 10,    # Hamburg (tidal Elbe, near sea level)
+    "ES-CT": 50,    # Barcelona / Catalonia coast
+    "FR-IDF": 100,  # Île-de-France / Paris basin
+    # US additional states
+    "US-FL": 5,     # Miami (essentially at sea level)
+    "US-GA": 320,   # Atlanta
+    "US-NY": 30,    # New York / JFK area
+    "US-CA": 90,    # LA basin
+    "US-MN": 290,   # Minneapolis
+    "US-WA": 120,   # Seattle
     "global": 300,
 }
 
@@ -357,6 +439,27 @@ REGION_LULC: dict[str, str] = {
     "CN-NM": LULCType.GRASSLAND,
     "IN-MH": LULCType.CROPLAND,
     "MN-01": LULCType.GRASSLAND,
+    # India states
+    "IN-JH": LULCType.FOREST,     # Jharkhand — significant forest cover
+    "IN-OD": LULCType.FOREST,     # Odisha — forest + cropland
+    "IN-RJ": LULCType.SHRUBLAND,  # Rajasthan — semi-arid / Thar desert scrub
+    "IN-GJ": LULCType.CROPLAND,   # Gujarat — predominantly agricultural
+    "IN-AP": LULCType.CROPLAND,   # Andhra Pradesh — agricultural
+    "IN-KA": LULCType.CROPLAND,   # Karnataka — Deccan cropland
+    "IN-MP": LULCType.FOREST,     # Madhya Pradesh — central Indian forests
+    # UK / Europe
+    "GB-WLS": LULCType.GRASSLAND, # Wales — upland grassland / moorland
+    "GB-SCT": LULCType.FOREST,    # Scotland — boreal / upland
+    "DE-HH": LULCType.URBAN,      # Hamburg — major port city
+    "ES-CT": LULCType.CROPLAND,   # Catalonia — Mediterranean agriculture
+    "FR-IDF": LULCType.URBAN,     # Île-de-France — Paris metropolitan
+    # US states
+    "US-FL": LULCType.WETLAND,    # Florida — mangroves, wetlands, coastal
+    "US-GA": LULCType.FOREST,     # Georgia — SE pine forest
+    "US-NY": LULCType.URBAN,      # New York — metropolitan
+    "US-CA": LULCType.SHRUBLAND,  # California — chaparral / mixed
+    "US-MN": LULCType.FOREST,     # Minnesota — boreal / deciduous forest
+    "US-WA": LULCType.FOREST,     # Washington — Pacific Northwest forest
     "global": LULCType.GRASSLAND,
 }
 
@@ -662,6 +765,28 @@ def _resolve_spatial_context(
         "PE-01": (-12.0, -77.0), "BR-PA": (-5.0, -55.0),
         "ID-KI": (-1.0, 114.0), "CN-NM": (44.0, 113.0),
         "IN-MH": (19.0, 75.0), "MN-01": (47.0, 103.0),
+        # India states (added for demo company coverage)
+        "IN-JH": (23.6, 85.5),   # Jharkhand (Jamshedpur ~23.8°N, 86.2°E)
+        "IN-OD": (20.9, 85.1),   # Odisha (Kalinganagar ~20.9°N, 85.0°E)
+        "IN-RJ": (27.0, 74.0),   # Rajasthan (Aditya Works, Shambhupura)
+        "IN-GJ": (22.3, 71.2),   # Gujarat (industrial coast)
+        "IN-AP": (15.9, 79.7),   # Andhra Pradesh
+        "IN-KA": (15.3, 75.7),   # Karnataka
+        "IN-MP": (23.5, 77.0),   # Madhya Pradesh
+        # UK
+        "GB-WLS": (51.7, -3.5),  # South Wales (Port Talbot ~51.6°N, -3.8°E)
+        "GB-SCT": (57.0, -4.0),  # Scotland
+        # Continental Europe
+        "DE-HH": (53.5, 10.0),   # Hamburg
+        "ES-CT": (41.4, 2.2),    # Barcelona / Catalonia
+        "FR-IDF": (48.9, 2.4),   # Île-de-France / Paris
+        # US additional states
+        "US-FL": (27.7, -81.5),  # Florida (Miami ~25.8°N, -80.2°E)
+        "US-GA": (32.7, -83.5),  # Georgia (Atlanta ~33.7°N, -84.4°E)
+        "US-NY": (40.7, -74.0),  # New York (JFK ~40.6°N, -73.8°E)
+        "US-CA": (36.8, -119.4), # California (LAX ~33.9°N, -118.4°E)
+        "US-MN": (46.4, -93.3),  # Minnesota (MSP ~44.9°N, -93.2°E)
+        "US-WA": (47.4, -120.5), # Washington state (Seattle ~47.6°N, -122.3°E)
         "global": (20.0, 0.0),
     }
 
@@ -1409,17 +1534,44 @@ def _blade_icing(region: str, ssp: SSPScenario, year: int,
         )
 
     # Mean winter 2-m temperature proxy (°C) — historical normal, pre-warming
+    # Sources: ERA5 1991-2020 seasonal climatology; NOAA Global Climate Normals
     _MEAN_WINTER_T: dict[str, float] = {
         "CA-AB": -12.0, "CA-QC": -14.0, "MN-01": -20.0,
         "CN-NM": -15.0, "US-WY": -8.0, "GB-ENG": 4.0,
         "NL-NH": 3.0, "AU-WA": 14.0, "AU-QLD": 20.0,
+        # India states — subtropical/tropical, no meaningful winter freeze
+        "IN-JH": 15.0, "IN-OD": 18.0, "IN-RJ": 10.0, "IN-GJ": 16.0,
+        "IN-AP": 22.0, "IN-KA": 22.0, "IN-MP": 13.0,
+        # UK / Europe
+        "GB-WLS": 5.0,   # Port Talbot maritime mild
+        "GB-SCT": 3.0,   # Scotland cool maritime
+        "DE-HH": 1.0,    # Hamburg (near 0°C but icing exposure moderate)
+        "ES-CT": 9.0,    # Barcelona — too warm for meaningful icing
+        "FR-IDF": 4.0,   # Paris — marginal icing
+        # US states
+        "US-FL": 20.0,   # Miami — tropical
+        "US-GA": 6.0,    # Atlanta — mild winters
+        "US-NY": 0.0,    # New York — near freezing (icing possible)
+        "US-CA": 14.0,   # LA — mild, no freeze
+        "US-MN": -12.0,  # Minneapolis — very cold (outside glaze-ice band)
+        "US-WA": 5.0,    # Seattle — maritime mild
     }
     _ICING_BASE_PROB: dict[str, float] = {
         "CA-AB": 0.55, "CA-QC": 0.50, "MN-01": 0.40,
         "CN-NM": 0.35, "US-WY": 0.45, "GB-ENG": 0.20, "NL-NH": 0.15,
+        "DE-HH": 0.12, "GB-WLS": 0.08, "GB-SCT": 0.10,
+        "US-NY": 0.10, "US-MN": 0.15,
     }
-    _NO_ICING = {"AU-WA", "AU-QLD", "AU-SA", "AU-NSW", "AU-NT",
-                 "IN-MH", "ID-KI", "BR-PA", "PE-01", "ZA", "CL-02"}
+    # Regions too warm for blade icing (mean winter T reliably > 8°C)
+    _NO_ICING = {
+        "AU-WA", "AU-QLD", "AU-SA", "AU-NSW", "AU-NT",
+        "IN-MH", "ID-KI", "BR-PA", "PE-01", "ZA", "CL-02",
+        # India states — all subtropical/tropical
+        "IN-JH", "IN-OD", "IN-RJ", "IN-GJ", "IN-AP", "IN-KA", "IN-MP",
+        # US/Europe warm regions
+        "US-FL", "US-GA", "US-CA",
+        "ES-CT",   # Barcelona — winter T ~9°C (marginal; no industrial wind assets)
+    }
     # Only skip based on region code when no GIS override provides a cold MWT
     if region in _NO_ICING and mean_winter_temp_override is None:
         return HazardScore(
@@ -1860,14 +2012,38 @@ def _freeze_thaw_cycle(region: str, ssp: SSPScenario, year: int,
 
     Sources: IPCC AR6 Ch12.4; ASCE infrastructure resilience; Groisman et al 2006.
     """
+    # Sources: ERA5 1991-2020 DJF mean T2M; NOAA Global Climate Normals
     _MEAN_WINTER_T_FT: dict[str, float] = {
         "CA-AB": -12.0, "CA-QC": -14.0, "MN-01": -20.0,
         "CN-NM": -15.0, "US-WY": -8.0, "GB-ENG": 4.0,
         "NL-NH": 3.0, "AU-WA": 14.0, "AU-QLD": 20.0,
         "AU-SA": 8.0, "ZA": 8.0, "CL-02": -2.0,
         "PE-01": -5.0,  # High Andes
+        # India states — subtropical/tropical (no freeze-thaw cycling)
+        "IN-JH": 15.0, "IN-OD": 18.0, "IN-RJ": 10.0, "IN-GJ": 16.0,
+        "IN-AP": 22.0, "IN-KA": 22.0, "IN-MP": 13.0,
+        # UK / Europe
+        "GB-WLS": 5.0,   # Port Talbot — maritime mild, occasional near-zero nights
+        "GB-SCT": 3.0,   # Scotland — cool maritime, mild FT events
+        "DE-HH": 1.0,    # Hamburg — near-zero winters, genuine FT cycling
+        "ES-CT": 9.0,    # Barcelona — mild Mediterranean, minimal FT
+        "FR-IDF": 4.0,   # Paris — some FT events most winters
+        # US states
+        "US-FL": 20.0,   # Miami — tropical, no FT
+        "US-GA": 6.0,    # Atlanta — some near-freeze events
+        "US-NY": 0.0,    # New York — genuine FT cycling, significant infrastructure risk
+        "US-CA": 14.0,   # LA — mild, no FT
+        "US-MN": -12.0,  # Minneapolis — very cold (less cycling; stays frozen)
+        "US-WA": 5.0,    # Seattle — maritime mild, occasional FT
     }
-    _NO_FT = {"AU-QLD", "AU-NT", "IN-MH", "ID-KI", "BR-PA"}
+    # Regions too hot for freeze-thaw cycling (mean winter T reliably > 12°C)
+    _NO_FT = {
+        "AU-QLD", "AU-NT", "IN-MH", "ID-KI", "BR-PA",
+        # India states (subtropical; no sustained below-0°C temperatures)
+        "IN-JH", "IN-OD", "IN-GJ", "IN-AP", "IN-KA", "IN-MP",
+        # US/tropical
+        "US-FL", "US-CA",
+    }
     # Use GIS mean winter T override when available
     baseline_mwt = (
         mean_winter_temp_override
