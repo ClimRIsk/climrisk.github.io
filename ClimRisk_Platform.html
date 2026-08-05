@@ -2360,6 +2360,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
         <input type="file" id="di-csv-input" accept=".csv,.txt" style="display:none" onchange="_diImportCsv(this)">
         <button class="xl-btn xl-btn-secondary" onclick="downloadTemplate()">📋 Download Template (.xlsx)</button>
         <button class="xl-btn xl-btn-export" onclick="exportAnalysis()">⬇ Export Analysis to Excel</button>
+        <button class="xl-btn xl-btn-secondary" onclick="loadDemoData()" title="Load 4 demo companies (Tata Steel, Delta Air, Carnival Corp, UltraTech) to explore the platform" style="border-color:#a78bfa;color:#7c3aed;background:#f5f3ff">🎮 Try Demo Data</button>
         <button class="xl-btn xl-btn-secondary" id="xl-stop-btn" onclick="stopExcelWatch()" style="display:none;background:#fee2e2;color:#b91c1c;border-color:#fecaca">⏹ Disconnect</button>
         <button class="xl-btn xl-btn-primary" id="xl-run-btn" onclick="_xlRunAnalysis()" style="display:none;background:linear-gradient(135deg,#16a34a,#15803d);color:#fff;border:none">▶ Run Analysis</button>
       </div>
@@ -3928,11 +3929,15 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           </div>
         </div>
 
+        <!-- Break-even analysis -->
+        <div id="pred-breakeven" style="margin-top:16px"></div>
+
         <!-- Methodology footnote -->
         <div style="margin-top:16px;padding:10px 14px;background:var(--surf2);border-radius:6px;font-size:10px;color:var(--muted);line-height:1.7">
-          <strong>Methodology:</strong> Warming trajectory: IPCC AR6 WGI SPM Table 1 medians scaled by regional amplification (AR6 Atlas). 
-          Hazard scores: 25-hazard engine with WRI Aqueduct 4.0 baselines, CMIP6 precipitation & heat projections. 
-          Financial translation: NGFS Phase 4 (2023) sector damage functions · Swiss Re Sigma 2023 extreme event costs. 
+          <strong>Methodology:</strong> Warming trajectory: IPCC AR6 WGI SPM Table 1 medians scaled by regional amplification (AR6 Atlas).
+          Hazard scores: 25-hazard engine with WRI Aqueduct 4.0 baselines, CMIP6 precipitation & heat projections.
+          Financial translation: NGFS Phase 4 (2023) sector damage functions · Swiss Re Sigma 2023 extreme event costs.
+          Break-even carbon price: NGFS Phase 4 sector carbon intensities; operating margins from Damodaran (2024).
           Uncertainty: projections show central estimate; actual outcomes may vary by ±30–50% depending on local adaptation measures.
         </div>
 
@@ -7001,6 +7006,7 @@ function renderPredictive() {
   _predRenderClimateStrip(_predCache, era5);
   _predRenderThresholds(_predCache);
   _predRenderDecarbBenefit(_predCache, asset);
+  _predRenderBreakEven(_predCache, asset, sector);
 }
 
 // ── KPI cards ────────────────────────────────────────────────────────────────
@@ -7227,6 +7233,183 @@ function _predRenderDecarbBenefit(d, asset) {
   '</div>';
 
   cont.innerHTML = html;
+}
+
+// ── Break-even Analysis ──────────────────────────────────────────────────────
+// Answers: at what warming / carbon price does this asset become financially
+// unviable? Uses NGFS Phase 4 sector carbon intensities + Damodaran margins.
+
+// Sector carbon intensities (tCO2 / $M revenue) — NGFS Phase 4 2023
+var _PRED_CARB_INT = {
+  'Oil & Gas':300, 'Steel & Metals':480, 'Mining':250, 'Chemical & Pharmaceutical':220,
+  'Utilities & Power':550, 'Agriculture & Food':140, 'Transport':160,
+  'Real Estate':70, 'Technology':25, 'Automotive':90,
+  'Textile & Apparel':60, 'Retail & Consumer':35,
+  'Banking & Finance':18, 'Insurance':12, '_default':80,
+};
+// Sector EBITDA margins (%) — Damodaran Global Industry Data 2024
+var _PRED_MARGINS = {
+  'Oil & Gas':14, 'Steel & Metals':9, 'Mining':25, 'Chemical & Pharmaceutical':12,
+  'Utilities & Power':18, 'Agriculture & Food':7, 'Transport':6,
+  'Real Estate':20, 'Technology':22, 'Automotive':7,
+  'Textile & Apparel':8, 'Retail & Consumer':5,
+  'Banking & Finance':32, 'Insurance':13, '_default':10,
+};
+// NGFS Phase 4 carbon price trajectory — NZE pathway ($/tCO2)
+// Source: NGFS Phase 4 Scenarios 2023, global average
+var _NGFS_NZE_CARBON = {2025:45,2030:130,2035:210,2040:280,2045:320,2050:350};
+// Materiality thresholds for viability assessment
+var _BE_THRESHOLDS = [{pct:10,lbl:'Early Warning (10%)'},{pct:20,lbl:'Material Risk (20%)'},{pct:30,lbl:'Viability Concern (30%)'}];
+
+function _predRenderBreakEven(d, asset, sector) {
+  var cont = el('pred-breakeven');
+  if (!cont) return;
+
+  var carbInt   = _PRED_CARB_INT[sector]   || _PRED_CARB_INT['_default'];
+  var opMargin  = _PRED_MARGINS[sector]     || _PRED_MARGINS['_default'];
+  var bau       = d.bySSP['ssp585'];
+  var nz        = d.bySSP['ssp126'];
+  var mod       = d.bySSP['ssp245'];
+
+  // ── 1. Warming break-even: dT when revAtRiskPct first crosses threshold ────
+  function _warmingAtThreshold(series, pct) {
+    for (var i = 0; i < series.length; i++) {
+      if (series[i].revAtRiskPct >= pct) return {yr: series[i].yr, dT: series[i].dT};
+    }
+    return null;
+  }
+
+  // ── 2. Carbon price break-even ────────────────────────────────────────────
+  // Avoided physical risk (BAU vs NZE) = carbon_cost_premium of NZE pathway
+  // Break-even CP: (BAU_risk% - NZE_risk%) × 10 / (carbInt/1000) in $/tCO2
+  // = how much carbon price buys exactly the same financial benefit as NZE
+  function _breakEvenCarbonPrice(yr) {
+    var i = d.years.indexOf(yr);
+    if (i < 0) return null;
+    var riskDelta = bau[i].revAtRiskPct - nz[i].revAtRiskPct;  // % of revenue
+    if (carbInt <= 0 || riskDelta <= 0) return null;
+    // riskDelta % of revenue = carbInt * CP / 1,000,000 × 100  →  CP = riskDelta * 10000 / carbInt
+    return riskDelta * 10000 / carbInt;
+  }
+
+  // ── 3. Viability year: when does SSP3-7.0 rev-at-risk exceed op margin? ──
+  function _viabilityYear(series) {
+    for (var i = 0; i < series.length; i++) {
+      if (series[i].revAtRiskPct >= opMargin) return series[i].yr;
+    }
+    return null;
+  }
+  var viabYr = _viabilityYear(mod);
+
+  // ── Carbon price cross-over timeline ──────────────────────────────────────
+  var cpRows = [2030, 2035, 2040, 2045, 2050].map(function(yr) {
+    var bep  = _breakEvenCarbonPrice(yr);
+    var ngfs = _NGFS_NZE_CARBON[yr] || 350;
+    var i    = d.years.indexOf(yr);
+    return {
+      yr:yr,
+      bep: bep,
+      ngfs: ngfs,
+      paid: bep !== null && ngfs >= bep,  // NZE carbon price already justifies transition
+      bauRisk: bau[i] ? bau[i].revAtRiskPct : null,
+      nzRisk:  nz[i]  ? nz[i].revAtRiskPct  : null,
+    };
+  });
+
+  // ── Warming threshold crossing (BAU for worst-case framing) ──────────────
+  var warmRows = _BE_THRESHOLDS.map(function(t) {
+    return {
+      lbl:    t.lbl,
+      pct:    t.pct,
+      bau:    _warmingAtThreshold(bau, t.pct),
+      mod:    _warmingAtThreshold(mod, t.pct),
+      nz:     _warmingAtThreshold(nz,  t.pct),
+    };
+  });
+
+  // ── Render ─────────────────────────────────────────────────────────────────
+  var viabHtml = viabYr
+    ? '<span style="color:#ef4444;font-weight:700">⚠ '+viabYr+'</span> — SSP2-4.5 physical losses exceed <strong>'+opMargin+'%</strong> operating margin'
+    : '<span style="color:#22c55e;font-weight:700">No breach through 2050</span> under SSP2-4.5';
+
+  var cpRowsHtml = cpRows.map(function(r, ri) {
+    var bepStr  = r.bep !== null ? ('$'+Math.round(r.bep)+'/tCO₂') : 'N/A';
+    var ngfsStr = '$'+r.ngfs+'/tCO₂';
+    var status  = r.paid
+      ? '<span style="color:#22c55e;font-weight:700">✓ Justified</span>'
+      : '<span style="color:#f97316;font-weight:700">✗ Not yet</span>';
+    var riskDelta = (r.bauRisk !== null && r.nzRisk !== null) ? (r.bauRisk - r.nzRisk).toFixed(1) : '—';
+    return '<tr style="'+(ri%2?'background:var(--surf2)':'')+'">' +
+      '<td style="padding:5px 8px;font-weight:600">'+r.yr+'</td>' +
+      '<td style="padding:5px 8px;text-align:center;color:#94a3b8">'+bepStr+'</td>' +
+      '<td style="padding:5px 8px;text-align:center;color:#22c55e">'+ngfsStr+'</td>' +
+      '<td style="padding:5px 8px;text-align:center">'+riskDelta+'%</td>' +
+      '<td style="padding:5px 8px;text-align:center">'+status+'</td>' +
+    '</tr>';
+  }).join('');
+
+  var warmRowsHtml = warmRows.map(function(r, ri) {
+    function cell(v) {
+      if (!v) return '<td style="text-align:center;padding:5px 8px;color:var(--muted)">›2050</td>';
+      return '<td style="text-align:center;padding:5px 8px"><span style="font-weight:700">'+v.yr+'</span> <span style="font-size:10px;color:var(--muted)">(+'+v.dT+'°C)</span></td>';
+    }
+    return '<tr style="'+(ri%2?'background:var(--surf2)':'')+'">' +
+      '<td style="padding:5px 8px;color:#f97316;font-weight:600">'+r.pct+'% threshold</td>' +
+      '<td style="padding:5px 8px;font-size:10px;color:var(--muted)">'+r.lbl+'</td>' +
+      cell(r.nz) + cell(r.mod) + cell(r.bau) +
+    '</tr>';
+  }).join('');
+
+  cont.innerHTML =
+    '<div style="background:linear-gradient(135deg,#1e0a3c,#2d1b69);border-radius:12px;overflow:hidden">' +
+      '<div style="padding:14px 18px;border-bottom:1px solid rgba(255,255,255,0.08)">' +
+        '<div style="font-size:12px;font-weight:800;color:#e2e8f0;letter-spacing:.5px">⚖ Break-Even &amp; Financial Viability Analysis</div>' +
+        '<div style="font-size:10px;color:#94a3b8;margin-top:2px">At what warming / carbon price does this asset cross the financial viability boundary?</div>' +
+      '</div>' +
+      '<div style="padding:16px 18px;display:grid;grid-template-columns:1fr 1fr;gap:16px">' +
+
+        // Left: viability concern + warming table
+        '<div>' +
+          '<div style="font-size:11px;font-weight:700;color:#c4b5fd;margin-bottom:10px">📍 Physical Risk Viability Breach (SSP2-4.5)</div>' +
+          '<div style="font-size:12px;color:#e2e8f0;background:rgba(255,255,255,0.05);border-radius:8px;padding:10px 14px;margin-bottom:12px">' +
+            viabHtml +
+            '<div style="font-size:10px;color:#94a3b8;margin-top:6px">Sector EBITDA margin: <strong style="color:#e2e8f0">'+opMargin+'%</strong> · Carbon intensity: <strong style="color:#e2e8f0">'+carbInt+' tCO₂/$M rev</strong></div>' +
+          '</div>' +
+          '<div style="font-size:11px;font-weight:700;color:#c4b5fd;margin-bottom:8px">🌡 Warming Threshold Crossing</div>' +
+          '<table style="width:100%;border-collapse:collapse;font-size:11px;color:#e2e8f0">' +
+            '<thead><tr style="color:#94a3b8">' +
+              '<th style="text-align:left;padding:4px 8px">Rev-at-Risk</th>' +
+              '<th style="text-align:left;padding:4px 8px;font-size:10px">Signal</th>' +
+              '<th style="text-align:center;padding:4px 8px">NZ</th>' +
+              '<th style="text-align:center;padding:4px 8px">Mod</th>' +
+              '<th style="text-align:center;padding:4px 8px">BAU</th>' +
+            '</tr></thead>' +
+            '<tbody>'+warmRowsHtml+'</tbody>' +
+          '</table>' +
+        '</div>' +
+
+        // Right: carbon price cross-over
+        '<div>' +
+          '<div style="font-size:11px;font-weight:700;color:#86efac;margin-bottom:10px">💰 Carbon Price Break-Even</div>' +
+          '<div style="font-size:10px;color:#94a3b8;margin-bottom:10px">At what carbon price does the NZE transition cost equal the avoided physical risk? When NGFS NZE price ≥ break-even → transition is financially self-justifying.</div>' +
+          '<table style="width:100%;border-collapse:collapse;font-size:11px;color:#e2e8f0">' +
+            '<thead><tr style="color:#94a3b8">' +
+              '<th style="text-align:left;padding:4px 8px">Year</th>' +
+              '<th style="text-align:center;padding:4px 8px">Break-even CP</th>' +
+              '<th style="text-align:center;padding:4px 8px">NGFS NZE CP</th>' +
+              '<th style="text-align:center;padding:4px 8px">Risk saved</th>' +
+              '<th style="text-align:center;padding:4px 8px">Status</th>' +
+            '</tr></thead>' +
+            '<tbody>'+cpRowsHtml+'</tbody>' +
+          '</table>' +
+          '<div style="margin-top:12px;font-size:10px;color:#94a3b8;line-height:1.6">' +
+            '<strong style="color:#86efac">Break-even CP</strong> = carbon price at which decarbonisation investment recovers its cost through avoided physical risk losses. ' +
+            'When NGFS NZE pathway price exceeds break-even, Net Zero transition is strictly value-accretive for this asset.' +
+          '</div>' +
+        '</div>' +
+
+      '</div>' +
+    '</div>';
 }
 
 /* ── OVERVIEW ───────────────────────────────────── */
@@ -12451,38 +12634,46 @@ var TIER_DATA = [
   { id:'enterprise', name:'Enterprise', price:'Bespoke', cta:'Contact us', ctaClass:'tier-cta-o', desc:'Full API, custom scenarios, portfolio aggregation, white-label + consultancy.', features:['Everything in Professional','Custom scenario builder','Portfolio-level aggregation','White-label API','Dedicated analyst retainer','SLA + SSO + audit trail'] }
 ];
 
-// ── Pre-load demo companies into coSel on page load ──────────────────────────
-(function _populateDemoCoSel() {
-  var DEMO_IDS = ['tata_steel', 'delta_air', 'carnival_corp', 'ultratech'];
-  function _doPopulate() {
+// ── Upload-first flow: show dataint panel on load; demo data is opt-in ───────
+var _DEMO_IDS = ['tata_steel', 'delta_air', 'carnival_corp', 'ultratech'];
+
+/** Called by "Try Demo Data" button in the dataint panel */
+function loadDemoData() {
+  var sel = document.getElementById('coSel');
+  if (!sel) return;
+  // Clear existing options
+  sel.innerHTML = '';
+  _DEMO_IDS.forEach(function(cid) {
+    if (!D.companies[cid]) return;
+    var opt = document.createElement('option');
+    opt.value = cid;
+    opt.textContent = D.companies[cid].name + ' (Demo)';
+    sel.appendChild(opt);
+  });
+  if (sel.options.length > 0) {
+    sel.value = sel.options[0].value;
+    if (typeof show === 'function') {
+      try { show('overview'); } catch(e) {}
+    }
+    if (typeof toast === 'function') toast('✅ Demo portfolio loaded — ' + sel.options.length + ' companies');
+  }
+}
+
+// On first load: open Data Integration panel so user uploads their own file.
+// Demo data is only loaded when user clicks "Try Demo Data".
+(function _initStartPanel() {
+  function _doInit() {
+    // Only run if no real company is already loaded (from saved state etc.)
     var sel = document.getElementById('coSel');
-    if (!sel) return;
-    // Only run if no options beyond the disabled placeholder
-    if (sel.options.length > 1) return;
-    // Clear placeholder
-    sel.innerHTML = '';
-    DEMO_IDS.forEach(function(cid) {
-      if (!D.companies[cid]) return;
-      var opt = document.createElement('option');
-      opt.value = cid;
-      opt.textContent = D.companies[cid].name;
-      sel.appendChild(opt);
-    });
-    // Select first and trigger render
-    if (sel.options.length > 0) {
-      sel.value = sel.options[0].value;
-      // Navigate to overview and render with first demo company selected
-      if (typeof show === 'function') {
-        try { show('overview'); } catch(e) {}
-      } else if (typeof render === 'function') {
-        try { render('overview'); } catch(e) {}
-      }
+    if (sel && sel.options.length > 1) return;  // already populated
+    if (typeof show === 'function') {
+      try { show('dataint'); } catch(e) {}
     }
   }
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', _doPopulate);
+    document.addEventListener('DOMContentLoaded', _doInit);
   } else {
-    setTimeout(_doPopulate, 50);
+    setTimeout(_doInit, 50);
   }
 })();
 
