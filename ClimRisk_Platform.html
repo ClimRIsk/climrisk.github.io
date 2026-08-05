@@ -1853,6 +1853,7 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <div class="cc" id="phys-trend-box" style="display:none"><div class="cc-title" id="phys-trend-title">Hazard Severity Trend 2026–2050 · Primary Asset · All SSP Scenarios</div><div class="ch h260"><canvas id="hazTrendC"></canvas></div></div>
       <div id="phys-fin-costs"></div>
       <div id="phys-benchmark"></div>
+      <div id="phys-methodology"></div>
     </div>
 
     <!-- TRANSITION RISK -->
@@ -7600,11 +7601,15 @@ var _ACRE = (function() {
   function calcClimateAdjustedLGD(original_collateral_M, loan_amount_M, hazard_score, market_illiquidity_discount, recovery_rate) {
     var illiq = market_illiquidity_discount != null ? market_illiquidity_discount : 0.20;
     var rec   = recovery_rate != null ? recovery_rate : 0.20;
+    // §5.2 Collateral shock: Collateral_shocked = Collateral × (1 − H_score × Illiquidity_Discount)
+    // H_score is normalised to [0,1] so hazard_score/100
     var adj   = original_collateral_M * (1 - (hazard_score / 100) * illiq);
-    var sltv  = Math.min(loan_amount_M > 0 ? loan_amount_M / adj : 1.0, 1.5);
-    var lgd   = sltv > 1
-      ? Math.min(1 - rec / sltv, 0.90)
-      : Math.max(0.10, sltv * (1 - rec));
+    adj = Math.max(adj, original_collateral_M * 0.05); // floor: collateral ≥ 5% of book
+    // §5.2 Stressed LTV: LTV_stressed = Outstanding_Loan / Collateral_shocked
+    var sltv  = loan_amount_M > 0 ? loan_amount_M / adj : 1.0;
+    // §5.2 Climate LGD (spec formula exactly):
+    //   LGD_climate = max(10%, min(100%, LTV_stressed − Recovery_Rate))
+    var lgd   = Math.max(0.10, Math.min(1.0, sltv - rec));
     return {
       adjusted_collateral_M:   +adj.toFixed(3),
       collateral_write_down_M: +(original_collateral_M - adj).toFixed(3),
@@ -7953,15 +7958,32 @@ function renderPh() {
           if (/office|retail|bank|financ|insur|tech|software/.test(s)) return 'Office';
           return 'Light Manufacturing';
         }
-        /* Estimate flood depth from hazard score (0 → 0m, 100 → 3m) */
-        function _depthProxy(score) { return Math.min((score||0)/100*3, 3); }
+        /* Phase 1.2: D_eff = max(0, W_abs − E_asset)  [Spec §1.2]
+           W_abs: absolute water level proxy from flood hazard severity
+                  sev → W_abs: 1.0 + sev × 1.0m  (IPCC AR6 storm surge range)
+           E_asset: asset base elevation above sea level (m)
+           Falls back to score-based proxy (0→2.5m) for non-flood hazards. */
+        function _dEff(prof, meta) {
+          var floodHzs = (prof.hazards || []).filter(function(h) {
+            return h.applicable && /flood|coastal|sea level/i.test(h.h);
+          });
+          if (floodHzs.length > 0) {
+            var maxSev  = Math.max.apply(null, floodHzs.map(function(h){ return h.sev||0; }));
+            var W_abs   = 1.0 + maxSev * 1.0; // m above MSL (sev=3 → 4.0m; sev=5 → 6.0m)
+            var E_asset = prof.elevation_m != null ? +prof.elevation_m
+                        : (meta && meta.elevation_m != null ? +meta.elevation_m : 5.0);
+            return Math.max(0, W_abs - E_asset);
+          }
+          // Non-flood hazard: generic score proxy
+          return Math.min((prof.score||0)/100*2.5, 2.5);
+        }
 
         var _acreRows2 = assetProfiles.map(function(ap) {
           var a2 = ap.meta, pr2 = ap.prof;
           var cvM2 = a2.cv ? +a2.cv : revPerAssetM * cvMult2;
           var revM2 = revPerAssetM;
           var fk   = _fragKey(a2.commodity, sect2);
-          var dep  = _depthProxy(pr2.score);
+          var dep  = _dEff(pr2, a2); // Phase 1.2: elevation-corrected D_eff
           var biR  = _ACRE.calcDirectAndBILoss(cvM2, revM2, dep, fk);
           /* Net CaR: apply 20% sector-average defense efficacy (no parametric insurance default) */
           var defEff = 0.20;
@@ -7999,9 +8021,10 @@ function renderPh() {
         return '<div class="cc" style="margin-top:14px;border-top:2px solid rgba(99,102,241,0.3)">'+
           '<div class="cc-title">🧱 CAPEX / OPEX Split + Net CaR — ACRE Engine · Fragility Curves · '+yr+' · '+ssp.toUpperCase()+'</div>'+
           '<div style="font-size:11px;color:var(--muted);padding:7px 10px;background:var(--surf2);border-radius:5px;margin-bottom:12px;border-left:3px solid #6366f1">'+
-          '<strong>Gap 2 fix:</strong> Flood depth proxied from hazard score (0→3m). CAPEX = replacement value × fragility-curve damage%. '+
-          'OPEX = (revenue/365) × fragility-curve downtime days. Source: FEMA HAZUS 2022 + JRC Global Depth-Damage Functions. '+
-          '<strong>Gap 5 fix:</strong> Net CaR applies 20% defense efficacy (sector-average seawall/barrier). Connect parametric insurance data to unlock per-policy deduction.'+
+          '<strong>Phase 1.2 (D_eff):</strong> Flood depth = max(0, W_abs − E_asset). W_abs = 1.0 + flood_sev × 1.0m proxy; E_asset = asset elevation from DEM. '+
+          'Non-flood hazards use score-based proxy (0→2.5m). '+
+          '<strong>Phase 2.1 (Fragility):</strong> CAPEX = replacement value × DR (depth-damage%). OPEX = (revenue/365) × T_downtime. Source: FEMA HAZUS 2022 + JRC Global Depth-Damage Functions. '+
+          '<strong>Phase 3.2 (Net CaR):</strong> Net = Gross × (1−defense_efficacy) − parametric_payout + premium. Default defense_efficacy = 20%.'+
           '</div>'+
           '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">'+
           _fcCard(_fmtCostM(_totCapex),'CAPEX Direct Damage','replacement value × depth-damage%','#b91c1c')+
@@ -8214,6 +8237,141 @@ function renderPh() {
     '</div>';
 
     bEl.innerHTML = html;
+  })();
+
+  /* ── QUANTITATIVE METHODOLOGY PANEL ── */
+  (function() {
+    var mEl = document.getElementById('phys-methodology');
+    if (!mEl) return;
+
+    var F = function(latex) {
+      return '<code style="font-family:\'Courier New\',monospace;font-size:11.5px;background:rgba(59,130,246,0.10);' +
+             'color:#93c5fd;padding:2px 7px;border-radius:4px;letter-spacing:0.2px">' + latex + '</code>';
+    };
+    var H3 = function(t) {
+      return '<div style="font-size:12px;font-weight:700;color:var(--accent);margin:14px 0 6px;letter-spacing:0.4px;' +
+             'border-left:3px solid var(--accent);padding-left:8px">' + t + '</div>';
+    };
+    var ROW = function(label, formula, note) {
+      return '<tr>' +
+        '<td style="padding:6px 10px;font-size:11px;color:var(--subtle);white-space:nowrap;vertical-align:top">' + label + '</td>' +
+        '<td style="padding:6px 10px;vertical-align:top">' + F(formula) + '</td>' +
+        '<td style="padding:6px 10px;font-size:10.5px;color:var(--muted);line-height:1.45">' + note + '</td>' +
+      '</tr>';
+    };
+    var TABLE = function(rows) {
+      return '<table style="width:100%;border-collapse:collapse;border-top:1px solid rgba(255,255,255,0.06)">' +
+             '<colgroup><col style="width:22%"><col style="width:44%"><col style="width:34%"></colgroup>' +
+             rows + '</table>';
+    };
+    var src = function(s) { return '<span style="font-size:9.5px;color:var(--subtle);font-style:italic">' + s + '</span>'; };
+
+    var html =
+      '<div class="cc" style="margin-top:16px">' +
+        '<details style="cursor:pointer" open>' +
+          '<summary style="list-style:none;outline:none">' +
+            '<div class="cc-title" style="display:flex;align-items:center;gap:8px;cursor:pointer">' +
+              '<span>🧮 Quantitative Methodology — 5-Phase CRI Engine</span>' +
+              '<span style="font-size:10px;color:var(--muted);margin-left:auto;font-weight:400">' +
+                'NGFS Phase 4 · FEMA HAZUS 2022 · IPCC AR6 · JRC Fragility · Damodaran 2024 · ECB Guide §4.2' +
+              '</span>' +
+            '</div>' +
+          '</summary>' +
+
+          '<div style="padding:0 4px 16px">' +
+
+            /* Phase 1 */
+            H3('Phase 1 · Hazard Quantification') +
+            TABLE(
+              ROW('Composite hazard score',
+                  'H_score = Σᵢ wᵢ × Sᵢ × Tᵢ',
+                  'wᵢ = sector-specific hazard weight; Sᵢ = CMIP6 severity index [0–5]; Tᵢ = temporal trend factor. ' + src('IPCC AR6 WGI · CMIP6 0.25° grid')) +
+              ROW('Elevation-corrected flood depth',
+                  'D_eff = max(0, W_abs − E_asset)',
+                  'W_abs = absolute water surface elevation (m MSL); E_asset = asset elevation from DEM (m). ' + src('Phase 1.2 spec · SRTM 30 m DEM')) +
+              ROW('Water surface proxy',
+                  'W_abs = 1.0 + Flood_Severity × 1.0 m',
+                  'Flood_Severity ∈ [0,5] from hazard profile; scaled to metres above MSL. ' + src('FEMA Base Flood Elevation framework'))
+            ) +
+
+            /* Phase 2 */
+            H3('Phase 2 · Physical CaR — FEMA HAZUS 2022 + JRC Fragility Curves') +
+            TABLE(
+              ROW('Damage ratio lookup',
+                  'DR = f_sector(D_eff)',
+                  'Piecewise-linear interpolation over fragility curve nodes at 0.3 m, 0.6 m, 1.0 m, 1.5 m, 2.0 m, 3.0 m depth. ' + src('FEMA HAZUS 2022 MH 2.1')) +
+              ROW('CAPEX loss (direct damage)',
+                  'CaR_CAPEX = DR × Replacement_Value',
+                  'DR from fragility lookup; Replacement_Value = asset gross book value in USD M. ' + src('Damodaran 2024 replacement multiples')) +
+              ROW('OPEX loss (business interruption)',
+                  'CaR_OPEX = (Revenue / 365) × T_downtime',
+                  'T_downtime (days) from JRC fragility table at D_eff; sector curves: Heavy/Light Manufacturing, Office. ' + src('JRC Science for Policy 2017')) +
+              ROW('Gross CaR',
+                  'Gross_CaR = CaR_CAPEX + CaR_OPEX',
+                  'Total pre-mitigation annual climate at-risk cost; additive. ' + src('TCFD Guidance on Metrics 2021'))
+            ) +
+
+            /* Phase 3 */
+            H3('Phase 3 · Net Physical CaR — Defense & Insurance') +
+            TABLE(
+              ROW('Post-defense CaR',
+                  'After_Defense = Gross_CaR × (1 − δ)',
+                  'δ = defense efficacy ∈ [0,1]; e.g. seawall δ ≈ 0.25, elevated foundations δ ≈ 0.40.') +
+              ROW('Net annual CaR',
+                  'Net_CaR = After_Defense − Payout + Premium + CAPEX_adapt',
+                  'Payout = parametric insurance payout; Premium = annual insurance cost; CAPEX_adapt = annualised adaptation spend. ' + src('Swiss Re sigma 2023')) +
+              ROW('Floor',
+                  'Net_CaR ≥ 0',
+                  'Bounded at zero; insurance cannot create a net profit centre in this model.')
+            ) +
+
+            /* Phase 4 */
+            H3('Phase 4 · Transition CaR — NGFS Phase 4 Carbon Pathways') +
+            TABLE(
+              ROW('Regulated emissions',
+                  'E_regulated = S₁ + S₂ + α × S₃',
+                  'α = 0.80 regulatory inclusion factor (EU CSRD 2025 scope; ISSB S2). S₃ estimated via sector multipliers when not uploaded. ' + src('NGFS Phase 4 2023 · PCAF 2022')) +
+              ROW('Gross carbon liability',
+                  'L_carbon = E_regulated × CP_t',
+                  'CP_t = scenario carbon price in USD/tCO₂e at year t (SSP1=45, SSP2=85, SSP3=120, SSP5=160 for 2050). ' + src('NGFS Phase 4 carbon price trajectories')) +
+              ROW('Cost pass-through',
+                  'Trans_CaR = L_carbon × (1 − PTR)',
+                  'PTR = sector pass-through rate from Damodaran margin analysis; e.g. Utilities PTR≈0.70, Oil & Gas PTR≈0.40. ' + src('Damodaran (2024) operating leverage'))
+            ) +
+
+            /* Phase 5 */
+            H3('Phase 5 · EV Impact (Finite DCF) & IFRS 9 LGD') +
+            TABLE(
+              ROW('Finite DCF EV impact',
+                  'EV = Σₜ₌₁ⁿ [ NetCaR × (1+g)ᵗ / (1+WACC)ᵗ ]',
+                  'n = sector useful life (Oil & Gas 30yr, Mining 20yr, Manufacturing 25yr); g = SSP warming growth (SSP1 1%/yr → SSP5 5%/yr). ' + src('Damodaran 2024 useful life · NGFS SSP growth')) +
+              ROW('Collateral shock',
+                  'C_adj = C₀ × (1 − (H_score/100) × Illiq)',
+                  'Illiq = sector illiquidity discount (Mining 0.15, Real Estate 0.30); C₀ = original collateral. ' + src('ECB Guide on Climate & Environmental Risks §4.2')) +
+              ROW('Stressed LTV',
+                  'LTV_stressed = Loan / C_adj',
+                  'Denominator uses shocked collateral; capped so C_adj ≥ 5% of C₀.') +
+              ROW('Climate-adjusted LGD',
+                  'LGD = max(10%, min(100%, LTV_stressed − RR))',
+                  'RR = recovery rate (default 20%); implements IFRS 9 §5.5 climate forward-looking adjustment. ' + src('ECB §4.2 · IFRS 9 §5.5.17')) +
+              ROW('Climate PD × LGD',
+                  'ECL = PD_climate × LGD × EAD',
+                  'Expected Credit Loss over remaining life of loan; feeds directly into loanbook module. ' + src('BCBS Climate Risk FAQ 2022'))
+            ) +
+
+            '<div style="margin-top:14px;padding:10px 14px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.20);border-radius:6px;font-size:10.5px;color:var(--subtle);line-height:1.6">' +
+              '<strong style="color:var(--accent)">Data Sources &amp; Standards:</strong> ' +
+              'CMIP6 0.25° ensemble (IPCC AR6) · FEMA HAZUS 2022 MH 2.1 flood fragility · JRC Science for Policy 2017 (downtime curves) · ' +
+              'NGFS Phase 4 (2023) carbon price pathways · Damodaran (Jan 2024) sector EBITDA margins &amp; useful life · ' +
+              'ECB Guide on Climate and Environmental Risks (2020) §4.2 · PCAF Standard (2022) Scope 3 financed emissions · ' +
+              'ISSB S2 / TCFD · BCBS Climate Risk FAQ (2022) · SRTM 30 m DEM (NASA) for elevation.' +
+            '</div>' +
+
+          '</div>' + /* end inner padding div */
+        '</details>' +
+      '</div>';
+
+    mEl.innerHTML = html;
   })();
 }
 
