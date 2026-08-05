@@ -11221,6 +11221,52 @@ var REGION_CENTROIDS = {
   'VN':[14.0,108.0],'MM':[19.5,96.0],'TH':[13.5,100.5],'LA':[18.0,103.0]
 };
 
+/* ── Curated overlay set for the Hazard Projection Map ───────────────────────
+   REGION_CENTROIDS is comprehensive (~85 entries) so flyTo() and _nearestERA5Region()
+   always find the right location. But _hpmRefreshCircles() must NOT iterate the full
+   table — drawing 50 US-state circles creates an impenetrable red cluster in North America.
+
+   This Set contains ~35 IPCC AR6-representative regions (one per broad climate zone)
+   that give meaningful global context without sub-national noise.
+   When the viewed asset IS one of these representative regions its own circle still
+   appears; when it's a sub-national code (US-GA, IN-RJ, …) it's shown only as the
+   blue pin, not as an overlay circle.
+─────────────────────────────────────────────────────────────────────────── */
+var _HPM_OVERLAY_REGIONS = new Set([
+  // ── Australia (all 6 states/territories — sparse continent) ──
+  'AU-WA','AU-QLD','AU-SA','AU-NSW','AU-VIC','AU-NT',
+  // ── North America — climate-zone representatives only ──
+  'CA-AB',    // boreal/cold continental
+  'CA-QC',    // humid continental/subarctic
+  'US-TX',    // warm semi-arid
+  'US-WY',    // high-altitude cold
+  'US-MN',    // cold continental
+  'US-FL',    // subtropical
+  'US-CA',    // Mediterranean
+  'US-OK',    // tornado alley / mixed
+  // ── Europe — one per IPCC sub-region ──
+  'NO-01',    // boreal (NEU)
+  'SE-AB',    // humid continental (NEU)
+  'FI-01',    // subarctic (NEU)
+  'GB-ENG',   // maritime temperate (WCE)
+  'NL-NH',    // maritime temperate (WCE)
+  'DE-HH',    // maritime-transitional (WCE)
+  'FR-IDF',   // temperate continental (WCE)
+  'ES-CT',    // Mediterranean (MED)
+  'IT-LOM',   // sub-Mediterranean (MED)
+  'PL-MA',    // cold continental (EEU)
+  // ── Africa / South America / Caribbean ──
+  'ZA','BR-PA','CL-02','PE-01',
+  // ── India — 3 climate-representative states ──
+  'IN-MH',    // tropical/semi-arid (Deccan)
+  'IN-RJ',    // hot arid (Thar)
+  'IN-WB',    // humid subtropical (Ganges delta)
+  // ── East Asia ──
+  'CN-NM','CN-BJ','CN-GD','CN-HLJ','MN-01',
+  // ── SE Asia / Oceania ──
+  'ID-KI','VN','TH'
+]);
+
 // Map ssp for overlay: use ssp370 (Current Policies = worst-case physical)
 var hazardOverlayLayers = {};
 var activeHazardLayer = null;
@@ -12998,16 +13044,17 @@ function openHazardProjectionMap(assetName, region, lat, lon, hzType, ssp, secto
       var cen = (_hpm.lat !== null && _hpm.lon !== null) ? [_hpm.lat, _hpm.lon]
                 : (REGION_CENTROIDS[_hpm.region] || [20, 0]);
       // Zoom 5.5 keeps the asset's sub-national region visible without showing
-      // unrelated continents. Previous zoom 3 (continent-scale) caused projection
-      // maps to appear centered on global hotspots (e.g. Europe for freeze-thaw)
-      // even when the asset was in India — making the tool look broken.
+      // unrelated continents. Previous zoom 3 caused maps to appear centered on
+      // global hotspots (e.g. Europe for freeze-thaw in India).
+      // Draw circles AFTER flyTo animation ends — using moveend so circles are
+      // placed into the already-zoomed view (not into the zoom-2 initial globe).
+      _hpm.leaflet.once('moveend', function() {
+        _hpmRefreshCircles();
+      });
       _hpm.leaflet.flyTo(cen, 5.5, {animate:true, duration:0.8});
 
-      // Draw hazard overlay circles
-      _hpmRefreshCircles();
-      // Update stats panel
+      // Update stats panel and chart immediately (no map dependency)
       _hpmUpdateYear(2026);
-      // Build trajectory chart
       _hpmBuildChart();
     });
   });
@@ -13041,9 +13088,12 @@ function _hpmRefreshCircles() {
   _hpmClearCircles();
   if (_hpm.assetMarker) { _hpm.assetMarker.remove(); _hpm.assetMarker = null; }
 
-  // Region severity circles
-  Object.keys(REGION_CENTROIDS).forEach(function(r) {
+  // Region severity circles — iterate ONLY the curated overlay set, not all of
+  // REGION_CENTROIDS (which now has ~85 entries including all US states and would
+  // create an impenetrable cluster in North America).
+  _HPM_OVERLAY_REGIONS.forEach(function(r) {
     var coord = REGION_CENTROIDS[r];
+    if (!coord) return;  // guard: overlay region must have a centroid
     var h = computeHzScore(r, _hpm.hzType, _hpm.ssp, _hpm.year);
     if (!h.applicable) return;
     var col = SEV_COL(h.sev);
