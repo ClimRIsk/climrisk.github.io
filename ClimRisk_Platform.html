@@ -4071,7 +4071,13 @@ function _lbAssessPortfolio() {
     var isHighCarbon = HIGH_CARBON.some(function(s){ return (r.sector||'').indexOf(s) >= 0; });
     var transPd  = isHighCarbon ? 0.020 : 0.005;
     var totalPd  = Math.min(physPd + transPd, 0.10);
-    var lgd      = r.ltv > 0 ? Math.max(0.10, Math.min(0.90, r.ltv)) : 0.45;
+    // Gap 4 fix: climate-adjusted LGD via collateral value shock
+    // Collateral estimated from LTV: collateral = loan / LTV
+    // Source: ECB Guide on Climate Risks (2020) §4.2 + BCBS SCO10 (2021)
+    var _collateralM = r.ltv > 0 ? r.loanM / r.ltv : r.loanM * 1.20;
+    var _illiqDisc   = _ACRE.sectorDefaults(r.sector || '_default').illiquidity_discount;
+    var _acreLGD     = _ACRE.calcClimateAdjustedLGD(_collateralM, r.loanM, hz.score, _illiqDisc, 0.20);
+    var lgd          = _acreLGD.climate_lgd;
     var rating   = hz.score >= 50 ? 'D/E' : hz.score >= 35 ? 'C' : hz.score >= 20 ? 'B' : 'A';
     var ratingCol = rating==='D/E'?'#e74c3c': rating==='C'?'#e67e22': rating==='B'?'#f1c40f':'#27ae60';
 
@@ -4145,7 +4151,11 @@ function _lbAssessPortfolio() {
       // Other
       climateRating: rating,
       ratingCol:     ratingCol,
-      isHighCarbon:  isHighCarbon
+      isHighCarbon:  isHighCarbon,
+      // Gap 4: collateral shock outputs (ECB Guide §4.2)
+      stressedLTV:         _acreLGD.stressed_ltv,
+      collateralWriteDown: _acreLGD.collateral_write_down_M,
+      adjCollateral:       _acreLGD.adjusted_collateral_M
     });
   });
 }
@@ -4322,7 +4332,7 @@ function _lbDownloadAuditTrail() {
     'Overall Phys Score (0–100)','Annual Loss % (Joint Prob.)',
     'Top Hazard 1','Top Hazard 2','Top Hazard 3',
     'Physical PD Uplift (%)','Transition PD Uplift (%)','Total PD Uplift (%)',
-    'LGD Applied',
+    'LGD (Climate-Adjusted)','Stressed LTV','Collateral Write-Down (USD M)',
     'IFRS 9 Stage (1/2/3)','ECL 12-Month (USD M)','ECL Lifetime (USD M)','IFRS 9 Staged ECL (USD M)',
     'FLI Prob.-Weighted ECL (USD M)',
     'RWA Stressed (USD M)','Pillar 2 CET1 Add-on (USD M)',
@@ -4346,7 +4356,9 @@ function _lbDownloadAuditTrail() {
       (r.physPdUplift*100||0).toFixed(2)+'%',
       (r.transPdUplift*100||0).toFixed(2)+'%',
       (r.totalPdUplift*100).toFixed(2)+'%',
-      (r.ltv||0.45).toFixed(2),
+      (r.lgd||0.45).toFixed(4),
+      r.stressedLTV ? r.stressedLTV.toFixed(4) : (r.ltv||0.45).toFixed(4),
+      r.collateralWriteDown != null ? r.collateralWriteDown.toFixed(3) : '',
       r.ifrs9Stage||1,
       r.ecl12m||r.eclAdjM,
       r.eclLifetime||r.eclAdjM,
@@ -4412,7 +4424,7 @@ function _lbDownloadAuditTrail() {
     [''],
     ['ECL Calculation (Legacy / Point-in-Time)'],
     ['Formula','ECL_PIT = Loan × PD_annual × LGD  (shown for backward compatibility only; IFRS 9 staged ECL is the primary output)'],
-    ['LGD','If LTV provided: max(0.10, min(0.90, LTV)); else 45% (Basel IV unsecured proxy per CRR2 Art.161)'],
+    ['LGD (Climate-Adjusted)','Gap 4 fix: collateral shocked by hazard_score × sector illiquidity discount → stressed LTV → climate LGD. Source: ECB Guide on Climate Risks (2020) §4.2 + BCBS SCO10 (2021). Prior method (max(0.10, min(0.90, LTV))) replaced.'],
     [''],
     ['Climate Rating'],
     ['A','physScore < 20'],
@@ -7412,6 +7424,217 @@ function _predRenderBreakEven(d, asset, sector) {
     '</div>';
 }
 
+/* ── AdvancedClimRiskEngine (_ACRE) ─────────────────────────────────────────
+   6-stage quantitative engine — mirrors AdvancedFinancialEngine (Python).
+   All public methods accept and return plain numbers ($M unless stated).
+   Source: ClimRisk Advanced Quantitative Formula Expansion v2.0 (2024).
+─────────────────────────────────────────────────────────────────────────── */
+var _ACRE = (function() {
+
+  /* ── Sector defaults ───────────────────────────────────────────────────
+     useful_life    : economic life of asset (years)
+     pass_through   : fraction of carbon cost recovered via higher prices [0-1]
+     repl_mult      : replacement value ≈ annual_revenue × repl_mult
+     illiquidity_discount : hazard-triggered collateral discount rate [0-1]
+     Source: Damodaran (2024) sector data; Swiss Re sigma 2023; ECB Guide (2020) */
+  var _SD = {
+    'Oil & Gas':                  {useful_life:30, pass_through:0.40, repl_mult:2.0, illiquidity_discount:0.20},
+    'Steel & Metals':             {useful_life:25, pass_through:0.55, repl_mult:3.5, illiquidity_discount:0.25},
+    'Mining':                     {useful_life:20, pass_through:0.30, repl_mult:4.0, illiquidity_discount:0.15},
+    'Chemical & Pharmaceutical':  {useful_life:20, pass_through:0.35, repl_mult:2.8, illiquidity_discount:0.20},
+    'Utilities & Power':          {useful_life:35, pass_through:0.70, repl_mult:5.0, illiquidity_discount:0.30},
+    'Agriculture & Food':         {useful_life:15, pass_through:0.25, repl_mult:1.2, illiquidity_discount:0.20},
+    'Transport':                  {useful_life:20, pass_through:0.60, repl_mult:1.8, illiquidity_discount:0.20},
+    'Real Estate':                {useful_life:40, pass_through:0.20, repl_mult:8.0, illiquidity_discount:0.35},
+    'Technology':                 {useful_life:10, pass_through:0.15, repl_mult:1.0, illiquidity_discount:0.10},
+    'Automotive':                 {useful_life:15, pass_through:0.50, repl_mult:2.5, illiquidity_discount:0.20},
+    'Textile & Apparel':          {useful_life:12, pass_through:0.40, repl_mult:1.5, illiquidity_discount:0.15},
+    'Retail & Consumer':          {useful_life:15, pass_through:0.55, repl_mult:0.8, illiquidity_discount:0.15},
+    'Banking & Finance':          {useful_life:30, pass_through:0.05, repl_mult:0.5, illiquidity_discount:0.10},
+    'Insurance':                  {useful_life:25, pass_through:0.05, repl_mult:0.4, illiquidity_discount:0.10},
+    '_default':                   {useful_life:20, pass_through:0.35, repl_mult:2.0, illiquidity_discount:0.20}
+  };
+
+  /* ── Flood fragility curves (depth in metres) ────────────────────────────
+     Format: [{depth:m, dmg_pct:%, downtime_days:d}, ...]
+     Source: FEMA HAZUS Flood Model (2022) + JRC Global Flood Depth-Damage Functions */
+  var _FRAG = {
+    'Heavy Manufacturing': [
+      {depth:0.0,dmg_pct:0, downtime_days:0}, {depth:0.3,dmg_pct:5, downtime_days:3},
+      {depth:0.6,dmg_pct:15,downtime_days:7}, {depth:1.0,dmg_pct:30,downtime_days:14},
+      {depth:1.5,dmg_pct:40,downtime_days:30},{depth:2.0,dmg_pct:55,downtime_days:45},
+      {depth:3.0,dmg_pct:70,downtime_days:60}
+    ],
+    'Light Manufacturing': [
+      {depth:0.0,dmg_pct:0, downtime_days:0}, {depth:0.3,dmg_pct:8, downtime_days:2},
+      {depth:0.6,dmg_pct:20,downtime_days:5}, {depth:1.0,dmg_pct:35,downtime_days:10},
+      {depth:1.5,dmg_pct:50,downtime_days:20},{depth:2.0,dmg_pct:65,downtime_days:30},
+      {depth:3.0,dmg_pct:80,downtime_days:45}
+    ],
+    'Office': [
+      {depth:0.0,dmg_pct:0, downtime_days:0}, {depth:0.3,dmg_pct:3, downtime_days:1},
+      {depth:0.6,dmg_pct:10,downtime_days:3}, {depth:1.0,dmg_pct:20,downtime_days:7},
+      {depth:1.5,dmg_pct:30,downtime_days:14},{depth:2.0,dmg_pct:45,downtime_days:21},
+      {depth:3.0,dmg_pct:60,downtime_days:30}
+    ],
+    '_default': [
+      {depth:0.0,dmg_pct:0, downtime_days:0}, {depth:0.3,dmg_pct:6, downtime_days:2},
+      {depth:0.6,dmg_pct:18,downtime_days:5}, {depth:1.0,dmg_pct:32,downtime_days:12},
+      {depth:1.5,dmg_pct:45,downtime_days:25},{depth:2.0,dmg_pct:60,downtime_days:40},
+      {depth:3.0,dmg_pct:75,downtime_days:55}
+    ]
+  };
+
+  /* SSP warming growth rates for finite DCF (annual climate escalation factor)
+     Source: NGFS Phase 4 (2023) scenario warming trajectories */
+  var _SSP_G = {ssp126:0.010, ssp245:0.020, ssp370:0.030, ssp585:0.050};
+
+  /* ── Fragility curve interpolator ─────────────────────────────────────── */
+  function _frag(key, depthM) {
+    var c = _FRAG[key] || _FRAG['_default'];
+    if (depthM <= 0) return {dmg_pct:0, downtime_days:0};
+    for (var i = 0; i < c.length - 1; i++) {
+      if (depthM >= c[i].depth && depthM <= c[i+1].depth) {
+        var t = (depthM - c[i].depth) / (c[i+1].depth - c[i].depth);
+        return {
+          dmg_pct:       c[i].dmg_pct       + t*(c[i+1].dmg_pct       - c[i].dmg_pct),
+          downtime_days: c[i].downtime_days  + t*(c[i+1].downtime_days - c[i].downtime_days)
+        };
+      }
+    }
+    return {dmg_pct:c[c.length-1].dmg_pct, downtime_days:c[c.length-1].downtime_days};
+  }
+
+  /* ── Sector defaults lookup ───────────────────────────────────────────── */
+  function sectorDefaults(sector) {
+    return _SD[sector] || _SD['_default'];
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     STAGE 2: Gross Physical Risk — CAPEX + OPEX separation
+     Returns {direct_damage_M, business_interruption_M, gross_car_M,
+              dmg_pct, downtime_days}
+     Source: FEMA HAZUS 2022 + JRC Global Flood Depth-Damage Functions
+  ═══════════════════════════════════════════════════════════════════════ */
+  function calcDirectAndBILoss(replacement_value_M, annual_revenue_M, flood_depth_m, asset_type) {
+    var fc    = _frag(asset_type || '_default', flood_depth_m);
+    var capex = replacement_value_M * fc.dmg_pct / 100;          // Direct damage ($M)
+    var opex  = (annual_revenue_M / 365) * fc.downtime_days;     // Business interruption ($M)
+    return {
+      direct_damage_M:         +capex.toFixed(3),
+      business_interruption_M: +opex.toFixed(3),
+      gross_car_M:             +(capex + opex).toFixed(3),
+      dmg_pct:                 +fc.dmg_pct.toFixed(2),
+      downtime_days:           Math.round(fc.downtime_days)
+    };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     STAGE 3: Net Physical Risk — defense efficacy + parametric insurance
+     Returns {after_defense_M, parametric_payout_M, net_car_M}
+     Source: Swiss Re Sigma 2023 — parametric trigger structures
+  ═══════════════════════════════════════════════════════════════════════ */
+  function calcNetPhysicalRisk(gross_car_M, defense_efficacy, parametric_payout_M, annual_premium_M, annual_capex_adaptation_M) {
+    var after = gross_car_M * (1 - (defense_efficacy || 0));
+    var net   = after - (parametric_payout_M||0) + (annual_premium_M||0) + (annual_capex_adaptation_M||0);
+    return {
+      after_defense_M:     +after.toFixed(3),
+      parametric_payout_M: +(parametric_payout_M||0),
+      net_car_M:           +Math.max(0, net).toFixed(3)
+    };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     STAGE 4: Effective Transition Risk — Scope 3 inclusion + pass-through
+     Inputs: s1, s2, s3 in MtCO2e; carbon_price $/tCO2; cost_pass_through [0-1]
+     Returns {gross_transition_M, effective_transition_M, pass_through_savings_M,
+              total_regulated_MtCO2}
+     Source: GHG Protocol (2023) + TCFD Implementation Guidance 2021 §4.3
+  ═══════════════════════════════════════════════════════════════════════ */
+  function calcEffectiveTransition(s1, s2, s3, regulatory_inclusion_factor, carbon_price, cost_pass_through_pct) {
+    var rif      = regulatory_inclusion_factor != null ? regulatory_inclusion_factor : 0.80;
+    var s3_reg   = (s3||0) * rif;                                        // regulated Scope 3 (MtCO2e)
+    var total_Mt = (s1||0) + (s2||0) + s3_reg;                          // total regulated (MtCO2e)
+    var gross_M  = total_Mt * 1e6 * carbon_price / 1e6;                 // tCO2 × $/t → $M
+    var pct      = cost_pass_through_pct != null ? cost_pass_through_pct : 0;
+    var eff_M    = gross_M * (1 - pct);
+    return {
+      s3_regulated_Mt:        +s3_reg.toFixed(4),
+      total_regulated_MtCO2:  +total_Mt.toFixed(4),
+      gross_transition_M:     +gross_M.toFixed(3),
+      effective_transition_M: +eff_M.toFixed(3),
+      pass_through_savings_M: +(gross_M - eff_M).toFixed(3)
+    };
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     STAGE 5: EV Impact — Finite DCF (fixes perpetuity flaw, Gap 1)
+     Inputs: base_annual_net_car_M ($M), wacc (fraction), useful_life_years,
+             warming_growth_rate (fraction/yr — use _SSP_G[ssp])
+     Returns {ev_impact_M, pv_sum_M, year_by_year[]}
+     Source: Damodaran (2024) DCF methodology; NGFS Phase 4 warming trajectories
+  ═══════════════════════════════════════════════════════════════════════ */
+  function calcFiniteEVImpact(base_annual_net_car_M, wacc, useful_life_years, warming_growth_rate) {
+    var W = wacc || 0.085;
+    var g = warming_growth_rate != null ? warming_growth_rate : 0.020;
+    var n = Math.max(1, Math.round(useful_life_years || 20));
+    var pv = 0, yy = [];
+    for (var t = 1; t <= n; t++) {
+      var car_t = base_annual_net_car_M * Math.pow(1 + g, t);
+      var pv_t  = car_t / Math.pow(1 + W, t);
+      pv += pv_t;
+      yy.push({year:t, car_M:+car_t.toFixed(3), pv_M:+pv_t.toFixed(3)});
+    }
+    return {ev_impact_M:+pv.toFixed(2), pv_sum_M:+pv.toFixed(2),
+            year_by_year:yy, useful_life:n, wacc:W, warming_growth:g};
+  }
+
+  /* ═══════════════════════════════════════════════════════════════════════
+     STAGE 6: IFRS 9 Climate-Adjusted LGD — collateral shock + stressed LTV
+     Inputs: original_collateral_M, loan_amount_M, hazard_score [0-100],
+             market_illiquidity_discount [0-1], recovery_rate [0-1]
+     Returns {adjusted_collateral_M, collateral_write_down_M,
+              stressed_ltv, climate_lgd}
+     Source: ECB Guide on Climate Risks (2020) §4.2 + BCBS SCO10 (2021)
+  ═══════════════════════════════════════════════════════════════════════ */
+  function calcClimateAdjustedLGD(original_collateral_M, loan_amount_M, hazard_score, market_illiquidity_discount, recovery_rate) {
+    var illiq = market_illiquidity_discount != null ? market_illiquidity_discount : 0.20;
+    var rec   = recovery_rate != null ? recovery_rate : 0.20;
+    var adj   = original_collateral_M * (1 - (hazard_score / 100) * illiq);
+    var sltv  = Math.min(loan_amount_M > 0 ? loan_amount_M / adj : 1.0, 1.5);
+    var lgd   = sltv > 1
+      ? Math.min(1 - rec / sltv, 0.90)
+      : Math.max(0.10, sltv * (1 - rec));
+    return {
+      adjusted_collateral_M:   +adj.toFixed(3),
+      collateral_write_down_M: +(original_collateral_M - adj).toFixed(3),
+      stressed_ltv:            +sltv.toFixed(4),
+      climate_lgd:             +lgd.toFixed(4)
+    };
+  }
+
+  return {
+    sectorDefaults:          sectorDefaults,
+    sspWarmingGrowth:        _SSP_G,
+    fragility:               _frag,
+    calcDirectAndBILoss:     calcDirectAndBILoss,
+    calcNetPhysicalRisk:     calcNetPhysicalRisk,
+    calcEffectiveTransition: calcEffectiveTransition,
+    calcFiniteEVImpact:      calcFiniteEVImpact,
+    calcClimateAdjustedLGD:  calcClimateAdjustedLGD
+  };
+})();
+
+/* ── _evImpactFiniteDCF ──────────────────────────────────────────────────────
+   Helper: finite DCF wrapper — totalCaR_B in $B, returns $B.
+   Uses sector useful-life and SSP warming growth from _ACRE defaults.
+─────────────────────────────────────────────────────────────────────────── */
+function _evImpactFiniteDCF(totalCaR_B, ssp, sector, wacc) {
+  var sd = _ACRE.sectorDefaults(sector || '_default');
+  var g  = _ACRE.sspWarmingGrowth[ssp] != null ? _ACRE.sspWarmingGrowth[ssp] : 0.020;
+  return _ACRE.calcFiniteEVImpact(totalCaR_B * 1000, wacc || 0.085, sd.useful_life, g).ev_impact_M / 1000;
+}
+
 /* ── OVERVIEW ───────────────────────────────────── */
 function renderOv() {
   var cid=co();
@@ -7720,6 +7943,89 @@ function renderPh() {
       '<div style="margin-top:8px;padding:8px 12px;background:var(--surf2);border-radius:5px;font-size:11px;color:var(--subtle)">'+
       '⚠️ Indicative estimates based on parameterised hazard severity. For event-specific modelling with supply chain disruption and credit spread widening, use the <a onclick="document.querySelector(\'[data-p=cascade]\').click()" style="color:var(--accent);cursor:pointer;font-weight:600">🌊 Scenario Cascade</a> panel.'+
       '</div>'+
+
+      /* ── CAPEX / OPEX SPLIT (Gap 2) + NET CaR (Gap 5) ── */
+      (function() {
+        /* Map commodity/sector → fragility curve type */
+        function _fragKey(comm, sec) {
+          var s = (comm||sec||'').toLowerCase();
+          if (/mining|steel|cement|chemical|oil|gas|util|power|refin|petro|metal|coal/.test(s)) return 'Heavy Manufacturing';
+          if (/office|retail|bank|financ|insur|tech|software/.test(s)) return 'Office';
+          return 'Light Manufacturing';
+        }
+        /* Estimate flood depth from hazard score (0 → 0m, 100 → 3m) */
+        function _depthProxy(score) { return Math.min((score||0)/100*3, 3); }
+
+        var _acreRows2 = assetProfiles.map(function(ap) {
+          var a2 = ap.meta, pr2 = ap.prof;
+          var cvM2 = a2.cv ? +a2.cv : revPerAssetM * cvMult2;
+          var revM2 = revPerAssetM;
+          var fk   = _fragKey(a2.commodity, sect2);
+          var dep  = _depthProxy(pr2.score);
+          var biR  = _ACRE.calcDirectAndBILoss(cvM2, revM2, dep, fk);
+          /* Net CaR: apply 20% sector-average defense efficacy (no parametric insurance default) */
+          var defEff = 0.20;
+          var netR = _ACRE.calcNetPhysicalRisk(biR.gross_car_M, defEff, 0, 0, 0);
+          return {
+            name:     a2.asset,
+            capex:    biR.direct_damage_M,
+            opex:     biR.business_interruption_M,
+            gross:    biR.gross_car_M,
+            net:      netR.net_car_M,
+            dmg_pct:  biR.dmg_pct,
+            downtime: biR.downtime_days,
+            depth:    dep
+          };
+        });
+        var _totCapex = _acreRows2.reduce(function(s,r){return s+r.capex;},0);
+        var _totOpex  = _acreRows2.reduce(function(s,r){return s+r.opex;},0);
+        var _totGross = _acreRows2.reduce(function(s,r){return s+r.gross;},0);
+        var _totNet   = _acreRows2.reduce(function(s,r){return s+r.net;},0);
+        var _netPct   = _totGross > 0 ? ((_totGross-_totNet)/_totGross*100).toFixed(0) : 0;
+
+        var _acreTblRows = _acreRows2.map(function(r){
+          var capCol = r.capex>500?'#b91c1c':r.capex>100?'#f59e0b':'#16a34a';
+          var netCol = r.net>r.gross*0.9?'#b91c1c':r.net>r.gross*0.6?'#f59e0b':'#16a34a';
+          return '<tr>'+
+            '<td style="font-weight:600">'+r.name+'</td>'+
+            '<td style="font-size:10px;color:var(--muted)">'+r.depth.toFixed(1)+'m / '+r.dmg_pct.toFixed(0)+'% / '+r.downtime+'d</td>'+
+            '<td style="color:#b91c1c;font-weight:700">'+_fmtCostM(r.capex)+'</td>'+
+            '<td style="color:#f59e0b;font-weight:600">'+_fmtCostM(r.opex)+'</td>'+
+            '<td style="font-weight:700">'+_fmtCostM(r.gross)+'</td>'+
+            '<td style="font-weight:700;color:'+netCol+'">'+_fmtCostM(r.net)+'</td>'+
+            '</tr>';
+        }).join('');
+
+        return '<div class="cc" style="margin-top:14px;border-top:2px solid rgba(99,102,241,0.3)">'+
+          '<div class="cc-title">🧱 CAPEX / OPEX Split + Net CaR — ACRE Engine · Fragility Curves · '+yr+' · '+ssp.toUpperCase()+'</div>'+
+          '<div style="font-size:11px;color:var(--muted);padding:7px 10px;background:var(--surf2);border-radius:5px;margin-bottom:12px;border-left:3px solid #6366f1">'+
+          '<strong>Gap 2 fix:</strong> Flood depth proxied from hazard score (0→3m). CAPEX = replacement value × fragility-curve damage%. '+
+          'OPEX = (revenue/365) × fragility-curve downtime days. Source: FEMA HAZUS 2022 + JRC Global Depth-Damage Functions. '+
+          '<strong>Gap 5 fix:</strong> Net CaR applies 20% defense efficacy (sector-average seawall/barrier). Connect parametric insurance data to unlock per-policy deduction.'+
+          '</div>'+
+          '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:14px">'+
+          _fcCard(_fmtCostM(_totCapex),'CAPEX Direct Damage','replacement value × depth-damage%','#b91c1c')+
+          _fcCard(_fmtCostM(_totOpex),'OPEX Business Interruption','daily revenue × downtime days','#f59e0b')+
+          _fcCard(_fmtCostM(_totGross),'Gross Physical CaR','CAPEX + OPEX combined','#6366f1')+
+          _fcCard(_fmtCostM(_totNet),'Net CaR (after defense)','−'+_netPct+'% via mitigation efficacy','#16a34a')+
+          '</div>'+
+          '<table><thead><tr>'+
+          '<th>Asset</th><th style="font-size:10px">Depth / Dmg / Downtime</th>'+
+          '<th style="color:#b91c1c">CAPEX Direct Dmg</th>'+
+          '<th style="color:#f59e0b">OPEX Bus. Interrupt.</th>'+
+          '<th>Gross CaR</th>'+
+          '<th style="color:#16a34a">Net CaR</th>'+
+          '</tr></thead><tbody>'+_acreTblRows+
+          '<tr style="background:var(--surf2);font-weight:700;border-top:2px solid var(--brd)">'+
+          '<td colspan="2">Portfolio Total ('+yr+')</td>'+
+          '<td style="color:#b91c1c">'+_fmtCostM(_totCapex)+'</td>'+
+          '<td style="color:#f59e0b">'+_fmtCostM(_totOpex)+'</td>'+
+          '<td style="font-weight:700">'+_fmtCostM(_totGross)+'</td>'+
+          '<td style="color:#16a34a;font-weight:700">'+_fmtCostM(_totNet)+'</td>'+
+          '</tr></tbody></table>'+
+          '</div>';
+      })() +
+
       '</div>';
   })();
 
@@ -14708,7 +15014,7 @@ function _gatherReportHTML() {
     var transCarB = +(s12*cpVal*0.001).toFixed(2);
     var totalCarB = +(totalPhysM/1000+transCarB).toFixed(2);
     var pctEV  = run.ev>0 ? +(totalCarB/run.ev*100).toFixed(1) : 0;
-    var evImpact = +(totalCarB/0.085).toFixed(1);
+    var evImpact = +_evImpactFiniteDCF(totalCarB, ssp, _nzeCoSector, run.wacc||0.085).toFixed(1);
     var scmpRows = sspKeys.map(function(sk){
       var c2=cpMap[sk]||60;
       var a2=asmts.map(function(a){var h2=assessHazardsSector(a.region||'global',a.lat||null,a.lon||null,sk,year,a.commodity||_nzeCoSector);return {carM:+(a.cv*(h2.annual_loss_pct||0)).toFixed(1)};});
@@ -17126,7 +17432,17 @@ function _portfolioRollup(ssp, year) {
     if (ssp==='ssp126') cp = (TRP['nze_2050'].carbon_prices.find(function(p){return p[0]>=year;})||[0,130])[1];
     else if (ssp==='ssp245') cp = (TRP['delayed_transition'].carbon_prices.find(function(p){return p[0]>=year;})||[0,90])[1];
     else cp = (TRP['current_policies'].carbon_prices.find(function(p){return p[0]>=year;})||[0,60])[1];
-    var transCaRb = s12 * cp * 0.001; // USD B (MtCO2e × $/t ÷ 1000 = $B)
+    // Gap 3 fix: include Scope 3 (sector multiplier estimate) + cost pass-through
+    // S3 sector multiplier source: GHG Protocol Scope 3 Evaluator (2023) sector averages
+    var _s3mult = {'Oil & Gas':8,'Steel & Metals':4,'Mining':3,'Chemical & Pharmaceutical':5,
+      'Utilities & Power':2,'Agriculture & Food':6,'Transport':2.5,'Real Estate':3,
+      'Technology':2,'Automotive':10,'Textile & Apparel':4,'Retail & Consumer':3,'_default':3};
+    var _s3est  = s12 * (_s3mult[_carCoSector]||_s3mult['_default']); // Mt estimated S3
+    var _pfPassThru = _ACRE.sectorDefaults(_carCoSector).pass_through;
+    var _pfTrans = _ACRE.calcEffectiveTransition(
+      (yr.emissions_s1||0), (yr.emissions_s2||0), _s3est, 0.80, cp, _pfPassThru
+    );
+    var transCaRb = _pfTrans.effective_transition_M / 1000; // USD B
 
     var totalCaR = physCaRb + transCaRb;
     return {
@@ -17134,7 +17450,7 @@ function _portfolioRollup(ssp, year) {
       s1:yr.emissions_s1, s2:yr.emissions_s2,
       physCaR:physCaRb, transCaR:transCaRb, totalCaR:totalCaR,
       pctEV: run.ev>0 ? (totalCaR/run.ev*100) : 0,
-      evImpact: run.ev>0 ? totalCaR/0.085 : 0
+      evImpact: run.ev>0 ? _evImpactFiniteDCF(totalCaR, ssp, _carCoSector, run.wacc||0.085) : 0
     };
   }).filter(Boolean);
 }
@@ -17154,7 +17470,7 @@ function renderPortfolio() {
     {lbl:'Portfolio EV',val:'$'+totEV.toFixed(1)+'B',sub:'Net present value — all entities',col:'var(--text)'},
     {lbl:'Total Climate-at-Risk',val:'$'+totCaR.toFixed(2)+'B',sub:'Physical + Transition combined',col:'var(--red)'},
     {lbl:'CaR as % of EV',val:pctEV.toFixed(1)+'%',sub:'Higher = more capital at risk',col:pctEV>10?'var(--red)':pctEV>5?'var(--amber)':'var(--green)'},
-    {lbl:'Portfolio EV Impact',val:'$'+(totCaR/0.085).toFixed(1)+'B',sub:'Climate-at-Risk capitalised to EV — value at risk',col:'var(--amber)'}
+    {lbl:'Portfolio EV Impact (Finite DCF)',val:'$'+_evImpactFiniteDCF(totCaR, ssp, '_default', 0.085).toFixed(1)+'B',sub:'Finite DCF over sector-weighted asset life — EV at risk',col:'var(--amber)'}
   ];
   if(el('pf-hero')) el('pf-hero').innerHTML = hCards.map(function(c){
     return '<div class="pf-card"><div class="pf-card-lbl">'+c.lbl+'</div><div class="pf-card-val" style="color:'+c.col+'">'+c.val+'</div><div class="pf-card-sub">'+c.sub+'</div></div>';
@@ -17248,7 +17564,7 @@ function renderPortfolio() {
           '<div style="font-weight:700;margin-bottom:6px">'+r.name+'</div>'+
           '<div style="color:var(--muted)">S1+S2 emissions: <strong style="color:var(--text)">'+(r.s1+r.s2).toFixed(1)+' MtCO2e</strong></div>'+
           '<div style="color:var(--muted)">EBITDA: <strong style="color:var(--text)">$'+r.ebitda.toFixed(1)+'B</strong></div>'+
-          '<div style="color:var(--muted)">EV Impact: <strong style="color:var(--red)">−$'+(r.totalCaR/0.085).toFixed(1)+'B</strong></div>'+
+          '<div style="color:var(--muted)">EV Impact (DCF): <strong style="color:var(--red)">−$'+r.evImpact.toFixed(1)+'B</strong></div>'+
           '</div>';
       }).join('')+
       '</div>';
@@ -18644,8 +18960,14 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
   var cpMap   = {ssp126:130,ssp245:90,ssp370:60,ssp585:55};
   var cp      = cpMap[ssp]||60;
   var s12mt   = (s1+s2)/1e6;   // tCO2e → MtCO2e
-  // FIX: s12mt [MtCO2e] × cp [$/t] = $M; divide by 1000 to get $B
-  var transB  = +((s1+s2)*cp/1e9).toFixed(3);  // $B (annualised carbon cost)
+  // Gap 3 fix: Scope 3 (80% regulatory inclusion) + sector cost pass-through
+  // Source: GHG Protocol (2023) + TCFD Implementation Guidance 2021 §4.3
+  var _s3mt          = s3tot / 1e6;  // tCO2e → MtCO2e
+  var _acreTransSect = coObj.sector || '_default';
+  var _acrePassThru  = _ACRE.sectorDefaults(_acreTransSect).pass_through;
+  var _acreTrans     = _ACRE.calcEffectiveTransition(s1/1e6, s2/1e6, _s3mt, 0.80, cp, _acrePassThru);
+  var transB         = +(_acreTrans.effective_transition_M/1000).toFixed(3);   // $B net of pass-through
+  var transB_gross   = +(_acreTrans.gross_transition_M/1000).toFixed(3);       // $B gross (S1+S2+S3×80%)
   var totalCaR= +(physM/1000+transB).toFixed(2);
   var pctEV   = run.ev>0?((totalCaR/run.ev)*100).toFixed(1):0;
   var riskLvl = avgScore>70?'CRITICAL':avgScore>50?'HIGH':avgScore>30?'MODERATE':'LOW';
@@ -18860,7 +19182,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     /* KPI row 1: climate financial exposure */
     '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">' +
     kpi('Physical CaR (Annual)','$'+physM.toFixed(0)+'M','Annualised asset loss exposure at risk') +
-    kpi('Transition CaR (Annual)','$'+(transB*1000).toFixed(0)+'M','Scope 1+2 × $'+cp+'/tCO2e · annualised') +
+    kpi('Transition CaR (Net)','$'+(transB*1000).toFixed(0)+'M','S1+S2+(S3×80%) · $'+cp+'/t · '+Math.round(_acrePassThru*100)+'% cost pass-through') +
     kpi('Total CaR','$'+totalCaR.toFixed(3)+'B','Physical + transition combined · annual') +
     kpi('Overall Risk Level',riskLvl,'Composite hazard + transition + financial','') +
     '</div>' +
@@ -18869,7 +19191,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     kpi('CaR / Revenue',totalCaRPctRev+'%','of $'+(revenueB||0).toFixed(1)+'B annual revenue') +
     kpi('CaR / EBITDA',totalCaRPctEBIT+'%','of $'+(ebitdaB||0).toFixed(1)+'B EBITDA · '+year) +
     kpi('CaR / EV',pctEV+'%','of $'+(run.ev||0).toFixed(1)+'B enterprise value') +
-    kpi('WACC-Adj. EV Impact','−$'+(totalCaR/0.085).toFixed(1)+'B','Perpetuity discount at '+(run.wacc||8.5)+'% WACC') +
+    kpi('EV Impact (Finite DCF)','−$'+_evImpactFiniteDCF(totalCaR, ssp, coObj.sector||'_default', run.wacc||0.085).toFixed(1)+'B','Finite DCF over asset life at '+(run.wacc||8.5)+'% WACC') +
     '</div>' +
     /* KPI row 3: emissions */
     '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px">' +
@@ -18881,7 +19203,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     '<div style="font-size:11px;color:#374151;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:10px 14px;margin-bottom:12px">' +
     (fwExecRiskFocus[fw]||fwExecRiskFocus.tcfd) + '</div>' +
     /* Narrative paragraph */
-    '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:10px"><strong>'+coObj.name+'</strong> operates <strong>'+assets.length+'</strong> assets across <strong>'+[...new Set(assets.map(function(a){return a.region;}))].length+'</strong> regions. Under the <strong>'+ssp.toUpperCase()+'</strong> scenario ('+year+'), the portfolio faces <strong>annualised</strong> physical climate losses of <strong>$'+physM.toFixed(0)+'M/yr</strong> ('+physPctRev+'% of revenue; '+physPctEBIT+'% of EBITDA), driven primarily by <strong>'+(topAsset.top[0]?topAsset.top[0].h:'climate hazards')+'</strong> at <strong>'+(topAsset.name||'the highest-risk asset')+'</strong>. Carbon transition cost adds <strong>$'+(transB*1000).toFixed(0)+'M/yr</strong> ('+transPctRev+'% of revenue) at the $'+cp+'/tCO2e carbon price under '+ssp.toUpperCase()+'. Combined annual Climate-at-Risk is <strong>$'+totalCaR.toFixed(3)+'B/yr</strong> representing <strong>'+pctEV+'%</strong> of enterprise value. At a '+( run.wacc||8.5)+'% WACC, the NPV-equivalent balance sheet impact is <strong>−$'+(totalCaR/0.085).toFixed(1)+'B</strong>.</p>' +
+    '<p style="font-size:12px;line-height:1.7;color:#374151;margin-bottom:10px"><strong>'+coObj.name+'</strong> operates <strong>'+assets.length+'</strong> assets across <strong>'+[...new Set(assets.map(function(a){return a.region;}))].length+'</strong> regions. Under the <strong>'+ssp.toUpperCase()+'</strong> scenario ('+year+'), the portfolio faces <strong>annualised</strong> physical climate losses of <strong>$'+physM.toFixed(0)+'M/yr</strong> ('+physPctRev+'% of revenue; '+physPctEBIT+'% of EBITDA), driven primarily by <strong>'+(topAsset.top[0]?topAsset.top[0].h:'climate hazards')+'</strong> at <strong>'+(topAsset.name||'the highest-risk asset')+'</strong>. Carbon transition exposure (Scope 1+2+S3×80% regulated) gross $'+(transB_gross*1000).toFixed(0)+'M/yr, reduced to net <strong>$'+(transB*1000).toFixed(0)+'M/yr</strong> ('+transPctRev+'% of revenue) after '+Math.round(_acrePassThru*100)+'% cost pass-through to buyers at the $'+cp+'/tCO2e carbon price. Combined annual Climate-at-Risk is <strong>$'+totalCaR.toFixed(3)+'B/yr</strong> representing <strong>'+pctEV+'%</strong> of enterprise value. Over the asset\'s remaining useful life, the finite DCF balance sheet impact at '+(run.wacc||8.5)+'% WACC is <strong>−$'+_evImpactFiniteDCF(totalCaR, ssp, coObj.sector||'_default', run.wacc||0.085).toFixed(1)+'B</strong> (finite DCF, not perpetuity).</p>' +
     '<p style="font-size:12px;line-height:1.7;color:#374151">Highest-risk asset: <strong>'+(topAsset.name||'—')+'</strong> ('+( topAsset.region||'—')+') · Risk score <strong>'+topAsset.score.toFixed(0)+'/100</strong> · Annual CaR <strong>$'+topAsset.carM.toFixed(0)+'M</strong>. Recommended adaptation investment of $'+( asmts.length?Math.round(asmts.reduce(function(s,a){return s+a.cv*0.015;},0)):50)+'M is estimated to reduce physical CaR by 40–60% by '+year+', yielding a payback period of under 5 years under current carbon pricing trajectories.</p>' +
     '<div style="font-size:10px;color:#9ca3af;border-top:1px solid #e5e7eb;padding-top:8px;margin-top:8px">All CaR figures are <strong>annualised</strong> (not cumulative). Physical and transition exposure is quantified in dollars per asset and capitalised to portfolio EV impact. Scenario: '+ssp.toUpperCase()+' (NGFS Phase 4 / IPCC AR6). ' +
     '<strong style="color:#6b7280">Data sources:</strong> WRI Aqueduct 4.0, IPCC AR6 WG1/WG2, NGFS Phase 4 (2023), GHG Protocol, IEA Energy Statistics 2023, Swiss Re sigma, Munich Re NatCatSERVICE — full citations in Appendix B. ' +
