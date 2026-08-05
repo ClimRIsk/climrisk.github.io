@@ -7325,8 +7325,15 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
 
   assetProfiles.forEach(function(ap) {
     var a = ap.meta, prof = ap.prof;
-    if (a.lat == null || a.lon == null) return;
-    bounds.push([a.lat, a.lon]);
+    // Resolve map position: exact GPS first, then region centroid, then skip.
+    // Demo assets store only region codes (no lat/lon), so the centroid fallback
+    // is critical — without it, ALL demo company assets are invisible on the map.
+    var isGPS = (a.lat != null && a.lon != null);
+    var coord  = isGPS ? [a.lat, a.lon] : (REGION_CENTROIDS[a.region] || null);
+    if (!coord) return;  // truly unknown region — skip
+    var lat = coord[0], lon = coord[1];
+
+    bounds.push(coord);
     var isSel = a.asset === selectedAsset;
     var score = prof.score || 0;
     var col   = SEV_COL(score / 20);
@@ -7334,7 +7341,7 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
 
     // ── Outer glow ring for selected asset ─────────────────────────────
     if (isSel) {
-      var glow = L.circleMarker([a.lat, a.lon], {
+      var glow = L.circleMarker([lat, lon], {
         radius: r + 9, color: col, fillColor: col,
         fillOpacity: 0.08, weight: 2, dashArray: '4,3', opacity: 0.6
       }).addTo(_portMap2D);
@@ -7342,7 +7349,7 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
     }
 
     // ── Main risk score circle ─────────────────────────────────────────
-    var circle = L.circleMarker([a.lat, a.lon], {
+    var circle = L.circleMarker([lat, lon], {
       radius: r, color: '#fff', fillColor: col,
       fillOpacity: isSel ? 0.92 : 0.72,
       weight: isSel ? 3 : 1.5
@@ -7355,8 +7362,8 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
     topHz.forEach(function(hz, i) {
       var angle = (i * 120 - 60) * Math.PI / 180;
       var offsetDeg = 0.014 * (r / 10);
-      var dotLat = a.lat + offsetDeg * Math.cos(angle);
-      var dotLon = a.lon + offsetDeg * Math.sin(angle) / Math.cos(a.lat * Math.PI / 180);
+      var dotLat = lat + offsetDeg * Math.cos(angle);
+      var dotLon = lon + offsetDeg * Math.sin(angle) / Math.cos(lat * Math.PI / 180);
       var hzCol  = HZ_COL[hz] || '#888';
       var dot = L.circleMarker([dotLat, dotLon], {
         radius: 5, color: '#fff', fillColor: hzCol,
@@ -7389,7 +7396,7 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
       '</div>'+
       '<div style="font-size:10px;font-weight:700;color:#6b7280;margin-bottom:4px;text-transform:uppercase;letter-spacing:.05em">Hazard Breakdown</div>'+
       '<table style="width:100%;border-collapse:collapse">'+hzRows+'</table>'+
-      '<div style="font-size:9px;color:#9ca3af;margin-top:6px;border-top:1px solid #f3f4f6;padding-top:4px">Click for full 25-hazard breakdown · '+a.region+(a.lat!=null?' · GPS ✓':' · region approx')+'</div>'+
+      '<div style="font-size:9px;color:#9ca3af;margin-top:6px;border-top:1px solid #f3f4f6;padding-top:4px">Click for full 25-hazard breakdown · '+a.region+(isGPS?' · GPS ✓':' · region centroid')+'</div>'+
     '</div>';
 
     circle.bindTooltip(tip, { direction:'top', sticky:false, maxWidth:280 });
@@ -7404,7 +7411,7 @@ function _updatePortMap2D(assetProfiles, selectedAsset) {
       'background:rgba(255,255,255,0.88);padding:1px 5px;border-radius:3px;'+
       'margin-top:'+Math.round(r+8)+'px;box-shadow:0 1px 3px rgba(0,0,0,.18);border:1px solid '+col+'40">'+
       a.asset.split(' ').slice(0,3).join(' ')+'</div>';
-    var lbl = L.marker([a.lat, a.lon], {
+    var lbl = L.marker([lat, lon], {
       icon: L.divIcon({ html: nameHtml, className:'', iconSize:[0,0] }),
       interactive:false
     }).addTo(_portMap2D);
@@ -13115,7 +13122,7 @@ function _hpmRefreshCircles() {
     _hpm.circles[r] = circle;
   });
 
-  // Asset pin
+  // Asset pin — GPS preferred, region centroid fallback (same rule as portfolio map)
   var assetCen = (_hpm.lat !== null && _hpm.lon !== null) ? [_hpm.lat, _hpm.lon]
                  : (REGION_CENTROIDS[_hpm.region] || null);
   if (assetCen) {
