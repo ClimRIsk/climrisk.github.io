@@ -4396,7 +4396,7 @@ function _lbDownloadAuditTrail() {
     ['Physical Risk Score (0–100)'],
     ['Formula','score = mean(applicable hazard severities) × 20; capped at 100'],
     ['Hazard Severity','Scale 0–5 per hazard; derived from IPCC AR6 regional impact functions'],
-    ['Annual Loss %','Joint probability: 1 − Π(1 − lossᵢ) across all applicable hazards'],
+    ['Annual Loss %','Gaussian copula joint loss: P_indep + Σρᵢⱼ×lossᵢ×lossⱼ×0.5 — pairwise hazard correlations per Zscheischler et al. 2020'],
     ['GPS Resolution','If lat/lon provided: coastal distance, elevation, river proximity applied via SRTM proxy'],
     [''],
     ['PD Uplift — ECB Methodology (ECB Guide on Climate-Related Risks, 2020)'],
@@ -4531,7 +4531,7 @@ function _physDownloadAuditTrail() {
     ['Physical Risk Score (0–100)'],
     ['Formula','score = mean(applicable hazard severities) × 20; capped at 100'],
     ['Hazard Severity','0–5 scale derived from IPCC AR6 regional impact functions per hazard'],
-    ['Annual Loss %','Joint probability across all applicable hazards: 1 − Π(1 − lossᵢ)'],
+    ['Annual Loss %','Gaussian copula joint loss: P_indep + Σρᵢⱼ×lossᵢ×lossⱼ×0.5 (Nelsen 2006; Zscheischler et al. 2020 compound event correlations)'],
     ['GPS Resolution','If lat/lon provided: coastal distance (km), elevation (m), river proximity applied via SRTM proxy and WRI Aqueduct geometry'],
     ['Warming (°C)','SSP pathway × regional amplification factor from IPCC AR6 WG1 Atlas'],
     ['LULC','Land use / land cover proxy from NASA MODIS MCD12Q1 (annual 500m); affects wildfire and landslide'],
@@ -7453,22 +7453,30 @@ var _ACRE = (function() {
      repl_mult      : replacement value ≈ annual_revenue × repl_mult
      illiquidity_discount : hazard-triggered collateral discount rate [0-1]
      Source: Damodaran (2024) sector data; Swiss Re sigma 2023; ECB Guide (2020) */
+  /* _SD — sector defaults
+     asset_age_typical   : median asset age in years — feeds Gap 1 log-logistic degradation
+                           when uploaded profile lacks explicit age field.
+                           Source: Moel & Aerts (2011) flood vulnerability ageing study;
+                                   FEMA BCA Technical Manual (2022) infrastructure age distributions.
+     adaptation_capex_frac : annual adaptation spend as fraction of replacement value;
+                           used by calcAdaptationAmortization (Gap 4) when asset has no explicit budget.
+                           Source: IPCC AR6 WG2 Ch.17.4; UNEP FI Physical Risk Framework (2021) §4.4. */
   var _SD = {
-    'Oil & Gas':                  {useful_life:30, pass_through:0.40, repl_mult:2.0, illiquidity_discount:0.20},
-    'Steel & Metals':             {useful_life:25, pass_through:0.55, repl_mult:3.5, illiquidity_discount:0.25},
-    'Mining':                     {useful_life:20, pass_through:0.30, repl_mult:4.0, illiquidity_discount:0.15},
-    'Chemical & Pharmaceutical':  {useful_life:20, pass_through:0.35, repl_mult:2.8, illiquidity_discount:0.20},
-    'Utilities & Power':          {useful_life:35, pass_through:0.70, repl_mult:5.0, illiquidity_discount:0.30},
-    'Agriculture & Food':         {useful_life:15, pass_through:0.25, repl_mult:1.2, illiquidity_discount:0.20},
-    'Transport':                  {useful_life:20, pass_through:0.60, repl_mult:1.8, illiquidity_discount:0.20},
-    'Real Estate':                {useful_life:40, pass_through:0.20, repl_mult:8.0, illiquidity_discount:0.35},
-    'Technology':                 {useful_life:10, pass_through:0.15, repl_mult:1.0, illiquidity_discount:0.10},
-    'Automotive':                 {useful_life:15, pass_through:0.50, repl_mult:2.5, illiquidity_discount:0.20},
-    'Textile & Apparel':          {useful_life:12, pass_through:0.40, repl_mult:1.5, illiquidity_discount:0.15},
-    'Retail & Consumer':          {useful_life:15, pass_through:0.55, repl_mult:0.8, illiquidity_discount:0.15},
-    'Banking & Finance':          {useful_life:30, pass_through:0.05, repl_mult:0.5, illiquidity_discount:0.10},
-    'Insurance':                  {useful_life:25, pass_through:0.05, repl_mult:0.4, illiquidity_discount:0.10},
-    '_default':                   {useful_life:20, pass_through:0.35, repl_mult:2.0, illiquidity_discount:0.20}
+    'Oil & Gas':                  {useful_life:30, pass_through:0.40, repl_mult:2.0, illiquidity_discount:0.20, asset_age_typical:18, adaptation_capex_frac:0.008},
+    'Steel & Metals':             {useful_life:25, pass_through:0.55, repl_mult:3.5, illiquidity_discount:0.25, asset_age_typical:22, adaptation_capex_frac:0.010},
+    'Mining':                     {useful_life:20, pass_through:0.30, repl_mult:4.0, illiquidity_discount:0.15, asset_age_typical:15, adaptation_capex_frac:0.012},
+    'Chemical & Pharmaceutical':  {useful_life:20, pass_through:0.35, repl_mult:2.8, illiquidity_discount:0.20, asset_age_typical:16, adaptation_capex_frac:0.007},
+    'Utilities & Power':          {useful_life:35, pass_through:0.70, repl_mult:5.0, illiquidity_discount:0.30, asset_age_typical:25, adaptation_capex_frac:0.015},
+    'Agriculture & Food':         {useful_life:15, pass_through:0.25, repl_mult:1.2, illiquidity_discount:0.20, asset_age_typical:12, adaptation_capex_frac:0.006},
+    'Transport':                  {useful_life:20, pass_through:0.60, repl_mult:1.8, illiquidity_discount:0.20, asset_age_typical:18, adaptation_capex_frac:0.009},
+    'Real Estate':                {useful_life:40, pass_through:0.20, repl_mult:8.0, illiquidity_discount:0.35, asset_age_typical:30, adaptation_capex_frac:0.005},
+    'Technology':                 {useful_life:10, pass_through:0.15, repl_mult:1.0, illiquidity_discount:0.10, asset_age_typical:8,  adaptation_capex_frac:0.003},
+    'Automotive':                 {useful_life:15, pass_through:0.50, repl_mult:2.5, illiquidity_discount:0.20, asset_age_typical:14, adaptation_capex_frac:0.007},
+    'Textile & Apparel':          {useful_life:12, pass_through:0.40, repl_mult:1.5, illiquidity_discount:0.15, asset_age_typical:10, adaptation_capex_frac:0.005},
+    'Retail & Consumer':          {useful_life:15, pass_through:0.55, repl_mult:0.8, illiquidity_discount:0.15, asset_age_typical:12, adaptation_capex_frac:0.004},
+    'Banking & Finance':          {useful_life:30, pass_through:0.05, repl_mult:0.5, illiquidity_discount:0.10, asset_age_typical:20, adaptation_capex_frac:0.003},
+    'Insurance':                  {useful_life:25, pass_through:0.05, repl_mult:0.4, illiquidity_discount:0.10, asset_age_typical:20, adaptation_capex_frac:0.003},
+    '_default':                   {useful_life:20, pass_through:0.35, repl_mult:2.0, illiquidity_discount:0.20, asset_age_typical:15, adaptation_capex_frac:0.007}
   };
 
   /* ── Gap 1: Continuous Log-Logistic Fragility (replaces step functions) ────
@@ -8235,19 +8243,33 @@ function renderPh() {
           var revM2 = revPerAssetM;
           var fk   = _fragKey(a2.commodity, sect2);
           var dep  = _dEff(pr2, a2); // Phase 1.2: elevation-corrected D_eff
-          var biR  = _ACRE.calcDirectAndBILoss(cvM2, revM2, dep, fk);
-          /* Net CaR: apply 20% sector-average defense efficacy (no parametric insurance default) */
+          // Gap 1: asset age from profile field or sector default
+          var sd2 = _ACRE.sectorDefaults(sect2 || '_default');
+          var ageYrs = a2.asset_age_yrs != null ? +a2.asset_age_yrs
+                     : a2.age           != null ? +a2.age
+                     : sd2.asset_age_typical;
+          var biR  = _ACRE.calcDirectAndBILoss(cvM2, revM2, dep, fk, ageYrs);
+          /* Gap 4: compute adaptation amortization from profile or sector fraction */
+          var adaptCapexM = a2.adaptation_capex_M != null ? +a2.adaptation_capex_M
+                          : cvM2 * (sd2.adaptation_capex_frac || 0.007);
+          var adaptObj = _ACRE.calcAdaptationAmortization(
+            adaptCapexM, sd2.useful_life, 0.25, 0.02, 0.03, 0.085
+          );
+          /* Net CaR: 20% base defense efficacy + adaptation amortization object */
           var defEff = 0.20;
-          var netR = _ACRE.calcNetPhysicalRisk(biR.gross_car_M, defEff, 0, 0, 0);
+          var netR = _ACRE.calcNetPhysicalRisk(biR.gross_car_M, defEff, 0, 0, adaptObj);
           return {
-            name:     a2.asset,
-            capex:    biR.direct_damage_M,
-            opex:     biR.business_interruption_M,
-            gross:    biR.gross_car_M,
-            net:      netR.net_car_M,
-            dmg_pct:  biR.dmg_pct,
-            downtime: biR.downtime_days,
-            depth:    dep
+            name:         a2.asset,
+            capex:        biR.direct_damage_M,
+            opex:         biR.business_interruption_M,
+            gross:        biR.gross_car_M,
+            net:          netR.net_car_M,
+            dmg_pct:      biR.dmg_pct,
+            downtime:     biR.downtime_days,
+            depth:        dep,
+            age_yrs:      ageYrs,
+            adapt_annual: adaptObj.annual_equiv_M,
+            adapt_eff:    adaptObj.avg_efficacy
           };
         });
         var _totCapex = _acreRows2.reduce(function(s,r){return s+r.capex;},0);
@@ -8259,9 +8281,11 @@ function renderPh() {
         var _acreTblRows = _acreRows2.map(function(r){
           var capCol = r.capex>500?'#b91c1c':r.capex>100?'#f59e0b':'#16a34a';
           var netCol = r.net>r.gross*0.9?'#b91c1c':r.net>r.gross*0.6?'#f59e0b':'#16a34a';
+          var ageStr = r.age_yrs > 10 ? '<span style="color:#f59e0b">'+r.age_yrs.toFixed(0)+'yr</span>' : r.age_yrs.toFixed(0)+'yr';
+          var adaptStr = r.adapt_annual > 0 ? _fmtCostM(r.adapt_annual)+'/yr' : '—';
           return '<tr>'+
             '<td style="font-weight:600">'+r.name+'</td>'+
-            '<td style="font-size:10px;color:var(--muted)">'+r.depth.toFixed(1)+'m / '+r.dmg_pct.toFixed(0)+'% / '+r.downtime+'d</td>'+
+            '<td style="font-size:10px;color:var(--muted)">'+r.depth.toFixed(1)+'m / '+r.dmg_pct.toFixed(0)+'% / '+r.downtime+'d<br>Age: '+ageStr+' · Adapt: '+adaptStr+'</td>'+
             '<td style="color:#b91c1c;font-weight:700">'+_fmtCostM(r.capex)+'</td>'+
             '<td style="color:#f59e0b;font-weight:600">'+_fmtCostM(r.opex)+'</td>'+
             '<td style="font-weight:700">'+_fmtCostM(r.gross)+'</td>'+
@@ -8270,7 +8294,7 @@ function renderPh() {
         }).join('');
 
         return '<div class="cc" style="margin-top:14px;border-top:2px solid rgba(99,102,241,0.3)">'+
-          '<div class="cc-title">🧱 CAPEX / OPEX Split + Net CaR — ACRE Engine · Fragility Curves · '+yr+' · '+ssp.toUpperCase()+'</div>'+
+          '<div class="cc-title">🧱 CAPEX / OPEX Split + Net CaR — ACRE Engine · Log-Logistic Fragility · Adaptation Amortization · '+yr+' · '+ssp.toUpperCase()+'</div>'+
           '<div style="font-size:11px;color:var(--muted);padding:7px 10px;background:var(--surf2);border-radius:5px;margin-bottom:12px;border-left:3px solid #6366f1">'+
           '<strong>Phase 1.2 (D_eff):</strong> Flood depth = max(0, W_abs − E_asset). W_abs = 1.0 + flood_sev × 1.0m proxy; E_asset = asset elevation from DEM. '+
           'Non-flood hazards use score-based proxy (0→2.5m). '+
@@ -8522,9 +8546,9 @@ function renderPh() {
         '<details style="cursor:pointer" open>' +
           '<summary style="list-style:none;outline:none">' +
             '<div class="cc-title" style="display:flex;align-items:center;gap:8px;cursor:pointer">' +
-              '<span>🧮 Quantitative Methodology — 5-Phase CRI Engine</span>' +
+              '<span>🧮 Quantitative Methodology — CRI Engine v0.5</span>' +
               '<span style="font-size:10px;color:var(--muted);margin-left:auto;font-weight:400">' +
-                'NGFS Phase 4 · FEMA HAZUS 2022 · IPCC AR6 · JRC Fragility · Damodaran 2024 · ECB Guide §4.2' +
+                'Log-Logistic Fragility · Gaussian Copula · MRIO Scope 3 · Adaptation Amortization · NGFS Phase 4 · ECB Guide §4.2' +
               '</span>' +
             '</div>' +
           '</summary>' +
@@ -8549,48 +8573,71 @@ function renderPh() {
             ) +
 
             /* Phase 2 */
-            H3('Phase 2 · Physical CaR — FEMA HAZUS 2022 + JRC Fragility Curves') +
+            H3('Phase 2 · Physical CaR — Log-Logistic Fragility + Asset Age Degradation (Gap 1)') +
             TABLE(
-              ROW('Damage ratio lookup',
-                  'DR = f_sector(D_eff)',
-                  'Piecewise-linear interpolation over fragility curve nodes at 0.3 m, 0.6 m, 1.0 m, 1.5 m, 2.0 m, 3.0 m depth. ' + src('FEMA HAZUS 2022 MH 2.1')) +
+              ROW('Damage ratio — log-logistic CDF',
+                  'DR(d) = dᵝ / (dᵝ + αᵝ) × DR_max',
+                  'Continuous CDF fragility; monotone & differentiable — replaces piecewise-linear step functions. α = scale (m at 50% of DR_max); β = shape. Calibrated to FEMA HAZUS 2022 MH 2.1 nodes per asset class (Heavy Mfg α=1.55 β=2.40; Office α=1.70 β=2.60). ' + src('FEMA HAZUS 2022 MH 2.1 §5.3 — NLS calibration')) +
+              ROW('Age degradation factor',
+                  'DR_aged = DR(d) × [1 + max(0, (age − 10) × 0.015)]',
+                  'Vulnerability rises 1.5%/yr past 10-yr build age — captures corrosion, subsidence, and deferred maintenance. Age from asset profile or sector median. ' + src('Moel & Aerts (2011) flood vulnerability ageing')) +
               ROW('CAPEX loss (direct damage)',
-                  'CaR_CAPEX = DR × Replacement_Value',
-                  'DR from fragility lookup; Replacement_Value = asset gross book value in USD M. ' + src('Damodaran 2024 replacement multiples')) +
+                  'CaR_CAPEX = DR_aged × Replacement_Value',
+                  'DR_aged from log-logistic fragility with age correction; Replacement_Value = asset gross book value $M. ' + src('Damodaran 2024 sector replacement multiples')) +
               ROW('OPEX loss (business interruption)',
                   'CaR_OPEX = (Revenue / 365) × T_downtime',
-                  'T_downtime (days) from JRC fragility table at D_eff; sector curves: Heavy/Light Manufacturing, Office. ' + src('JRC Science for Policy 2017')) +
+                  'T_downtime from log-logistic downtime CDF (separate α_dt, β_dt); same age degradation applied. Sector curves: Heavy/Light Manufacturing, Office. ' + src('JRC Science for Policy 2017')) +
               ROW('Gross CaR',
                   'Gross_CaR = CaR_CAPEX + CaR_OPEX',
-                  'Total pre-mitigation annual climate at-risk cost; additive. ' + src('TCFD Guidance on Metrics 2021'))
+                  'Total pre-mitigation annual climate at-risk cost. ' + src('TCFD Guidance on Metrics 2021'))
+            ) +
+
+            /* Phase 2b — copula */
+            H3('Phase 2b · Compound Joint Loss — Gaussian Copula (Gap 3)') +
+            TABLE(
+              ROW('Independence baseline',
+                  'P_indep = 1 − Π(1 − lossᵢ)',
+                  'Product of individual survival probabilities; assumes zero correlation between hazards.') +
+              ROW('Pairwise copula correction',
+                  'ΔP = Σᵢ<ⱼ ρᵢⱼ × lossᵢ × lossⱼ × 0.5',
+                  'Adds compound amplification from physically correlated hazard pairs. ρ from empirical co-occurrence frequency. E.g. Drought–Water Stress ρ=0.82; Heat–Wildfire ρ=0.75; Coastal Flood–Sea Level Rise ρ=0.78. ' + src('Zscheischler et al. 2020 Nature Reviews; Sadegh et al. 2018 C-vine copulas')) +
+              ROW('Copula-adjusted joint loss',
+                  'P_copula = min(1, P_indep + ΔP)',
+                  'Final annual production loss rate; strictly higher than independence when any ρᵢⱼ > 0. Replaces independence formula at both assessHazards() and assessHazardsSector(). ' + src('Nelsen (2006) Ch.4 Gaussian copula'))
             ) +
 
             /* Phase 3 */
-            H3('Phase 3 · Net Physical CaR — Defense & Insurance') +
+            H3('Phase 3 · Net Physical CaR — Defense, Insurance & Adaptation Amortization (Gap 4)') +
             TABLE(
-              ROW('Post-defense CaR',
-                  'After_Defense = Gross_CaR × (1 − δ)',
-                  'δ = defense efficacy ∈ [0,1]; e.g. seawall δ ≈ 0.25, elevated foundations δ ≈ 0.40.') +
+              ROW('Adaptation amortization',
+                  'Annual_equiv = C / n + C × m',
+                  'C = total adaptation CAPEX; n = useful life (sector default); m = maintenance rate (default 3%/yr). ' + src('IPCC AR6 WG2 Ch.17.4 · UK Treasury Green Book (2022)')) +
+              ROW('Degrading efficacy schedule',
+                  'eff_t = eff₀ × (1 − deg)^(t−1)',
+                  'Initial efficacy eff₀ (default 25% reduction in gross CaR) decays at 2%/yr — structural deterioration of seawalls, drainage, flood-proofing. avg_efficacy = time-weighted mean over useful life. ' + src('UNEP FI Physical Risk Framework (2021) §4.4')) +
+              ROW('Combined defense efficacy',
+                  'δ_total = min(0.95, δ_flood + avg_efficacy)',
+                  'δ_flood = structural flood defense (default 20%); avg_efficacy from amortization object. Capped at 95% total.') +
               ROW('Net annual CaR',
-                  'Net_CaR = After_Defense − Payout + Premium + CAPEX_adapt',
-                  'Payout = parametric insurance payout; Premium = annual insurance cost; CAPEX_adapt = annualised adaptation spend. ' + src('Swiss Re sigma 2023')) +
-              ROW('Floor',
-                  'Net_CaR ≥ 0',
-                  'Bounded at zero; insurance cannot create a net profit centre in this model.')
+                  'Net_CaR = max(0, Gross_CaR×(1−δ_total) − Payout + Premium + Annual_equiv)',
+                  'Annual_equiv is the amortised cost (capex/life + maintenance); Payout = parametric insurance. ' + src('Swiss Re Sigma 2023'))
             ) +
 
             /* Phase 4 */
-            H3('Phase 4 · Transition CaR — NGFS Phase 4 Carbon Pathways') +
+            H3('Phase 4 · Transition CaR — NGFS Phase 4 + MRIO Scope 3 Attribution (Gap 2)') +
             TABLE(
+              ROW('MRIO attribution (de-duplication)',
+                  'S₃_attr = S₃ × f_MRIO(sector)',
+                  'f_MRIO ∈ [0.45, 0.85] = sectoral value-add share after Leontief inverse decomposition — prevents double-counting when the same emission appears in multiple supply chain tiers. Oil & Gas f=0.45; Real Estate f=0.85. ' + src('EXIOBASE v3.8 MRIO (2023) · OECD TiVA (2022) · GHG Protocol Scope 3 Standard §5.3')) +
               ROW('Regulated emissions',
-                  'E_regulated = S₁ + S₂ + α × S₃',
-                  'α = 0.80 regulatory inclusion factor (EU CSRD 2025 scope; ISSB S2). S₃ estimated via sector multipliers when not uploaded. ' + src('NGFS Phase 4 2023 · PCAF 2022')) +
+                  'E_reg = S₁ + S₂ + α × S₃_attr',
+                  'α = 0.80 regulatory inclusion factor (EU CSRD 2025 scope; ISSB S2). S₃ is MRIO-attributed before regulatory factor is applied. ' + src('NGFS Phase 4 2023 · PCAF 2022')) +
               ROW('Gross carbon liability',
-                  'L_carbon = E_regulated × CP_t',
-                  'CP_t = scenario carbon price in USD/tCO₂e at year t (SSP1=45, SSP2=85, SSP3=120, SSP5=160 for 2050). ' + src('NGFS Phase 4 carbon price trajectories')) +
+                  'L_carbon = E_reg × CP_t',
+                  'CP_t = scenario carbon price $/tCO₂e (SSP1=45, SSP2=85, SSP3=120, SSP5=160 at 2050). ' + src('NGFS Phase 4 carbon price trajectories')) +
               ROW('Cost pass-through',
                   'Trans_CaR = L_carbon × (1 − PTR)',
-                  'PTR = sector pass-through rate from Damodaran margin analysis; e.g. Utilities PTR≈0.70, Oil & Gas PTR≈0.40. ' + src('Damodaran (2024) operating leverage'))
+                  'PTR = sector pass-through rate; e.g. Utilities 0.70, Oil & Gas 0.40, Technology 0.15. ' + src('Damodaran (2024) operating leverage'))
             ) +
 
             /* Phase 5 */
@@ -8615,10 +8662,12 @@ function renderPh() {
 
             '<div style="margin-top:14px;padding:10px 14px;background:rgba(59,130,246,0.06);border:1px solid rgba(59,130,246,0.20);border-radius:6px;font-size:10.5px;color:var(--subtle);line-height:1.6">' +
               '<strong style="color:var(--accent)">Data Sources &amp; Standards:</strong> ' +
-              'CMIP6 0.25° ensemble (IPCC AR6) · FEMA HAZUS 2022 MH 2.1 flood fragility · JRC Science for Policy 2017 (downtime curves) · ' +
-              'NGFS Phase 4 (2023) carbon price pathways · Damodaran (Jan 2024) sector EBITDA margins &amp; useful life · ' +
-              'ECB Guide on Climate and Environmental Risks (2020) §4.2 · PCAF Standard (2022) Scope 3 financed emissions · ' +
-              'ISSB S2 / TCFD · BCBS Climate Risk FAQ (2022) · SRTM 30 m DEM (NASA) for elevation.' +
+              'CMIP6 0.25° ensemble (IPCC AR6) · FEMA HAZUS 2022 MH 2.1 (fragility calibration) · JRC Science for Policy 2017 (downtime curves) · ' +
+              'Moel &amp; Aerts (2011) asset age degradation · Nelsen (2006) Gaussian copula · Zscheischler et al. (2020) compound hazard correlations · ' +
+              'NGFS Phase 4 (2023) carbon price pathways · EXIOBASE v3.8 MRIO (2023) + OECD TiVA (2022) Scope 3 attribution · ' +
+              'IPCC AR6 WG2 Ch.17.4 + UNEP FI PRFW (2021) adaptation amortization · Damodaran (Jan 2024) sector EBITDA margins &amp; useful life · ' +
+              'ECB Guide on Climate and Environmental Risks (2020) §4.2 · PCAF Standard (2022) · ISSB S2 / TCFD · BCBS Climate Risk FAQ (2022) · ' +
+              'Copernicus GLO-30 DEM / SRTM 30 m (NASA) for elevation.' +
             '</div>' +
 
           '</div>' + /* end inner padding div */
@@ -11343,8 +11392,8 @@ function _ctrPopulateFromProfiles(assetProfiles, companyName, sector, ssp, yr) {
     var appHzs = prof.hazards.filter(function(h){ return h.applicable; });
     var survParts = appHzs.map(function(h){ return '(1−'+(h.loss*100).toFixed(2)+'%)'; }).join(' × ');
     _ctrLog(jpPhase,'📊','Formula',
-      'P(loss) = 1 − Π(1−pᵢ) across '+appHzs.length+' applicable hazards',
-      'formula','Actuarial joint loss model');
+      'P(loss) = P_indep + Σᵢ<ⱼ ρᵢⱼ × lossᵢ × lossⱼ × 0.5 (Gaussian copula) across '+appHzs.length+' applicable hazards',
+      'formula','Zscheischler et al. 2020 · Nelsen 2006 Ch.4 — compound event correction');
     if (survParts.length <= 200)
       _ctrLog(jpPhase,'📊','Survival product', survParts, 'formula', '');
     _ctrLog(jpPhase,'📊','Annual production loss',
@@ -17302,7 +17351,7 @@ function renderSupplyChain() {
       'Suppliers score lower than own assets when they operate in lower-risk geographic regions. ' +
       'Portfolio avg: <strong>' + avgScoreSC.toFixed(1) + '/100</strong>. &ensp;' +
       '<strong>Annual Loss %</strong> = joint compounded loss rate across all applicable hazards ' +
-      '(1 − Π(1 − lossᵢ)) — a worst-case production-disruption metric, not the same as Hazard Score. ' +
+      '(Gaussian copula: P_indep + Σρᵢⱼ×lossᵢ×lossⱼ×0.5) — compound production-disruption metric accounting for co-occurring hazard correlations, not the same as Hazard Score. ' +
       (maxLossSC > 30 ? 'Figures above 30% indicate a supplier with multiple co-occurring high-severity hazards (e.g. coastal + riverine + heat) compounding in the same region. ' : '') +
       'Risk-Adj Spend = procurement cost adjusted for supply disruption probability.' +
       '</div>';
@@ -17848,8 +17897,8 @@ function _portfolioRollup(ssp, year) {
     var _s3est  = s12 * (_s3mult[_carCoSector]||_s3mult['_default']); // Mt estimated S3
     var _pfPassThru = _ACRE.sectorDefaults(_carCoSector).pass_through;
     var _pfTrans = _ACRE.calcEffectiveTransition(
-      (yr.emissions_s1||0), (yr.emissions_s2||0), _s3est, 0.80, cp, _pfPassThru
-    );
+      (yr.emissions_s1||0), (yr.emissions_s2||0), _s3est, 0.80, cp, _pfPassThru, _carCoSector
+    ); // Gap 2: MRIO attribution — sector arg de-duplicates cross-tier Scope 3
     var transCaRb = _pfTrans.effective_transition_M / 1000; // USD B
 
     var totalCaR = physCaRb + transCaRb;
@@ -19373,7 +19422,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
   var _s3mt          = s3tot / 1e6;  // tCO2e → MtCO2e
   var _acreTransSect = coObj.sector || '_default';
   var _acrePassThru  = _ACRE.sectorDefaults(_acreTransSect).pass_through;
-  var _acreTrans     = _ACRE.calcEffectiveTransition(s1/1e6, s2/1e6, _s3mt, 0.80, cp, _acrePassThru);
+  var _acreTrans     = _ACRE.calcEffectiveTransition(s1/1e6, s2/1e6, _s3mt, 0.80, cp, _acrePassThru, _acreTransSect); // Gap 2: MRIO
   var transB         = +(_acreTrans.effective_transition_M/1000).toFixed(3);   // $B net of pass-through
   var transB_gross   = +(_acreTrans.gross_transition_M/1000).toFixed(3);       // $B gross (S1+S2+S3×80%)
   var totalCaR= +(physM/1000+transB).toFixed(2);
@@ -19590,7 +19639,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     /* KPI row 1: climate financial exposure */
     '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px">' +
     kpi('Physical CaR (Annual)','$'+physM.toFixed(0)+'M','Annualised asset loss exposure at risk') +
-    kpi('Transition CaR (Net)','$'+(transB*1000).toFixed(0)+'M','S1+S2+(S3×80%) · $'+cp+'/t · '+Math.round(_acrePassThru*100)+'% cost pass-through') +
+    kpi('Transition CaR (Net)','$'+(transB*1000).toFixed(0)+'M','S1+S2+(S3×MRIO×80%) · $'+cp+'/t · MRIO f='+(_acreTrans.mrio_factor||1).toFixed(2)+' · '+Math.round(_acrePassThru*100)+'% pass-through') +
     kpi('Total CaR','$'+totalCaR.toFixed(3)+'B','Physical + transition combined · annual') +
     kpi('Overall Risk Level',riskLvl,'Composite hazard + transition + financial','') +
     '</div>' +
@@ -19728,7 +19777,7 @@ function _rfmBuildFullDisclosure(fw, format, scope) {
     var _physNarr = '<p style="font-size:12px;line-height:1.85;color:#374151;margin-bottom:12px">';
     _physNarr += 'Under the active <strong>'+ssp.toUpperCase()+'</strong> scenario to <strong>'+year+'</strong>, the portfolio faces annualised physical Climate-at-Risk of <strong>$'+physM.toFixed(0)+'M per annum</strong>';
     if (physPctRev !== '—') _physNarr += ' — equivalent to <strong>'+physPctRev+'% of annual revenue</strong> and <strong>'+physPctEBIT+'% of EBITDA</strong>';
-    _physNarr += '. This figure is calculated using the CRI compound joint loss probability model (1 − Π(1 − lossᵢ) across all applicable hazards per asset), consistent with '+_physRef2+' and the compound risk methodology of IPCC AR6 WG2 Chapter 16. Compound hazard interactions — where multiple physical stressors co-occur at the same asset — are explicitly modelled rather than summed additively, avoiding systematic overestimation of portfolio exposure. ';
+    _physNarr += '. This figure is calculated using the CRI Gaussian copula joint loss model (P = P_indep + Σᵢ<ⱼ ρᵢⱼ × lossᵢ × lossⱼ × 0.5 across all applicable hazards per asset), consistent with '+_physRef2+' and the compound risk methodology of IPCC AR6 WG2 Chapter 16. Empirical pairwise hazard correlations (Zscheischler et al. 2020) — such as ρ = 0.82 for Drought–Water Stress and ρ = 0.75 for Heat Stress–Wildfire — amplify joint loss beyond the naive independence assumption, reflecting the physical reality that co-occurring stressors share common atmospheric drivers. ';
     /* describe top asset first */
     if (asmts.length > 0) {
       var _ta = asmts[0];
