@@ -116,13 +116,11 @@ p.hero-sub{font-size:18px;color:var(--text2);line-height:1.7;max-width:520px;mar
 .metric-card::before{content:'';position:absolute;inset:0;
   background:radial-gradient(ellipse at top left,rgba(59,130,246,.08),transparent 60%)}
 .metric-val{font-size:32px;font-weight:900;letter-spacing:-.03em;line-height:1;
-  background:linear-gradient(135deg,var(--text) 40%,var(--blue) 100%);
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  color:var(--text)}
 .metric-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em;
   text-transform:uppercase;margin-top:6px}
 .metric-card.comp-ready .metric-val{font-size:18px;letter-spacing:0;
-  background:linear-gradient(135deg,var(--em),var(--blue));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  color:var(--blue)}
 .metric-live-dot{position:absolute;top:14px;right:14px;width:8px;height:8px;
   border-radius:50%;background:var(--em);animation:pulse-dot 2s infinite}
 
@@ -1577,6 +1575,8 @@ function scrollTo_(id){
 /* ─── COUNTER ANIMATION ─── */
 function animateCount(el){
   var target = +el.getAttribute('data-count');
+  var suffix = el.getAttribute('data-suffix')||'';
+  var prefix = el.getAttribute('data-prefix')||'';
   var isFloat = String(target).indexOf('.')!==-1;
   var dec = isFloat ? (String(target).split('.')[1]||'').length : 0;
   var start = 0, dur = 1800, startTime = null;
@@ -1585,7 +1585,8 @@ function animateCount(el){
     var p = Math.min((ts-startTime)/dur,1);
     var ease = 1-Math.pow(1-p,3);
     var val = start + (target-start)*ease;
-    el.textContent = isFloat ? val.toFixed(dec) : Math.round(val).toLocaleString();
+    var num = isFloat ? val.toFixed(dec) : Math.round(val).toLocaleString();
+    el.textContent = prefix + num + suffix;
     if(p<1) requestAnimationFrame(step);
   }
   requestAnimationFrame(step);
@@ -1624,6 +1625,12 @@ function whenGlobe(fn){
     var fb = document.createElement('script');
     fb.src = 'https://unpkg.com/globe.gl@2.30.0/dist/globe.gl.min.js';
     fb.onload = s.onload;
+    fb.onerror = function(){
+      /* both CDNs failed — just hide the loading screen */
+      var ld = document.getElementById('globe-loading');
+      if(ld){ ld.style.opacity='0'; ld.style.pointerEvents='none';
+        setTimeout(function(){ ld.style.display='none'; }, 600); }
+    };
     document.head.appendChild(fb);
   };
   document.head.appendChild(s);
@@ -1674,6 +1681,20 @@ function initHeroGlobe(){
   heroGlobe.controls().autoRotate = true;
   heroGlobe.controls().autoRotateSpeed = 0.4;
   heroGlobe.controls().enableZoom = false;
+
+  /* hide loading overlay once globe texture ready */
+  function hideGlobeLoader(){
+    var ld = document.getElementById('globe-loading');
+    if(ld){ ld.style.opacity='0'; ld.style.pointerEvents='none';
+      setTimeout(function(){ ld.style.display='none'; }, 600); }
+  }
+  if(heroGlobe.onGlobeReady){
+    heroGlobe.onGlobeReady(hideGlobeLoader);
+  } else {
+    setTimeout(hideGlobeLoader, 2000);
+  }
+  /* hard fallback: always hide after 5s */
+  setTimeout(hideGlobeLoader, 5000);
 
   window.addEventListener('resize', function(){
     if(heroGlobe && el){
