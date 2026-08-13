@@ -11,22 +11,22 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth}
 body{font-family:'Inter','Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;
-  background:#000009;color:#f1f5f9;overflow-x:hidden;line-height:1.6}
+  background:#FAF8F4;color:#1A1714;overflow-x:hidden;line-height:1.6}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;border:none;background:none;font-family:inherit}
 ::-webkit-scrollbar{width:6px}
-::-webkit-scrollbar-track{background:#050c1a}
+::-webkit-scrollbar-track{background:#EDE8DF}
 ::-webkit-scrollbar-thumb{background:#1d4ed8;border-radius:3px}
 
 /* ── DESIGN TOKENS ── */
 :root{
-  --bg:#000009;--bg2:#050c1a;--bg3:#0a1628;
-  --blue:#3b82f6;--blue-d:#1d4ed8;--blue-l:#93c5fd;
-  --em:#10b981;--em-d:#059669;
-  --amber:#f59e0b;--red:#ef4444;--purple:#8b5cf6;--orange:#f97316;
-  --text:#f1f5f9;--text2:#cbd5e1;--muted:#64748b;
-  --border:rgba(255,255,255,0.07);--borderb:rgba(59,130,246,0.2);
-  --glass:rgba(6,13,31,0.72);--glass2:rgba(10,22,45,0.88);
+  --bg:#FAF8F4;--bg2:#F3EFE8;--bg3:#EDE8DF;
+  --blue:#1A56DB;--blue-d:#1347C0;--blue-l:#4F83EE;
+  --em:#0B7C5A;--em-d:#096649;
+  --amber:#B45309;--red:#C0392B;--purple:#7C3AED;--orange:#C2540A;
+  --text:#1A1714;--text2:#4A4540;--muted:#8A8278;
+  --border:rgba(30,20,10,0.10);--borderb:rgba(26,86,219,0.18);
+  --glass:rgba(250,248,244,0.85);--glass2:rgba(243,239,232,0.95);
   --r12:12px;--r16:16px;--r24:24px;
 }
 
@@ -60,7 +60,7 @@ section{position:relative;overflow:hidden}
 .sec-label .dot{width:6px;height:6px;border-radius:50%;background:var(--em);
   animation:pulse-dot 2s infinite}
 h2.sec-title{font-size:clamp(32px,5vw,56px);font-weight:800;letter-spacing:-.03em;
-  line-height:1.1;margin-bottom:18px}
+  line-height:1.1;margin-bottom:18px;color:var(--text)}
 p.sec-sub{font-size:17px;color:var(--text2);line-height:1.7;max-width:620px;margin-bottom:40px}
 
 /* ── SCROLL ANIMATIONS ── */
@@ -109,7 +109,7 @@ p.hero-sub{font-size:18px;color:var(--text2);line-height:1.7;max-width:520px;mar
 
 /* Hero metric cards */
 .hero-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.metric-card{background:var(--glass);backdrop-filter:blur(24px);border:1px solid var(--borderb);
+.metric-card{background:rgba(255,255,255,0.7);backdrop-filter:blur(24px);border:1px solid var(--borderb);
   border-radius:var(--r16);padding:22px 20px;position:relative;overflow:hidden;
   transition:transform .3s,border-color .3s}
 .metric-card:hover{transform:translateY(-3px);border-color:rgba(59,130,246,.5)}
@@ -163,7 +163,7 @@ p.hero-sub{font-size:18px;color:var(--text2);line-height:1.7;max-width:520px;mar
 .lp-main{position:relative;height:700px;display:flex}
 #lp-globe-container{position:absolute;inset:0;z-index:1}
 .lp-left-panel{position:absolute;left:28px;top:50%;transform:translateY(-50%);z-index:20;
-  background:var(--glass2);backdrop-filter:blur(28px);border:1px solid var(--border);
+  background:#FFFFFF;backdrop-filter:blur(28px);border:1px solid var(--border);
   border-radius:var(--r16);padding:20px 16px;min-width:180px}
 .lp-panel-title{font-size:10px;font-weight:700;letter-spacing:.1em;color:var(--muted);
   text-transform:uppercase;margin-bottom:14px}
@@ -176,7 +176,7 @@ p.hero-sub{font-size:18px;color:var(--text2);line-height:1.7;max-width:520px;mar
 
 /* Country hover panel */
 #country-panel{position:absolute;right:28px;top:50%;transform:translateY(-50%);z-index:20;
-  background:var(--glass2);backdrop-filter:blur(28px);border:1px solid var(--borderb);
+  background:#FFFFFF;backdrop-filter:blur(28px);border:1px solid var(--borderb);
   border-radius:var(--r16);padding:24px;min-width:240px;
   opacity:0;pointer-events:none;transition:opacity .3s,transform .3s;
   transform:translateY(-50%) translateX(10px)}
@@ -294,7 +294,7 @@ input[type=range].dlab-range::-webkit-slider-thumb{-webkit-appearance:none;
 .arch-node-sub{font-size:10px;color:var(--muted);margin-top:2px}
 .arch-arrow{font-size:20px;color:var(--borderb);margin:0 8px;flex-shrink:0}
 .arch-tooltip{position:absolute;bottom:calc(100% + 12px);left:50%;
-  transform:translateX(-50%);background:var(--glass2);backdrop-filter:blur(20px);
+  transform:translateX(-50%);background:#FFFFFF;backdrop-filter:blur(20px);
   border:1px solid var(--borderb);border-radius:var(--r12);padding:16px;
   min-width:200px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:50;
   white-space:nowrap}
@@ -1295,7 +1295,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
 <!-- ══════════════════════════════════════════════════════════
      RESEARCH & INSIGHTS SECTION
      ════════════════════════════════════════════════════════ -->
-<section id="research" style="padding:100px 0;background:var(--bg2);border-top:1px solid var(--border)">
+<section id="research" style="padding:100px 0;background:var(--bg;border-top:1px solid var(--border)">
   <div class="section-inner">
 
     <!-- Header -->
@@ -1313,7 +1313,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
     </div>
 
     <!-- Featured article card -->
-    <div class="fade-up" onclick="window.location='research/monsoon-deficit.html'" style="cursor:pointer;background:var(--glass2);border:1px solid var(--borderb);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:1fr 320px;transition:border-color .25s,box-shadow .25s"
+    <div class="fade-up" onclick="window.location='research/monsoon-deficit.html'" style="cursor:pointer;background:#FFFFFF;border:1px solid var(--borderb);border-radius:20px;overflow:hidden;display:grid;grid-template-columns:1fr 320px;transition:border-color .25s,box-shadow .25s"
          onmouseover="this.style.borderColor='rgba(59,130,246,.5)';this.style.boxShadow='0 0 48px rgba(59,130,246,.1)'"
          onmouseout="this.style.borderColor='var(--borderb)';this.style.boxShadow=''">
 
@@ -1372,14 +1372,14 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
     </div><!-- /featured card -->
 
     <!-- Subscribe strip -->
-    <div class="fade-up" style="margin-top:24px;background:var(--glass);border:1px solid var(--border);border-radius:12px;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
+    <div class="fade-up" style="margin-top:24px;background:rgba(255,255,255,0.7);border:1px solid var(--border);border-radius:12px;padding:24px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:20px">
       <div>
         <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">Subscribe to ClimRisk Intelligence</div>
         <div style="font-size:13px;color:var(--muted)">Quarterly briefings on climate financial risk · No spam</div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap">
         <input id="idx-email" type="email" placeholder="your@email.com"
-          style="padding:10px 16px;background:var(--bg3);border:1px solid var(--borderb);border-radius:8px;font-size:13px;color:var(--text);outline:none;width:240px"
+          style="padding:10px 16px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--text);outline:none;width:240px"
           onfocus="this.style.borderColor='var(--blue)'" onblur="this.style.borderColor='var(--borderb)'"/>
         <button onclick="idxSubscribe()"
           style="background:var(--blue);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s"
@@ -1474,7 +1474,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:48px 0 3
 .cs-node{width:56px;height:56px;background:var(--bg);border:2px solid var(--blue);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:24px;position:relative;z-index:1;margin-bottom:12px}
 .cs-step-label{font-size:13px;font-weight:800;margin-bottom:4px}
 .cs-step-sub{font-size:11px;color:var(--muted);padding:0 8px}
-.cs-detail{display:grid;grid-template-columns:1fr 1fr;gap:32px;background:var(--glass);border:1px solid var(--border);border-radius:20px;padding:32px}
+.cs-detail{display:grid;grid-template-columns:1fr 1fr;gap:32px;background:rgba(255,255,255,0.7);border:1px solid var(--border);border-radius:20px;padding:32px}
 /* Section 12: Today */
 .today-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:24px}
 .today-card{background:var(--bg);border-radius:16px;padding:28px 24px;border:1px solid var(--border);position:relative;overflow:hidden;transition:.3s}
@@ -1519,7 +1519,7 @@ footer{background:var(--bg2);border-top:1px solid var(--border);padding:64px 0 3
 @keyframes glow-pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.15);opacity:1}}
 .about-content p{font-size:15px;color:var(--text2);line-height:1.8;margin-bottom:18px}
 .about-pillars{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:28px}
-.about-pillar{padding:18px;background:var(--glass);border:1px solid var(--border);border-radius:14px;backdrop-filter:blur(12px)}
+.about-pillar{padding:18px;background:rgba(255,255,255,0.7);border:1px solid var(--border);border-radius:14px;backdrop-filter:blur(12px)}
 .about-pillar-icon{font-size:26px;margin-bottom:8px}
 .about-pillar-title{font-size:13px;font-weight:800;margin-bottom:5px}
 .about-pillar-text{font-size:12px;color:var(--muted);line-height:1.6}
