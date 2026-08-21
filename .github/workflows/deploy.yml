@@ -30,21 +30,21 @@ jobs:
         run: npm run build
         working-directory: climrisk-web
 
-      - name: Copy standalone files into build output
+      # Keep the existing platform HTML files accessible at their current URLs
+      - name: Copy platform app files into build output
         run: |
-          cp logo.png                climrisk-web/out/logo.png
-          cp logo.svg                climrisk-web/out/logo.svg
-          cp index.html              climrisk-web/out/index.html
-          cp live-planet.html        climrisk-web/out/live-planet.html
-          cp app.html                climrisk-web/out/app.html
-          cp dashboard.html          climrisk-web/out/dashboard.html
-          cp CRI_Demo.html           climrisk-web/out/CRI_Demo.html
-          cp ClimRisk_Platform.html  climrisk-web/out/ClimRisk_Platform.html
-        continue-on-error: true
+          cp app.html          climrisk-web/out/app.html
+          cp dashboard.html    climrisk-web/out/dashboard.html
+          cp CRI_Demo.html     climrisk-web/out/CRI_Demo.html
+        continue-on-error: true   # graceful if any file was removed
 
+      # GitHub Pages needs a CNAME file for the custom domain
       - name: Write CNAME
         run: echo "climrisk.io" > climrisk-web/out/CNAME
 
+      # GitHub Pages ignores folders starting with _ by default.
+      # Next.js puts assets in _next/ — this disables Jekyll processing
+      # so GitHub Pages serves the files as-is.
       - name: Add .nojekyll
         run: touch climrisk-web/out/.nojekyll
 

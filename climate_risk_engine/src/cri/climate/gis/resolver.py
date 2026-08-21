@@ -1,7 +1,9 @@
 """GIS resolver — lat/lon → spatial hazard attributes.
 
-Embedded tables (offline, zero network dependency):
-  • SRTM v4.1 elevation (30 arc-second median by 1° cell, ~200 sample cells)
+Pure Python, zero external dependencies beyond the standard library.
+No live API calls; all lookups use embedded tables derived from:
+
+  • SRTM v4.1 elevation (30 arc-second median by 1° cell)
   • Natural Earth 10m coastline (simplified to bounding-box coastal strips)
   • Beck et al. (2018) Köppen–Geiger global classification, 1 km resolution
     (aggregated to 1° grid for offline use)
@@ -10,20 +12,8 @@ Embedded tables (offline, zero network dependency):
   • WRI Aqueduct Baseline Water Stress (arid_zone flag)
   • ERA5 mean winter temperature (DJF in NH; JJA in SH) 2°×2° grid
 
-Live elevation fallback (optional, requires network):
-  When a requested coordinate is not in the embedded ~200-cell table, the
-  resolver calls the Open-Elevation API (SRTM-based, 30m resolution) as a
-  live fallback.  Results are cached in-process so each unique 0.25° cell
-  is only fetched once per interpreter session.  If the API is unavailable,
-  the resolver falls back to 0 m (sea-level conservative default) — the
-  same behaviour as before this enhancement.
-
-  Source: Open-Elevation v1 (SRTM GL1 v3, 30m).
-  API docs: https://open-elevation.com
-
-Resolution accuracy: ± 100 km for embedded data; ± 30 m for live elevation.
-Clients requiring sub-km precision for other hazard attributes should wire in
-a full live GIS API.
+Resolution accuracy: ± 100 km is sufficient for TCFD directional disclosure.
+Clients requiring sub-km precision should wire in a live GIS API.
 
 All lookups use bilinear-ish rounding to nearest 1° or 2° grid cell.
 
@@ -40,9 +30,7 @@ Usage
 
 from __future__ import annotations
 
-import json as _json
 import math
-import urllib.request as _urllib_req
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -91,64 +79,10 @@ _ELEV_1DEG: dict[tuple[int, int], int] = {
 }
 
 
-# ---------------------------------------------------------------------------
-# Live elevation fallback — Open-Elevation API (SRTM GL1 v3, 30 m)
-# ---------------------------------------------------------------------------
-
-# In-process cache keyed by (lat rounded to 0.25°, lon rounded to 0.25°).
-# Avoids duplicate API calls for assets in the same ~25 km grid cell.
-_ELEV_LIVE_CACHE: dict[tuple[float, float], int] = {}
-
-_OPEN_ELEV_URL = (
-    "https://api.open-elevation.com/api/v1/lookup"
-    "?locations={lat},{lon}"
-)
-
-
-def _fetch_live_elevation(lat: float, lon: float) -> Optional[int]:
-    """Query Open-Elevation API for SRTM elevation at (lat, lon).
-
-    Returns elevation in metres, or None if the API is unreachable.
-    Results are cached at 0.25° resolution to avoid duplicate calls.
-    Timeout: 5 seconds — fail fast, never block the main simulation loop.
-    """
-    cache_key = (round(round(lat / 0.25) * 0.25, 2),
-                 round(round(lon / 0.25) * 0.25, 2))
-    if cache_key in _ELEV_LIVE_CACHE:
-        return _ELEV_LIVE_CACHE[cache_key]
-
-    try:
-        url = _OPEN_ELEV_URL.format(lat=round(lat, 4), lon=round(lon, 4))
-        with _urllib_req.urlopen(url, timeout=5) as resp:  # noqa: S310
-            data = _json.loads(resp.read().decode())
-        elev = int(data["results"][0]["elevation"])
-        _ELEV_LIVE_CACHE[cache_key] = elev
-        return elev
-    except Exception:
-        return None
-
-
 def _elevation(lat: float, lon: float) -> int:
-    """Return SRTM elevation (m) for nearest 1° grid cell.
-
-    Resolution order:
-    1. Embedded ~200-cell lookup table (instant, offline).
-    2. Open-Elevation live API (SRTM GL1 v3, 30 m), if coordinate not in table.
-    3. 0 m sea-level fallback if live API is unavailable.
-
-    Side effect: successful live lookups are back-written into ``_ELEV_1DEG``
-    so repeated calls for the same 1° cell are served from the embedded table.
-    """
+    """Return SRTM elevation (m) for nearest 1° grid cell."""
     key = (math.floor(lat), math.floor(lon))
-    if key in _ELEV_1DEG:
-        return _ELEV_1DEG[key]
-
-    live = _fetch_live_elevation(lat, lon)
-    if live is not None:
-        _ELEV_1DEG[key] = live   # promote into embedded table for this session
-        return live
-
-    return 0   # conservative sea-level fallback
+    return _ELEV_1DEG.get(key, 0)
 
 
 # ---------------------------------------------------------------------------
