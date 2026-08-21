@@ -269,10 +269,20 @@
 </div>
 
 <script>
+  // ── Owner URL bypass: app.html?unlock=climrisk-owner ──
+  (function() {
+    var p = new URLSearchParams(window.location.search);
+    if (p.get('unlock') === 'climrisk-owner') {
+      try { localStorage.setItem('cri_license_token_v1', 'climrisk-owner-shri-permanent-9x7k2m'); } catch(e) {}
+      window.location.replace('dashboard.html?unlock=climrisk-owner');
+    }
+  })();
   // Access codes — add new client codes here as list
   // Format: "email-prefix:code" or just "code" for universal codes
   var VALID_CODES = [
     'CRI2026',       // universal access code
+    'OWNER',         // owner shortcut
+    'SHRI',          // founder shortcut
     'MORELLI2026',   // Morelli Consulting
     'PILOT001',      // Pilot client 1
     'PILOT002',      // Pilot client 2
