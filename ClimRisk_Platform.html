@@ -1576,6 +1576,12 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
           <span id="run-status">Running climate risk engine across 3 scenarios (2026–2050)…</span>
         </div>
 
+        <!-- Engine status badge -->
+        <div id="engine-status-bar" style="display:flex;align-items:center;gap:8px;padding:8px 12px;margin-top:12px;background:var(--surf2);border:1px solid var(--border);border-radius:8px;font-size:12px">
+          <span id="engine-dot" style="width:8px;height:8px;border-radius:50%;background:#94a3b8;flex-shrink:0"></span>
+          <span id="engine-status-text" style="color:var(--muted)">Checking Python engine…</span>
+        </div>
+
         <div class="wiz-foot">
           <span class="wiz-prog">Step 6 of 6 — Ready to run</span>
           <button class="btn btn-o" onclick="wizBack()">← Back</button>
@@ -13259,16 +13265,175 @@ function buildReview() {
   el('review-content').innerHTML = html;
 }
 
+// ── Python Engine API integration ───────────────────
+var ENGINE_API = 'https://climrisk-engine.onrender.com';
+var _engineResults = null; // cached Python engine response
+
+/* Build an intake Excel from wizard form data and POST to /runs/file.
+   Returns the FileRunResponse JSON or throws on error. */
+async function _callPythonEngine() {
+  var name     = (el('i-name').value || 'Custom Company').trim();
+  var sector   = el('i-sector').value || 'Other';
+  if (sector === 'Other') sector = el('i-sector-other').value || 'Other';
+  var hqRegion = el('i-hq').value || 'global';
+  var rev      = parseFloat(el('i-rev').value) || 0;
+  var ebitda   = parseFloat(el('i-ebitda').value) || 0;
+  var debt     = parseFloat(el('i-debt').value) || 0; // net debt; pass as total_debt, cash=0
+  var shares   = parseFloat(el('i-shares').value) || 1;
+  var sp       = parseFloat(el('i-sp').value) || 0;
+  var s1Total  = parseFloat(el('i-s1').value) || 0; // absolute tCO2
+  var s2Total  = parseFloat(el('i-s2').value) || 0;
+
+  // Sector → commodity default (for assets with no commodity specified)
+  var sectorCommodityMap = {
+    'Mining': 'iron_ore', 'Oil & Gas': 'crude_oil', 'Utilities': 'electricity',
+    'Steel & Metals': 'copper', 'Cement': 'cement'
+  };
+  var defaultCommodity = sectorCommodityMap[sector] || 'iron_ore';
+
+  // Total production volume for intensity calc
+  var totalProd = wizAssets.reduce(function(s,a){ return s + (a.production||0); }, 0) || 1;
+
+  // Build workbook
+  var wb = XLSX.utils.book_new();
+
+  // ── Company sheet ──────────────────────────────────
+  var companyRows = [
+    ['company_id','company_name','sector','hq_region',
+     'total_debt_musd','cash_musd','shares_outstanding_m','current_share_price',
+     'revenue_musd','ebitda_musd'],
+    ['co_001', name, sector, hqRegion,
+     debt, 0, shares, sp,
+     rev, ebitda]
+  ];
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(companyRows), 'Company');
+
+  // ── Assets sheet ──────────────────────────────────
+  var assetHeader = ['company_id','asset_id','asset_name','commodity','region',
+    'latitude','longitude','baseline_production','production_unit',
+    'baseline_unit_cost','energy_cost_share','carrying_value_musd',
+    'remaining_life_years','scope1_intensity','scope2_intensity','scope3_intensity',
+    'carbon_price_coverage','free_allocation'];
+  var assetRows = [assetHeader];
+  var assetsToUse = wizAssets.length > 0 ? wizAssets : [{
+    id:'asset_default', name: name+' Main Operations',
+    commodity: defaultCommodity, lat: 0, lon: 0, region: hqRegion,
+    production: totalProd||1, unit:'Mt', carrying_value: rev*3,
+    remaining_life: 25, unit_cost: 0, energy_share: 0.30
+  }];
+  assetsToUse.forEach(function(a, idx) {
+    var prod = a.production || 1;
+    var s1Intensity = s1Total > 0 ? (s1Total * (prod/totalProd)) / prod : 0;
+    var s2Intensity = s2Total > 0 ? (s2Total * (prod/totalProd)) / prod : 0;
+    assetRows.push([
+      'co_001', a.id || ('ast_'+idx), a.name,
+      a.commodity || defaultCommodity,
+      a.region || hqRegion,
+      a.lat || 0, a.lon || 0,
+      prod, a.unit || 'Mt',
+      a.unit_cost || 0,
+      a.energy_share || 0.30,
+      a.carrying_value || 0,
+      a.remaining_life || 25,
+      s1Intensity, s2Intensity, 0,
+      1.0, 0.0
+    ]);
+  });
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(assetRows), 'Assets');
+
+  // Convert to blob and POST
+  var wbBuf = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+  var blob = new Blob([wbBuf], {type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  var fd = new FormData();
+  fd.append('file', blob, 'cri_intake.xlsx');
+  fd.append('scenarios', 'Net Zero 2050,Delayed Transition,Current Policies');
+
+  var resp = await fetch(ENGINE_API + '/runs/file', {
+    method: 'POST', body: fd,
+    signal: AbortSignal.timeout(60000)
+  });
+  if (!resp.ok) throw new Error('Engine API returned ' + resp.status);
+  return await resp.json();
+}
+
+/* Render the Python engine panel below the main results */
+function _renderEnginePanel(data) {
+  var existing = document.getElementById('py-engine-panel');
+  if (existing) existing.remove();
+
+  // Group results by scenario
+  var byScenario = {};
+  (data.results || []).forEach(function(r) {
+    byScenario[r.scenario] = r;
+  });
+  var scenarios = ['Net Zero 2050','Delayed Transition','Current Policies'];
+  var colours   = ['#22c55e','#f59e0b','#ef4444'];
+
+  var rows = scenarios.map(function(sc, i) {
+    var r = byScenario[sc] || {};
+    var npv = r.npv_impact_pct != null ? (r.npv_impact_pct > 0 ? '+' : '') + r.npv_impact_pct.toFixed(1) + '%' : '—';
+    var ev  = r.ev_bn  != null ? '$' + r.ev_bn.toFixed(2)  + 'B' : '—';
+    var eq  = r.equity_bn != null ? '$' + r.equity_bn.toFixed(2) + 'B' : '—';
+    return '<tr>' +
+      '<td><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+colours[i]+';margin-right:6px"></span>'+sc+'</td>' +
+      '<td>'+ev+'</td><td>'+eq+'</td>' +
+      '<td style="color:'+(r.npv_impact_pct<0?'#ef4444':'#22c55e')+'">'+npv+'</td>' +
+    '</tr>';
+  }).join('');
+
+  var sources = (data.errors && data.errors.length ? '<span style="color:var(--amber)">⚠ '+data.errors.length+' warning(s)</span>' : '<span style="color:#22c55e">✓ CMIP6 · ERA5 · NASA POWER · WRI Aqueduct</span>');
+
+  var panel = document.createElement('div');
+  panel.id = 'py-engine-panel';
+  panel.style.cssText = 'margin:18px 0;padding:16px 20px;background:var(--surf);border:1px solid var(--border);border-left:4px solid #6366f1;border-radius:10px';
+  panel.innerHTML =
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">' +
+      '<span style="font-size:18px">🛰</span>' +
+      '<strong style="font-size:14px">Python Engine Results</strong>' +
+      '<span style="font-size:11px;background:#6366f120;color:#6366f1;padding:2px 8px;border-radius:12px;font-weight:600">Live · PhysicalHazardEngine v0.4</span>' +
+      '<span style="margin-left:auto;font-size:11px;color:var(--muted)">Sources: '+sources+'</span>' +
+    '</div>' +
+    '<table style="width:100%;border-collapse:collapse;font-size:13px">' +
+      '<thead><tr style="border-bottom:1px solid var(--border);color:var(--muted)">' +
+        '<th style="text-align:left;padding:4px 8px">Scenario</th>' +
+        '<th style="text-align:right;padding:4px 8px">EV</th>' +
+        '<th style="text-align:right;padding:4px 8px">Equity</th>' +
+        '<th style="text-align:right;padding:4px 8px">NPV Impact</th>' +
+      '</tr></thead>' +
+      '<tbody style="color:var(--text)">'+rows+'</tbody>' +
+    '</table>' +
+    '<div style="font-size:11px;color:var(--muted);margin-top:10px">Computed by the CRI Python engine: 25-hazard SSP model · CMIP6 3-model ensemble · baseline 2026 commodity prices. Processed in '+data.total_duration_s+'s.</div>';
+
+  // Insert after the first results card
+  var anchor = document.querySelector('.results-grid') || document.querySelector('#report-container') || document.querySelector('.report-section');
+  if (anchor) {
+    anchor.parentNode.insertBefore(panel, anchor.nextSibling);
+  } else {
+    var mainContent = document.querySelector('main') || document.body;
+    mainContent.appendChild(panel);
+  }
+}
+
 // ── Run analysis ────────────────────────────────────
 function runAnalysis() {
   el('run-btn').disabled = true;
   el('run-loading').classList.add('on');
+  _engineResults = null;
+
+  // Try the Python engine in parallel (non-blocking)
+  var enginePromise = _callPythonEngine().then(function(data) {
+    _engineResults = data;
+  }).catch(function(err) {
+    console.warn('[CRI Engine] Python backend unavailable:', err.message);
+    _engineResults = null;
+  });
+
   var steps = [
     'Parsing company profile and financials…',
     'Geocoding '+wizAssets.length+' asset location(s)…',
     'Fetching WRI Aqueduct physical hazard data…',
     'Applying NGFS Phase 4 carbon price paths…',
-    'Running NASA NEX-GDDP heat stress model…',
+    'Running CMIP6 downscaling (Open-Meteo ensemble)…',
     'Building climate-adjusted DCF — NZE 2050…',
     'Building climate-adjusted DCF — Delayed Transition…',
     'Building climate-adjusted DCF — Current Policies…',
@@ -13284,6 +13449,10 @@ function runAnalysis() {
       el('run-loading').classList.remove('on');
       el('run-btn').disabled = false;
       buildAndLoadResults();
+      // Render engine panel once JS results are up
+      enginePromise.then(function() {
+        if (_engineResults) _renderEnginePanel(_engineResults);
+      });
     }
   }, 380);
 }
@@ -15051,6 +15220,27 @@ function _hpmStopPlay() {
 document.addEventListener('DOMContentLoaded', function() {
   // Small rAF delay to let Leaflet script finish loading
   requestAnimationFrame(function() { _hpmPreInit(); });
+
+  // ── Python Engine health check ───────────────────
+  (function checkEngineHealth() {
+    var dot  = document.getElementById('engine-dot');
+    var txt  = document.getElementById('engine-status-text');
+    if (!dot || !txt) return;
+    fetch(ENGINE_API + '/health', { signal: AbortSignal.timeout(8000) })
+      .then(function(r) { return r.ok ? r.json() : Promise.reject(r.status); })
+      .then(function(data) {
+        dot.style.background = '#22c55e';
+        txt.innerHTML = '<strong style="color:#22c55e">Python Engine Online</strong> — ' +
+          'v' + (data.version || '?') + ' · CMIP6 + ERA5 + NASA POWER + WRI Aqueduct live · ' +
+          '<a href="' + ENGINE_API + '/docs" target="_blank" style="color:var(--accent)">API docs ↗</a>';
+      })
+      .catch(function() {
+        dot.style.background = '#f59e0b';
+        txt.innerHTML = '<span style="color:var(--amber)">Python Engine offline</span> — ' +
+          'Analysis will use built-in JS engine. ' +
+          '<a href="https://render.com/deploy?repo=https://github.com/ClimRIsk/climrisk.github.io" target="_blank" style="color:var(--accent)">Deploy on Render ↗</a>';
+      });
+  })();
 });
 </script>
 

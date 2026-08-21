@@ -1,0 +1,19 @@
+asset_name,lat,lon,carrying_value_usd_m,commodity,production,unit
+Rotterdam Refinery,51.95,4.12,480,Petrochemicals,1200000,tonnes
+Frankfurt R&D Campus,50.11,8.68,210,Specialty Chem,85000,tonnes
+Antwerp Storage Terminal,51.22,4.4,165,Bulk Chemicals,650000,tonnes
+Texas Gulf Coast Plant,29.74,-95.37,390,Chlor-Alkali,420000,tonnes
+Houston Admin HQ,29.76,-95.36,85,Corporate,0,n/a
+Singapore Petrochemicals,1.26,103.82,520,Aromatics,890000,tonnes
+Shanghai Distribution Ctr,31.23,121.47,145,Distribution,320000,tonnes
+Mumbai Plant,19.08,72.88,280,Agrochem,210000,tonnes
+Cape Town Terminal,-33.92,18.42,120,Import/Export,180000,tonnes
+Durban Port Facility,-29.86,31.03,155,Coastal Storage,240000,tonnes
+Santos Brazil Plant,-23.96,-46.33,340,Polymers,380000,tonnes
+Buenos Aires Depot,-34.61,-58.37,95,Distribution,145000,tonnes
+Perth Mining Chemicals,-31.95,115.86,195,Mining Reagents,165000,tonnes
+Jakarta Warehouse,-6.21,106.85,110,Distribution,195000,tonnes
+Cairo Agrochem Facility,30.06,31.24,175,Agrochem,220000,tonnes
+Istanbul Terminal,41.01,28.97,130,Distribution,175000,tonnes
+Yokohama Japan Plant,35.44,139.64,220,Specialty Chem,190000,tonnes
+Lagos Nigeria Depot,6.45,3.39,75,Distribution,105000,tonnes

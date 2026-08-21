@@ -334,20 +334,6 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 .rating-sub{font-size:13px;color:var(--muted);margin-bottom:10px}
 .rating-summary{font-size:13px;color:var(--muted);line-height:1.6;max-width:620px}
 
-/* Rating-by-scope strip */
-.scope-strip{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
-.scope-card{flex:1;min-width:180px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;cursor:pointer;transition:border-color .12s,box-shadow .12s}
-.scope-card:hover{border-color:var(--green)}
-.scope-card.active{border-color:var(--green);box-shadow:0 0 0 1px var(--green)}
-.scope-card-name{font-size:10px;font-weight:700;color:var(--subtle);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
-.scope-card-row{display:flex;align-items:center;gap:8px}
-.scope-card-badge{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:800;border:2px solid;flex-shrink:0}
-.scope-card-score{font-size:11px;color:var(--muted)}
-.scope-card-unavail{opacity:.4;cursor:not-allowed}
-.scope-card-unavail:hover{border-color:var(--border)}
-.scope-note{display:flex;gap:8px;align-items:flex-start;background:var(--amber-bg);border:1px solid var(--amber);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:12px;line-height:1.5;color:var(--text)}
-.rating-badge.scoped{border-style:dashed}
-
 /* Pillar bars */
 .pillars{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
 .pillar{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:16px;box-shadow:var(--sh)}
@@ -751,34 +737,12 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
 </head>
 <body>
 
-<!-- ═══ PLATFORM UPGRADE BANNER ═══ -->
-<div id="cri-upgrade-banner" style="position:fixed;top:0;left:0;right:0;z-index:999999;background:linear-gradient(90deg,#0f172a 0%,#1e3a5f 50%,#0f172a 100%);border-bottom:2px solid #2563eb;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-  <div style="max-width:1200px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
-    <div style="background:#ef444422;border:1px solid #ef4444;border-radius:6px;padding:4px 10px;font-size:11px;font-weight:700;color:#f87171;white-space:nowrap;letter-spacing:.5px">⚠️ OLD VERSION</div>
-    <div style="flex:1;min-width:200px">
-      <span style="color:#f0f4f8;font-size:13px;font-weight:600">You're viewing <strong style="color:#f87171">CRI Demo v0.1</strong> — an outdated preview.</span>
-      <span style="color:#94a3b8;font-size:12px;margin-left:8px">Physical risk costs, Scenario Cascade, Live Events, and all new features are in the <strong style="color:#60a5fa">full platform</strong>.</span>
-    </div>
-    <a href="ClimRisk_Platform.html" style="display:inline-flex;align-items:center;gap:6px;background:#2563eb;color:#fff;padding:8px 18px;border-radius:7px;font-size:13px;font-weight:700;text-decoration:none;white-space:nowrap;transition:background .15s" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">
-      🚀 Open Full Platform →
-    </a>
-    <button onclick="document.getElementById('cri-upgrade-banner').style.display='none'" style="background:none;border:none;color:#475569;font-size:18px;cursor:pointer;padding:4px 8px;line-height:1" title="Dismiss">✕</button>
-  </div>
-  <div style="background:#1e3a5f;padding:5px 20px;font-size:11px;color:#64748b;display:flex;gap:20px;flex-wrap:wrap">
-    <span>✅ Physical Risk + <strong style="color:#60a5fa">Dollar Costs</strong> — in the full platform</span>
-    <span>✅ <strong style="color:#60a5fa">Scenario Cascade</strong> — 3-layer EBITDA impact modelling</span>
-    <span>✅ <strong style="color:#60a5fa">Live GDACS Events</strong> — real-time hazard feed</span>
-    <span>✅ 25-hazard IPCC AR6 engine with GPS resolver</span>
-  </div>
-</div>
-<div style="height:72px"></div><!-- push body content below fixed banner -->
-
 <!-- ═══════════════ LICENSE GATE ════════════════ -->
 <div id="cri-gate" style="position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(8,10,16,0.97);backdrop-filter:blur(12px)">
 
   <!-- Access Request Modal -->
   <div id="gate-signup" style="background:#13192b;border:1px solid #1e2d4a;border-radius:16px;padding:44px 40px;max-width:460px;width:92%;text-align:center;box-shadow:0 24px 64px rgba(0,0,0,0.6)">
-    <div id="gate-gem" ondblclick="(function(){try{localStorage.setItem(_GATE_STORAGE_KEY,_OWNER_TOKEN);}catch(e){}; _gateHide();})()" style="font-size:36px;margin-bottom:10px;cursor:default;user-select:none" title="">🌍</div>
+    <div style="font-size:36px;margin-bottom:10px">🌍</div>
     <div style="font-size:10px;font-weight:700;color:#22c55e;letter-spacing:3px;margin-bottom:14px">CLIMRISK · CRI ENGINE v0.4</div>
     <h2 style="font-size:22px;font-weight:800;color:#f0f4f8;margin:0 0 8px">Request Engine Access</h2>
     <p style="font-size:13px;color:#64748b;margin:0 0 28px;line-height:1.7">GPS-precise climate risk · TCFD · IFRS S2 · CSRD<br>We review all requests and respond within 1 business day.</p>
@@ -1990,10 +1954,6 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
     <!-- RATINGS -->
     <div id="p-ratings" class="panel">
       <div class="ph"><h1>Climate Risk Rating</h1><p>CRI composite A–E rating across physical, transition, and financial dimensions</p></div>
-
-      <!-- Rating by scope — lets a client see/select Physical-Only, Physical+Transition, or Full Composite -->
-      <div class="scope-strip" id="rat-scope-strip"></div>
-      <div class="scope-note" id="rat-scope-note" style="display:none"></div>
 
       <!-- Rating hero card -->
       <div class="rating-hero" id="rat-hero">
@@ -4159,30 +4119,15 @@ var _GATE_STORAGE_KEY = 'cri_license_token_v1';
 // Owner permanent bypass — never hits Supabase; set via URL param or DevTools console
 var _OWNER_TOKEN = 'climrisk-owner-shri-permanent-9x7k2m';
 
-// Tri-redundant owner bypass: URL param + localStorage + keyboard shortcut + dblclick
-var _OWNER_BYPASSED = (function() {
-  try {
-    var params = new URLSearchParams(window.location.search);
-    if (params.get('unlock') === 'climrisk-owner') {
-      try { localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN); } catch(e) {}
-      try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
-      return true;
-    }
-    if (localStorage.getItem(_GATE_STORAGE_KEY) === _OWNER_TOKEN) return true;
-  } catch(e) {}
-  return false;
-})();
-
-// Keyboard shortcut: Ctrl+Shift+O while gate is visible
-document.addEventListener('keydown', function(e) {
-  if (e.ctrlKey && e.shiftKey && e.key === 'O') {
-    var g = document.getElementById('cri-gate');
-    if (g && g.style.display !== 'none') {
-      try { localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN); } catch(e) {}
-      _gateHide();
-    }
+// Auto-set owner token if URL contains ?unlock=climrisk-owner
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  if (params.get('unlock') === 'climrisk-owner') {
+    localStorage.setItem(_GATE_STORAGE_KEY, _OWNER_TOKEN);
+    // Clean URL without reload
+    try { window.history.replaceState({}, '', window.location.pathname); } catch(e) {}
   }
-});
+})();
 
 function _gateHeaders() {
   return { 'Content-Type':'application/json', 'apikey':_GATE_KEY, 'Authorization':'Bearer '+_GATE_KEY };
@@ -4311,8 +4256,7 @@ function _gateShowPending(email) {
 
 // Boot — runs immediately
 (function _gateInit() {
-  if (_OWNER_BYPASSED) { _gateHide(); return; }
-  var token; try { token = localStorage.getItem(_GATE_STORAGE_KEY); } catch(e) {}
+  var token = localStorage.getItem(_GATE_STORAGE_KEY);
   if (token) { _gateValidate(token); } else { _gateShowSignup(); }
 })();
 
@@ -8852,200 +8796,41 @@ function ratingBgClass(r) {
   return {A:'rating-A',B:'rating-B',C:'rating-C',D:'rating-D',E:'rating-E'}[r]||'rating-C';
 }
 
-// ══════════════════════════════════════════════════════════════════
-// SCOPED CLIMATE RATING — lets a client see a rating built from only
-// the pillars they actually have data for (e.g. Physical Risk only),
-// instead of forcing an all-or-nothing composite.
-//
-// Design decisions (confirmed with Shri, 2026-07-03):
-//  1. One unified A–E severity scale is used for EVERY scope. A "B" means
-//     the same underlying severity band whether it's Physical-Only,
-//     Physical+Transition, or the Full Composite — so scopes are directly
-//     comparable, not just individually meaningful. This also matches the
-//     bands already used for the Full Composite rating.
-//  2. All scopes for which data exists are computed and shown together
-//     (not a single toggle that hides the others) — a client can see
-//     Physical-Only sitting next to Full Composite and understand exactly
-//     what each one does and doesn't include.
-//  3. Scope selection is always available to the user, not just
-//     auto-selected by data completeness — a client may want a
-//     Physical-Only lens for a specific disclosure even if fuller data
-//     exists (e.g. TCFD physical-risk-specific reporting).
-// ══════════════════════════════════════════════════════════════════
-
-// Unified thresholds — identical bands used everywhere a 0–100 score
-// becomes an A–E letter, regardless of how many pillars fed that score.
-var RATING_BANDS = [
-  {max:18,        letter:'A', label:'Low Climate Risk'},
-  {max:35,        letter:'B', label:'Moderate Climate Risk'},
-  {max:55,        letter:'C', label:'Elevated Climate Risk'},
-  {max:75,        letter:'D', label:'High Climate Risk'},
-  {max:Infinity,  letter:'E', label:'Very High Climate Risk'}
-];
-function letterForScore(score) {
-  for (var i=0;i<RATING_BANDS.length;i++) { if (score < RATING_BANDS[i].max) return RATING_BANDS[i]; }
-  return RATING_BANDS[RATING_BANDS.length-1];
-}
-
-// Scope catalogue, ordered least→most complete. Weights are renormalised
-// to sum to 1.0 across whichever pillars the scope includes, so a
-// Physical-Only score isn't silently deflated by treating missing
-// pillars as zero.
-var SCOPE_DEFS = {
-  physical_only:       { key:'physical_only',       name:'Physical Climate Risk Rating',        short:'Physical Only',        pillars:['physical'],                          weights:{physical:1.0} },
-  physical_transition: { key:'physical_transition',  name:'Physical + Transition Rating',        short:'Physical + Transition', pillars:['physical','transition'],             weights:{physical:0.5, transition:0.5} },
-  full_composite:       { key:'full_composite',       name:'CRI Composite Rating (Full)',         short:'Full Composite',       pillars:['physical','transition','financial'], weights:{physical:0.35, transition:0.35, financial:0.30} }
-};
-var SCOPE_ORDER = ['physical_only','physical_transition','full_composite'];
-var PILLAR_NAMES = {physical:'Physical Risk', transition:'Transition Risk', financial:'Financial Impact'};
-
-// pillarScores: {physical:number|null, transition:number|null, financial:number|null}
-// Returns the scoped rating object for one scope, or null if that scope's
-// required pillars aren't all available (never fabricate a pillar).
-function computeScopedRating(scopeKey, pillarScores) {
-  var def = SCOPE_DEFS[scopeKey];
-  var missing = def.pillars.filter(function(k){ return pillarScores[k] == null; });
-  if (missing.length > 0) return null;
-  var score = 0;
-  def.pillars.forEach(function(k){ score += pillarScores[k] * def.weights[k]; });
-  score = Math.round(score * 10) / 10;
-  var band = letterForScore(score);
-  return {
-    scopeKey: def.key, scopeName: def.name, scopeShort: def.short,
-    pillars: def.pillars, weights: def.weights,
-    score: score, rating: band.letter, label: band.label
-  };
-}
-function computeAllAvailableScopes(pillarScores) {
-  return SCOPE_ORDER.map(function(k){ return computeScopedRating(k, pillarScores); })
-    .filter(function(r){ return r != null; });
-}
-// Build {physical,transition,financial} from whatever data currently
-// exists for a company — a full RATINGS entry if the wizard/import has
-// completed, or just the hazard assessment if only Physical Risk has
-// been run so far (e.g. via Site Assessment, before transition/financial
-// data is ever entered).
-function _buildPillarScores(company) {
-  var rat = RATINGS[company];
-  if (rat && rat.pillars) {
-    return {
-      physical:   rat.pillars.physical   ? rat.pillars.physical.score   : null,
-      transition: rat.pillars.transition ? rat.pillars.transition.score : null,
-      financial:  rat.pillars.financial  ? rat.pillars.financial.score  : null
-    };
-  }
-  var hList = (D && D.hazards) ? D.hazards[company] : null;
-  if (hList && hList.length) {
-    var physScore = Math.min(100, hList.reduce(function(s,a){ return s+(a.score||0); },0) / hList.length);
-    return { physical: physScore, transition: null, financial: null };
-  }
-  return { physical: null, transition: null, financial: null };
-}
-var _ratingPrimaryScope = null; // user's chosen scope; null = auto (most complete available)
-
-function selectRatingScope(scopeKey) {
-  _ratingPrimaryScope = scopeKey;
-  renderRat();
-}
-
-function renderScopeStrip(scopes, primaryKey) {
-  var strip = el('rat-scope-strip');
-  if (!strip) return;
-  var html = '';
-  SCOPE_ORDER.forEach(function(k) {
-    var def = SCOPE_DEFS[k];
-    var s = scopes.find(function(x){ return x.scopeKey === k; });
-    if (!s) {
-      html += '<div class="scope-card scope-card-unavail" title="Not enough data yet — needs: '+def.pillars.map(function(p){return PILLAR_NAMES[p];}).join(' + ')+'">' +
-        '<div class="scope-card-name">'+def.short+'</div>' +
-        '<div class="scope-card-row"><div class="scope-card-badge" style="border-color:var(--border);color:var(--subtle)">—</div>' +
-        '<div class="scope-card-score">Not yet available</div></div></div>';
-      return;
-    }
-    var active = s.scopeKey === primaryKey;
-    html += '<div class="scope-card'+(active?' active':'')+'" onclick="selectRatingScope(\''+s.scopeKey+'\')" title="Click to set as the primary rating shown below">' +
-      '<div class="scope-card-name">'+def.short+(active?' · Selected':'')+'</div>' +
-      '<div class="scope-card-row"><div class="scope-card-badge '+ratingBgClass(s.rating)+'">'+s.rating+'</div>' +
-      '<div class="scope-card-score">'+s.score+'/100 · '+s.label+'</div></div></div>';
-  });
-  strip.innerHTML = html;
-}
-
 function renderRat() {
   var company = co();
-  var pillarScores = company ? _buildPillarScores(company) : {physical:null,transition:null,financial:null};
-  var scopes = company ? computeAllAvailableScopes(pillarScores) : [];
-
-  if (!company || !COS[company] || scopes.length === 0) {
+  if (!company || !COS[company] || !RATINGS[company]) {
     var rEl = document.getElementById('rat-panel') || document.querySelector('.rat-wrap');
     var emptyMsg = '<div style="text-align:center;padding:80px 20px;color:var(--muted);font-size:15px">' +
       '<div style="font-size:48px;margin-bottom:16px">📂</div>' +
       '<div style="font-size:20px;font-weight:600;margin-bottom:10px">No data loaded</div>' +
-      '<div>Connect your Excel file using the <strong>Data Integration</strong> panel, or run a Physical Risk assessment via Site Assessment, to generate a CRI Rating.</div>' +
+      '<div>Connect your Excel file using the <strong>Data Integration</strong> panel to generate a CRI Rating.</div>' +
       '</div>';
     if (rEl) rEl.innerHTML = emptyMsg;
-    var stripEmpty = el('rat-scope-strip'); if (stripEmpty) stripEmpty.innerHTML = '';
-    var noteEmpty = el('rat-scope-note'); if (noteEmpty) noteEmpty.style.display = 'none';
     return;
   }
-  var rat = RATINGS[company] || null;
+  var rat = RATINGS[company];
   var run = COS[company].runs;
   var nze = run.nze_2050, cp = run.current_policies;
 
-  // Which scope is "primary" (drives the hero badge)? Respect the user's last
-  // explicit pick if it's still computable for this company; otherwise default
-  // to the most complete scope the current data supports.
-  var primary = scopes.find(function(s){ return s.scopeKey === _ratingPrimaryScope; }) || scopes[scopes.length - 1];
-  _ratingPrimaryScope = primary.scopeKey;
-  renderScopeStrip(scopes, primary.scopeKey);
-
-  // Pillar detail source: full driver text from a completed engine run if it
-  // exists, otherwise a minimal Physical-Only driver set synthesised from
-  // hazard data (covers the case where only a Physical Risk assessment has
-  // been run and Transition/Financial were never provided).
-  var ph;
-  if (rat && rat.pillars) {
-    ph = rat.pillars;
-  } else {
-    var hList = (D.hazards && D.hazards[company]) || [];
-    var topPhys = hList.slice().sort(function(a,b){ return (b.score||0) - (a.score||0); })[0];
-    var physLbl = pillarScores.physical >= 80 ? 'Critical' : pillarScores.physical >= 60 ? 'High' : pillarScores.physical >= 40 ? 'Elevated' : pillarScores.physical >= 20 ? 'Moderate' : 'Low';
-    ph = { physical: { label: physLbl, score: pillarScores.physical, drivers: [
-      'Equal-weighted physical hazard score across ' + hList.length + ' asset' + (hList.length !== 1 ? 's' : '') + ': ' + pillarScores.physical.toFixed(1) + '/100',
-      topPhys ? 'Highest-risk asset: ' + (topPhys.asset || topPhys.name || '—') + ' (score ' + (topPhys.score || 0).toFixed(1) + '/100)' : 'Transition Risk and Financial Impact have not been run for this company yet.'
-    ]}};
-  }
-
-  // Hero — always reflects the SELECTED scope, not just whatever the fullest run produced
+  // Hero
   var badge = el('rat-badge');
-  badge.textContent = primary.rating;
-  badge.className = 'rating-badge ' + ratingBgClass(primary.rating) + (primary.scopeKey !== 'full_composite' ? ' scoped' : '');
-  el('rat-title').textContent = primary.scopeName + ' — ' + primary.label;
-  var subParts = primary.pillars.map(function(k){
-    return PILLAR_NAMES[k] + ' ' + Math.round(ph[k].score || 0) + '/100 × ' + Math.round(primary.weights[k] * 100) + '%';
-  });
-  el('rat-sub').textContent = 'Score: ' + primary.score + '/100 (' + subParts.join(' + ') + ')' + (rat ? ' · ' + rat.sector_rank : '');
-  el('rat-summary').textContent = rat ? rat.summary : ((COS[company].name || company) + ' — ' + primary.scopeName + ' of ' + primary.rating + ' (' + primary.label + '), computed from site-specific physical hazard assessment. Transition Risk and Financial Impact have not been run for this company yet.');
+  badge.textContent = rat.rating;
+  badge.className = 'rating-badge ' + ratingBgClass(rat.rating);
+  el('rat-title').textContent = rat.label;
+  var _physPil = rat.pillars && rat.pillars.physical ? Math.round(rat.pillars.physical.score||0) : '—';
+  el('rat-sub').textContent = 'Composite: ' + rat.composite + '/100 (Physical ' + _physPil + '/100 × 35% + Transition ' + Math.round((rat.pillars&&rat.pillars.transition?rat.pillars.transition.score:0)||0) + '/100 × 35% + Financial ' + Math.round((rat.pillars&&rat.pillars.financial?rat.pillars.financial.score:0)||0) + '/100 × 30%) · ' + rat.sector_rank;
+  el('rat-summary').textContent = rat.summary;
 
-  // Exclusion note — explicit and visible, not buried in a hidden trace log,
-  // whenever the shown rating is narrower than the Full Composite.
-  var noteEl = el('rat-scope-note');
-  var excluded = ['physical','transition','financial'].filter(function(k){ return primary.pillars.indexOf(k) === -1; });
-  if (excluded.length > 0) {
-    noteEl.style.display = '';
-    noteEl.innerHTML = '⚠️ <span><strong>This is a ' + primary.scopeName + '.</strong> It excludes ' + excluded.map(function(k){ return PILLAR_NAMES[k]; }).join(' and ') + '. It uses the same A–E severity bands as a Full Composite rating, but is not a substitute for one — select a fuller scope above once more data is available, or keep this scope if a physical-risk-only view is what your disclosure calls for.</span>';
-  } else {
-    noteEl.style.display = 'none';
-  }
-
-  // Pillars — show numeric score + weight + contribution, limited to whatever the selected scope actually includes
-  var pillarDefs = primary.pillars.map(function(k){ return {key:k, name:PILLAR_NAMES[k]}; });
+  // Pillars — show numeric score + weight + contribution so composite derivation is transparent
+  var ph = rat.pillars;
+  var weights = {physical:0.35, transition:0.35, financial:0.30};
+  var pillarDefs = [{key:'physical',name:'Physical Risk'},{key:'transition',name:'Transition Risk'},{key:'financial',name:'Financial Impact'}];
   var html = '';
-  var contributions = pillarDefs.map(function(p){ return Math.round((ph[p.key].score||0) * primary.weights[p.key] * 10) / 10; });
+  var contributions = pillarDefs.map(function(p){ return Math.round((ph[p.key].score||0) * weights[p.key] * 10) / 10; });
   pillarDefs.forEach(function(p, i) {
     var pil = ph[p.key];
     var sc  = Math.round(pil.score || 0);
-    var wt  = Math.round(primary.weights[p.key] * 100);
+    var wt  = Math.round(weights[p.key] * 100);
     var fc  = pillarFillClass(pil.label);
     var contrib = contributions[i];
     html += '<div class="pillar">';
@@ -9057,23 +8842,20 @@ function renderRat() {
     html += '</div></div>';
     html += '<div class="pillar-label '+colorForLabel(pil.label)+'" style="margin-bottom:4px">'+pil.label+'</div>';
     html += '<div class="pillar-bar"><div class="pillar-fill '+fc+'" style="width:'+sc+'%"></div></div>';
-    html += '<div style="font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:6px">Contributes <strong>'+contrib.toFixed(1)+'</strong> pts to this scope\'s score ('+sc+' × '+wt+'%)</div>';
+    html += '<div style="font-size:11px;color:var(--muted);margin-top:4px;margin-bottom:6px">Contributes <strong>'+contrib.toFixed(1)+'</strong> pts to composite ('+sc+' × '+wt+'%)</div>';
     html += '<div class="pillar-drivers">';
-    (pil.drivers||[]).forEach(function(d){ html += '• '+d+'<br>'; });
+    pil.drivers.forEach(function(d){ html += '• '+d+'<br>'; });
     html += '</div></div>';
   });
-  // Score formula row — labelled with the active scope, not always "Composite"
-  var formulaParts = pillarDefs.map(function(p){
-    return Math.round(ph[p.key].score||0)+' × '+Math.round(primary.weights[p.key]*100)+'%';
+  // Composite formula row
+  var formulaParts = pillarDefs.map(function(p,i){
+    return Math.round(ph[p.key].score||0)+' × '+Math.round(weights[p.key]*100)+'%';
   });
   html += '<div style="background:var(--surf2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-top:8px;font-size:12px;color:var(--muted)">' +
-    '<strong style="color:var(--text)">'+primary.scopeName+' formula:</strong> ' +
-    formulaParts.join(' + ') + ' = <strong style="font-size:15px;color:var(--text)">'+primary.score+' / 100</strong>' +
-    ' &ensp;→&ensp; Rating <strong style="font-size:15px;color:var(--text)">'+primary.rating+'</strong> ('+primary.label+')' +
-    '<div style="margin-top:5px;font-size:11px">' + (primary.pillars.length === 3
-      ? 'Physical score reflects average asset hazard severity · Transition score reflects carbon cost vs EBITDA under NZE 2030 · Financial score reflects EV at risk (NZE vs Current Policies). Lower transition/financial scores will always pull the composite below the physical-only score — this is by design in a three-pillar model.'
-      : 'This score is computed only from the pillar(s) listed above, reweighted to sum to 100%. It uses the same A–E severity bands as every other scope, so it is on the same scale as a Full Composite rating — simply narrower in what it covers.') +
-    '</div>' +
+    '<strong style="color:var(--text)">Composite formula:</strong> ' +
+    formulaParts.join(' + ') + ' = <strong style="font-size:15px;color:var(--text)">'+rat.composite+' / 100</strong>' +
+    ' &ensp;→&ensp; Rating <strong style="font-size:15px;color:var(--text)">'+rat.rating+'</strong> ('+rat.label+')' +
+    '<div style="margin-top:5px;font-size:11px">Physical score reflects average asset hazard severity · Transition score reflects carbon cost vs EBITDA under NZE 2030 · Financial score reflects EV at risk (NZE vs Current Policies). Lower transition/financial scores will always pull the composite below the physical-only score — this is by design in a three-pillar model.</div>' +
     '</div>';
   el('rat-pillars').innerHTML = html;
 
