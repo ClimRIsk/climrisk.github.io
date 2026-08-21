@@ -34,10 +34,10 @@ export const scenarios: Scenario[] = [
 ];
 
 export const companies: Company[] = [
-  { id: 'bhp', name: 'BHP Group Ltd', sector: 'Mining & Metals', region: 'AU' },
-  { id: 'tck', name: 'Teck Resources Ltd', sector: 'Mining & Metals', region: 'CA' },
-  { id: 'rds', name: 'Shell plc', sector: 'Oil & Gas', region: 'EU' },
-  { id: 'cvx', name: 'Chevron Corporation', sector: 'Oil & Gas', region: 'US' },
+  { id: 'bhp', name: 'BHP Group Ltd', sector: 'Mining & Metals', region: 'AU', assets: [] },
+  { id: 'tck', name: 'Teck Resources Ltd', sector: 'Mining & Metals', region: 'CA', assets: [] },
+  { id: 'rds', name: 'Shell plc', sector: 'Oil & Gas', region: 'EU', assets: [] },
+  { id: 'cvx', name: 'Chevron Corporation', sector: 'Oil & Gas', region: 'US', assets: [] },
 ];
 
 export const fanChartData: FanChartData[] = [
