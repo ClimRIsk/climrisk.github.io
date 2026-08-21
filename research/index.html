@@ -6,109 +6,122 @@
 <title>Research & Insights · ClimRisk</title>
 <meta name="description" content="Primary-source analysis connecting physical climate science to credit, commodity, and sovereign risk.">
 <link rel="icon" href="../logo.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,400&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth}
-body{font-family:'Inter',-apple-system,sans-serif;background:#FAF8F4;color:#1A1714;line-height:1.6;overflow-x:hidden}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:#F7F7F5;color:#0F0F0F;line-height:1.6;-webkit-font-smoothing:antialiased}
 a{color:inherit;text-decoration:none}
 button{cursor:pointer;border:none;background:none;font-family:inherit}
-:root{
-  --bg:#FAF8F4;--bg2:#F3EFE8;--bg3:#EDE8DF;
-  --text:#1A1714;--text2:#4A4540;--muted:#8A8278;
-  --blue:#1A56DB;--blue-d:#1347C0;--blue-l:#4F83EE;
-  --em:#0B7C5A;--border:rgba(30,20,10,0.10);--borderb:rgba(26,86,219,0.18);
-}
+img{display:block;max-width:100%}
 
-/* NAV */
-#nav{position:fixed;top:0;left:0;right:0;z-index:900;
-  display:flex;align-items:center;padding:0 36px;height:72px;
-  background:rgba(250,248,244,.96);backdrop-filter:blur(20px);
-  border-bottom:1px solid var(--border)}
-.nav-logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:17px;color:var(--text)}
-.nav-logo img{height:38px;width:auto}
-.nav-links{display:flex;align-items:center;gap:4px;margin-left:32px}
-.nav-links a{padding:6px 13px;border-radius:7px;font-size:13.5px;font-weight:600;color:var(--muted);transition:all .15s}
-.nav-links a:hover{color:var(--text);background:rgba(0,0,0,.05)}
-.nav-links a.active{color:var(--blue)}
-.nav-r{margin-left:auto;display:flex;align-items:center;gap:10px}
-.btn-ghost{padding:8px 18px;border:1px solid var(--borderb);border-radius:8px;font-size:13px;font-weight:600;color:var(--text);transition:all .15s}
-.btn-ghost:hover{background:rgba(26,86,219,.06);border-color:var(--blue)}
-.btn-demo{padding:8px 18px;background:var(--blue);color:#fff;border-radius:8px;font-size:13px;font-weight:700;transition:background .15s}
-.btn-demo:hover{background:var(--blue-d)}
+/* ─── NAV ─── */
+.nav{position:fixed;top:0;left:0;right:0;z-index:999;height:68px;
+  display:flex;align-items:center;padding:0 48px;
+  background:rgba(247,247,245,.97);backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(0,0,0,.08)}
+.nav-logo{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:800;color:#0F0F0F;letter-spacing:-.02em;flex-shrink:0}
+.nav-logo img{height:36px;width:auto}
+.nav-links{display:flex;align-items:center;gap:2px;margin-left:36px}
+.nav-links a{padding:6px 13px;border-radius:6px;font-size:13px;font-weight:500;color:#5A5A5A;transition:all .15s}
+.nav-links a:hover{color:#0F0F0F;background:rgba(0,0,0,.05)}
+.nav-links a.cur{color:#1A56DB;font-weight:600}
+.nav-r{margin-left:auto;display:flex;align-items:center;gap:8px}
+.nav-launch{padding:7px 16px;border:1.5px solid rgba(0,0,0,.15);border-radius:7px;font-size:13px;font-weight:600;color:#0F0F0F;transition:all .15s}
+.nav-launch:hover{border-color:#1A56DB;color:#1A56DB}
+.nav-book{padding:7px 18px;background:#0F0F0F;color:#fff;border-radius:7px;font-size:13px;font-weight:700;transition:background .15s}
+.nav-book:hover{background:#333}
 
-/* HERO */
-.rh{padding:120px 0 64px;text-align:center;background:linear-gradient(160deg,#F9F6F0 0%,#EEE8DC 100%);border-bottom:1px solid var(--border)}
-.rh-label{display:inline-flex;align-items:center;gap:8px;padding:5px 14px;border-radius:20px;background:rgba(26,86,219,.08);border:1px solid rgba(26,86,219,.18);font-size:10.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--blue);margin-bottom:20px}
-.rh h1{font-size:clamp(32px,4.5vw,52px);font-weight:900;letter-spacing:-.035em;line-height:1.1;color:var(--text);margin-bottom:16px}
-.rh h1 em{font-style:normal;color:var(--em)}
-.rh p{font-size:17px;color:var(--text2);max-width:580px;margin:0 auto}
+/* ─── PAGE HERO ─── */
+.page-hero{padding:120px 48px 72px;border-bottom:1px solid rgba(0,0,0,.08);background:#fff}
+.page-hero-inner{max-width:1100px;margin:0 auto;display:flex;align-items:flex-end;justify-content:space-between;gap:40px;flex-wrap:wrap}
+.ph-label{font-size:11px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1A56DB;margin-bottom:14px}
+.ph-title{font-size:clamp(32px,4vw,48px);font-weight:900;letter-spacing:-.04em;line-height:1.05;color:#0F0F0F;margin-bottom:12px}
+.ph-sub{font-size:15px;color:#5A5A5A;line-height:1.7;max-width:500px}
+.ph-stats{display:flex;gap:40px;flex-shrink:0}
+.ph-stat-num{font-size:36px;font-weight:900;letter-spacing:-.04em;color:#0F0F0F;line-height:1}
+.ph-stat-lbl{font-size:11px;color:#8A8A8A;margin-top:4px;letter-spacing:.02em}
 
-/* FILTER BAR */
-.filter-bar{background:var(--bg);border-bottom:1px solid var(--border);padding:0 36px;position:sticky;top:72px;z-index:100;display:flex;align-items:center;gap:0;overflow-x:auto}
-.filter-bar::-webkit-scrollbar{display:none}
-.ftag{padding:16px 18px;font-size:13px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;cursor:pointer}
-.ftag:hover{color:var(--text)}
-.ftag.active{color:var(--blue);border-bottom-color:var(--blue)}
-.f-count{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;background:var(--bg3);border-radius:10px;font-size:10px;font-weight:700;color:var(--muted);margin-left:6px}
-.ftag.active .f-count{background:rgba(26,86,219,.1);color:var(--blue)}
+/* ─── FILTER BAR ─── */
+.filter-wrap{background:#fff;border-bottom:1px solid rgba(0,0,0,.08);position:sticky;top:68px;z-index:900}
+.filter-inner{max-width:1100px;margin:0 auto;padding:0 48px;display:flex;align-items:center;gap:0;overflow-x:auto}
+.filter-inner::-webkit-scrollbar{display:none}
+.ftab{padding:16px 20px;font-size:13px;font-weight:500;color:#6A6A6A;border-bottom:2px solid transparent;white-space:nowrap;transition:all .15s;cursor:pointer;background:none;border-top:none;border-left:none;border-right:none}
+.ftab:hover{color:#0F0F0F}
+.ftab.on{color:#1A56DB;font-weight:700;border-bottom-color:#1A56DB}
+.ftab .n{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:18px;padding:0 5px;border-radius:9px;font-size:10px;font-weight:700;background:#EFEFED;color:#6A6A6A;margin-left:6px}
+.ftab.on .n{background:rgba(26,86,219,.12);color:#1A56DB}
 
-/* GRID */
-.grid-wrap{max-width:1180px;margin:0 auto;padding:52px 36px 100px}
-.grid-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:36px;flex-wrap:wrap;gap:12px}
-.grid-header h2{font-size:15px;font-weight:700;color:var(--text2)}
-#art-count{color:var(--muted);font-weight:500}
-.art-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
-@media(max-width:900px){.art-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:580px){.art-grid{grid-template-columns:1fr}}
+/* ─── MAIN LAYOUT ─── */
+.main{max-width:1100px;margin:0 auto;padding:56px 48px 120px}
 
-/* ARTICLE CARD */
-.art-card{background:#fff;border:1px solid var(--border);border-radius:16px;overflow:hidden;
-  transition:box-shadow .25s,transform .25s,border-color .25s;cursor:pointer;display:flex;flex-direction:column}
-.art-card:hover{box-shadow:0 8px 40px rgba(26,86,219,.10);transform:translateY(-3px);border-color:rgba(26,86,219,.3)}
-.art-card.hidden{display:none}
+/* ─── FEATURED ROW (first article) ─── */
+.featured{display:grid;grid-template-columns:1fr 1fr;gap:0;background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:16px;overflow:hidden;margin-bottom:48px;cursor:pointer;transition:box-shadow .25s,transform .2s}
+.featured:hover{box-shadow:0 16px 64px rgba(0,0,0,.1);transform:translateY(-2px)}
+.feat-img{position:relative;min-height:340px;overflow:hidden;background:#0F1A2E}
+.feat-img img{width:100%;height:100%;object-fit:cover;opacity:.85;transition:opacity .3s,transform .4s}
+.featured:hover .feat-img img{opacity:.95;transform:scale(1.02)}
+.feat-tags{position:absolute;top:20px;left:20px;display:flex;flex-wrap:wrap;gap:6px}
+.tag{display:inline-block;padding:4px 10px;border-radius:4px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;background:rgba(255,255,255,.9);color:#0F0F0F;backdrop-filter:blur(4px)}
+.feat-body{padding:44px 48px;display:flex;flex-direction:column;justify-content:space-between}
+.feat-series{font-size:11px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:#8A8A8A;margin-bottom:16px}
+.feat-title{font-size:26px;font-weight:900;line-height:1.2;letter-spacing:-.025em;color:#0F0F0F;margin-bottom:14px}
+.feat-desc{font-size:14px;color:#5A5A5A;line-height:1.75;margin-bottom:28px;flex:1}
+.feat-foot{border-top:1px solid rgba(0,0,0,.07);padding-top:20px;display:flex;align-items:center;justify-content:space-between}
+.feat-author{font-size:12px;color:#8A8A8A}
+.feat-author strong{color:#3A3A3A;display:block;font-size:13px;margin-bottom:1px}
+.read-btn{display:inline-flex;align-items:center;gap:8px;padding:10px 22px;background:#1A56DB;color:#fff;border-radius:8px;font-size:13px;font-weight:700;transition:background .15s,gap .15s}
+.read-btn:hover{background:#1347C0;gap:11px}
+.read-btn svg{flex-shrink:0}
 
-/* Card cover */
-.card-cover{height:188px;position:relative;overflow:hidden}
-.card-cover-inner{width:100%;height:100%;display:flex;align-items:center;justify-content:center}
-.card-tags{position:absolute;top:14px;left:14px;display:flex;flex-wrap:wrap;gap:6px}
-.ctag{background:rgba(255,255,255,.9);backdrop-filter:blur(8px);border-radius:4px;padding:4px 10px;font-size:10.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#1A1714;border:1px solid rgba(0,0,0,.08)}
+/* ─── ARTICLE GRID ─── */
+.art-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px}
+@media(max-width:960px){.art-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.art-grid{grid-template-columns:1fr}.feat-img,.featured{grid-template-columns:1fr}}
 
-/* Card body */
-.card-body{padding:24px 26px 20px;flex:1;display:flex;flex-direction:column}
-.card-series{font-size:10.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
-.card-title{font-size:17px;font-weight:800;color:var(--text);line-height:1.35;letter-spacing:-.01em;margin-bottom:10px}
-.card-desc{font-size:13px;color:var(--text2);line-height:1.65;flex:1;margin-bottom:18px}
-.card-foot{display:flex;align-items:center;justify-content:space-between;padding-top:14px;border-top:1px solid var(--border)}
-.card-meta{font-size:11px;color:var(--muted)}
-.card-link{font-size:13px;font-weight:700;color:var(--blue);display:flex;align-items:center;gap:5px;transition:gap .15s}
-.art-card:hover .card-link{gap:8px}
+.art-card{background:#fff;border:1px solid rgba(0,0,0,.08);border-radius:12px;overflow:hidden;cursor:pointer;transition:box-shadow .22s,transform .22s,border-color .22s;display:flex;flex-direction:column}
+.art-card:hover{box-shadow:0 8px 48px rgba(0,0,0,.1);transform:translateY(-3px);border-color:rgba(26,86,219,.25)}
+.art-card.hide{display:none!important}
 
-/* Cover gradients */
-.cov-monsoon{background:linear-gradient(145deg,#0F2E5A 0%,#1547A0 45%,#1A8CB0 100%)}
-.cov-heat{background:linear-gradient(145deg,#5C1500 0%,#B03000 45%,#E06020 100%)}
-.cov-icon{font-size:56px;opacity:.25}
+.card-img{height:180px;overflow:hidden;position:relative}
+.card-img img{width:100%;height:100%;object-fit:cover;transition:transform .35s}
+.art-card:hover .card-img img{transform:scale(1.04)}
+.card-img-tags{position:absolute;bottom:12px;left:12px;display:flex;flex-wrap:wrap;gap:5px}
+.card-body{padding:22px 24px 18px;flex:1;display:flex;flex-direction:column}
+.card-series{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#9A9A9A;margin-bottom:8px}
+.card-title{font-size:16px;font-weight:800;line-height:1.3;letter-spacing:-.015em;color:#0F0F0F;margin-bottom:8px}
+.card-desc{font-size:12.5px;color:#5A5A5A;line-height:1.7;flex:1;margin-bottom:16px}
+.card-foot{border-top:1px solid rgba(0,0,0,.07);padding-top:12px;display:flex;align-items:center;justify-content:space-between}
+.card-meta{font-size:11px;color:#9A9A9A}
+.card-cta{font-size:12.5px;font-weight:700;color:#1A56DB;display:flex;align-items:center;gap:4px;transition:gap .15s}
+.art-card:hover .card-cta{gap:7px}
 
-/* Empty state */
-.empty{text-align:center;padding:80px 0;color:var(--muted);font-size:15px;grid-column:1/-1}
+/* section label */
+.section-lbl{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#8A8A8A;margin-bottom:20px;display:flex;align-items:center;gap:10px}
+.section-lbl::after{content:'';flex:1;height:1px;background:rgba(0,0,0,.1)}
+.result-count{font-size:13px;color:#8A8A8A;margin-bottom:28px}
 
-/* SUBSCRIBE BANNER */
-.sub-banner{background:var(--blue);color:#fff;padding:64px 36px;text-align:center}
-.sub-banner h2{font-size:26px;font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
-.sub-banner p{font-size:15px;color:rgba(255,255,255,.75);margin-bottom:28px}
+/* empty */
+.empty-state{grid-column:1/-1;text-align:center;padding:80px 0;color:#9A9A9A;font-size:14px}
+
+/* ─── SUBSCRIBE ─── */
+.sub{background:#0F0F0F;padding:80px 48px;text-align:center}
+.sub h2{font-size:30px;font-weight:900;letter-spacing:-.035em;color:#fff;margin-bottom:10px}
+.sub p{font-size:14px;color:rgba(255,255,255,.5);margin-bottom:28px}
 .sub-form{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.sub-input{padding:12px 20px;border-radius:8px;border:none;font-size:14px;width:280px;outline:none;color:var(--text)}
-.sub-btn{padding:12px 24px;background:#fff;color:var(--blue);border-radius:8px;font-size:14px;font-weight:800;transition:background .15s}
-.sub-btn:hover{background:#EEF4FF}
+.sub-in{padding:12px 20px;border-radius:8px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.06);font-size:13px;color:#fff;width:260px;outline:none;transition:border-color .15s}
+.sub-in::placeholder{color:rgba(255,255,255,.3)}
+.sub-in:focus{border-color:rgba(26,86,219,.6)}
+.sub-go{padding:12px 24px;background:#1A56DB;color:#fff;border-radius:8px;font-size:13px;font-weight:700;transition:background .15s}
+.sub-go:hover{background:#1347C0}
+.sub-msg{margin-top:14px;font-size:13px;color:rgba(255,255,255,.45);min-height:18px}
 </style>
 </head>
 <body>
 
 <!-- NAV -->
-<nav id="nav">
+<nav class="nav">
   <a class="nav-logo" href="../">
-    <img src="../logo.svg" alt="ClimRisk">
-    ClimRisk
+    <img src="../logo.svg" alt="ClimRisk">ClimRisk
   </a>
   <div class="nav-links">
     <a href="../#about">About</a>
@@ -117,114 +130,160 @@ button{cursor:pointer;border:none;background:none;font-family:inherit}
     <a href="../#platform">Platform</a>
     <a href="../#industries">Industries</a>
     <a href="../#trust">Why CRI</a>
-    <a href="../#research" class="active">Research</a>
+    <a href="./" class="cur">Research</a>
   </div>
   <div class="nav-r">
-    <button class="btn-ghost" onclick="window.open('../ClimRisk_Platform.html','_blank')">Launch Platform ↗</button>
-    <button class="btn-demo">Book Demo</button>
+    <a class="nav-launch" href="../ClimRisk_Platform.html" target="_blank">Launch Platform ↗</a>
+    <button class="nav-book">Book Demo</button>
   </div>
 </nav>
 
-<!-- HERO -->
-<div class="rh">
-  <div class="rh-label">ClimRisk Intelligence</div>
-  <h1>Research & <em>Insights</em></h1>
-  <p>Primary-source analysis connecting physical climate science to credit, commodity, and sovereign risk.</p>
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="page-hero-inner">
+    <div>
+      <div class="ph-label">ClimRisk Intelligence</div>
+      <h1 class="ph-title">Research &amp;<br>Insights</h1>
+      <p class="ph-sub">Primary-source analysis connecting physical climate science to credit, commodity, and sovereign risk. Every number cited. Every source named.</p>
+    </div>
+    <div class="ph-stats">
+      <div>
+        <div class="ph-stat-num">2</div>
+        <div class="ph-stat-lbl">Published</div>
+      </div>
+      <div>
+        <div class="ph-stat-num">12+</div>
+        <div class="ph-stat-lbl">Data Sources</div>
+      </div>
+      <div>
+        <div class="ph-stat-num">3</div>
+        <div class="ph-stat-lbl">NGFS Scenarios</div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- FILTER BAR -->
-<div class="filter-bar" id="filter-bar">
-  <button class="ftag active" data-filter="all" onclick="filterCards(this,'all')">All Research <span class="f-count" id="fc-all">2</span></button>
-  <button class="ftag" data-filter="physical" onclick="filterCards(this,'physical')">Physical Risk <span class="f-count" id="fc-physical">2</span></button>
-  <button class="ftag" data-filter="south-asia" onclick="filterCards(this,'south-asia')">South Asia <span class="f-count" id="fc-south-asia">2</span></button>
-  <button class="ftag" data-filter="agricultural" onclick="filterCards(this,'agricultural')">Agricultural Finance <span class="f-count" id="fc-agricultural">1</span></button>
-  <button class="ftag" data-filter="labour" onclick="filterCards(this,'labour')">Labour Economics <span class="f-count" id="fc-labour">1</span></button>
+<div class="filter-wrap">
+  <div class="filter-inner">
+    <button class="ftab on" onclick="filter(this,'all')">All Research <span class="n" id="n-all">2</span></button>
+    <button class="ftab" onclick="filter(this,'physical')">Physical Risk <span class="n" id="n-physical">2</span></button>
+    <button class="ftab" onclick="filter(this,'south-asia')">South Asia <span class="n" id="n-south-asia">2</span></button>
+    <button class="ftab" onclick="filter(this,'agricultural')">Agricultural Finance <span class="n" id="n-agricultural">1</span></button>
+    <button class="ftab" onclick="filter(this,'labour')">Labour Economics <span class="n" id="n-labour">1</span></button>
+  </div>
 </div>
 
-<!-- GRID -->
-<div class="grid-wrap">
-  <div class="grid-header">
-    <h2><span id="art-count">2</span> articles</h2>
+<!-- MAIN -->
+<div class="main">
+
+  <!-- FEATURED -->
+  <div id="feat-wrap">
+    <div class="section-lbl">Featured</div>
+    <div class="featured" id="feat-card" data-tags="physical south-asia agricultural" onclick="location.href='monsoon-deficit.html'">
+      <div class="feat-img">
+        <img src="cover-monsoon.png" alt="Monsoon Deficit">
+        <div class="feat-tags">
+          <span class="tag">Physical Risk</span>
+          <span class="tag">South Asia</span>
+          <span class="tag">Agricultural Finance</span>
+        </div>
+      </div>
+      <div class="feat-body">
+        <div>
+          <div class="feat-series">India Series · No. 1 &nbsp;·&nbsp; August 2026</div>
+          <h2 class="feat-title">The Financial Anatomy of a Monsoon Deficit</h2>
+          <p class="feat-desc">What happens to global commodity markets, agricultural credit portfolios, and sovereign balance sheets when India's rain fails — quantified across three NGFS warming scenarios through 2050. Sources: IMD, FAO, IPCC AR6, RBI FSR, NGFS Phase 4.</p>
+        </div>
+        <div class="feat-foot">
+          <div class="feat-author">
+            <strong>Shrinivash D Kannan</strong>
+            Founder, ClimRisk &nbsp;·&nbsp; August 2026 &nbsp;·&nbsp; 12 min read
+          </div>
+          <span class="read-btn">Read Article <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+        </div>
+      </div>
+    </div>
   </div>
-  <div class="art-grid" id="art-grid">
 
-    <!-- Article 1: Monsoon Deficit -->
-    <div class="art-card" data-tags="physical south-asia agricultural" onclick="window.location='monsoon-deficit.html'">
-      <div class="card-cover cov-monsoon">
-        <div class="card-cover-inner"><span class="cov-icon">🌧</span></div>
-        <div class="card-tags">
-          <span class="ctag">Physical Risk</span>
-          <span class="ctag">South Asia</span>
-          <span class="ctag">Agricultural Finance</span>
+  <!-- MORE ARTICLES -->
+  <div id="more-wrap" style="margin-top:56px">
+    <div class="section-lbl">More Research</div>
+    <div class="result-count" id="rcount">Showing <strong>1</strong> article</div>
+    <div class="art-grid" id="art-grid">
+
+      <!-- Heatwave card -->
+      <div class="art-card" data-tags="physical south-asia labour" onclick="location.href='india-heatwave.html'">
+        <div class="card-img">
+          <img src="cover-heatwave.png" alt="India Heatwave">
+          <div class="card-img-tags">
+            <span class="tag">Physical Risk</span>
+            <span class="tag">Labour Economics</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="card-series">India Series · No. 2 &nbsp;·&nbsp; August 2026</div>
+          <div class="card-title">The Productivity Tax: What Extreme Heat Costs India Before It Appears in Any Model</div>
+          <div class="card-desc">Six financial transmission pathways from wet-bulb temperature to NPA, FMCG revenue, and sovereign GDP — and why standard models miss them entirely.</div>
+          <div class="card-foot">
+            <div class="card-meta">14 min read &nbsp;·&nbsp; ILO · IPCC AR6 · NGFS P4</div>
+            <span class="card-cta">Read <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
+          </div>
         </div>
       </div>
-      <div class="card-body">
-        <div class="card-series">India Series · No. 1 &nbsp;·&nbsp; August 2026</div>
-        <div class="card-title">The Financial Anatomy of a Monsoon Deficit</div>
-        <div class="card-desc">What happens to global commodity markets, agricultural credit portfolios, and sovereign balance sheets when India's rain fails — quantified across three NGFS warming scenarios.</div>
-        <div class="card-foot">
-          <div class="card-meta">Shrinivash D Kannan &nbsp;·&nbsp; 12 min read</div>
-          <span class="card-link">Read Article <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-        </div>
-      </div>
+
     </div>
+  </div>
 
-    <!-- Article 2: India Heatwave -->
-    <div class="art-card" data-tags="physical south-asia labour" onclick="window.location='india-heatwave.html'">
-      <div class="card-cover cov-heat">
-        <div class="card-cover-inner"><span class="cov-icon">🌡</span></div>
-        <div class="card-tags">
-          <span class="ctag">Physical Risk</span>
-          <span class="ctag">South Asia</span>
-          <span class="ctag">Labour Economics</span>
-        </div>
-      </div>
-      <div class="card-body">
-        <div class="card-series">India Series · No. 2 &nbsp;·&nbsp; August 2026</div>
-        <div class="card-title">The Productivity Tax: What Extreme Heat Costs India Before It Appears in Any Model</div>
-        <div class="card-desc">Six financial transmission pathways from wet-bulb temperature to credit NPA, FMCG revenue, and sovereign GDP — and why standard models miss them entirely.</div>
-        <div class="card-foot">
-          <div class="card-meta">Shrinivash D Kannan &nbsp;·&nbsp; 14 min read</div>
-          <span class="card-link">Read Article <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span>
-        </div>
-      </div>
-    </div>
-
-  </div><!-- /art-grid -->
-</div><!-- /grid-wrap -->
+</div>
 
 <!-- SUBSCRIBE -->
-<div class="sub-banner">
-  <h2>Subscribe to ClimRisk Intelligence</h2>
-  <p>Quarterly briefings on physical climate risk and financial consequences. No noise.</p>
+<div class="sub">
+  <h2>ClimRisk Intelligence</h2>
+  <p>Quarterly briefings on physical climate risk and financial consequences. No noise, no marketing.</p>
   <div class="sub-form">
-    <input class="sub-input" id="sub-email" type="email" placeholder="your@institution.com">
-    <button class="sub-btn" onclick="doSubscribe()">Subscribe →</button>
+    <input class="sub-in" id="sub-em" type="email" placeholder="your@institution.com">
+    <button class="sub-go" onclick="subscribe()">Subscribe →</button>
   </div>
-  <p id="sub-msg" style="margin-top:14px;font-size:13px;color:rgba(255,255,255,.7);min-height:20px"></p>
+  <div class="sub-msg" id="sub-msg"></div>
 </div>
 
 <script>
-function filterCards(btn, filter){
-  document.querySelectorAll('.ftag').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
-  var cards = document.querySelectorAll('.art-card');
-  var visible = 0;
-  cards.forEach(function(c){
-    var tags = c.getAttribute('data-tags')||'';
-    var show = filter==='all' || tags.indexOf(filter)!==-1;
-    c.classList.toggle('hidden', !show);
-    if(show) visible++;
+var ARTICLES = {
+  feat: document.getElementById('feat-card'),
+  cards: Array.from(document.querySelectorAll('.art-card'))
+};
+
+function filter(btn, key){
+  document.querySelectorAll('.ftab').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+
+  // featured card
+  var ftags = ARTICLES.feat.getAttribute('data-tags');
+  var showFeat = key==='all' || ftags.indexOf(key)!==-1;
+  document.getElementById('feat-wrap').style.display = showFeat ? '' : 'none';
+
+  // grid cards
+  var vis = 0;
+  ARTICLES.cards.forEach(function(c){
+    var t = c.getAttribute('data-tags')||'';
+    var show = key==='all' || t.indexOf(key)!==-1;
+    c.classList.toggle('hide', !show);
+    if(show) vis++;
   });
-  document.getElementById('art-count').textContent = visible;
+
+  // hide "More" section if nothing
+  var moreWrap = document.getElementById('more-wrap');
+  moreWrap.style.display = vis===0 ? 'none' : '';
+  document.getElementById('rcount').innerHTML = 'Showing <strong>'+vis+'</strong> article'+(vis!==1?'s':'');
 }
 
-function doSubscribe(){
-  var e = document.getElementById('sub-email').value.trim();
-  var msg = document.getElementById('sub-msg');
-  if(!e || !e.includes('@')){ msg.textContent='Please enter a valid email address.'; return; }
-  msg.textContent='Thank you — you\'ll receive our next briefing when it publishes.';
-  document.getElementById('sub-email').value='';
+function subscribe(){
+  var e = document.getElementById('sub-em').value.trim();
+  var m = document.getElementById('sub-msg');
+  if(!e||!e.includes('@')){m.textContent='Please enter a valid email.';return;}
+  m.textContent='You\'re on the list — next briefing coming soon.';
+  document.getElementById('sub-em').value='';
 }
 </script>
 </body>
