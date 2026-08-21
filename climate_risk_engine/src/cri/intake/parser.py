@@ -227,6 +227,8 @@ def parse_excel(path: str | Path) -> list[Company]:
                 remaining_life_years=remaining_life,
                 baseline_unit_cost=baseline_unit_cost,
                 energy_cost_share=energy_cost_share,
+                lat=latitude if latitude != 0.0 else None,
+                lon=longitude if longitude != 0.0 else None,
             )
 
             companies_by_id[company_id].assets.append(asset)
