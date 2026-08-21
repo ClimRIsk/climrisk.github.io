@@ -190,7 +190,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
   </a>
   <div class="nav-links">
     <a class="nav-link active" href="dashboard.html">Dashboard</a>
-    <a class="nav-link" href="ClimRisk_Platform.html">Assessment Engine</a>
+    <a class="nav-link" href="CRI_Demo.html">Assessment Engine</a>
     <a class="nav-link" href="#" onclick="showSection('reports')">Reports</a>
     <a class="nav-link" href="#" onclick="showSection('settings')">Settings</a>
   </div>
@@ -210,7 +210,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
 <aside class="sidebar">
   <div class="sb-section">Workspace</div>
   <a class="sb-item active" href="dashboard.html"><span class="sb-icon">⬛</span>Dashboard</a>
-  <a class="sb-item" href="ClimRisk_Platform.html"><span class="sb-icon">🌡</span>Assessment Engine</a>
+  <a class="sb-item" href="CRI_Demo.html"><span class="sb-icon">🌡</span>Assessment Engine</a>
   <a class="sb-item" href="#" onclick="openNewAssessment()"><span class="sb-icon">+</span>New Assessment</a>
 
   <div class="sb-section">Analytics</div>
@@ -248,7 +248,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
       <p>Your climate risk intelligence workspace. Run a full CSRD-compliant assessment in 20 minutes. All outputs are audit-ready and exportable to PDF, Excel, and JSON.</p>
       <div class="hero-actions">
         <button class="btn-hero-p" onclick="openNewAssessment()">+ Start New Assessment</button>
-        <button class="btn-hero-o" onclick="window.location.href='ClimRisk_Platform.html'">Open Engine →</button>
+        <button class="btn-hero-o" onclick="window.location.href='CRI_Demo.html'">Open Engine →</button>
       </div>
     </div>
     <div class="hero-stats">
@@ -268,19 +268,19 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
         <div class="qa-desc">25 IPCC AR6 hazards, GPS resolved, full damage breakdown</div>
         <div class="qa-auto">AUTO: hazard scoring + financial translation</div>
       </a>
-      <a class="qa-card" onclick="window.location.href='ClimRisk_Platform.html#cbam'" href="#">
+      <a class="qa-card" onclick="window.location.href='CRI_Demo.html#cbam'" href="#">
         <div class="qa-icon">🇪🇺</div>
         <div class="qa-title">CBAM Liability Check</div>
         <div class="qa-desc">Embedded carbon calculator, certificate cost, compliance checklist</div>
         <div class="qa-auto">AUTO: EU ETS price + embedded carbon</div>
       </a>
-      <a class="qa-card" onclick="window.location.href='ClimRisk_Platform.html#macc'" href="#">
+      <a class="qa-card" onclick="window.location.href='CRI_Demo.html#macc'" href="#">
         <div class="qa-icon">📉</div>
         <div class="qa-title">MACC + SLL Structuring</div>
         <div class="qa-desc">Abatement levers ranked by cost per tonne, SLL milestone table</div>
         <div class="qa-auto">AUTO: sector-specific lever library</div>
       </a>
-      <a class="qa-card" onclick="window.location.href='ClimRisk_Platform.html#materiality'" href="#">
+      <a class="qa-card" onclick="window.location.href='CRI_Demo.html#materiality'" href="#">
         <div class="qa-icon">⚖</div>
         <div class="qa-title">Double Materiality</div>
         <div class="qa-desc">Inside-out impact + outside-in financial lens, CSRD audit trail</div>
@@ -528,7 +528,7 @@ function deleteAssessment(id) {
 
 function openEngine(company) {
   sessionStorage.setItem('cri_prefill_company', company);
-  window.location.href = 'ClimRisk_Platform.html';
+  window.location.href = 'CRI_Demo.html';
 }
 
 // ── MODAL ────────────────────────────────────────────────────────────
@@ -575,7 +575,7 @@ function launchAssessment() {
 
   // Redirect to engine after brief delay
   setTimeout(function() {
-    window.location.href = 'ClimRisk_Platform.html';
+    window.location.href = 'CRI_Demo.html';
   }, 600);
 }
 
