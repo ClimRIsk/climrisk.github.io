@@ -13471,7 +13471,7 @@ function _renderEngineError(msg) {
   var body = document.getElementById('py-engine-body');
   var badge = document.getElementById('py-engine-badge');
   var spinner = document.getElementById('py-engine-spinner');
-  if (body) body.innerHTML = '<span style="color:var(--amber)">⚠ Engine unavailable — JS model active · '+msg+'</span>';
+  if (body) body.innerHTML = '<span style="color:var(--amber)">⚠ Satellite data service warming up (first run ~60s) · '+msg+' · <a onclick="setTimeout(function(){_callPythonEngine().then(function(d){_engineResults=d;_renderEnginePanel(d);}).catch(function(e){_renderEngineError(e.message);});},0)" style="color:#6366f1;cursor:pointer;text-decoration:underline">Retry</a></span>';
   if (badge) { badge.textContent = 'Offline'; badge.style.background='#f59e0b20'; badge.style.color='#f59e0b'; }
   if (spinner) spinner.style.display = 'none';
 }
@@ -17695,6 +17695,19 @@ function _xlRunAnalysis() {
   } catch(e) { console.warn('Supply chain skipped:', e); }
   try {
     _xlInjectToEngine();
+    // Auto-navigate to Climate Rating panel so user sees results immediately
+    setTimeout(function() {
+      var ratBtn = document.querySelector('[data-p="ratings"]');
+      if (ratBtn) ratBtn.click();
+    }, 200);
+    // Fire Python engine for satellite data enrichment
+    _renderEnginePlaceholder();
+    _callPythonEngine().then(function(data) {
+      _engineResults = data;
+      _renderEnginePanel(data);
+    }).catch(function(err) {
+      _renderEngineError(err.message);
+    });
   } catch(e) {
     console.error('Engine error:', e);
     toast('⚠ Engine error: ' + e.message);
