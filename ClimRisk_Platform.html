@@ -2236,6 +2236,70 @@ input.finp:focus,select.finp:focus,textarea.finp:focus{border-color:var(--green)
       <div id="rh-tab-meth"      class="rh-tab-panel"></div>
     </div>
 
+
+    <!-- ═══════════════════════ EARTH INTELLIGENCE ═══════════════════════════ -->
+    <div id="p-earthint" class="panel">
+      <div class="ph" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
+        <div>
+          <h2 style="font-size:22px;font-weight:800;margin-bottom:6px">Earth Intelligence</h2>
+          <p style="font-size:13px;color:var(--muted)">Live satellite imagery · Real-time meteorological data · CMIP6 climate projections to 2050</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+          <span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surf2);padding:3px 8px;border-radius:4px">Open-Meteo API</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surf2);padding:3px 8px;border-radius:4px">CMIP6 · ERA5</span>
+          <span style="font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);background:var(--surf2);padding:3px 8px;border-radius:4px">ESRI Satellite</span>
+        </div>
+      </div>
+
+      <!-- Location inputs -->
+      <div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px 20px;margin-bottom:18px;display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+        <div style="flex:1;min-width:160px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px">Latitude</div>
+          <input id="ei-lat" type="number" step="any" placeholder="e.g. 19.07" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;outline:none">
+        </div>
+        <div style="flex:1;min-width:160px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px">Longitude</div>
+          <input id="ei-lng" type="number" step="any" placeholder="e.g. 72.88" style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:13px;outline:none">
+        </div>
+        <div style="flex:2;min-width:200px">
+          <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:5px">Cesium ion Token <span style="font-weight:400;text-transform:none">(free at ion.cesium.com — enables 3D terrain)</span></div>
+          <input id="ei-token" type="text" placeholder="eyJhbGciOi..." style="width:100%;padding:8px 12px;border:1px solid var(--border);border-radius:8px;background:var(--bg);color:var(--text);font-size:12px;font-family:monospace;outline:none">
+        </div>
+        <div style="align-self:flex-end">
+          <button onclick="eiLoad()" style="padding:9px 22px;background:#1565C0;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer">Load Location</button>
+        </div>
+      </div>
+
+      <!-- Tab bar -->
+      <div style="display:flex;gap:0;border-bottom:2px solid var(--border);margin-bottom:18px" id="ei-tabs">
+        <button onclick="eiTab('globe')" id="ei-t-globe" style="padding:10px 20px;font-size:13px;font-weight:700;color:#1565C0;border:none;background:none;border-bottom:2px solid #1565C0;margin-bottom:-2px;cursor:pointer">🌍 3D Globe</button>
+        <button onclick="eiTab('weather')" id="ei-t-weather" style="padding:10px 20px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">🌤 Live Weather</button>
+        <button onclick="eiTab('climate')" id="ei-t-climate" style="padding:10px 20px;font-size:13px;font-weight:600;color:var(--muted);border:none;background:none;border-bottom:2px solid transparent;margin-bottom:-2px;cursor:pointer">📈 Climate Projections</button>
+      </div>
+
+      <!-- GLOBE TAB -->
+      <div id="ei-tab-globe">
+        <div id="cesiumContainer" style="width:100%;height:520px;border-radius:12px;overflow:hidden;border:1px solid var(--border);position:relative;background:#0a1628">
+          <div id="ei-globe-status" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:#94a3b8;z-index:10">
+            <div style="width:40px;height:40px;border:3px solid rgba(59,130,246,.3);border-top-color:#3b82f6;border-radius:50%;animation:spin-slow 1s linear infinite"></div>
+            <div style="font-size:13px">Click "Load Location" to initialise 3D Earth</div>
+            <div style="font-size:11px;color:#64748b">ESRI World Imagery · Powered by CesiumJS</div>
+          </div>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--muted);text-align:center">Satellite imagery: ESRI World Imagery · 3D terrain requires free Cesium ion token</div>
+      </div>
+
+      <!-- WEATHER TAB -->
+      <div id="ei-tab-weather" style="display:none">
+        <div id="ei-current" style="color:var(--muted);padding:20px;text-align:center">Enter coordinates above and click "Load Location"</div>
+      </div>
+
+      <!-- CLIMATE TAB -->
+      <div id="ei-tab-climate" style="display:none">
+        <div id="ei-climate-data" style="color:var(--muted);padding:20px;text-align:center">Enter coordinates above and click "Load Location"</div>
+      </div>
+    </div>
+
     <!-- ═══════════════════════ INTEGRATED RISK REPORT ════════════════════════ -->
     <div id="p-report" class="panel">
       <div class="ph" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10px">
@@ -7006,8 +7070,8 @@ function _gateShowPending(email) {
 
 /* ── Navigation ─────────────────────────────────── */
 var cur = 'dataint';
-var panels = ['intake','overview','physical','transition','cbam','costs','dataint','supplychain','materiality','macc','siteassess','newsletter','loanbook','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub'];
-var labels = {intake:'Company Setup',overview:'Overview',physical:'Physical Risk',transition:'Transition Risk',costs:'Cost Parameters',dataint:'Excel Integration',supplychain:'Supply Chain Risk',materiality:'Double Materiality Assessment',macc:'Abatement MACC',siteassess:'Site Assessment',loanbook:'Loan Portfolio',portfolio:'Portfolio Roll-up',compare:'Compare',stats:'Statistical View',ratings:'Climate Rating',disclosures:'Disclosures',report:'Risk Report',genai:'GenAI Report',reportintel:'Report Intelligence',reghub:'Regulatory Hub','newsletter':'Research & Newsletter'}
+var panels = ['intake','overview','physical','transition','cbam','costs','dataint','supplychain','materiality','macc','siteassess','newsletter','loanbook','portfolio','compare','stats','ratings','disclosures','report','genai','reportintel','reghub','earthint'];
+var labels = {intake:'Company Setup',overview:'Overview',physical:'Physical Risk',transition:'Transition Risk',costs:'Cost Parameters',dataint:'Excel Integration',supplychain:'Supply Chain Risk',materiality:'Double Materiality Assessment',macc:'Abatement MACC',siteassess:'Site Assessment',loanbook:'Loan Portfolio',portfolio:'Portfolio Roll-up',compare:'Compare',stats:'Statistical View',ratings:'Climate Rating',disclosures:'Disclosures',report:'Risk Report',genai:'GenAI Report',reportintel:'Report Intelligence',reghub:'Regulatory Hub',earthint:'Earth Intelligence','newsletter':'Research & Newsletter'}
 
 function show(name) {
   panels.forEach(function(p) {
@@ -7149,6 +7213,159 @@ function render(name) {
   if (name==='reportintel') renderReportIntel();
   if (name==='reghub')     renderRegHub();
   if (name==='predictive') renderPredictive();
+  if (name==='earthint')   renderEarthInt();
+}
+
+
+/* ══════════════════════════════════════════════════════════════════════════════
+   EARTH INTELLIGENCE — CesiumJS + Open-Meteo
+══════════════════════════════════════════════════════════════════════════════ */
+var _eiViewer = null, _eiGlobeReady = false;
+
+function renderEarthInt() {
+  // panel is now visible; lazy-init globe on first visit
+  if (!_eiGlobeReady) eiInitGlobe();
+}
+
+function eiTab(t) {
+  ['globe','weather','climate'].forEach(function(x) {
+    var tab = document.getElementById('ei-tab-'+x);
+    var btn = document.getElementById('ei-t-'+x);
+    if (tab) tab.style.display = t===x ? '' : 'none';
+    if (btn) {
+      btn.style.color = t===x ? '#1565C0' : 'var(--muted)';
+      btn.style.fontWeight = t===x ? '700' : '600';
+      btn.style.borderBottomColor = t===x ? '#1565C0' : 'transparent';
+    }
+  });
+}
+
+function eiInitGlobe() {
+  if (typeof Cesium !== 'undefined') { _eiSetupViewer(); return; }
+  var link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Widgets/widgets.css';
+  document.head.appendChild(link);
+  var s = document.createElement('script');
+  s.src = 'https://cesium.com/downloads/cesiumjs/releases/1.111/Build/Cesium/Cesium.js';
+  s.onload = _eiSetupViewer;
+  s.onerror = function() {
+    var st = document.getElementById('ei-globe-status');
+    if (st) st.innerHTML = '<div style="color:#ef4444;font-size:13px">CesiumJS failed to load — check connection</div>';
+  };
+  document.head.appendChild(s);
+}
+
+function _eiSetupViewer() {
+  var token = (document.getElementById('ei-token')||{}).value || '';
+  if (token) Cesium.Ion.defaultAccessToken = token;
+  var st = document.getElementById('ei-globe-status');
+  try {
+    var opts = {
+      baseLayerPicker: false, navigationHelpButton: false, homeButton: false,
+      geocoder: false, sceneModePicker: false, animation: false,
+      timeline: false, fullscreenButton: false, infoBox: false,
+      selectionIndicator: false,
+      imageryProvider: new Cesium.UrlTemplateImageryProvider({
+        url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        maximumLevel: 19,
+        credit: new Cesium.Credit('ESRI World Imagery')
+      })
+    };
+    if (token) {
+      try { opts.terrainProvider = Cesium.createWorldTerrain({requestVertexNormals:true}); } catch(e){}
+    }
+    _eiViewer = new Cesium.Viewer('cesiumContainer', opts);
+    if (st) st.style.display = 'none';
+    _eiGlobeReady = true;
+  } catch(e) {
+    if (st) st.innerHTML = '<div style="color:#ef4444;padding:20px;font-size:13px">3D viewer error: '+e.message+'</div>';
+  }
+}
+
+function eiLoad() {
+  var lat = parseFloat((document.getElementById('ei-lat')||{}).value);
+  var lng = parseFloat((document.getElementById('ei-lng')||{}).value);
+  if (isNaN(lat)||isNaN(lng)) { alert('Enter valid latitude and longitude'); return; }
+  if (!_eiGlobeReady) {
+    eiInitGlobe();
+    setTimeout(function(){ eiFlyTo(lat,lng); }, 3000);
+  } else {
+    eiFlyTo(lat,lng);
+  }
+  eiLoadWeather(lat,lng);
+  eiLoadClimate(lat,lng);
+}
+
+function eiFlyTo(lat,lng) {
+  if (!_eiViewer) { setTimeout(function(){ eiFlyTo(lat,lng); }, 600); return; }
+  _eiViewer.entities.removeAll();
+  _eiViewer.entities.add({
+    position: Cesium.Cartesian3.fromDegrees(lng, lat),
+    point: { pixelSize:14, color:Cesium.Color.fromCssColorString('#1565C0'), outlineColor:Cesium.Color.WHITE, outlineWidth:2 },
+    label: { text:'Asset', font:'bold 13px Inter,sans-serif',
+      fillColor:Cesium.Color.WHITE, outlineColor:Cesium.Color.BLACK, outlineWidth:2,
+      style:Cesium.LabelStyle.FILL_AND_OUTLINE,
+      verticalOrigin:Cesium.VerticalOrigin.BOTTOM,
+      pixelOffset:new Cesium.Cartesian2(0,-18) }
+  });
+  _eiViewer.camera.flyTo({
+    destination: Cesium.Cartesian3.fromDegrees(lng, lat, 12000),
+    orientation: { heading:Cesium.Math.toRadians(0), pitch:Cesium.Math.toRadians(-50), roll:0 },
+    duration: 2.5
+  });
+}
+
+function eiLoadWeather(lat,lng) {
+  var el = document.getElementById('ei-current');
+  if (el) el.innerHTML = '<div style="color:var(--muted);padding:20px;text-align:center">Loading live conditions…</div>';
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lng+'&current=temperature_2m,relative_humidity_2m,wind_speed_10m,precipitation,weather_code,apparent_temperature&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weather_code&forecast_days=7&timezone=auto';
+  fetch(url).then(function(r){return r.json();}).then(function(d){
+    var T=d.current.temperature_2m, RH=d.current.relative_humidity_2m, W=d.current.wind_speed_10m;
+    // Simplified WBGT (Liljegren approximation)
+    var Tw = T*Math.atan(0.151977*Math.sqrt(RH+8.313659))+Math.atan(T+RH)-Math.atan(RH-1.676331)+0.00391838*Math.pow(RH,1.5)*Math.atan(0.023101*RH)-4.686035;
+    var WBGT = (0.7*Tw+0.3*T).toFixed(1);
+    var wbgtN=parseFloat(WBGT), wbgtC=wbgtN>32?'#C0392B':wbgtN>28?'#E65100':wbgtN>25?'#F57F17':'#0B7C5A';
+    var wbgtL=wbgtN>32?'SEVERE — Work must stop':wbgtN>28?'HIGH — 50% capacity loss':wbgtN>25?'MODERATE — Reduced output':'LOW — Safe conditions';
+    var WC={0:'Clear sky',1:'Mainly clear',2:'Partly cloudy',3:'Overcast',45:'Fog',51:'Light drizzle',61:'Light rain',63:'Moderate rain',65:'Heavy rain',80:'Showers',95:'Thunderstorm'};
+    var wDesc=WC[d.current.weather_code]||'Code '+d.current.weather_code;
+    var dayN=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var fcCards=d.daily.time.map(function(dt,i){
+      var wc=d.daily.weather_code[i];
+      var ico=wc>=95?'⛈':wc>=80?'🌧':wc>=61?'🌦':wc>=45?'🌫':wc>=3?'☁':wc>=1?'⛅':'☀';
+      return '<div style="background:var(--surf);border:1px solid var(--border);border-radius:8px;padding:10px 6px;text-align:center;flex:1;min-width:60px"><div style="font-size:10px;font-weight:700;color:var(--muted)">'+dayN[new Date(dt+'T12:00:00').getDay()]+'</div><div style="font-size:20px;margin:4px 0">'+ico+'</div><div style="font-size:13px;font-weight:700;color:var(--text)">'+Math.round(d.daily.temperature_2m_max[i])+'°</div><div style="font-size:11px;color:var(--muted)">'+Math.round(d.daily.temperature_2m_min[i])+'°</div><div style="font-size:10px;color:#1565C0;margin-top:2px">'+d.daily.precipitation_sum[i]+'mm</div></div>';
+    }).join('');
+    if (el) el.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px"><div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px 20px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Temperature</div><div style="font-size:30px;font-weight:900;color:var(--text)">'+T+'°C</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Feels '+d.current.apparent_temperature+'°C · '+wDesc+'</div></div><div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px 20px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Humidity / Wind</div><div style="font-size:30px;font-weight:900;color:var(--text)">'+RH+'%</div><div style="font-size:12px;color:var(--muted);margin-top:3px">Wind '+W+' km/h · Rain '+d.current.precipitation+'mm</div></div><div style="background:var(--surf);border:1px solid var(--border);border-top:3px solid '+wbgtC+';border-radius:12px;padding:18px 20px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Heat Stress (WBGT)</div><div style="font-size:30px;font-weight:900;color:'+wbgtC+'">'+WBGT+'°C</div><div style="font-size:11px;font-weight:700;color:'+wbgtC+';margin-top:3px">'+wbgtL+'</div></div></div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">7-Day Forecast</div><div style="display:flex;gap:8px;flex-wrap:wrap">'+fcCards+'</div><div style="margin-top:10px;font-size:10px;color:var(--muted)">Source: Open-Meteo · GFS + ERA5 · Lat '+lat+' Lng '+lng+'</div>';
+  }).catch(function(e){ if(el) el.innerHTML='<div style="color:#ef4444;padding:20px">Weather error: '+e.message+'</div>'; });
+}
+
+function eiLoadClimate(lat,lng) {
+  var el=document.getElementById('ei-climate-data');
+  if (el) el.innerHTML='<div style="color:var(--muted);padding:20px;text-align:center">Loading CMIP6 projections 2025–2050…</div>';
+  var url='https://climate-api.open-meteo.com/v1/climate?latitude='+lat+'&longitude='+lng+'&start_date=2025-01-01&end_date=2050-12-31&models=MRI_AGCM3_2_S,NICAM16_8S,EC_Earth3P_HR&daily=temperature_2m_max,precipitation_sum&disable_bias_correction=false';
+  fetch(url).then(function(r){return r.json();}).then(function(d){
+    var times=d.daily.time, ms=['MRI_AGCM3_2_S','NICAM16_8S','EC_Earth3P_HR'];
+    var years={};
+    times.forEach(function(t,i){
+      var yr=t.slice(0,4);
+      if(!years[yr]) years[yr]={t:[],p:[]};
+      var tv=ms.map(function(m){return d.daily['temperature_2m_max_'+m]?d.daily['temperature_2m_max_'+m][i]:null;}).filter(function(v){return v!=null;});
+      var pv=ms.map(function(m){return d.daily['precipitation_sum_'+m]?d.daily['precipitation_sum_'+m][i]:null;}).filter(function(v){return v!=null;});
+      if(tv.length) years[yr].t.push(tv.reduce(function(a,b){return a+b;})/tv.length);
+      if(pv.length) years[yr].p.push(pv.reduce(function(a,b){return a+b;})/pv.length);
+    });
+    var yrK=Object.keys(years).sort();
+    var aT=yrK.map(function(y){return years[y].t.length?(years[y].t.reduce(function(a,b){return a+b;})/years[y].t.length):null;});
+    var base=aT[0]||0, maxA=(aT[aT.length-1]-base).toFixed(1);
+    var maxT=Math.max.apply(null,aT.filter(Boolean)), minT=Math.min.apply(null,aT.filter(Boolean)), rng=maxT-minT||1;
+    var bars=yrK.filter(function(_,i){return i%2===0;}).map(function(yr){
+      var i=yrK.indexOf(yr), t=aT[i]||base, an=(t-base).toFixed(1);
+      var h=Math.round(((t-minT)/rng)*80)+20;
+      var c=t>base+1.5?'#C0392B':t>base+0.5?'#E65100':'#1565C0';
+      return '<div style="display:flex;flex-direction:column;align-items:center;gap:3px;flex:1"><div style="font-size:8px;font-weight:700;color:'+c+'">'+(an>0?'+':'')+an+'°</div><div style="background:'+c+';width:100%;min-width:8px;height:'+h+'px;border-radius:2px 2px 0 0;opacity:.85"></div><div style="font-size:8px;color:var(--muted);white-space:nowrap">'+yr+'</div></div>';
+    }).join('');
+    if(el) el.innerHTML='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px"><div style="background:var(--surf);border:1px solid var(--border);border-top:3px solid #C0392B;border-radius:12px;padding:18px 20px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Temp Anomaly by 2050</div><div style="font-size:28px;font-weight:900;color:#C0392B">+'+(maxA>0?'+':'')+maxA+'°C</div><div style="font-size:11px;color:var(--muted)">vs 2025 baseline · CMIP6 ensemble</div></div><div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px 20px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">CMIP6 Models</div><div style="font-size:15px;font-weight:800;color:var(--text)">MRI · NICAM · EC-Earth3</div><div style="font-size:11px;color:var(--muted);margin-top:4px">3-model ensemble mean</div></div><div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:18px 20px"><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:6px">Data Source</div><div style="font-size:14px;font-weight:800;color:var(--text)">Open-Meteo</div><div style="font-size:11px;color:var(--muted);margin-top:4px">Bias-corrected against ERA5</div></div></div><div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:10px">Annual Peak Temperature 2025–2050 (CMIP6 Ensemble)</div><div style="background:var(--surf);border:1px solid var(--border);border-radius:12px;padding:16px 14px"><div style="display:flex;align-items:flex-end;gap:3px;height:110px">'+bars+'</div><div style="margin-top:8px;font-size:9px;color:var(--muted);text-align:center">Every other year shown · Source: Open-Meteo Climate API · CMIP6 bias-corrected projections · Lat '+lat+' Lng '+lng+'</div></div>';
+  }).catch(function(e){ if(el) el.innerHTML='<div style="color:#ef4444;padding:20px">Climate projection error: '+e.message+'</div>'; });
 }
 
 /* ══════════════════════════════════════════════════════════════════════════════
