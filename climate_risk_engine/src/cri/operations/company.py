@@ -130,6 +130,16 @@ def _asset_contribution(
     )
     margin_per_unit = max(0.0, price - unit_cost)
 
+    # Physical loss cost uses BASELINE (2026) commodity prices, not scenario-year prices.
+    # Rationale: physical risk is a hazard-probability effect; the dollar cost should
+    # reflect stable baseline economics so that scenario ordering (CP loss > NZE loss)
+    # is governed by disruption probability alone — not by scenario commodity price
+    # pathways (which belong to the transition/revenue channel and are already captured
+    # in the revenue and EBITDA lines).
+    _baseline_drivers = resolve(scenario, 2026)
+    baseline_price = price_at(_baseline_drivers, asset.commodity) or price
+    baseline_margin = max(0.0, baseline_price - unit_cost)
+
     ssp_id = _FAMILY_TO_SSP.get(scenario.family, "ssp245")
     try:
         hazard_profile = _HAZARD_ENGINE.assess(
@@ -145,15 +155,15 @@ def _asset_contribution(
         total_survival = 1.0
         for hname, h in hazard_profile.hazards.items():
             if h.applicable and h.production_loss_pct > 0:
-                hazard_loss_cost = undisrupted_volume * h.production_loss_pct * margin_per_unit
+                hazard_loss_cost = undisrupted_volume * h.production_loss_pct * baseline_margin
                 physical_loss_by_hazard[hname] = round(hazard_loss_cost, 2)
                 total_survival *= (1.0 - h.production_loss_pct)
         total_loss_frac = 1.0 - total_survival
-        physical_loss_cost = undisrupted_volume * total_loss_frac * margin_per_unit
+        physical_loss_cost = undisrupted_volume * total_loss_frac * baseline_margin
     except Exception:
         # Fall back to scenario-based loss if hazard engine unavailable
         loss = expected_loss_fraction(scenario, asset, year)
-        physical_loss_cost = undisrupted_volume * loss * margin_per_unit
+        physical_loss_cost = undisrupted_volume * loss * baseline_margin
         physical_loss_by_hazard = {"combined": round(physical_loss_cost, 2)}
 
     # ── Stranded asset detection ──────────────────────────────────────────────
@@ -323,3 +333,113 @@ def simulate_year(
 def simulate(company: Company, scenario: Scenario) -> list[OperationalYear]:
     start, end = scenario.horizon
     return [simulate_year(company, scenario, y) for y in range(start, end + 1)]
+
+
+# ---------------------------------------------------------------------------
+# Physical hazard provenance
+# ---------------------------------------------------------------------------
+
+def get_physical_provenance(
+    company: Company,
+    scenario: Scenario,
+    reference_year: int = 2026,
+) -> list:
+    """Build per-asset physical hazard data provenance records.
+
+    Runs the hazard engine at *full resolution* (_depth=0) for each asset at
+    ``reference_year`` and captures every provenance field that the normal
+    simulation loop discards.
+
+    Returns
+    -------
+    list[AssetPhysicalProvenance]
+        One record per asset.  Assets that raise an unexpected exception are
+        silently skipped — provenance is best-effort, never blocking.
+
+    Data quality classification
+    ---------------------------
+    LIVE              live_projection["live"] == True
+    REGIONAL_BASELINE lat/lon provided, but live APIs unavailable
+    GLOBAL_FALLBACK   no coordinates — region-code lookup only
+    """
+    from ..data.schemas import AssetPhysicalProvenance, HazardProvenance, PhysicalDataQuality
+
+    ssp_id = _FAMILY_TO_SSP.get(scenario.family, "ssp245")
+    provenance_list: list = []
+
+    for asset in company.assets:
+        try:
+            profile = _HAZARD_ENGINE.assess(
+                asset.id,
+                asset.name,
+                asset.region,
+                reference_year,
+                ssp=ssp_id,
+                lat=asset.lat,
+                lon=asset.lon,
+                equipment_type=asset.equipment_type,
+                _depth=0,   # full resolution — triggers live API calls
+            )
+
+            # Determine data quality tier
+            live_ok = bool(
+                profile.live_projection and profile.live_projection.get("live")
+            )
+            if live_ok:
+                quality = PhysicalDataQuality.LIVE
+            elif asset.lat is not None and asset.lon is not None:
+                quality = PhysicalDataQuality.REGIONAL_BASELINE
+            else:
+                quality = PhysicalDataQuality.GLOBAL_FALLBACK
+
+            # Build per-hazard provenance records
+            hazard_prov: dict = {}
+            for hname, h in profile.hazards.items():
+                if not h.applicable:
+                    continue
+                # Only heat_stress and flood_riverine can use live API data
+                is_live_hazard = live_ok and hname in ("heat_stress", "flood_riverine")
+                observed = bool(
+                    getattr(profile, "observed_alerts", {}).get(hname, False)
+                )
+                hazard_prov[hname] = HazardProvenance(
+                    hazard=hname,
+                    data_source=h.data_source,
+                    notes=h.notes,
+                    is_live=is_live_hazard,
+                    observed_active=observed,
+                )
+
+            # Satellite observation summary (populated when connectors return data)
+            satellite_obs = None
+            observed_alerts = getattr(profile, "observed_alerts", {})
+            observation_sources = getattr(profile, "observation_sources", [])
+            if observed_alerts or observation_sources:
+                satellite_obs = {
+                    "active_alerts": observed_alerts,
+                    "sources": observation_sources,
+                }
+
+            provenance_list.append(
+                AssetPhysicalProvenance(
+                    asset_id=asset.id,
+                    asset_name=asset.name,
+                    region=asset.region,
+                    lat=asset.lat,
+                    lon=asset.lon,
+                    elevation_m=profile.elevation_m,
+                    data_quality=quality,
+                    downscaling_method=profile.downscaling_method,
+                    spatial_resolution=profile.spatial_resolution,
+                    hazard_provenance=hazard_prov,
+                    live_baseline=profile.live_baseline,
+                    live_projection=profile.live_projection,
+                    satellite_observations=satellite_obs,
+                )
+            )
+
+        except Exception:
+            # Provenance is supplementary — never let it break a run
+            continue
+
+    return provenance_list

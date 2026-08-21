@@ -70,11 +70,23 @@ def _enrich_asset_hazards(
     hm: HazardMatrix,
 ) -> Asset:
     """
-    Enrich an asset with real hazard data from WRI Aqueduct + NASA proxy.
-    Returns a new Asset with updated physical_hazard field embedded in the
-    scenario hazard paths (we patch the parent Scenario instead — see below).
+    Enrich an asset with real hazard data.
+
+    Runs HazardMatrix.assess() which delegates to:
+      - PhysicalHazardEngine (25 hazards, SSP-scaled)
+      - SpatialDownscaler (CMIP6 at asset lat/lon, live met, WRI point query)
+
+    The asset object itself is returned unchanged — enrichment is captured
+    in the HazardMatrix cache and applied when _build_enriched_hazard_paths()
+    is called. This two-phase design lets the pipeline pre-warm the cache
+    without duplicating the assessment.
     """
-    # We return the profile; the caller patches the Scenario's hazards list.
+    # Pre-warm the downscaler cache for this asset's coordinates + scenario.
+    # This is a no-op if lat/lon is None (falls through to region tables).
+    try:
+        hm.assess(asset, scenario_family, horizon)
+    except Exception:
+        pass   # non-fatal — pipeline continues with region-level data
     return asset
 
 
@@ -83,7 +95,18 @@ def _build_enriched_hazard_paths(
     scenario_family: str,
     hm: HazardMatrix,
 ) -> list[HazardPath]:
-    """Build real HazardPath objects for an asset using WRI + NASA data."""
+    """
+    Build HazardPath objects for an asset using the full enrichment stack.
+
+    Data sources (in priority order):
+      1. CMIP6 downscaling via Open-Meteo (when asset.lat/lon available)
+      2. PhysicalHazardEngine 25-hazard model (always)
+      3. WRI Aqueduct region tables (fallback)
+
+    Only HazardTypes defined in the CRI schema are included; novel hazard
+    names from the 25-hazard engine that don't map to a schema HazardType
+    are silently dropped (forward-compatible).
+    """
     years = list(range(2026, 2051))
     profile = hm.assess(asset, scenario_family, years)
 
