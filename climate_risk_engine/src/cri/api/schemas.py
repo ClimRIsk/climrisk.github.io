@@ -19,6 +19,21 @@ class ScenarioResponse(BaseModel):
     version: str
 
 
+class AssetSummary(BaseModel):
+    """Lightweight per-asset metadata, embedded in CompanyResponse.
+
+    Exposes just enough for a client to pick an asset and request live
+    conditions / observed trend at its coordinates — not the full Asset
+    model (which also carries financial/production fields).
+    """
+
+    id: str
+    name: str
+    region: str
+    lat: Optional[float] = None
+    lon: Optional[float] = None
+
+
 class CompanyResponse(BaseModel):
     """Company metadata for GET /companies."""
 
@@ -26,6 +41,91 @@ class CompanyResponse(BaseModel):
     name: str
     sector: str
     region: str
+    assets: List[AssetSummary] = []
+
+
+class LiveConditionsResponse(BaseModel):
+    """Live weather snapshot for GET /climate/live-conditions."""
+
+    region: str
+    lat: float
+    lon: float
+    observed_at: str
+    current_temp_c: float
+    precip_trailing14d_mm: float
+    wind_speed_ms: float
+    humidity_pct: float
+    weather_code: int
+    seasonal_baseline_max_c: Optional[float] = None
+    heat_anomaly_c: Optional[float] = None
+    precip_deficit_flag: bool
+    source: str
+
+
+class MatchedZoneResponse(BaseModel):
+    """A static hazard-zone bounding box an asset coordinate falls inside."""
+
+    type: str
+    label: str
+    bounds: List[List[float]]  # [[lat_min, lon_min], [lat_max, lon_max]]
+
+
+class GISAttributesResponse(BaseModel):
+    """Static spatial hazard profile for GET /climate/gis-attributes."""
+
+    lat: float
+    lon: float
+    elevation_m: int
+    coastal_km: float
+    koppen_zone: str
+    is_arid: bool
+    is_permafrost: bool
+    is_cyclone_belt: bool
+    is_floodplain: bool
+    mean_winter_temp: float
+    equipment_sensitivity: Dict[str, float] = {}
+    matched_zones: List[MatchedZoneResponse] = []
+    source: str
+
+
+class CompoundRiskFlagResponse(BaseModel):
+    """A GIS zone x live-condition intersection flag."""
+
+    id: str
+    label: str
+    description: str
+    severity: str
+    hazard: str
+    severity_delta: float
+    prob_multiplier: float
+
+
+class IntersectionResponse(BaseModel):
+    """GIS profile + live conditions + compound risk flags, for GET /climate/intersection."""
+
+    region: str
+    lat: float
+    lon: float
+    gis: GISAttributesResponse
+    live: Optional[LiveConditionsResponse] = None
+    compound_flags: List[CompoundRiskFlagResponse] = []
+
+
+class ObservedTrendResponse(BaseModel):
+    """Observed annual trend vs the WMO baseline, for GET /climate/observed-trend."""
+
+    region: str
+    lat: float
+    lon: float
+    start_year: int
+    end_year: int
+    annual_mean_temp_c: Dict[int, float]
+    annual_precip_mm: Dict[int, float]
+    baseline_mean_temp_c: float
+    baseline_precip_mm_yr: float
+    temp_trend_c_per_decade: Optional[float] = None
+    warming_since_baseline_c: Optional[float] = None
+    source: str
 
 
 class CustomScenarioParams(BaseModel):

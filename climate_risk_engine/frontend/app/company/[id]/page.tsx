@@ -2,10 +2,21 @@
 
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import EbitdaBridge from '@/components/EbitdaBridge';
 import FcfChart from '@/components/FcfChart';
-import { getCompanies, postRun, extractEBITDABridge, extractFCF } from '@/lib/api';
-import { Company, RunResult, ScenarioType } from '@/types/index';
+import LiveConditionsCard from '@/components/LiveConditionsCard';
+import ObservedTrendChart from '@/components/ObservedTrendChart';
+import { getCompanies, postRun, extractEBITDABridge, extractFCF, getLiveConditions, getObservedTrend, getIntersection } from '@/lib/api';
+import { Company, RunResult, ScenarioType, LiveConditions, ObservedTrend, Intersection } from '@/types/index';
+
+// Leaflet touches `window` at module-load time, so the map must be
+// dynamically imported with ssr:false — the standard pattern for
+// react-leaflet inside a Next.js App Router client component.
+const GisIntersectionMap = dynamic(() => import('@/components/GisIntersectionMap'), {
+  ssr: false,
+  loading: () => <p className="text-slate-400 text-sm">Loading map...</p>,
+});
 
 export default function CompanyDrillDown() {
   const params = useParams();
@@ -17,6 +28,13 @@ export default function CompanyDrillDown() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [selectedAssetId, setSelectedAssetId] = useState<string | null>(null);
+  const [liveConditions, setLiveConditions] = useState<LiveConditions | null>(null);
+  const [observedTrend, setObservedTrend] = useState<ObservedTrend | null>(null);
+  const [intersection, setIntersection] = useState<Intersection | null>(null);
+  const [climateLoading, setClimateLoading] = useState(false);
+  const [climateError, setClimateError] = useState<string | null>(null);
+
   // Load company data
   useEffect(() => {
     const loadCompany = async () => {
@@ -25,6 +43,8 @@ export default function CompanyDrillDown() {
         const companies = await getCompanies();
         const found = companies.find((c) => c.id === companyId);
         setCompany(found || null);
+        const firstGeolocated = found?.assets.find((a) => a.lat != null && a.lon != null);
+        setSelectedAssetId(firstGeolocated?.id ?? null);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to load company';
         setError(message);
@@ -33,6 +53,41 @@ export default function CompanyDrillDown() {
     };
     loadCompany();
   }, [companyId]);
+
+  const selectedAsset = company?.assets.find((a) => a.id === selectedAssetId) ?? null;
+
+  // Load live conditions + observed trend + GIS intersection for the selected asset
+  useEffect(() => {
+    if (!selectedAsset || selectedAsset.lat == null || selectedAsset.lon == null) {
+      setLiveConditions(null);
+      setObservedTrend(null);
+      setIntersection(null);
+      return;
+    }
+    const lat = selectedAsset.lat;
+    const lon = selectedAsset.lon;
+    const loadClimate = async () => {
+      setClimateLoading(true);
+      setClimateError(null);
+      try {
+        const [live, trend, gisIntersection] = await Promise.all([
+          getLiveConditions(selectedAsset.region, lat, lon),
+          getObservedTrend(selectedAsset.region, lat, lon, 2015),
+          getIntersection(selectedAsset.region, lat, lon),
+        ]);
+        setLiveConditions(live);
+        setObservedTrend(trend);
+        setIntersection(gisIntersection);
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to load climate data';
+        setClimateError(message);
+        console.error('Error loading climate data:', err);
+      } finally {
+        setClimateLoading(false);
+      }
+    };
+    loadClimate();
+  }, [selectedAsset?.id, selectedAsset?.lat, selectedAsset?.lon, selectedAsset?.region]);
 
   // Run analysis when scenario changes
   useEffect(() => {
@@ -154,6 +209,44 @@ export default function CompanyDrillDown() {
             <FcfChart data={extractFCF(result)} />
           </div>
         </>
+      )}
+
+      {/* Live meteorological data */}
+      {company.assets.length > 0 && (
+        <div className="mt-8">
+          <label className="block text-xs font-semibold text-slate-400 uppercase tracking-wide mb-3">
+            Asset
+          </label>
+          <div className="flex flex-wrap gap-3 mb-6">
+            {company.assets.map((asset) => (
+              <button
+                key={asset.id}
+                onClick={() => setSelectedAssetId(asset.id)}
+                disabled={asset.lat == null || asset.lon == null}
+                className={`px-4 py-2 rounded-lg font-medium text-sm transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  selectedAssetId === asset.id
+                    ? 'bg-green-500 text-slate-900'
+                    : 'bg-slate-800 text-slate-300 hover:bg-slate-700'
+                }`}
+              >
+                {asset.name}
+              </button>
+            ))}
+          </div>
+
+          {climateLoading && <p className="text-slate-400 text-sm mb-4">Loading live climate data...</p>}
+          {climateError && (
+            <p className="text-amber-400 text-sm mb-4">Live climate data unavailable: {climateError}</p>
+          )}
+
+          {selectedAsset && liveConditions && observedTrend && (
+            <div className="space-y-8">
+              <LiveConditionsCard data={liveConditions} assetName={selectedAsset.name} />
+              {intersection && <GisIntersectionMap data={intersection} assetName={selectedAsset.name} />}
+              <ObservedTrendChart data={observedTrend} />
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
