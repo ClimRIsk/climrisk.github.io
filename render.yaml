@@ -4,7 +4,7 @@ services:
     runtime: python
     plan: free
     buildCommand: pip install -r requirements.txt && pip install --no-deps -e ./climate_risk_engine
-    startCommand: uvicorn cri.api.main:app --host 0.0.0.0 --port $PORT --workers 1
+    startCommand: pip install python-multipart --quiet && uvicorn cri.api.main:app --host 0.0.0.0 --port $PORT --workers 1
     envVars:
       - key: CRI_CACHE_DIR
         value: /tmp/cri_cache
