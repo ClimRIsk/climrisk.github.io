@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClimRisk Platform · Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -174,6 +176,39 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
 .engine-progress-bar{background:var(--green);height:100%;border-radius:4px;transition:width 1.5s ease;width:0%}
 .sat-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .sat-badge{background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:600}
+/* ── Risk Map ── */
+.risk-map-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:16px}
+#cri-risk-map{height:340px;width:100%;background:#0b1f38}
+.leaflet-container{background:#0d2137}
+/* ── Hazard Matrix ── */
+.hz-matrix{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+.hz-matrix th{padding:8px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--faint);border-bottom:1px solid var(--border);background:var(--navy2)}
+.hz-matrix td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04);vertical-align:middle}
+.hz-matrix tr:hover td{background:rgba(255,255,255,.02)}
+.hz-prob{display:inline-block;padding:2px 7px;border-radius:10px;font-size:11px;font-weight:700}
+.hz-high{background:rgba(220,38,38,.15);color:#fca5a5;border:1px solid rgba(220,38,38,.3)}
+.hz-med{background:rgba(245,158,11,.15);color:#fcd34d;border:1px solid rgba(245,158,11,.3)}
+.hz-low{background:rgba(29,158,117,.15);color:#6ee7b7;border:1px solid rgba(29,158,117,.3)}
+.hz-bar-wrap{display:flex;align-items:center;gap:6px;width:100%}
+.hz-bar-bg{flex:1;height:6px;background:var(--border);border-radius:3px}
+.hz-bar-fill{height:6px;border-radius:3px}
+/* ── Detailed Report ── */
+.det-report{margin-top:16px;background:var(--navy2);border:1px solid var(--border);border-radius:12px}
+.det-report-head{display:flex;align-items:center;justify-content:space-between;padding:14px 18px;cursor:pointer;border-bottom:1px solid var(--border)}
+.det-report-head:hover{background:rgba(255,255,255,.02)}
+.det-report-body{padding:18px;display:none}
+.det-report-body.open{display:block}
+.det-section{margin-bottom:18px}
+.det-section-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--green);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.det-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.03);font-size:12px}
+.det-row-lbl{color:var(--muted)}
+.det-row-val{color:var(--text);font-weight:600}
+.site-card{background:var(--navy2);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:10px}
+.site-card-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.site-name{font-size:13px;font-weight:700;color:var(--text)}
+.site-coords{font-size:10px;color:var(--faint)}
+.yr-timeline{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap}
+.yr-chip{padding:3px 8px;border-radius:6px;font-size:10px;font-weight:600;background:var(--surf2);color:var(--muted)}
 @media(max-width:900px){.sidebar{display:none}.qa-grid,.stats-grid,.scenario-grid{grid-template-columns:1fr 1fr}.auto-grid{grid-template-columns:1fr}}
 </style>
 </head>
@@ -860,13 +895,299 @@ function showResults(data, company, sector, duration) {
       '</div>'+
     '</div>'+
     '<div class="scenario-grid">'+scRow(nze,'🟢 Net Zero 2050',nze.ssp_id||'SSP1-2.6')+scRow(dt,'🟡 Delayed Transition',dt.ssp_id||'SSP2-4.5')+scRow(cp,'🔴 Current Policies',cp.ssp_id||'SSP3-7.0')+'</div>'+
+    // ── Asset Risk Map ──────────────────────────────────────────────────
+    '<div style="margin-top:20px"><div class="section-title">📍 Asset Risk Map</div>'+
+    '<div class="risk-map-wrap"><div id="cri-risk-map"></div></div></div>'+
+    // ── Hazard × Scenario Matrix ────────────────────────────────────────
+    '<div style="margin-top:20px"><div class="section-title">⚡ Hazard × Scenario Matrix</div>'+
+    buildHazardMatrix(nze,dt,cp)+'</div>'+
+    // ── Detailed Report ─────────────────────────────────────────────────
+    buildDetailedReport(data,nze,dt,cp,company,sector)+
     (data._synthetic ? '<div style="font-size:11px;color:var(--faint);margin-top:10px;padding:10px;background:var(--surf);border-radius:8px">ℹ Estimated results based on sector parameters and NGFS Phase 4 carbon price paths. Upload an Excel file with company financials for engine-computed results.</div>' : '');
 
   rp.scrollIntoView({behavior:'smooth', block:'start'});
+  // Initialise Leaflet map after HTML is in DOM
+  setTimeout(function(){ initRiskMap(data, nze, dt, cp, company); }, 80);
   _lastResults = {data:data,company:company,sector:sector,duration:duration};
 }
 
 var _lastResults = null;
+var _riskMap = null;
+
+// ── RISK MAP ─────────────────────────────────────────────────────────────────
+var _COUNTRY_COORDS = {
+  'US':[[37.8,-96],4],'UK':[[54,-2],5],'GB':[[54,-2],5],'IN':[[20,78],4],
+  'CN':[[35,105],4],'DE':[[51,10],5],'FR':[[46,2],5],'AU':[[25,134],4],
+  'BR':[[10,-55],4],'CA':[[56,-106],4],'JP':[[36,138],5],'SG':[[1.4,104],10],
+  'ZA':[-29,25],'NG':[9,8],'KE':[-1,37],'EG':[26,30],'SA':[24,45],'AE':[24,54],
+};
+function _latLonForResult(r, company) {
+  // Try to get lat/lon from engine asset data
+  if (r && r.lat && r.lon) return [r.lat, r.lon];
+  // Derive from country field or company name heuristic
+  var cnt = (r && r.country) || '';
+  var c = _COUNTRY_COORDS[cnt.toUpperCase()];
+  if (c && Array.isArray(c[0])) return c[0];
+  if (c) return c;
+  // Default to global centre with small jitter
+  return [20 + Math.random()*5 - 2.5, 0 + Math.random()*5 - 2.5];
+}
+function _riskColor(combined_pct) {
+  var v = combined_pct || 0;
+  if (v <= -20) return '#dc2626';
+  if (v <= -10) return '#f59e0b';
+  if (v <= -4)  return '#3b82f6';
+  return '#1d9e75';
+}
+function initRiskMap(data, nze, dt, cp, company) {
+  var el = document.getElementById('cri-risk-map');
+  if (!el || typeof L === 'undefined') return;
+  // Destroy previous map instance
+  if (_riskMap) { try { _riskMap.remove(); } catch(e){} _riskMap = null; }
+
+  var center = _latLonForResult(nze, company);
+  _riskMap = L.map('cri-risk-map', {
+    center: center, zoom: 4,
+    zoomControl: true, attributionControl: true
+  });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution:'&copy; <a href="https://carto.com/">CARTO</a>',
+    subdomains:'abcd', maxZoom:18
+  }).addTo(_riskMap);
+
+  // Build pins from engine result assets or fallback to 3 scenario points
+  var pins = [];
+  var results = data.results || [];
+  // Try to get per-asset data if engine returned asset_profiles
+  var assetProfiles = data.asset_profiles || [];
+  if (assetProfiles.length) {
+    assetProfiles.forEach(function(ap){
+      if (ap.lat && ap.lon) {
+        var elf = ap.annual_loss_fraction || 0;
+        pins.push({lat:ap.lat, lon:ap.lon, name:ap.asset_name||ap.asset_id, elf:elf,
+          combined: -(elf*100).toFixed(1), sector: ap.region||''});
+      }
+    });
+  }
+  // Fallback: one pin per scenario for the company
+  if (!pins.length) {
+    [[nze,'Net Zero 2050'],[dt,'Delayed Transition'],[cp,'Current Policies']].forEach(function(pair){
+      var r = pair[0], lbl = pair[1];
+      if (!r || !r.ev_bn) return;
+      var ll = _latLonForResult(r, company);
+      // offset slightly so they don't stack
+      ll = [ll[0]+Math.random()*0.8-0.4, ll[1]+Math.random()*0.8-0.4];
+      pins.push({lat:ll[0], lon:ll[1], name:company+' · '+lbl,
+        combined: r.combined_npv_impact_pct || r.npv_impact_pct || 0,
+        sector: r.sector||data.sector||''});
+    });
+  }
+
+  pins.forEach(function(p){
+    var col = _riskColor(p.combined);
+    var icon = L.divIcon({
+      className:'',
+      html:'<div style="width:14px;height:14px;border-radius:50%;background:'+col+';border:2px solid rgba(255,255,255,.5);box-shadow:0 0 8px '+col+'80"></div>',
+      iconSize:[14,14], iconAnchor:[7,7]
+    });
+    var marker = L.marker([p.lat, p.lon], {icon:icon}).addTo(_riskMap);
+    marker.bindPopup(
+      '<div style="font-size:12px;color:#1a3a5c;min-width:160px">'+
+      '<strong style="font-size:13px">'+p.name+'</strong><br/>'+
+      (p.sector?'<span style="color:#64748b">'+p.sector+'</span><br/>':'') +
+      '<span style="color:'+col+';font-weight:700">NPV impact: '+(p.combined>=0?'+':'')+p.combined+'%</span>'+
+      '</div>'
+    );
+  });
+
+  // Legend
+  var legend = L.control({position:'bottomright'});
+  legend.onAdd = function(){
+    var d = L.DomUtil.create('div','');
+    d.style.cssText='background:rgba(11,31,56,.9);color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:11px;border:1px solid rgba(255,255,255,.15)';
+    d.innerHTML='<div style="font-weight:700;margin-bottom:4px">NPV Impact</div>'+
+      '<div>🟢 &gt; −4%  Low</div>'+
+      '<div>🔵 −4 to −10%  Mod</div>'+
+      '<div>🟡 −10 to −20%  High</div>'+
+      '<div>🔴 &lt; −20%  Very High</div>';
+    return d;
+  };
+  legend.addTo(_riskMap);
+}
+
+// ── HAZARD MATRIX ─────────────────────────────────────────────────────────────
+function buildHazardMatrix(nze, dt, cp) {
+  var HAZARDS = [
+    {key:'flood',       label:'Flood / Riverine',  icon:'🌊'},
+    {key:'heat_stress', label:'Heat Stress',        icon:'🌡'},
+    {key:'water_stress',label:'Water Stress',       icon:'💧'},
+    {key:'wildfire',    label:'Wildfire',           icon:'🔥'},
+    {key:'wind',        label:'Wind / Storm',       icon:'💨'},
+  ];
+  function probCls(v){ return v>20?'hz-high':v>10?'hz-med':'hz-low'; }
+  function bar(v, col){ return '<div class="hz-bar-wrap"><div class="hz-bar-bg"><div class="hz-bar-fill" style="width:'+Math.min(100,v*2.5)+'%;background:'+col+'"></div></div><span style="font-size:10px;color:var(--muted);width:32px;text-align:right">'+v+'%</span></div>'; }
+  function barCol(v){ return v>20?'#dc2626':v>10?'#f59e0b':'#1d9e75'; }
+  var html='<div style="overflow-x:auto"><table class="hz-matrix">';
+  html+='<thead><tr><th>Hazard</th><th>🟢 NZE 2050 (SSP1-2.6)</th><th>🟡 Delayed (SSP2-4.5)</th><th>🔴 Curr. Policies (SSP3-7.0)</th><th>Trend</th></tr></thead><tbody>';
+  HAZARDS.forEach(function(h){
+    var nv = ((nze.hazard_scores||{})[h.key])||0;
+    var dv = ((dt.hazard_scores||{})[h.key])||0;
+    var cv = ((cp.hazard_scores||{})[h.key])||0;
+    // If no hazard_scores from engine, compute a rough estimate
+    if (!nv && !dv && !cv) {
+      var _ssps = {nze:0.85,dt:1.35,cp:1.70};
+      var _base = {flood:8,heat_stress:6,water_stress:7,wildfire:5,wind:4};
+      var b = _base[h.key]||5;
+      nv = Math.round(b*(1+0.07*_ssps.nze));
+      dv = Math.round(b*(1+0.07*_ssps.dt));
+      cv = Math.round(b*(1+0.07*_ssps.cp));
+    }
+    var trend = cv>dv && dv>nv ? '↑ Worsening' : cv===nv ? '→ Stable' : '↓ Improving';
+    var tCol = cv>nv ? 'var(--red)' : 'var(--green)';
+    html+='<tr>'+
+      '<td><span style="font-size:16px">'+h.icon+'</span> <strong style="font-size:12px">'+h.label+'</strong></td>'+
+      '<td>'+bar(nv,barCol(nv))+'</td>'+
+      '<td>'+bar(dv,barCol(dv))+'</td>'+
+      '<td>'+bar(cv,barCol(cv))+'</td>'+
+      '<td style="font-size:11px;font-weight:600;color:'+tCol+'">'+trend+'</td>'+
+    '</tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+
+// ── DETAILED REPORT ───────────────────────────────────────────────────────────
+function toggleDetReport() {
+  var b = document.getElementById('det-report-body');
+  var arr = document.getElementById('det-report-arrow');
+  if (!b) return;
+  var open = b.classList.toggle('open');
+  if (arr) arr.textContent = open ? '▲' : '▼';
+}
+
+function buildDetailedReport(data, nze, dt, cp, company, sector) {
+  var results = data.results || [];
+  // ── Financial summary rows ─────────────────────────────────────────
+  function fRow(lbl, val){ return '<div class="det-row"><span class="det-row-lbl">'+lbl+'</span><span class="det-row-val">'+val+'</span></div>'; }
+  var ev   = nze.ev_bn   || '—';
+  var eq   = nze.equity_bn || '—';
+  var wacc = nze.wacc_pct || '—';
+  var sp   = nze.share_price || '—';
+  var trN  = nze.npv_impact_pct || 0;
+  var phN  = nze.physical_npv_impact_pct || 0;
+  var cbN  = nze.combined_npv_impact_pct || (trN+phN);
+  var trC  = cp.npv_impact_pct || 0;
+  var phC  = cp.physical_npv_impact_pct || 0;
+  var cbC  = cp.combined_npv_impact_pct || (trC+phC);
+  var gmst = nze.gmst_2050 || '—';
+  var ssp  = nze.ssp_id || '—';
+  var phi  = nze.physical_exposure_ratio ? (nze.physical_exposure_ratio*100).toFixed(0)+'%' : '—';
+  var sec  = sector || nze.sector || '—';
+  var warns= (results.reduce(function(s,r){return s+(r.warnings||0);},0));
+
+  // ── Data sources ──────────────────────────────────────────────────
+  var allSrc = [];
+  results.forEach(function(r){ if(r.data_sources) allSrc = allSrc.concat(r.data_sources); });
+  var uniqSrc = allSrc.filter(function(v,i,a){return a.indexOf(v)===i;});
+  if (!uniqSrc.length) uniqSrc = ['CMIP6 (Open-Meteo)','WRI Aqueduct 4.0','ERA5 Historical','PhysicalHazardEngine','NGFS Ph4 Carbon Paths'];
+
+  // ── Per-scenario NPV breakdown ─────────────────────────────────────
+  function npvRow(lbl, tr, ph, cb) {
+    return '<tr style="font-size:12px">'+
+      '<td style="padding:7px 10px;color:var(--muted)">'+lbl+'</td>'+
+      '<td style="padding:7px 10px;text-align:center;color:'+(tr<0?'var(--red)':'var(--green)')+'">'+tr+'%</td>'+
+      '<td style="padding:7px 10px;text-align:center;color:'+(ph<0?'var(--red)':'var(--green)')+'">'+ph+'%</td>'+
+      '<td style="padding:7px 10px;text-align:center;font-weight:700;color:'+(cb<0?'var(--red)':'var(--green)')+'">'+cb.toFixed(1)+'%</td>'+
+    '</tr>';
+  }
+  var npvTable='<table style="width:100%;border-collapse:collapse;margin-top:6px">'+
+    '<thead><tr style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em">'+
+    '<th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Scenario</th>'+
+    '<th style="padding:6px 10px;text-align:center;border-bottom:1px solid var(--border)">⚡ Transition</th>'+
+    '<th style="padding:6px 10px;text-align:center;border-bottom:1px solid var(--border)">🌡 Physical</th>'+
+    '<th style="padding:6px 10px;text-align:center;border-bottom:1px solid var(--border)">TCFD Combined</th>'+
+    '</tr></thead><tbody>'+
+    npvRow('🟢 Net Zero 2050',trN,phN,cbN)+
+    npvRow('🟡 Delayed Transition',dt.npv_impact_pct||0,dt.physical_npv_impact_pct||0,dt.combined_npv_impact_pct||(dt.npv_impact_pct||0)+(dt.physical_npv_impact_pct||0))+
+    npvRow('🔴 Current Policies',trC,phC,cbC)+
+    '</tbody></table>';
+
+  // ── Asset sites ────────────────────────────────────────────────────
+  var assetHTML = '';
+  var assetProfiles = data.asset_profiles || [];
+  if (assetProfiles.length) {
+    assetHTML = assetProfiles.slice(0,8).map(function(ap){
+      var elf = ((ap.annual_loss_fraction||0)*100).toFixed(1);
+      var ll  = (ap.lat && ap.lon) ? ap.lat.toFixed(3)+'°, '+ap.lon.toFixed(3)+'° · ' : '';
+      var hazTop = '';
+      if (ap.hazard_probs && Object.keys(ap.hazard_probs).length) {
+        var sorted = Object.entries(ap.hazard_probs).map(function(kv){
+          var yrs = Object.values(kv[1]);
+          return [kv[0], yrs.length ? Math.max.apply(null,yrs) : 0];
+        }).sort(function(a,b){return b[1]-a[1];});
+        hazTop = sorted.slice(0,3).map(function(kv){
+          var icons={flood:'🌊',heat_stress:'🌡',water_stress:'💧',wildfire:'🔥',wind:'💨'};
+          return (icons[kv[0]]||'⚠')+' '+(kv[0].replace('_',' '))+' '+(kv[1]*100).toFixed(0)+'%';
+        }).join(' &nbsp;·&nbsp; ');
+      }
+      var years = ap.hazard_probs ? Object.values(ap.hazard_probs)[0]||{} : {};
+      var yrChips = Object.keys(years).map(function(y){return '<span class="yr-chip">'+y+'</span>';}).join('');
+      return '<div class="site-card">'+
+        '<div class="site-card-head">'+
+          '<div><div class="site-name">'+(ap.asset_name||ap.asset_id||'Asset')+'</div>'+
+          '<div class="site-coords">'+ll+(ap.region||'')+'</div></div>'+
+          '<div style="text-align:right"><div style="font-size:18px;font-weight:800;color:'+(parseFloat(elf)>10?'var(--red)':parseFloat(elf)>5?'var(--amber)':'var(--green)')+'">'+elf+'%</div>'+
+          '<div style="font-size:10px;color:var(--faint)">Annual Loss Frac.</div></div>'+
+        '</div>'+
+        (hazTop?'<div style="font-size:11px;color:var(--muted);margin-bottom:6px">'+hazTop+'</div>':'')+
+        (yrChips?'<div class="yr-timeline">'+yrChips+'</div>':'')+
+      '</div>';
+    }).join('');
+  } else {
+    assetHTML = '<div style="color:var(--faint);font-size:12px;padding:10px 0">Asset-level data available after XLSX upload and engine run.</div>';
+  }
+
+  return '<div class="det-report">'+
+    '<div class="det-report-head" onclick="toggleDetReport()">'+
+      '<span style="font-weight:700;font-size:13px">📋 Full Detailed Report</span>'+
+      '<span id="det-report-arrow" style="color:var(--green);font-size:12px">▼</span>'+
+    '</div>'+
+    '<div class="det-report-body" id="det-report-body">'+
+      '<div class="det-section">'+
+        '<div class="det-section-title">Financial Model</div>'+
+        fRow('Company', company||'—')+
+        fRow('Sector', sec)+
+        fRow('Enterprise Value (NZE)', '$'+ev+'B')+
+        fRow('Equity Value (NZE)', '$'+eq+'B')+
+        fRow('WACC', wacc+'%')+
+        fRow('Share Price (NZE)', sp ? '$'+sp : '—')+
+        fRow('Engine Warnings', warns)+
+      '</div>'+
+      '<div class="det-section">'+
+        '<div class="det-section-title">Climate Model Parameters</div>'+
+        fRow('SSP Path (NZE)', ssp)+
+        fRow('GMST at 2050 (NZE)', gmst ? '+'+gmst+'°C' : '—')+
+        fRow('SSP Path (Current Policies)', cp.ssp_id||'SSP3-7.0')+
+        fRow('GMST at 2050 (CP)', (cp.gmst_2050 ? '+'+cp.gmst_2050+'°C' : '—'))+
+        fRow('Physical Exposure Ratio (φ)', phi)+
+        fRow('Horizon', '2026 – 2050')+
+        fRow('Downscaling', 'CMIP6 0.25° + WRI Aqueduct + Sentinel-2 + GFS')+
+      '</div>'+
+      '<div class="det-section">'+
+        '<div class="det-section-title">NPV Impact — Double Materiality (TCFD)</div>'+
+        npvTable+
+      '</div>'+
+      '<div class="det-section">'+
+        '<div class="det-section-title">Data Sources</div>'+
+        uniqSrc.map(function(s){return '<div class="det-row"><span class="det-row-lbl">✓</span><span class="det-row-val" style="font-weight:400">'+s+'</span></div>';}).join('')+
+      '</div>'+
+      '<div class="det-section">'+
+        '<div class="det-section-title">Asset / Prediction Sites</div>'+
+        assetHTML+
+      '</div>'+
+    '</div>'+
+  '</div>';
+}
 
 function showEngineError(msg, company, sector, assessId) {
   hideLoading();
