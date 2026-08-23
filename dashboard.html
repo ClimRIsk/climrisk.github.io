@@ -592,22 +592,99 @@ async function launchAssessment() {
 }
 
 // ── SYNTHETIC FALLBACK (no file, manual entry only) ───────────────────────────
+// ── Physical risk helpers (IPCC AR6 WG1 scaling — mirrors Python physical_risk_financial.py) ──
+var _SECTOR_PHI = {
+  real_estate:0.52,utilities:0.42,energy:0.38,oil_gas:0.35,agriculture:0.65,
+  food_beverage:0.40,chemicals:0.32,metals_mining:0.33,mining:0.33,cement:0.30,
+  construction:0.38,transport:0.28,industrials:0.22,consumer:0.18,retail:0.15,
+  automotive:0.20,technology:0.10,healthcare:0.12,financials:0.14,default:0.22
+};
+function _sectorPhi(sector) {
+  var s = (sector||'').toLowerCase().replace(/[^a-z]/g,'_');
+  if (/oil|gas|petro/.test(s)) return _SECTOR_PHI.oil_gas;
+  if (/real.?estate|property|reit/.test(s)) return _SECTOR_PHI.real_estate;
+  if (/util|electric|power|grid/.test(s)) return _SECTOR_PHI.utilities;
+  if (/energy|renew|solar|wind/.test(s)) return _SECTOR_PHI.energy;
+  if (/agri|farm|crop/.test(s)) return _SECTOR_PHI.agriculture;
+  if (/food|bever|brew|drink/.test(s)) return _SECTOR_PHI.food_beverage;
+  if (/chem|plastic/.test(s)) return _SECTOR_PHI.chemicals;
+  if (/metal|steel|alum|copper/.test(s)) return _SECTOR_PHI.metals_mining;
+  if (/mining|coal|iron/.test(s)) return _SECTOR_PHI.mining;
+  if (/cement|concrete/.test(s)) return _SECTOR_PHI.cement;
+  if (/construct|infra/.test(s)) return _SECTOR_PHI.construction;
+  if (/transport|logist|rail/.test(s)) return _SECTOR_PHI.transport;
+  if (/tech|softw|digital/.test(s)) return _SECTOR_PHI.technology;
+  if (/health|hospital|pharma/.test(s)) return _SECTOR_PHI.healthcare;
+  if (/financ|bank|insur/.test(s)) return _SECTOR_PHI.financials;
+  if (/consumer|retail|apparel/.test(s)) return _SECTOR_PHI.retail;
+  return _SECTOR_PHI.default;
+}
+function _hazardProbs(dT) {
+  // IPCC AR6 WG1 Ch11 scaling factors
+  return {
+    flood:       Math.min(0.9, 0.035 * Math.pow(1 + 0.07 * dT, 2)),
+    heat_stress: Math.min(0.9, 0.025 * Math.pow(1.40, dT)),
+    water_stress:Math.min(0.9, 0.020 * (1 + 0.15 * dT)),
+    wildfire:    Math.min(0.9, 0.012 * (1 + 0.12 * dT)),
+    wind:        Math.min(0.9, 0.018 * (1 + 0.05 * dT))
+  };
+}
+function _elf(probs) {
+  var surv = 1.0;
+  Object.keys(probs).forEach(function(k){ surv *= (1 - probs[k]); });
+  return Math.min(0.80, 1 - surv);
+}
+function _physicalNpvImpact(dT_avg, phi, rev_usd, ev_usd, wacc) {
+  // Annuity factor over 25 years at wacc
+  var annuity = (1 - Math.pow(1+wacc, -25)) / wacc;
+  var probs   = _hazardProbs(dT_avg);
+  var elf     = _elf(probs);
+  var drag    = elf * phi * rev_usd * annuity;
+  return {pct: -(drag / Math.max(ev_usd, 1)), probs: probs, elf: elf};
+}
+
+// SSP average GMST anomaly 2026-2050 (°C above 1995-2014 baseline, IPCC AR6 Table 4.5 medians)
+var _SSP_AVG_GMST = {nze:0.70, dt:0.97, cp:1.22};
+var _SSP_GMST2050 = {nze:0.85, dt:1.35, cp:1.70};
+var _SSP_IDS      = {nze:'SSP1-2.6', dt:'SSP2-4.5', cp:'SSP3-7.0'};
+
 function makeSyntheticResult(company, sector, rev) {
   var r = parseFloat(rev) || 1000;
   var ebitda = r * 0.22;
   var wacc = 0.09;
-  // sector multipliers matching NGFS Phase 4
+  var phi  = _sectorPhi(sector);
+
+  // Transition risk multipliers (NGFS Phase 4)
   var mult = /oil|gas|coal|petro/i.test(sector) ? {nze:0.65,dt:0.90,cp:1.20}
            : /mining|metal|iron|copper/i.test(sector) ? {nze:0.82,dt:1.05,cp:1.28}
            : /cement|steel/i.test(sector) ? {nze:0.75,dt:0.97,cp:1.25}
            : {nze:1.05,dt:1.22,cp:1.38};
-  var baseEV = (ebitda/(wacc+0.005)) / 1e3;
-  var mkResults = function(s, m, name) {
-    var ev = Math.max(0.1, baseEV * m);
-    var eq = Math.max(0, ev - r*0.3/1e3);
-    var npv = ((ev - baseEV)/baseEV*100);
-    return {company:company,scenario:name,ev_bn:Math.round(ev*10)/10,equity_bn:Math.round(eq*10)/10,
-      share_price:Math.round(eq*1e3/50*100)/100,wacc_pct:wacc*100,npv_impact_pct:Math.round(npv*10)/10,warnings:0};
+  var baseEV = (ebitda/(wacc+0.005)) / 1e3;   // $B
+
+  var mkResults = function(key, m, name) {
+    var ev    = Math.max(0.1, baseEV * m);
+    var eq    = Math.max(0, ev - r*0.3/1e3);
+    var tr    = Math.round(((ev - baseEV)/baseEV*100)*10)/10;
+    var dT    = _SSP_AVG_GMST[key];
+    var ev_usd = ev * 1e9;
+    var rev_usd = r * 1e6;
+    var phys  = _physicalNpvImpact(dT, phi, rev_usd, ev_usd, wacc);
+    var ph    = Math.round(phys.pct*100*10)/10;
+    var cb    = Math.round((tr + ph)*10)/10;
+    var hzPct = {};
+    Object.keys(phys.probs).forEach(function(k){ hzPct[k] = Math.round(phys.probs[k]*100*10)/10; });
+    return {
+      company:company, scenario:name,
+      ev_bn:Math.round(ev*10)/10, equity_bn:Math.round(eq*10)/10,
+      share_price:Math.round(eq*1e3/50*100)/100, wacc_pct:wacc*100,
+      npv_impact_pct:tr,
+      physical_npv_impact_pct:ph,
+      combined_npv_impact_pct:cb,
+      hazard_scores:hzPct,
+      ssp_id:_SSP_IDS[key],
+      gmst_2050:_SSP_GMST2050[key],
+      warnings:0
+    };
   };
   return {
     source_file:'manual-entry', companies_processed:1,
@@ -691,23 +768,58 @@ function showResults(data, company, sector, duration) {
   var dt  = byScen['Delayed Transition'] || results[1] || {};
   var cp  = byScen['Current Policies'] || results[2] || {};
 
-  // Derive rating from NZE NPV impact
-  var ri = deriveRating(nze.npv_impact_pct);
+  // Derive rating from NZE combined (transition + physical) NPV impact
+  var nze_combined = nze.combined_npv_impact_pct != null ? nze.combined_npv_impact_pct : nze.npv_impact_pct;
+  var ri = deriveRating(nze_combined);
   var synthetic = data._synthetic ? ' <span style="background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);border-radius:8px;font-size:10px;padding:2px 7px;font-weight:600">ESTIMATED</span>' : '';
   var errWarn = data.errors && data.errors.length ? '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:14px">⚠ Engine warnings: '+data.errors.join(' · ')+'</div>' : '';
 
-  function scRow(scen, label) {
+  function scRow(scen, label, ssp) {
     if (!scen || !scen.ev_bn) return '<div class="scenario-card"><div class="scenario-name">'+label+'</div><div style="color:var(--faint);font-size:12px">No data</div></div>';
-    var npvClass = (scen.npv_impact_pct||0) >= 0 ? 'npv-pos' : 'npv-neg';
-    var npvSign  = (scen.npv_impact_pct||0) >= 0 ? '+' : '';
+    var tr  = scen.npv_impact_pct || 0;
+    var ph  = scen.physical_npv_impact_pct || 0;
+    var cb  = scen.combined_npv_impact_pct || (tr + ph);
+    var trCls  = tr >= 0 ? 'npv-pos' : 'npv-neg';
+    var phCls  = ph >= 0 ? 'npv-pos' : 'npv-neg';
+    var cbCls  = cb >= 0 ? 'npv-pos' : 'npv-neg';
+    var trSign = tr >= 0 ? '+' : '';
+    var phSign = ph >= 0 ? '+' : '';
+    var cbSign = cb >= 0 ? '+' : '';
+    var gmst   = scen.gmst_2050 ? ' · GMST+'+scen.gmst_2050+'°C' : '';
+    var sspTag = ssp ? '<span style="font-size:9px;background:rgba(99,102,241,.15);color:#a5b4fc;border-radius:4px;padding:1px 5px;margin-left:4px">'+ssp+gmst+'</span>' : '';
+    // Hazard breakdown bar
+    var hz = scen.hazard_scores || {};
+    var hzBar = '';
+    if (Object.keys(hz).length) {
+      hzBar = '<div style="margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">';
+      hzBar += '<div style="font-size:10px;color:var(--faint);margin-bottom:6px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Physical Hazards (2038)</div>';
+      var icons = {flood:'🌊',heat_stress:'🌡',water_stress:'💧',wildfire:'🔥',wind:'💨'};
+      Object.keys(hz).forEach(function(k){
+        var v = hz[k]; var ico = icons[k]||'⚠';
+        var bar_w = Math.min(100, v*3);  // scale: ~33% at max visible
+        hzBar += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">'+
+          '<span style="font-size:10px;width:70px;color:var(--muted)">'+ico+' '+k.replace('_',' ')+'</span>'+
+          '<div style="flex:1;height:5px;background:var(--border);border-radius:3px">'+
+            '<div style="height:5px;border-radius:3px;background:'+(v>15?'var(--red)':v>8?'var(--amber)':'var(--green)')+';width:'+bar_w+'%"></div>'+
+          '</div>'+
+          '<span style="font-size:10px;color:var(--muted);width:30px;text-align:right">'+v+'%</span>'+
+        '</div>';
+      });
+      hzBar += '</div>';
+    }
     return '<div class="scenario-card">'+
-      '<div class="scenario-name">'+label+'</div>'+
+      '<div class="scenario-name">'+label+sspTag+'</div>'+
       '<div class="scenario-ev">$'+scen.ev_bn+'B</div>'+
       '<div class="scenario-ev-lbl">Enterprise Value</div>'+
       '<div class="scenario-row"><span class="scenario-row-lbl">Equity Value</span><span class="scenario-row-val">$'+(scen.equity_bn||0)+'B</span></div>'+
       '<div class="scenario-row"><span class="scenario-row-lbl">WACC</span><span class="scenario-row-val">'+(scen.wacc_pct||0)+'%</span></div>'+
-      '<div class="scenario-row"><span class="scenario-row-lbl">NPV Impact</span><span class="scenario-row-val '+npvClass+'">'+npvSign+(scen.npv_impact_pct||0)+'%</span></div>'+
-      '<div class="scenario-row"><span class="scenario-row-lbl">Warnings</span><span class="scenario-row-val">'+(scen.warnings||0)+'</span></div>'+
+      '<div style="margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">'+
+        '<div style="font-size:10px;color:var(--faint);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.05em">NPV Impact</div>'+
+        '<div class="scenario-row"><span class="scenario-row-lbl" style="color:var(--muted)">⚡ Transition risk</span><span class="scenario-row-val '+trCls+'">'+trSign+tr+'%</span></div>'+
+        '<div class="scenario-row"><span class="scenario-row-lbl" style="color:var(--muted)">🌡 Physical risk</span><span class="scenario-row-val '+phCls+'">'+phSign+ph+'%</span></div>'+
+        '<div class="scenario-row" style="margin-top:4px;padding-top:4px;border-top:1px solid rgba(255,255,255,.06)"><span class="scenario-row-lbl" style="font-weight:600">Combined (TCFD)</span><span class="scenario-row-val '+cbCls+'" style="font-weight:700">'+cbSign+cb.toFixed(1)+'%</span></div>'+
+      '</div>'+
+      hzBar+
     '</div>';
   }
 
@@ -720,11 +832,24 @@ function showResults(data, company, sector, duration) {
       '<div class="res-company">'+
         '<div class="res-company-name">'+(company||nze.company||'Company')+synthetic+'</div>'+
         '<div class="res-company-meta">'+(sector||'—')+' · CRI Climate Rating · '+ri.label+'</div>'+
-        '<div style="margin-top:8px" class="sat-badges">'+
-          '<span class="sat-badge">🛰 CMIP6</span><span class="sat-badge">🌤 ERA5</span>'+
-          '<span class="sat-badge">🌊 WRI Aqueduct</span><span class="sat-badge">🔴 Sentinel-2</span>'+
-          '<span class="sat-badge">📡 NGFS Ph4</span>'+
-        '</div>'+
+        (function(){
+          // Build data-source badges from real engine response or defaults
+          var allSources = [];
+          results.forEach(function(r){ if(r.data_sources) allSources = allSources.concat(r.data_sources); });
+          var uniqueSrc = allSources.filter(function(v,i,a){return a.indexOf(v)===i;}).slice(0,6);
+          if (!uniqueSrc.length) uniqueSrc = ['CMIP6 (Open-Meteo)','WRI Aqueduct','PhysicalHazardEngine','ERA5','Sentinel-2','NGFS Ph4'];
+          var ico = function(s){
+            if(/cmip6/i.test(s)) return '🛰';
+            if(/wri/i.test(s)) return '🌊';
+            if(/era5/i.test(s)) return '🌤';
+            if(/sentinel/i.test(s)) return '🔴';
+            if(/ngfs/i.test(s)) return '📡';
+            if(/physical|hazard/i.test(s)) return '⚡';
+            if(/nasa/i.test(s)) return '🚀';
+            return '🔬';
+          };
+          return '<div style="margin-top:8px" class="sat-badges">'+uniqueSrc.map(function(s){return '<span class="sat-badge">'+ico(s)+' '+s+'</span>';}).join('')+'</div>';
+        })()+
       '</div>'+
       '<div>'+
         '<div class="res-duration">Processed: '+data.companies_processed+' co · '+data.scenarios_run.length+' scenarios'+durText+'</div>'+
@@ -734,7 +859,7 @@ function showResults(data, company, sector, duration) {
         '</div>'+
       '</div>'+
     '</div>'+
-    '<div class="scenario-grid">'+scRow(nze,'🟢 Net Zero 2050')+scRow(dt,'🟡 Delayed Transition')+scRow(cp,'🔴 Current Policies')+'</div>'+
+    '<div class="scenario-grid">'+scRow(nze,'🟢 Net Zero 2050',nze.ssp_id||'SSP1-2.6')+scRow(dt,'🟡 Delayed Transition',dt.ssp_id||'SSP2-4.5')+scRow(cp,'🔴 Current Policies',cp.ssp_id||'SSP3-7.0')+'</div>'+
     (data._synthetic ? '<div style="font-size:11px;color:var(--faint);margin-top:10px;padding:10px;background:var(--surf);border-radius:8px">ℹ Estimated results based on sector parameters and NGFS Phase 4 carbon price paths. Upload an Excel file with company financials for engine-computed results.</div>' : '');
 
   rp.scrollIntoView({behavior:'smooth', block:'start'});
@@ -779,9 +904,23 @@ function saveResultToAssessment(id, data, company, sector, duration) {
 // ── CSV EXPORT ────────────────────────────────────────────────────────────────
 function exportToCsv() {
   if (!_lastResults) return;
-  var rows = [['Company','Scenario','EV ($B)','Equity ($B)','WACC %','NPV Impact %','Warnings']];
+  var rows = [[
+    'Company','Scenario','SSP','GMST 2050 (°C)',
+    'EV ($B)','Equity ($B)','WACC %',
+    'Transition NPV Impact %','Physical NPV Impact %','Combined NPV Impact %',
+    'Flood Risk (2038%)','Heat Stress (2038%)','Water Stress (2038%)','Wildfire (2038%)','Wind (2038%)',
+    'Sector','Physical Exposure Ratio','Data Sources','Warnings'
+  ]];
   (_lastResults.data.results||[]).forEach(function(r){
-    rows.push([r.company,r.scenario,r.ev_bn,r.equity_bn,r.wacc_pct,r.npv_impact_pct,r.warnings]);
+    var hz = r.hazard_scores || {};
+    rows.push([
+      r.company, r.scenario, r.ssp_id||'', r.gmst_2050||'',
+      r.ev_bn, r.equity_bn, r.wacc_pct,
+      r.npv_impact_pct||0, r.physical_npv_impact_pct||0, r.combined_npv_impact_pct||0,
+      hz.flood||0, hz.heat_stress||0, hz.water_stress||0, hz.wildfire||0, hz.wind||0,
+      r.sector||'', r.physical_exposure_ratio||'',
+      (r.data_sources||[]).join(' | '), r.warnings||0
+    ]);
   });
   var csv = rows.map(function(r){ return r.map(function(v){ return '"'+(v||'').toString().replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
   var a = document.createElement('a');
