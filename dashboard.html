@@ -229,7 +229,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
   <a class="sb-item" href="#" onclick="scrollToSection('automation');return false"><span class="sb-icon">🇪🇺</span>CBAM Tracker</a>
   <a class="sb-item" href="#" onclick="openNewAssessment();return false"><span class="sb-icon">⚡</span>MACC Engine</a>
   <div class="sb-foot">
-    <a class="sb-item" href="CRI_Demo.html" style="font-size:11px"><span class="sb-icon">🔬</span>Full Analysis Suite</a>
+    <a class="sb-item" onclick="exportToCsv();return false" href="#" style="font-size:11px"><span class="sb-icon">📥</span>Export Report (CSV)</a>
     <a class="sb-item" href="app.html" onclick="logout()" style="font-size:11px"><span class="sb-icon">↩</span>Sign out</a>
   </div>
 </nav>
@@ -528,7 +528,7 @@ function deleteAssessment(id) {
 function reOpenResults(id) {
   var a = getAssessments().find(function(x){ return x.id===id; });
   if (a && a.engineData) showResults(a.engineData, a.company, a.sector, a.duration);
-  else window.open('CRI_Demo.html','_blank');
+  else { openNewAssessment(); document.getElementById('m-company').value = a ? (a.company||'') : ''; }
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
@@ -854,7 +854,7 @@ function showResults(data, company, sector, duration) {
       '<div>'+
         '<div class="res-duration">Processed: '+data.companies_processed+' co · '+data.scenarios_run.length+' scenarios'+durText+'</div>'+
         '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'+
-          '<button onclick="window.open(\'CRI_Demo.html\',\'_blank\')" style="background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);color:#a5b4fc;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">🔬 Full Analysis Suite</button>'+
+          '<button onclick="exportToCsv()" style="background:rgba(124,58,237,.2);border:1px solid rgba(124,58,237,.4);color:#a5b4fc;border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">🔬 Full Report (CSV)</button>'+
           '<button onclick="exportToCsv()" style="background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.3);color:var(--green);border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer;font-weight:600">📥 Export CSV</button>'+
         '</div>'+
       '</div>'+
