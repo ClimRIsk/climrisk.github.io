@@ -996,8 +996,6 @@ function showResults(data, company, sector, duration) {
   rp.scrollIntoView({behavior:'smooth', block:'start'});
   setTimeout(function(){
     initRiskMap(data, nze, dt, cp, company);
-    initEBITDAChart(nze, dt, cp);
-    initCarbonChart();
   }, 80);
   _lastResults = {data:data,company:company,sector:sector,duration:duration,nze:nze,dt:dt,cp:cp};
 }
@@ -1393,7 +1391,12 @@ function switchCRITab(id, btn) {
   var panel = document.getElementById('cri-tab-'+id);
   if (panel) { panel.classList.add('active-tab'); panel.style.display='block'; }
   if (id === 'financial') {
-    setTimeout(function(){ if(_ebitdaChart) _ebitdaChart.resize(); if(_carbonChart) _carbonChart.resize(); }, 60);
+    setTimeout(function(){
+      if (!_ebitdaChart && _lastResults) initEBITDAChart(_lastResults.nze||{}, _lastResults.dt||{}, _lastResults.cp||{});
+      if (!_carbonChart) initCarbonChart();
+      if (_ebitdaChart) _ebitdaChart.resize();
+      if (_carbonChart) _carbonChart.resize();
+    }, 60);
   }
   if (id === 'livemet' && _lastResults) {
     var ll = _latLonForResult(_lastResults.nze||{}, _lastResults.company||'');
