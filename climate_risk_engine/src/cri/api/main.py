@@ -368,7 +368,15 @@ class FileRunSummaryRow(BaseModel):
     equity_bn: float
     share_price: float
     wacc_pct: float
-    npv_impact_pct: float | None
+    npv_impact_pct: float | None              # transition risk NPV impact (NGFS carbon cost)
+    physical_npv_impact_pct: float | None     # physical risk NPV drag (CMIP6+WRI or IPCC scaling)
+    combined_npv_impact_pct: float | None     # transition + physical (TCFD double materiality)
+    hazard_scores: dict | None = None         # hazard → annual prob % at 2038
+    ssp_id: str | None = None                 # e.g. "ssp126", "ssp245", "ssp370"
+    gmst_2050: float | None = None            # °C above 1995–2014 baseline
+    data_sources: list[str] | None = None     # CMIP6 / WRI Aqueduct / PhysicalHazardEngine
+    sector: str | None = None                 # normalised sector key
+    physical_exposure_ratio: float | None = None  # φ — fraction of revenue exposed
     warnings: int
 
 
