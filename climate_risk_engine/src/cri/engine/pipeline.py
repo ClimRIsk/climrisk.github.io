@@ -162,6 +162,11 @@ class PipelineRunResult:
     enrichment_sources: dict[str, str]   # hazard_type → data source
     warnings: list[str]
     duration_s: float
+    sector: str = "default"
+    revenue_usd: float = 0.0
+    # Real hazard profiles from CMIP6 + WRI spatial downscaling
+    # Key: asset_id, Value: AssetHazardProfile (hazard_probs + sources)
+    asset_hazard_profiles: dict = field(default_factory=dict)
 
 
 @dataclass
@@ -175,19 +180,125 @@ class PipelineReport:
     errors: list[str] = field(default_factory=list)
 
     def summary_table(self) -> list[dict[str, Any]]:
-        """Return a flat list of dicts suitable for display or CSV export."""
+        """Return a flat list of dicts suitable for display or CSV export.
+
+        Physical-risk NPV impact is derived from real CMIP6 + WRI Aqueduct
+        hazard probabilities captured during enrichment (asset_hazard_profiles).
+        Falls back to IPCC AR6 GMST scaling when no per-asset data is available.
+
+        Both physical and combined (transition + physical) NPV impacts are
+        returned for TCFD double-materiality disclosure.
+        """
+        from ..climate.physical_risk_financial import (
+            compute_physical_npv_impact,
+            combined_npv_impact_pct,
+            _sector_key,
+            SECTOR_EXPOSURE_RATIO,
+        )
+        from ..climate.ssp_scenarios import NGFS_TO_SSP, SSP_SCENARIOS
+
+        _SC_TO_FAMILY: dict[str, str] = {
+            "Net Zero 2050":       "nze_2050",
+            "nze_2050":            "nze_2050",
+            "Delayed Transition":  "delayed_transition",
+            "delayed_transition":  "delayed_transition",
+            "Current Policies":    "current_policies",
+            "current_policies":    "current_policies",
+            "Hot House World":     "hot_house",
+            "hot_house":           "hot_house",
+        }
+
         rows = []
         for r in self.runs:
-            res = r.results
+            res      = r.results
+            ev_usd   = res.enterprise_value * 1e6   # RunResults EV is in $M
+            wacc     = res.wacc_used
+            rev_usd  = r.revenue_usd
+            ngfs_fam = _SC_TO_FAMILY.get(r.scenario_name, "delayed_transition")
+            ssp_id   = NGFS_TO_SSP.get(ngfs_fam, "ssp245")
+            ssp      = SSP_SCENARIOS[ssp_id]
+            sec_key  = _sector_key(r.sector)
+            phi      = SECTOR_EXPOSURE_RATIO.get(sec_key, 0.22)
+
+            hazard_scores_2038: dict[str, float] = {}
+            data_sources: list[str] = []
+
+            if r.asset_hazard_profiles:
+                # ── Primary path: real CMIP6 + WRI Aqueduct data ──────────
+                # Aggregate ELF across assets and years using real hazard probs
+                years = list(range(2026, 2051))
+                yearly_total_drag = {yr: 0.0 for yr in years}
+                yearly_elf: dict[int, float] = {}
+                hazard_acc: dict[str, list[float]] = {}  # hazard → [prob per year]
+                n_assets = len(r.asset_hazard_profiles)
+
+                for asset_id, profile in r.asset_hazard_profiles.items():
+                    data_sources.extend(profile.sources.values())
+                    # Per year, compute joint ELF for this asset
+                    asset_rev = rev_usd / max(n_assets, 1)
+                    for yr in years:
+                        probs_yr: dict[str, float] = {}
+                        for haz, yr_probs in profile.hazard_probs.items():
+                            p = yr_probs.get(yr, 0.0)
+                            probs_yr[haz] = p
+                            if yr == 2038:
+                                hazard_acc.setdefault(haz, []).append(p)
+                        # Joint survival across hazards for this asset/year
+                        survival = 1.0
+                        for p in probs_yr.values():
+                            survival *= (1.0 - p)
+                        elf = min(0.80, 1.0 - survival)
+                        revenue_at_risk = asset_rev * phi * elf
+                        discount = (1.0 + wacc) ** (yr - 2026)
+                        yearly_total_drag[yr] += revenue_at_risk / discount
+
+                total_drag   = sum(yearly_total_drag.values())
+                ph_pct_raw   = -(total_drag / max(ev_usd, 1.0))
+
+                # 2038 hazard scores = average across assets
+                hazard_scores_2038 = {
+                    h: round(sum(vs) / len(vs) * 100, 1)
+                    for h, vs in hazard_acc.items()
+                    if vs
+                }
+                data_source_str = "CMIP6 (Open-Meteo) + WRI Aqueduct + PhysicalHazardEngine"
+
+            else:
+                # ── Fallback: IPCC AR6 GMST scaling ────────────────────────
+                phys = compute_physical_npv_impact(
+                    ngfs_family=ngfs_fam,
+                    sector=r.sector,
+                    revenue_usd=rev_usd,
+                    ev_base_usd=max(ev_usd, 1.0),
+                    wacc=wacc,
+                )
+                ph_pct_raw       = phys.physical_npv_impact_pct
+                hazard_scores_2038 = {k: round(v * 100, 1) for k, v in phys.hazard_probs_2038.items()}
+                data_source_str  = "IPCC AR6 WG1/WG2 (GMST scaling fallback)"
+
+            tr_pct   = res.npv_impact_pct or 0.0
+            ph_pct   = ph_pct_raw
+            comb_pct = combined_npv_impact_pct(tr_pct, ph_pct)
+            # Unique sources, max 5 for readability
+            unique_sources = list(dict.fromkeys(data_sources))[:5]
+
             rows.append({
-                "company":        r.company_name,
-                "scenario":       r.scenario_name,
-                "ev_bn":          round(res.enterprise_value / 1e3, 1),
-                "equity_bn":      round(res.equity_value / 1e3, 1),
-                "share_price":    round(res.implied_share_price, 2),
-                "wacc_pct":       round(res.wacc_used * 100, 2),
-                "npv_impact_pct": round(res.npv_impact_pct * 100, 1) if res.npv_impact_pct else None,
-                "warnings":       len(r.warnings),
+                "company":                    r.company_name,
+                "scenario":                   r.scenario_name,
+                "ev_bn":                      round(res.enterprise_value / 1e3, 1),
+                "equity_bn":                  round(res.equity_value / 1e3, 1),
+                "share_price":                round(res.implied_share_price, 2),
+                "wacc_pct":                   round(wacc * 100, 2),
+                "npv_impact_pct":             round(tr_pct * 100, 1),
+                "physical_npv_impact_pct":    round(ph_pct * 100, 1),
+                "combined_npv_impact_pct":    round(comb_pct * 100, 1),
+                "hazard_scores":              hazard_scores_2038,
+                "ssp_id":                     ssp_id,
+                "gmst_2050":                  ssp.gmst_2050,
+                "data_sources":               unique_sources or [data_source_str],
+                "sector":                     sec_key,
+                "physical_exposure_ratio":    round(phi, 2),
+                "warnings":                   len(r.warnings),
             })
         return rows
 
@@ -298,11 +409,23 @@ class Pipeline:
         # 3. Run the engine
         results = engine_run(company, enriched_scenario)
 
-        # 4. Collect enrichment source attribution
+        # 4. Collect enrichment source attribution + real hazard profiles
+        # Run hm.assess() over the full projection horizon so we get CMIP6-downscaled
+        # per-year hazard probabilities for every asset. These feed directly into
+        # the physical NPV calculation in summary_table().
         sources: dict[str, str] = {}
+        asset_profiles: dict = {}
         for asset in company.assets:
-            profile = self.hm.assess(asset, scenario.family, [2030])
+            years = list(range(2026, 2051))
+            profile = self.hm.assess(asset, scenario.family, years)
             sources.update(profile.sources)
+            asset_profiles[asset.id] = profile
+
+        # Revenue in USD: sum revenue_baseline across all assets
+        revenue_usd = sum(
+            getattr(a, "revenue_baseline", 0.0) or 0.0
+            for a in company.assets
+        )
 
         return PipelineRunResult(
             company_id=company.id,
@@ -313,6 +436,9 @@ class Pipeline:
             enrichment_sources=sources,
             warnings=warnings,
             duration_s=time.time() - t0,
+            sector=getattr(company, "sector", "default"),
+            revenue_usd=revenue_usd,
+            asset_hazard_profiles=asset_profiles,
         )
 
     # ── Helpers ────────────────────────────────────────────────────────────
