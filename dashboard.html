@@ -1137,13 +1137,59 @@ var _COUNTRY_COORDS = {
   'BR':[[10,-55],4],'CA':[[56,-106],4],'JP':[[36,138],5],'SG':[[1.4,104],10],
   'ZA':[-29,25],'NG':[9,8],'KE':[-1,37],'EG':[26,30],'SA':[24,45],'AE':[24,54],
 };
-function _latLonForResult(r, company) {
+// Company HQ / primary operations coordinates
+var _COMPANY_COORDS = {
+  'shell':[52.36,4.91],'bp':[51.51,-0.13],'exxon':[40.77,-74.05],'chevron':[37.78,-122.42],
+  'totalenergies':[48.87,2.33],'total':[48.87,2.33],'eni':[41.90,12.48],
+  'equinor':[58.97,5.73],'repsol':[40.42,-3.70],'petrobras':[-22.90,-43.17],
+  'bhp':[-31.95,115.86],'riotinto':[-31.95,115.86],'angloamerican':[51.51,-0.13],
+  'glencore':[47.17,8.52],'vale':[-19.92,-43.94],'freeport':[40.71,-74.01],
+  'southerncopper':[-12.05,-77.04],'barrick':[43.65,-79.38],
+  'newmont':[39.74,-104.99],'antofagasta':[-33.45,-70.67],
+  'carlsberg':[55.68,12.57],'heineken':[52.37,4.89],'abinbev':[50.85,4.35],
+  'diageo':[51.51,-0.13],'nestle':[46.52,6.63],'danone':[48.87,2.33],
+  'unilever':[51.51,-0.13],'pg':[39.10,-84.51],'jnj':[40.57,-74.29],
+  'volkswagen':[52.43,10.79],'toyota':[35.08,137.15],'bmw':[48.18,11.55],
+  'daimler':[48.78,9.18],'ford':[42.32,-83.18],'gm':[42.33,-83.05],
+  'apple':[37.33,-122.03],'microsoft':[47.64,-122.13],'google':[37.42,-122.08],
+  'amazon':[47.61,-122.34],'meta':[37.48,-122.15],'tesla':[37.39,-122.08],
+  'samsung':[37.51,127.02],'tsmc':[24.79,120.99],'asml':[51.38,5.46],
+  'siemens':[48.14,11.58],'ge':[41.81,-72.61],'honeywell':[40.77,-74.02],
+  'basf':[49.48,8.44],'dow':[43.62,-84.23],'linde':[53.57,9.97],
+  'airfrance':[49.00,2.55],'lufthansa':[50.03,8.55],'ba':[51.47,-0.45],
+  'maersk':[55.68,12.59],'msc':[46.20,6.14],'cmacgm':[43.30,5.37],
+  'bpsteel':[51.38,-3.50],'tata':[19.08,72.88],'arcelor':[49.50,5.95],
+  'cri_testco':[51.51,-0.13],'testco':[51.51,-0.13],
+};
+// Sector centroid fallbacks (when company name unknown)
+var _SECTOR_COORDS = {
+  'Energy':[25.0,50.0],'Oil & Gas':[25.0,50.0],'Mining':[-25.0,130.0],
+  'Agriculture':[20.0,78.0],'Beverages':[48.0,10.0],'Real Estate':[40.0,-74.0],
+  'Technology':[37.4,-122.0],'Financial Services':[51.5,-0.1],
+  'Utilities':[40.0,10.0],'Steel':[40.0,10.0],'Chemicals':[51.0,7.0],
+  'Shipping':[55.7,12.6],'Automotive':[48.0,10.0]
+};
+function _latLonForResult(r, company, sector) {
   if (r && r.lat && r.lon) return [r.lat, r.lon];
+  // Country lookup
   var cnt = (r && r.country) || '';
-  var c = _COUNTRY_COORDS[cnt.toUpperCase()];
-  if (c && Array.isArray(c[0])) return c[0];
-  if (c) return c;
-  return [20 + Math.random()*5 - 2.5, 0 + Math.random()*5 - 2.5];
+  var cc = _COUNTRY_COORDS[cnt.toUpperCase()];
+  if (cc && Array.isArray(cc[0])) return cc[0];
+  if (cc) return cc;
+  // Company name lookup (case-insensitive, partial)
+  if (company) {
+    var cn = company.toLowerCase().replace(/[^a-z0-9]/g,'');
+    for (var k in _COMPANY_COORDS) {
+      var kn = k.replace(/[^a-z0-9]/g,'');
+      if (cn.indexOf(kn) >= 0 || kn.indexOf(cn.substr(0,Math.min(cn.length,6))) >= 0) {
+        return _COMPANY_COORDS[k];
+      }
+    }
+  }
+  // Sector fallback
+  if (sector && _SECTOR_COORDS[sector]) return _SECTOR_COORDS[sector];
+  // World centroid (not Africa)
+  return [48.0 + Math.random()*4-2, 8.0 + Math.random()*4-2];
 }
 function _riskColor(combined_pct) {
   var v = combined_pct || 0;
@@ -1233,8 +1279,9 @@ function initRiskMap(data, nze, dt, cp, company) {
   var el = document.getElementById('cri-risk-map');
   if (!el || typeof L === 'undefined') return;
   if (_riskMap) { try { _riskMap.remove(); } catch(e){} _riskMap = null; }
-  var center = _latLonForResult(nze, company);
-  _riskMap = L.map('cri-risk-map', { center:center, zoom:4 });
+  var sector = (nze && nze.sector) || (cp && cp.sector) || '';
+  var center = _latLonForResult(nze, company, sector);
+  _riskMap = L.map('cri-risk-map', { center:center, zoom:5 });
   L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
     attribution:'Tiles &copy; Esri &mdash; Esri, USGS, NOAA', maxZoom:19
   }).addTo(_riskMap);
@@ -1247,19 +1294,36 @@ function initRiskMap(data, nze, dt, cp, company) {
       combined:-(ap.annual_loss_fraction||0)*100,sector:ap.region||''});
   });
   if (!pins.length) {
-    [[nze,'NZE 2050'],[dt,'Delayed'],[cp,'Curr. Policies']].forEach(function(pr){
-      var r=pr[0]; if(!r||!r.ev_bn) return;
-      var ll=_latLonForResult(r,company);
-      pins.push({lat:ll[0]+Math.random()*.8-.4,lon:ll[1]+Math.random()*.8-.4,
-        name:company+' · '+pr[1],combined:r.combined_npv_impact_pct||r.npv_impact_pct||0,sector:r.sector||''});
-    });
+    var _sec0 = (nze&&nze.sector)||(cp&&cp.sector)||sector||'';
+    var _ctr = _latLonForResult(nze, company, _sec0);
+    // Single representative pin at the company location (no random jitter)
+    var _bestR = nze||cp||dt||{};
+    if (_bestR.ev_bn||_bestR.combined_npv_impact_pct) {
+      pins.push({lat:_ctr[0],lon:_ctr[1],
+        name:company,combined:_bestR.combined_npv_impact_pct||_bestR.npv_impact_pct||0,sector:_sec0});
+    }
   }
   pins.forEach(function(p){
     var col=_riskColor(p.combined);
     var icon=L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:'+col+';border:2px solid rgba(255,255,255,.5);box-shadow:0 0 8px '+col+'80"></div>',iconSize:[14,14],iconAnchor:[7,7]});
+    var latStr=p.lat.toFixed(3)+'&#xB0;, '+p.lon.toFixed(3)+'&#xB0;';
     L.marker([p.lat,p.lon],{icon:icon}).addTo(_riskMap).bindPopup(
-      '<div style="font-size:12px;color:#1a3a5c;min-width:160px"><strong>'+p.name+'</strong><br/>'+(p.sector?'<span style="color:#64748b">'+p.sector+'</span><br/>':'')+'<span style="color:'+col+';font-weight:700">NPV: '+(p.combined>=0?'+':'')+parseFloat(p.combined).toFixed(1)+'%</span></div>');
+      '<div style="font-size:12px;color:#111827;min-width:180px">' +
+      '<strong>'+p.name+'</strong><br/>' +
+      (p.sector?'<span style="color:#64748b;font-size:11px">'+p.sector+'</span><br/>':'') +
+      '<span style="color:#9ca3af;font-size:10px">'+latStr+'</span><br/>' +
+      '<span style="color:'+col+';font-weight:700">NPV: '+(p.combined>=0?'+':'')+parseFloat(p.combined).toFixed(1)+'%</span>' +
+      '</div>');
   });
+  // Auto-fit bounds to all pins if we have more than one, else zoom to the pin
+  if (pins.length === 1) {
+    _riskMap.setView([pins[0].lat, pins[0].lon], 6);
+  } else if (pins.length > 1) {
+    try {
+      var bounds = L.latLngBounds(pins.map(function(p){ return [p.lat,p.lon]; }));
+      _riskMap.fitBounds(bounds, {padding:[40,40], maxZoom:8});
+    } catch(e) {}
+  }
   var leg=L.control({position:'bottomright'});
   leg.onAdd=function(){var d=L.DomUtil.create('div','');d.style.cssText='background:rgba(11,31,56,.9);color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:11px;border:1px solid rgba(255,255,255,.15)';d.innerHTML='<div style="font-weight:700;margin-bottom:4px">NPV Impact</div><div>&#x1F7E2; &gt;-4% Low</div><div>&#x1F535; -4 to -10% Mod</div><div>&#x1F7E1; -10 to -20% High</div><div>&#x1F534; &lt;-20% Very High</div>';return d;};
   leg.addTo(_riskMap);
