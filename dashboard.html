@@ -311,6 +311,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
   <a class="sb-item" href="#" onclick="switchCRITab('physical',null);scrollToSection('results-panel');return false"><span class="sb-icon">🌡</span>Physical Risk (25 Hz)</a>
   <a class="sb-item" href="#" onclick="switchCRITab('financial',null);scrollToSection('results-panel');return false"><span class="sb-icon">📈</span>Financial / EBITDA</a>
   <a class="sb-item" href="#" onclick="switchCRITab('livemet',null);scrollToSection('results-panel');return false"><span class="sb-icon">🌤</span>Live Met (climrisk.io)</a>
+  <a class="sb-item" href="#" onclick="switchCRITab('map',null);scrollToSection('results-panel');return false"><span class="sb-icon">🗺</span>Portfolio Map</a>
   <a class="sb-item" href="#" onclick="switchCRITab('disclosure',null);scrollToSection('results-panel');return false"><span class="sb-icon">⚖</span>Disclosures</a>
   <a class="sb-item" href="#" onclick="switchCRITab('loanbook',null);scrollToSection('results-panel');return false"><span class="sb-icon">🏦</span>Loan Book</a>
   <div class="sb-section">Regulatory</div>
@@ -1286,7 +1287,24 @@ function showResults(data, company, sector, duration) {
 
   // Live Met tab
   var tabLiveMet =
-    '<div id="cri-tab-livemet" class="cri-tab-content" style="display:none">'+
+    '<div id="cri-tab-map" class="cri-tab-content" style="display:none;padding:0">
+  <div id="deckgl-map" style="width:100%;height:560px;position:relative;background:#0a0a1a;border-radius:12px;overflow:hidden">
+    <div style="position:absolute;top:12px;left:12px;z-index:10">
+      <div style="background:rgba(15,23,42,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;color:#fff;font-size:12px;min-width:180px">
+        <div style="font-weight:700;margin-bottom:6px;font-size:13px">🗺 Portfolio Risk Map</div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px">
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:3px"></span>Low</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:3px"></span>Medium</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:3px"></span>High</span>
+        </div>
+        <div id="map-asset-count" style="margin-top:5px;color:rgba(255,255,255,0.5);font-size:10px">Loading assets...</div>
+      </div>
+      <div id="map-tooltip-box" style="display:none;margin-top:6px;background:rgba(15,23,42,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px 13px;color:#fff;font-size:12px;max-width:210px;line-height:1.6"></div>
+    </div>
+  </div>
+</div>
+
+<div id="cri-tab-livemet" class="cri-tab-content" style="display:none">'+
     '<div class="card">'+buildLiveMetPlaceholder(nze,company)+'</div></div>';
 
   // Disclosure tab
@@ -1872,6 +1890,7 @@ function buildCRITabs() {
     {id:'physical',  label:'🌡 Physical Risk'},
     {id:'financial', label:'📈 Financial'},
     {id:'livemet',   label:'🌤 Live Met'},
+    {id:'map', label:'🗺 Portfolio Map'},
     {id:'disclosure',label:'⚖ Disclosures'},
     {id:'loanbook',  label:'🏦 Loan Book'},
   ];
@@ -2706,84 +2725,81 @@ function buildLoanBookPanel(data, company, sector) {
   renderAssessments();
 })();
 </script>
-</body>
-</html>
-
-<div id="tab-content-portfolio-map" class="tab-content" style="display:none;padding:0">
-  <div id="deckgl-map" style="width:100%;height:580px;position:relative;background:#0a0a1a;border-radius:0 0 12px 12px">
-    <div style="position:absolute;top:12px;left:12px;z-index:10">
-      <div style="background:rgba(15,23,42,0.92);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;color:#fff;font-size:12px">
-        <div style="font-weight:700;margin-bottom:6px">Portfolio Risk Map (Deck.gl WebGL)</div>
-        <div style="display:flex;gap:10px">
-          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:3px"></span>Low</span>
-          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:3px"></span>Medium</span>
-          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:3px"></span>High</span>
-        </div>
-        <div id="map-asset-count" style="margin-top:5px;color:rgba(255,255,255,0.55);font-size:11px">Loading...</div>
-      </div>
-      <div id="map-tooltip-box" style="display:none;margin-top:6px;background:rgba(15,23,42,0.96);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;color:#fff;font-size:12px;max-width:220px"></div>
-    </div>
-  </div>
-</div>
 
 <script>
+/* ── ClimRisk Deck.gl Portfolio Map ─────────────────────────────────────── */
 (function(){
   var TIER_COLOR=[[34,197,94,200],[245,158,11,210],[239,68,68,230]];
-  var API_BASE=(window.CLIMRISK_API||'http://localhost:8000');
+  var API_BASE=(window.CLIMRISK_API||'');
 
   function syntheticFeatures(){
     var list=window._portfolioCompanies||[];
+    var locs=[[13.41,52.52],[4.9,52.37],[-0.13,51.51],[2.35,48.86],[103.82,1.35],
+              [28.95,41.01],[18.07,59.33],[-3.70,40.42],[12.49,41.90],[139.69,35.69]];
     return list.map(function(c,i){
       var t=c.score>65?2:c.score>40?1:0;
-      var lng=((i*137.5)%360)-180, lat=((i*79.3)%140)-70;
-      return {type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},
-              properties:{company:c.name,sector:c.sector||'default',
-                          npv_pct_ev:c.score*0.3,eal_usd:c.score*8e6,risk_tier:t}};
+      var loc=locs[i%locs.length];
+      return {type:'Feature',geometry:{type:'Point',coordinates:loc},
+              properties:{company:c.name,sector:c.sector||'',
+                          npv_pct_ev:+(c.score*0.28).toFixed(1),
+                          eal_usd:c.score*9e6,risk_tier:t}};
     });
   }
 
-  function renderMap(features){
-    if(!window.deck){console.warn('Deck.gl not loaded');return;}
+  function renderDeckMap(features){
+    if(!window.deck){
+      document.getElementById('map-asset-count').textContent=
+        'Deck.gl not loaded — add <script src=deck.gl/dist.min.js> to enable';
+      return;
+    }
     var el=document.getElementById('deckgl-map');
-    if(!el)return;
-    document.getElementById('map-asset-count').textContent=
-      features.length+' assets · Deck.gl WebGL · data from FastAPI /assets';
+    if(!el||el.dataset.inited)return;
+    el.dataset.inited='1';
     var tip=document.getElementById('map-tooltip-box');
     var layer=new deck.ScatterplotLayer({
       id:'assets',data:features,
       getPosition:function(f){return f.geometry.coordinates;},
-      getRadius:400000,radiusUnits:'meters',
+      getRadius:300000,radiusUnits:'meters',radiusScale:1,
       getFillColor:function(f){return TIER_COLOR[f.properties.risk_tier||0];},
-      lineWidthMinPixels:1,pickable:true,
+      stroked:true,getLineColor:[255,255,255,60],lineWidthMinPixels:1,
+      pickable:true,
       onHover:function(info){
         if(info.object){
           var p=info.object.properties;
           tip.style.display='block';
           tip.innerHTML='<strong>'+p.company+'</strong><br>'+
-            (p.sector||'')+'<br>NPV Risk: '+(p.npv_pct_ev?(p.npv_pct_ev.toFixed(1)+'% of EV'):'n/a')+
-            '<br>EAL: '+(p.eal_usd?('$'+(p.eal_usd/1e6).toFixed(1)+'M/yr'):'n/a');
+            '<span style="color:rgba(255,255,255,0.6)">'+p.sector+'</span><br>'+
+            'NPV Risk: <strong>'+(p.npv_pct_ev||0).toFixed(1)+'% of EV</strong><br>'+
+            'EAL: <strong>$'+((p.eal_usd||0)/1e6).toFixed(1)+'M/yr</strong>';
         } else { tip.style.display='none'; }
       }
     });
     new deck.DeckGL({
       container:el,
       mapStyle:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
-      initialViewState:{longitude:10,latitude:25,zoom:2,pitch:30},
+      initialViewState:{longitude:20,latitude:30,zoom:2,pitch:35,bearing:10},
       controller:true,layers:[layer]
     });
+    document.getElementById('map-asset-count').textContent=
+      features.length+' assets · Deck.gl WebGL · '+
+      (API_BASE?'FastAPI /assets':'synthetic data');
   }
 
-  function loadMap(){
+  window._initPortfolioMap=function(){
+    if(!API_BASE){renderDeckMap(syntheticFeatures());return;}
     fetch(API_BASE+'/assets?limit=500')
       .then(function(r){return r.json();})
-      .then(function(fc){renderMap(fc.features||[]);})
-      .catch(function(){renderMap(syntheticFeatures());});
-  }
+      .then(function(fc){renderDeckMap(fc.features||[]);})
+      .catch(function(){renderDeckMap(syntheticFeatures());});
+  };
 
-  var _inited=false,_orig=window.showTab;
-  window.showTab=function(id){
-    if(_orig)_orig(id);
-    if(id==='portfolio-map'&&!_inited){_inited=true;setTimeout(loadMap,120);}
+  // Hook into switchCRITab
+  var _origSwitch=window.switchCRITab;
+  window.switchCRITab=function(id,el){
+    if(_origSwitch)_origSwitch(id,el);
+    if(id==='map')setTimeout(window._initPortfolioMap,80);
   };
 })();
 </script>
+</body>
+</html>
