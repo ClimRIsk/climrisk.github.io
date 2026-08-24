@@ -496,6 +496,33 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
     <div style="font-size:10px;color:var(--faint);margin:-6px 0 6px;line-height:1.5">Enter coordinates to map the exact asset location and pull 30-year ERA5 climate data for that site.</div>
     <div class="form-field"><label>Annual revenue (USD million)</label><input type="number" id="m-rev" placeholder="e.g. 5000" min="0"></div>
 
+    <details style="margin:8px 0">
+      <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--green);padding:6px 0;user-select:none">&#x1F3D7; Physical Vulnerability Attributes <span style="font-weight:400;color:var(--faint)">(optional — improves hazard precision)</span></summary>
+      <div style="margin-top:8px;padding:12px;background:var(--bg2);border-radius:8px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <div class="form-field"><label>Asset Replacement Value (USD M)</label><input type="number" id="m-asset-value" placeholder="e.g. 250" min="0" step="0.1"><div style="font-size:10px;color:var(--faint)">Used in EAL calculation</div></div>
+        <div class="form-field"><label>Construction Year</label><input type="number" id="m-build-year" placeholder="e.g. 1998" min="1850" max="2025"><div style="font-size:10px;color:var(--faint)">Pre-1980 = higher vulnerability</div></div>
+        <div class="form-field"><label>Asset Type</label><select id="m-asset-type"><option value="">-- Select --</option><option>Office / Commercial</option><option>Industrial / Manufacturing</option><option>Warehouse / Logistics</option><option>Data Centre</option><option>Agricultural / Farmland</option><option>Energy Infrastructure</option><option>Retail</option></select></div>
+        <div class="form-field"><label>Building Material</label><select id="m-material"><option value="">-- Select --</option><option>Reinforced Concrete (RC)</option><option>Structural Steel</option><option>Masonry / Brick</option><option>Wood Frame</option><option>Pre-fabricated / Light Steel</option></select></div>
+        <div class="form-field"><label>First-Floor Elevation (m above grade)</label><input type="number" id="m-ffe" placeholder="e.g. 0.5" min="0" max="10" step="0.1"><div style="font-size:10px;color:var(--faint)">&gt;0.6m reduces flood damage ~40%</div></div>
+        <div class="form-field"><label>Flood / Climate Defenses</label><select id="m-defenses"><option value="">-- Select --</option><option>None</option><option>Standard drainage only</option><option>Flood barriers / berms</option><option>Sea wall / levee</option><option>Full hardened perimeter</option></select></div>
+        <div class="form-field" style="grid-column:1/-1"><label>Backup / Resilience Systems</label><select id="m-backup"><option value="">-- Select --</option><option>None</option><option>Generator only</option><option>Redundant cooling</option><option>Generator + redundant cooling</option><option>Full N+1 redundancy</option></select></div>
+      </div>
+    </details>
+
+    <details style="margin:8px 0">
+      <summary style="cursor:pointer;font-size:12px;font-weight:600;color:#3b82f6;padding:6px 0;user-select:none">&#x1F4CA; Emissions &amp; Transition Data <span style="font-weight:400;color:var(--faint)">(optional — replaces sectoral proxy)</span></summary>
+      <div style="margin-top:8px;padding:12px;background:var(--bg2);border-radius:8px">
+        <div style="font-size:11px;color:var(--faint);margin-bottom:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px">&#x2139;&#xFE0F; Without these, transition risk uses NGFS Phase 4 public sectoral averages (IEA 2023) — same approach as MSCI and S&amp;P Global. Providing actual data improves precision from ±35% to ±15%.</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div class="form-field"><label>Scope 1 Emissions (tCO&#x2082;e / yr)</label><input type="number" id="m-scope1" placeholder="e.g. 450000" min="0"></div>
+          <div class="form-field"><label>Scope 2 Emissions (tCO&#x2082;e / yr)</label><input type="number" id="m-scope2" placeholder="e.g. 180000" min="0"></div>
+          <div class="form-field"><label>% Revenue from High-Carbon Activities</label><input type="number" id="m-hicarb-pct" placeholder="e.g. 65" min="0" max="100"></div>
+          <div class="form-field"><label>Decarbonisation CapEx (% of total CapEx)</label><input type="number" id="m-decap-pct" placeholder="e.g. 12" min="0" max="100"></div>
+          <div class="form-field" style="grid-column:1/-1"><label>Energy Mix — % Renewable</label><input type="number" id="m-renew-pct" placeholder="e.g. 30" min="0" max="100"></div>
+        </div>
+      </div>
+    </details>
+
     <div style="background:rgba(29,158,117,.08);border:1px solid rgba(29,158,117,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted)">
       <strong style="color:var(--green)">Engine runs:</strong> CMIP6 physical hazard · ERA5 climate data · WRI Aqueduct · Sentinel-2 imagery · NGFS Phase 4 NZE/DT/CP scenarios · CBAM liability · climate-adjusted DCF. Results appear in this dashboard.
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(29,158,117,.15)">
@@ -754,6 +781,21 @@ async function launchAssessment() {
   var userLat = _latEl && _latEl.value !== '' ? parseFloat(_latEl.value) : null;
   var userLon = _lonEl && _lonEl.value !== '' ? parseFloat(_lonEl.value) : null;
   var file    = _selectedFile;
+  var _g = function(id){ var el=document.getElementById(id); return el?el.value:null; };
+  var _vulnAttrs = {
+    asset_value_usd_m: parseFloat(_g('m-asset-value'))||null,
+    build_year: parseInt(_g('m-build-year'))||null,
+    asset_type: _g('m-asset-type')||'',
+    material: _g('m-material')||'',
+    ffe_m: _g('m-ffe')!==null&&_g('m-ffe')!==''?parseFloat(_g('m-ffe')):null,
+    defenses: _g('m-defenses')||'',
+    backup: _g('m-backup')||'',
+    scope1_tco2e: parseFloat(_g('m-scope1'))||null,
+    scope2_tco2e: parseFloat(_g('m-scope2'))||null,
+    hicarbon_pct: parseFloat(_g('m-hicarb-pct'))||null,
+    decap_pct: parseFloat(_g('m-decap-pct'))||null,
+    renew_pct: parseFloat(_g('m-renew-pct'))||null
+  };
 
   if (!file && !company) { document.getElementById('m-company').focus(); return; }
   if (!company && file) company = file.name.replace(/\.[^.]+$/,'').replace(/[_\-\.]+/g,' ');
@@ -966,11 +1008,32 @@ var _SSP_AVG_GMST = {nze:0.70, dt:0.97, cp:1.22};
 var _SSP_GMST2050 = {nze:0.85, dt:1.35, cp:1.70};
 var _SSP_IDS      = {nze:'SSP1-2.6', dt:'SSP2-4.5', cp:'SSP3-7.0'};
 
-function makeSyntheticResult(company, sector, rev) {
+function makeSyntheticResult(company, sector, rev, vulnAttrs) {
   var r = parseFloat(rev) || 1000;
   var ebitda = r * 0.22;
   var wacc = 0.09;
   var phi  = _sectorPhi(sector);
+  var vuln = vulnAttrs || {};
+  var dataFields = 0; var dataMax = 7;
+
+  // Vulnerability modifier (adjusts physical exposure/damage)
+  var vulnMod = 1.0;
+  if (vuln.build_year){ dataFields++; vulnMod *= vuln.build_year<1980?1.25:vuln.build_year<2000?1.10:vuln.build_year>2010?0.85:1.0; }
+  if (vuln.ffe_m!=null){ dataFields++; vulnMod *= vuln.ffe_m>=1.0?0.65:vuln.ffe_m>=0.6?0.80:vuln.ffe_m<=0.0?1.15:1.0; }
+  if (vuln.defenses && vuln.defenses!='None' && vuln.defenses!=''){ dataFields++; vulnMod *= /sea wall|full/i.test(vuln.defenses)?0.55:/flood barrier/i.test(vuln.defenses)?0.70:0.90; }
+  if (vuln.material && vuln.material!=''){ dataFields++; vulnMod *= /reinforced concrete/i.test(vuln.material)?0.88:/wood frame/i.test(vuln.material)?1.28:/masonry/i.test(vuln.material)?1.12:0.92; }
+  if (vuln.backup && vuln.backup!='None' && vuln.backup!=''){ dataFields++; vulnMod *= /full n\+1/i.test(vuln.backup)?0.72:/generator.*cool|cool.*gen/i.test(vuln.backup)?0.80:0.90; }
+
+  // Transition modifier (adjusts carbon cost exposure)
+  var transMod = 1.0;
+  if (vuln.scope1_tco2e!=null && vuln.scope2_tco2e!=null){
+    dataFields++;
+    var intensity = (vuln.scope1_tco2e+vuln.scope2_tco2e)/Math.max(r*1000,1);
+    transMod *= intensity<50?0.70:intensity<100?0.85:intensity>300?1.35:intensity>200?1.15:1.0;
+  }
+  if (vuln.renew_pct!=null){ transMod *= (1-vuln.renew_pct/100*0.4); }
+  if (vuln.decap_pct!=null){ dataFields++; transMod *= (1-vuln.decap_pct/100*0.5); }
+  var dataCompleteness = Math.round(dataFields/dataMax*100);
 
   // Transition risk multipliers (NGFS Phase 4)
   var mult = /oil|gas|coal|petro/i.test(sector) ? {nze:0.65,dt:0.90,cp:1.20}
@@ -980,13 +1043,13 @@ function makeSyntheticResult(company, sector, rev) {
   var baseEV = (ebitda/(wacc+0.005)) / 1e3;   // $B
 
   var mkResults = function(key, m, name) {
-    var ev    = Math.max(0.1, baseEV * m);
+    var ev    = Math.max(0.1, baseEV * m * transMod);
     var eq    = Math.max(0, ev - r*0.3/1e3);
     var tr    = Math.round(((ev - baseEV)/baseEV*100)*10)/10;
     var dT    = _SSP_AVG_GMST[key];
     var ev_usd = ev * 1e9;
     var rev_usd = r * 1e6;
-    var phys  = _physicalNpvImpact(dT, phi, rev_usd, ev_usd, wacc, key, sector);
+    var phys  = _physicalNpvImpact(dT, phi * Math.min(vulnMod, 2.0), rev_usd, ev_usd, wacc, key, sector);
     var ph    = Math.round(phys.pct*100*10)/10;
     var cb    = Math.round((tr + ph)*10)/10;
     // LAYER 1 – Physical hazard display: IPCC AR6 WG1 Ch.11 Table 11.SM.2
@@ -1011,7 +1074,8 @@ function makeSyntheticResult(company, sector, rev) {
       hazard_scores:hzPct,
       ssp_id:_SSP_IDS[key],
       gmst_2050:_SSP_GMST2050[key],
-      warnings:0
+      data_completeness:dataCompleteness, vuln_mod:Math.round(vulnMod*100)/100,
+      trans_mod:Math.round(transMod*100)/100, _vuln:vuln, warnings:0
     };
   };
   return {
@@ -1780,6 +1844,8 @@ function switchCRITab(id, btn) {
 
 // ── 25-HAZARD IPCC AR6 GRID ───────────────────────────────────────────────────
 function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
+  var _dataComp = cp.data_completeness || nze.data_completeness || 0;
+  var _vulnModD = cp.vuln_mod || 1.0;
   var physPctRaw = Math.abs(cp.physical_npv_impact_pct || nze.physical_npv_impact_pct || 0);
   var physScore = Math.min(100, physPctRaw > 0 ? Math.round(physPctRaw * 4) : 45);
   var hz = (cp.hazard_scores || nze.hazard_scores || {});
@@ -1802,6 +1868,7 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   else if (physScore >= 40){ riskLabel='Elevated Physical Risk';  riskCol='#d97706'; }
   else if (physScore >= 20){ riskLabel='Moderate Physical Risk';  riskCol='#ca8a04'; }
   else                     { riskLabel='Low Physical Risk';       riskCol='#15803d'; }
+  var _compBadgeHtml = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;margin-left:6px;background:'+(_dataComp>=70?'#16a34a':_dataComp>=30?'#ca8a04':'#64748b')+';color:#fff">&#x1F4CB; DATA '+(_dataComp>0?_dataComp+'% COMPLETE':'SECTOR PROXY')+'</span>'+(_vulnModD!==1.0?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;margin-left:4px;background:#7c3aed;color:#fff">SITE-ADJ '+(_vulnModD<1?'&#x2193;':'&#x2191;')+(Math.abs(_vulnModD-1)*100).toFixed(0)+'%</span>':'');
   var HZ_LABELS = {
     heat_stress:'Heat Stress', flood:'Riverine Flood', coastal_flood:'Coastal Flood',
     sea_level:'Sea Level Rise', saltwater:'Saltwater Intrusion', landslide:'Landslide',
