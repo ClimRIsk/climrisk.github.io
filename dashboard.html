@@ -1043,8 +1043,8 @@ function showResults(data, company, sector, duration) {
     '<div class="res-header" style="margin-bottom:14px">'+
       '<div class="res-rating rating-'+ri.rating+'">'+ri.rating+'</div>'+
       '<div class="res-company">'+
-        '<div class="res-company-name">'+(company||nze.company||'Company')+synthetic+'</div>'+
-        '<div class="res-company-meta">'+(sector||'—')+' · CRI Climate Rating · '+ri.label+'</div>'+
+        '<div class="res-company-name">'+(company||nze.company||'Company')+synthetic+pyRatingBadge+'</div>'+
+        '<div class="res-company-meta">'+(sector||'—')+' · CRI Climate Rating · '+(data._python_rating_label||ri.label)+'</div>'+
         (function(){
           var allSources = [];
           results.forEach(function(r){ if(r.data_sources) allSources = allSources.concat(r.data_sources); });
@@ -1084,7 +1084,7 @@ function showResults(data, company, sector, duration) {
     '<div style="margin-top:20px"><div class="section-title">⚡ Hazard × Scenario Matrix</div>'+
     buildHazardMatrix(nze,dt,cp)+'</div>'+
     buildDetailedReport(data,nze,dt,cp,company,sector)+
-    (data._synthetic ? '<div style="font-size:11px;color:var(--faint);margin-top:10px;padding:10px;background:var(--surf);border-radius:8px">ℹ Estimated results based on sector parameters and NGFS Phase 4 carbon price paths. Upload an Excel file with company financials for engine-computed results.</div>' : '')+
+    (data._synthetic ? '<div style="font-size:11px;color:var(--faint);margin-top:10px;padding:10px;background:var(--surf);border-radius:8px">ℹ Estimated results based on sector parameters and NGFS Phase 4 carbon price paths. Upload an Excel file with company financials for engine-computed results.</div>' : (data._python_summary ? '<div style="font-size:12px;color:var(--muted);margin-top:12px;padding:12px 14px;background:rgba(29,158,117,.06);border:1px solid rgba(29,158,117,.18);border-radius:10px;line-height:1.6"><strong style="color:var(--green)">🔬 Python CRI Engine Narrative:</strong> '+data._python_summary+'</div>' : ''))+
     '</div>';
 
   // Physical Risk tab — 25 IPCC AR6 hazards
