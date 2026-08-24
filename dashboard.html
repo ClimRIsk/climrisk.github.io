@@ -489,6 +489,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
       </select>
     </div>
     <div class="form-field"><label>Headquarters country</label><input type="text" id="m-country" placeholder="e.g. Netherlands"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-field"><label>Asset Latitude <span style="color:var(--faint);font-size:10px">(optional)</span></label><input type="number" id="m-lat" placeholder="e.g. 51.507" step="0.001" min="-90" max="90"></div>
+      <div class="form-field"><label>Asset Longitude <span style="color:var(--faint);font-size:10px">(optional)</span></label><input type="number" id="m-lon" placeholder="e.g. -0.128" step="0.001" min="-180" max="180"></div>
+    </div>
+    <div style="font-size:10px;color:var(--faint);margin:-6px 0 6px;line-height:1.5">Enter coordinates to map the exact asset location and pull 30-year ERA5 climate data for that site.</div>
     <div class="form-field"><label>Annual revenue (USD million)</label><input type="number" id="m-rev" placeholder="e.g. 5000" min="0"></div>
 
     <div style="background:rgba(29,158,117,.08);border:1px solid rgba(29,158,117,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted)">
@@ -744,6 +749,10 @@ async function launchAssessment() {
   var sector  = document.getElementById('m-sector').value || 'Other';
   var country = document.getElementById('m-country').value.trim();
   var rev     = document.getElementById('m-rev').value;
+  var _latEl  = document.getElementById('m-lat');
+  var _lonEl  = document.getElementById('m-lon');
+  var userLat = _latEl && _latEl.value !== '' ? parseFloat(_latEl.value) : null;
+  var userLon = _lonEl && _lonEl.value !== '' ? parseFloat(_lonEl.value) : null;
   var file    = _selectedFile;
 
   if (!file && !company) { document.getElementById('m-company').focus(); return; }
@@ -763,6 +772,9 @@ async function launchAssessment() {
     if (_cid && _engineStatus !== 'offline') {
       try {
         var _pyData = await _runPythonScoped(_cid, company, sector);
+        if (userLat !== null && userLon !== null) {
+          (_pyData.results||[]).forEach(function(r){ r.lat=userLat; r.lon=userLon; r.country=country||r.country; });
+        }
         saveResultToAssessment(assessId, _pyData, company, sector, 0);
         showResults(_pyData, company, sector, 0);
         return;
@@ -773,6 +785,11 @@ async function launchAssessment() {
     // No file + no match — JS synthetic estimates
     setTimeout(function(){
       var synth = makeSyntheticResult(company, sector, rev);
+      if (userLat !== null && userLon !== null) {
+        (synth.results||[]).forEach(function(r){ r.lat=userLat; r.lon=userLon; r.country=country||r.country; });
+      } else if (country) {
+        (synth.results||[]).forEach(function(r){ r.country=country; });
+      }
       saveResultToAssessment(assessId, synth, company, sector, 0);
       showResults(synth, company, sector, 0);
     }, 2500);
@@ -794,6 +811,11 @@ async function launchAssessment() {
       throw new Error('Engine error ' + resp.status + ': ' + errText.slice(0,100));
     }
     var data = await resp.json();
+    if (userLat !== null && userLon !== null) {
+      (data.results||[]).forEach(function(r){ r.lat=userLat; r.lon=userLon; r.country=country||r.country; });
+    } else if (country) {
+      (data.results||[]).forEach(function(r){ if(!r.country) r.country=country; });
+    }
     saveResultToAssessment(assessId, data, company, sector, data.total_duration_s);
     showResults(data, company, sector, data.total_duration_s);
   } catch(err) {
@@ -1754,14 +1776,15 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   H += '</div></div>';
 
   H += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#15803d;margin-bottom:6px">Spatial Downscaling (25km &#x2192; 1km)</div>';
+  H += '<div style="font-size:12px;font-weight:800;color:#15803d;margin-bottom:6px">Terrain-Corrected Site Assessment</div>';
   H += '<div style="font-size:11px;color:#374151;line-height:1.6">';
-  H += 'Method: Statistical delta-change + BCSD bias correction<br>';
-  H += 'DEM: <strong>Copernicus GLO-30 / SRTM (30&#x2009;m)</strong><br>';
-  H += 'Elevation bands: 6 tiers (0&#x2013;10m &#x2192; &gt;2000m)<br>';
-  H += 'Coastal proximity: WRI Aqueduct 4.0 HydroSHEDS<br>';
-  H += 'Urban heat island: NASA FIRMS urban footprint<br>';
-  H += '<span style="color:#9ca3af;font-size:10px">DOI: 10.5270/ESA-c5d3d65 (Copernicus GLO-30)</span>';
+  H += '<strong>CMIP6 base:</strong> 25&#x2009;km climate signal (T, PR, wind, sea level)<br>';
+  H += '<strong>Terrain correction:</strong> SRTM/Copernicus GLO-30 DEM (30&#x2009;m) &#x2014; applies elevation, slope, and aspect modifiers to the 25&#x2009;km grid signal, improving site precision to ~1&#x2009;km<br>';
+  H += '<em style="color:#6b7280;font-size:10px">Note: the 30m DEM adjusts the 25km climate signal for local terrain &#x2014; it is the correction instrument, not a replacement for CMIP6 projections</em><br><br>';
+  H += 'Coastal exposure: WRI Aqueduct 4.0 (HydroSHEDS, ocean proximity)<br>';
+  H += 'Urban heat island: NASA FIRMS urban footprint classification<br>';
+  H += 'Vegetation/LULC: Sentinel-2 NDVI (10&#x2009;m), Landsat-8/9 (30&#x2009;m)<br>';
+  H += '<span style="color:#9ca3af;font-size:10px">DEM DOI: 10.5270/ESA-c5d3d65 &#183; Sentinel-2 Planetary Computer STAC</span>';
   H += '</div></div>';
 
   H += '<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px">';
