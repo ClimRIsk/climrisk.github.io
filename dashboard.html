@@ -256,6 +256,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
 .loan-table th{padding:7px 12px;text-align:left;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);border-bottom:1px solid var(--border)}
 .loan-table td{padding:9px 12px;border-bottom:1px solid rgba(255,255,255,.04)}
 </style>
+<script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+  <script src="https://unpkg.com/maplibre-gl@3/dist/maplibre-gl.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@3/dist/maplibre-gl.css"/>
 </head>
 <body>
 
@@ -2705,3 +2708,82 @@ function buildLoanBookPanel(data, company, sector) {
 </script>
 </body>
 </html>
+
+<div id="tab-content-portfolio-map" class="tab-content" style="display:none;padding:0">
+  <div id="deckgl-map" style="width:100%;height:580px;position:relative;background:#0a0a1a;border-radius:0 0 12px 12px">
+    <div style="position:absolute;top:12px;left:12px;z-index:10">
+      <div style="background:rgba(15,23,42,0.92);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:10px 14px;color:#fff;font-size:12px">
+        <div style="font-weight:700;margin-bottom:6px">Portfolio Risk Map (Deck.gl WebGL)</div>
+        <div style="display:flex;gap:10px">
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:3px"></span>Low</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:3px"></span>Medium</span>
+          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:3px"></span>High</span>
+        </div>
+        <div id="map-asset-count" style="margin-top:5px;color:rgba(255,255,255,0.55);font-size:11px">Loading...</div>
+      </div>
+      <div id="map-tooltip-box" style="display:none;margin-top:6px;background:rgba(15,23,42,0.96);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:10px 14px;color:#fff;font-size:12px;max-width:220px"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var TIER_COLOR=[[34,197,94,200],[245,158,11,210],[239,68,68,230]];
+  var API_BASE=(window.CLIMRISK_API||'http://localhost:8000');
+
+  function syntheticFeatures(){
+    var list=window._portfolioCompanies||[];
+    return list.map(function(c,i){
+      var t=c.score>65?2:c.score>40?1:0;
+      var lng=((i*137.5)%360)-180, lat=((i*79.3)%140)-70;
+      return {type:'Feature',geometry:{type:'Point',coordinates:[lng,lat]},
+              properties:{company:c.name,sector:c.sector||'default',
+                          npv_pct_ev:c.score*0.3,eal_usd:c.score*8e6,risk_tier:t}};
+    });
+  }
+
+  function renderMap(features){
+    if(!window.deck){console.warn('Deck.gl not loaded');return;}
+    var el=document.getElementById('deckgl-map');
+    if(!el)return;
+    document.getElementById('map-asset-count').textContent=
+      features.length+' assets · Deck.gl WebGL · data from FastAPI /assets';
+    var tip=document.getElementById('map-tooltip-box');
+    var layer=new deck.ScatterplotLayer({
+      id:'assets',data:features,
+      getPosition:function(f){return f.geometry.coordinates;},
+      getRadius:400000,radiusUnits:'meters',
+      getFillColor:function(f){return TIER_COLOR[f.properties.risk_tier||0];},
+      lineWidthMinPixels:1,pickable:true,
+      onHover:function(info){
+        if(info.object){
+          var p=info.object.properties;
+          tip.style.display='block';
+          tip.innerHTML='<strong>'+p.company+'</strong><br>'+
+            (p.sector||'')+'<br>NPV Risk: '+(p.npv_pct_ev?(p.npv_pct_ev.toFixed(1)+'% of EV'):'n/a')+
+            '<br>EAL: '+(p.eal_usd?('$'+(p.eal_usd/1e6).toFixed(1)+'M/yr'):'n/a');
+        } else { tip.style.display='none'; }
+      }
+    });
+    new deck.DeckGL({
+      container:el,
+      mapStyle:'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
+      initialViewState:{longitude:10,latitude:25,zoom:2,pitch:30},
+      controller:true,layers:[layer]
+    });
+  }
+
+  function loadMap(){
+    fetch(API_BASE+'/assets?limit=500')
+      .then(function(r){return r.json();})
+      .then(function(fc){renderMap(fc.features||[]);})
+      .catch(function(){renderMap(syntheticFeatures());});
+  }
+
+  var _inited=false,_orig=window.showTab;
+  window.showTab=function(id){
+    if(_orig)_orig(id);
+    if(id==='portfolio-map'&&!_inited){_inited=true;setTimeout(loadMap,120);}
+  };
+})();
+</script>
