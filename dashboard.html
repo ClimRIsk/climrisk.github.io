@@ -178,7 +178,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
 .sat-badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
 .sat-badge{background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.3);color:#a5b4fc;border-radius:6px;padding:2px 8px;font-size:10px;font-weight:600}
 /* ── Risk Map ── */
-.risk-map-wrap{border-radius:12px;overflow:hidden;border:1px solid var(--border);margin-top:16px}
+.risk-map-wrap{border-radius:0 0 12px 12px;overflow:hidden;border:1px solid var(--border)}
+.cri-map-popup .maplibregl-popup-content{background:transparent!important;padding:0!important;box-shadow:0 8px 32px rgba(0,0,0,.5)!important;border-radius:10px!important}
+.cri-map-popup .maplibregl-popup-tip{border-top-color:#0f2035!important}
+.maplibregl-ctrl-attrib{font-size:9px!important;opacity:.5}
 #cri-risk-map{height:340px;width:100%;background:#0b1f38}
 .leaflet-container{background:#0d2137}
 /* ── Hazard Matrix ── */
