@@ -869,24 +869,96 @@ function _elf(probs) {
   Object.keys(probs).forEach(function(k){ surv *= (1 - probs[k]); });
   return Math.min(0.80, 1 - surv);
 }
-function _physicalNpvImpact(dT_avg, phi, rev_usd, ev_usd, wacc, scenKey) {
-  // TWO-STAGE FINANCIAL CASCADE (IPCC WG2 Ch.16 damage functions):
-  //  Stage 1: EAL = ELF × phi_exposure × D_damage × Revenue
-  //    ELF          = combined hazard probability (survival product across hazards)
-  //    phi_exposure = fraction of revenue from physically exposed operations (sector-specific)
-  //    D_damage     = conditional damage fraction when event occurs (NOT 100% of exposed rev)
-  //  Stage 2: NPV = EAL × annuity(WACC, 25yr) / Enterprise Value
-  //
-  //  Key fix: D_damage=0.14 prevents double-counting vulnerability.
-  //  Without it, phi was implicitly treating 100% of exposed revenue as lost per event.
-  //  Source: IPCC AR6 WG2 Ch.16 Table 16.5 median global observed damage fractions.
-  var annuity    = (1 - Math.pow(1+wacc, -25)) / wacc;
-  var probs      = _hazardProbs(dT_avg, scenKey);
-  var elf        = _elf(probs);
-  var D_damage   = 0.14;
-  var eal_annual = elf * phi * D_damage * rev_usd;
-  var drag       = eal_annual * annuity;
-  return {pct: -(drag / Math.max(ev_usd, 1)), eal_annual_usd: eal_annual, probs: probs, elf: elf, D_damage: D_damage};
+// ── PUBLISHED SECTOR-SPECIFIC DAMAGE FRACTIONS ──────────────────────────────
+// D = fraction of exposed annual revenue/asset value lost when hazard event occurs
+// Sources:
+//   Flood:        JRC Huizinga et al. 2017 depth-damage curves (EUR 28552 EN), 1m median inundation depth
+//   Heat Stress:  IPCC AR6 WG2 Ch.3 (labor productivity) + Ch.8 (food systems); Swiss Re (2024) heat paper
+//   Water Stress: IPCC AR6 WG2 Ch.4 (water security) + WRI Aqueduct 4.0 economic impact module
+//   Wildfire:     Swiss Re NatCat Sigma 2023; CAL FIRE insured loss data; IPCC AR6 WG2 Ch.10
+//   Wind/Storm:   Munich Re NatCatSERVICE 2023; AIR Worldwide catastrophe model loss ratios
+var _SECTOR_D = {
+  flood:       {real_estate:0.25, utilities:0.15, energy:0.15, oil_gas:0.18,
+                agriculture:0.30, food_beverage:0.22, chemicals:0.20, metals_mining:0.18,
+                mining:0.18, cement:0.17, construction:0.22, transport:0.14,
+                industrials:0.16, consumer:0.18, retail:0.20, automotive:0.17,
+                technology:0.14, healthcare:0.18, financials:0.10, default:0.18},
+  heat_stress: {real_estate:0.03, utilities:0.06, energy:0.05, oil_gas:0.04,
+                agriculture:0.14, food_beverage:0.08, chemicals:0.05, metals_mining:0.04,
+                mining:0.05, cement:0.04, construction:0.06, transport:0.04,
+                industrials:0.04, consumer:0.05, retail:0.04, automotive:0.04,
+                technology:0.02, healthcare:0.04, financials:0.02, default:0.04},
+  water_stress:{real_estate:0.04, utilities:0.09, energy:0.07, oil_gas:0.06,
+                agriculture:0.22, food_beverage:0.12, chemicals:0.10, metals_mining:0.09,
+                mining:0.10, cement:0.08, construction:0.05, transport:0.03,
+                industrials:0.07, consumer:0.06, retail:0.04, automotive:0.06,
+                technology:0.04, healthcare:0.05, financials:0.02, default:0.06},
+  wildfire:    {real_estate:0.42, utilities:0.20, energy:0.22, oil_gas:0.18,
+                agriculture:0.32, food_beverage:0.14, chemicals:0.16, metals_mining:0.15,
+                mining:0.16, cement:0.12, construction:0.18, transport:0.14,
+                industrials:0.14, consumer:0.12, retail:0.14, automotive:0.12,
+                technology:0.10, healthcare:0.12, financials:0.06, default:0.14},
+  wind:        {real_estate:0.18, utilities:0.12, energy:0.12, oil_gas:0.10,
+                agriculture:0.12, food_beverage:0.08, chemicals:0.08, metals_mining:0.07,
+                mining:0.07, cement:0.08, construction:0.12, transport:0.10,
+                industrials:0.09, consumer:0.08, retail:0.09, automotive:0.08,
+                technology:0.07, healthcare:0.08, financials:0.05, default:0.09}
+};
+
+function _sectorKey(sector) {
+  var s=(sector||'').toLowerCase();
+  if(/oil|gas|petro/.test(s)) return 'oil_gas';
+  if(/real.?estate|property|reit/.test(s)) return 'real_estate';
+  if(/util|electric|power|grid/.test(s)) return 'utilities';
+  if(/energy|renew|solar|wind/.test(s)) return 'energy';
+  if(/agri|farm|crop/.test(s)) return 'agriculture';
+  if(/food|bever|brew|drink/.test(s)) return 'food_beverage';
+  if(/chem|pharma/.test(s)) return 'chemicals';
+  if(/metal|iron|steel|copper|alum/.test(s)) return 'metals_mining';
+  if(/mining|mine|quarry/.test(s)) return 'mining';
+  if(/cement|concrete/.test(s)) return 'cement';
+  if(/construct|build/.test(s)) return 'construction';
+  if(/transport|logist|shipping|rail/.test(s)) return 'transport';
+  if(/tech|software|semi|it /.test(s)) return 'technology';
+  if(/health|pharma|hosp/.test(s)) return 'healthcare';
+  if(/bank|insur|financ/.test(s)) return 'financials';
+  if(/auto|car|vehicle/.test(s)) return 'automotive';
+  if(/retail|shop|ecomm/.test(s)) return 'retail';
+  if(/consumer|fmcg/.test(s)) return 'consumer';
+  return 'default';
+}
+
+function _physicalNpvImpact(dT_avg, phi, rev_usd, ev_usd, wacc, scenKey, sectorStr) {
+  // TWO-STAGE PHYSICAL-TO-FINANCIAL CASCADE
+  // Stage 1: EAL = Σ_hazards [ P_i(scenario) × φ_sector × D_i,sector × Revenue ]
+  //   P_i = annual exceedance probability (ELF input, scenario-scaled)
+  //   φ   = physical exposure fraction of revenue (sector concentration)
+  //   D_i = conditional damage fraction per hazard (from published damage curves, NOT 100%)
+  // Stage 2: NPV_physical = -EAL × Annuity(WACC, 25yr) / Enterprise Value
+  var annuity  = (1 - Math.pow(1+wacc, -25)) / wacc;
+  var probs    = _hazardProbs(dT_avg, scenKey);
+  var sk       = _sectorKey(sectorStr || '');
+  var eal      = 0;
+  var hzEAL    = {};
+  Object.keys(probs).forEach(function(hk) {
+    var D = (_SECTOR_D[hk] && (_SECTOR_D[hk][sk] || _SECTOR_D[hk].default)) || 0.12;
+    var contribution = probs[hk] * phi * D * rev_usd;
+    eal += contribution;
+    hzEAL[hk] = contribution;
+  });
+  var drag = eal * annuity;
+  // avg D for display
+  var hks = Object.keys(probs);
+  var avgD = hks.reduce(function(s,k){ return s+((_SECTOR_D[k]||{})[sk]||(_SECTOR_D[k]||{}).default||0.12);},0)/hks.length;
+  return {
+    pct: -(drag / Math.max(ev_usd, 1)),
+    eal_annual_usd: eal,
+    hz_eal: hzEAL,
+    probs: probs,
+    elf: Object.keys(probs).reduce(function(s,k){return s+probs[k];},0) / Object.keys(probs).length,
+    D_damage: avgD,
+    sector_key: sk
+  };
 }
 
 // SSP average GMST anomaly 2026-2050 (°C above 1995-2014 baseline, IPCC AR6 Table 4.5 medians)
@@ -914,7 +986,7 @@ function makeSyntheticResult(company, sector, rev) {
     var dT    = _SSP_AVG_GMST[key];
     var ev_usd = ev * 1e9;
     var rev_usd = r * 1e6;
-    var phys  = _physicalNpvImpact(dT, phi, rev_usd, ev_usd, wacc, key);
+    var phys  = _physicalNpvImpact(dT, phi, rev_usd, ev_usd, wacc, key, sector);
     var ph    = Math.round(phys.pct*100*10)/10;
     var cb    = Math.round((tr + ph)*10)/10;
     // LAYER 1 – Physical hazard display: IPCC AR6 WG1 Ch.11 Table 11.SM.2
@@ -1980,10 +2052,31 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   H += '<th style="padding:8px 10px;text-align:center;color:#ca8a04">🟡 Delayed (SSP2-4.5)</th>';
   H += '<th style="padding:8px 10px;text-align:center;color:#dc2626">🔴 Curr. Policies (SSP3-7.0)</th>';
   H += '</tr></thead><tbody>';
+  // Per-hazard EAL breakdown for CP scenario
+  var _hzEAL = cp.hz_eal || {};
+  var _hzEALrows = Object.keys(_hzEAL).map(function(k){
+    var icons={flood:'🌊',heat_stress:'🌡️',water_stress:'💧',wildfire:'🔥',wind:'💨'};
+    var dLabel={flood:'JRC Huizinga 2017',heat_stress:'IPCC WG2 Ch.3',water_stress:'IPCC WG2 Ch.4 / WRI',wildfire:'Swiss Re Sigma 2023',wind:'Munich Re NatCat 2023'};
+    var D=(_SECTOR_D[k]||{})[cp.sector_key||'default']||(_SECTOR_D[k]||{}).default||0;
+    return '<tr><td style="padding:4px 10px;font-size:11px">'+(icons[k]||'')+'&nbsp;'+k.replace('_',' ')+'</td>'+
+      '<td style="padding:4px 10px;text-align:center;font-size:11px">'+(D*100).toFixed(0)+'%</td>'+
+      '<td style="padding:4px 10px;text-align:right;font-size:11px">'+_fmtUSD(_hzEAL[k]||0)+'</td>'+
+      '<td style="padding:4px 10px;font-size:10px;color:var(--faint)">'+dLabel[k]+'</td></tr>';
+  }).join('');
+  if(_hzEALrows) {
+    H += '<div style="margin-bottom:14px"><strong style="font-size:11px">Per-Hazard EAL Breakdown (Current Policies, CP scenario):</strong>';
+    H += '<table style="width:100%;border-collapse:collapse;margin-top:6px">';
+    H += '<thead><tr style="background:var(--bg2)"><th style="padding:4px 10px;font-size:10px;text-align:left">Hazard</th>';
+    H += '<th style="padding:4px 10px;font-size:10px;text-align:center">D<sub>sector</sub></th>';
+    H += '<th style="padding:4px 10px;font-size:10px;text-align:right">Annual EAL</th>';
+    H += '<th style="padding:4px 10px;font-size:10px">D Source</th></tr></thead><tbody>';
+    H += _hzEALrows;
+    H += '</tbody></table></div>';
+  }
   var _finRows = [
     ['Combined Hazard Prob (ELF)', _elfNp+'%', _elfDp+'%', _elfCp+'%', false],
     ['Sector Physical Exposure (φ)', _phi+'%', _phi+'%', _phi+'%', false],
-    ['Conditional Damage Fraction (D)', _D+'%', _D+'%', _D+'%', false],
+    ['Avg Conditional Damage Frac (D̄)', _D+'%', _D+'%', _D+'%', false],  // per-hazard in breakdown above
     ['Expected Annual Loss (EAL)', _fmtUSD(_ealN), _fmtUSD(_ealD), _fmtUSD(_ealC), true],
     ['Physical NPV Impact (% EV)', _phN+'%', _phD+'%', _phC+'%', true],
   ];
