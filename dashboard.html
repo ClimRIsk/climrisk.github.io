@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ClimRisk Platform · Dashboard</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css"/>
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -182,7 +182,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
 .cri-map-popup .maplibregl-popup-content{background:transparent!important;padding:0!important;box-shadow:0 8px 32px rgba(0,0,0,.5)!important;border-radius:10px!important}
 .cri-map-popup .maplibregl-popup-tip{border-top-color:#0f2035!important}
 .maplibregl-ctrl-attrib{font-size:9px!important;opacity:.5}
-#cri-risk-map{height:340px;width:100%;background:#0b1f38}
+#cri-risk-map{height:420px;width:100%;background:#0b1f38}
 .leaflet-container{background:#0d2137}
 /* ── Hazard Matrix ── */
 .hz-matrix{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
@@ -1133,6 +1133,19 @@ var _lastResults = null;
 var _riskMap = null;
 
 // ── RISK MAP ─────────────────────────────────────────────────────────────────
+// ── ASSET COORDINATES: real primary locations for engine-known companies ──────
+var _COMPANY_ASSET_COORDS = {
+  'bhp':       [{lat:-22.30,lon:118.70,label:'Pilbara Iron Ore, WA, Australia',   zoom:9, sector:'Mining'},
+                {lat:-27.45,lon:153.05,label:'WAIO HQ, Brisbane QLD',             zoom:11,sector:'Mining'},
+                {lat:-33.87,lon:151.21,label:'BHP Sydney Office',                  zoom:13,sector:'Mining'}],
+  'shell':     [{lat:51.91, lon:4.48,  label:'Pernis Refinery, Rotterdam NL',     zoom:12,sector:'Oil & Gas'},
+                {lat:51.50, lon:-0.09, label:'Shell Centre, London UK',            zoom:13,sector:'Oil & Gas'},
+                {lat:53.24, lon:6.85,  label:'Groningen Gas Fields, NL',           zoom:10,sector:'Oil & Gas'}],
+  'rio_tinto': [{lat:-22.70,lon:114.15,label:'Dampier Port, WA (Iron Ore)',       zoom:10,sector:'Mining'},
+                {lat:-24.33,lon:117.12,label:'Paraburdoo Mine, WA',               zoom:10,sector:'Mining'},
+                {lat:51.50, lon:-0.12, label:'Rio Tinto London HQ',               zoom:13,sector:'Mining'}],
+  'cri_testco':[{lat:-28.50,lon:24.80, label:'Karoo Basin, South Africa',         zoom:8, sector:'Mining'}]
+};
 var _COUNTRY_COORDS = {
   'US':[[37.8,-96],4],'UK':[[54,-2],5],'GB':[[54,-2],5],'IN':[[20,78],4],
   'CN':[[35,105],4],'DE':[[51,10],5],'FR':[[46,2],5],'AU':[[25,134],4],
@@ -1140,97 +1153,236 @@ var _COUNTRY_COORDS = {
   'ZA':[-29,25],'NG':[9,8],'KE':[-1,37],'EG':[26,30],'SA':[24,45],'AE':[24,54],
 };
 function _latLonForResult(r, company) {
-  // Try to get lat/lon from engine asset data
   if (r && r.lat && r.lon) return [r.lat, r.lon];
-  // Derive from country field or company name heuristic
   var cnt = (r && r.country) || '';
   var c = _COUNTRY_COORDS[cnt.toUpperCase()];
   if (c && Array.isArray(c[0])) return c[0];
   if (c) return c;
-  // Default to global centre with small jitter
-  return [20 + Math.random()*5 - 2.5, 0 + Math.random()*5 - 2.5];
+  return [20 + Math.random()*5-2.5, 0 + Math.random()*5-2.5];
 }
-function _riskColor(combined_pct) {
-  var v = combined_pct || 0;
+function _riskColor(v) {
+  v = v||0;
   if (v <= -20) return '#dc2626';
   if (v <= -10) return '#f59e0b';
   if (v <= -4)  return '#3b82f6';
   return '#1d9e75';
 }
+
+// ── 3D ASSET RISK MAP (MapLibre GL + AWS Terrain + Event Simulation) ──────────
+var _mapLibreMap = null;
+var _simLayerSrcIds = [];
+var _satLayerOn = false;
+
+function _clearSimLayers() {
+  if (!_mapLibreMap) return;
+  _simLayerSrcIds.forEach(function(ids) {
+    try { _mapLibreMap.removeLayer(ids.lid); } catch(e){}
+    try { _mapLibreMap.removeSource(ids.sid); } catch(e){}
+  });
+  _simLayerSrcIds = [];
+}
+
+function simulateEvent(type, lat, lon) {
+  if (!_mapLibreMap) return;
+  _clearSimLayers();
+  var cfg = {
+    flood: {color:'#38bdf8',label:'Flood Inundation Zone', rings:[0.008,0.02,0.05,0.12], ops:[0.55,0.40,0.25,0.10]},
+    fire:  {color:'#ef4444',label:'Wildfire Spread Radius',rings:[0.006,0.015,0.04,0.09],ops:[0.65,0.45,0.28,0.12]},
+    heat:  {color:'#f59e0b',label:'Heat Dome Intensity',   rings:[0.03,0.08,0.18,0.35],  ops:[0.45,0.30,0.18,0.08]},
+    wind:  {color:'#a78bfa',label:'Cyclone Radii',         rings:[0.015,0.05,0.12,0.25], ops:[0.55,0.38,0.22,0.10]}
+  }[type];
+  if (!cfg) return;
+  _mapLibreMap.flyTo({center:[lon,lat], zoom:type==='heat'?7:10, pitch:55, bearing:-25, duration:1500});
+  function circ(clat,clon,r) {
+    var pts=[];
+    for(var i=0;i<=64;i++){var a=(i/64)*Math.PI*2;pts.push([clon+r*Math.cos(a),clat+r*0.7*Math.sin(a)]);}
+    return {type:'Feature',geometry:{type:'Polygon',coordinates:[pts]}};
+  }
+  cfg.rings.forEach(function(radius,i){
+    var ts=Date.now();
+    var sid='cri-sim-s'+i+ts, lid='cri-sim-l'+i+ts;
+    _mapLibreMap.addSource(sid,{type:'geojson',data:circ(lat,lon,radius)});
+    _mapLibreMap.addLayer({id:lid,type:'fill',source:sid,paint:{'fill-color':cfg.color,'fill-opacity':cfg.ops[i],'fill-outline-color':cfg.color}});
+    _simLayerSrcIds.push({sid:sid,lid:lid});
+  });
+  var lbl=document.getElementById('sim-event-label');
+  if(!lbl){lbl=document.createElement('div');lbl.id='sim-event-label';
+    lbl.style.cssText='position:absolute;top:8px;left:8px;background:rgba(11,31,56,.88);color:#f1f5f9;font-size:11px;padding:5px 10px;border-radius:6px;pointer-events:none;z-index:10;border:1px solid rgba(255,255,255,.12)';
+    var me=document.getElementById('cri-risk-map');if(me){me.style.position='relative';me.appendChild(lbl);}}
+  lbl.innerHTML='<span style="font-weight:700;color:'+cfg.color+'">⚡ '+cfg.label+'</span> <span style="color:#64748b">· click map to clear</span>';
+  lbl.style.display='block';
+  _mapLibreMap.once('click',function(){_clearSimLayers();if(lbl)lbl.style.display='none';});
+}
+
+function toggleSatellite() {
+  if (!_mapLibreMap) return;
+  if (!_satLayerOn) {
+    if (!_mapLibreMap.getLayer('sat-layer'))
+      _mapLibreMap.addLayer({id:'sat-layer',type:'raster',source:'satellite',paint:{'raster-opacity':0.85}},'carto-base');
+    _satLayerOn=true;
+  } else {
+    try{_mapLibreMap.removeLayer('sat-layer');}catch(e){}
+    _satLayerOn=false;
+  }
+}
+
+function streetLevelView(lat,lon) {
+  if (_mapLibreMap) _mapLibreMap.flyTo({center:[lon,lat],zoom:16,pitch:72,bearing:Math.random()*60-30,duration:2200});
+}
+
+function resetMapView(lat,lon) {
+  if (_mapLibreMap) { _clearSimLayers(); _mapLibreMap.flyTo({center:[lon,lat],zoom:9,pitch:50,bearing:-20,duration:1500}); }
+}
+
 function initRiskMap(data, nze, dt, cp, company) {
   var el = document.getElementById('cri-risk-map');
-  if (!el || typeof L === 'undefined') return;
-  // Destroy previous map instance
-  if (_riskMap) { try { _riskMap.remove(); } catch(e){} _riskMap = null; }
+  if (!el) return;
+  if (_mapLibreMap) { try{_mapLibreMap.remove();}catch(e){} _mapLibreMap=null; }
+  _clearSimLayers();
 
-  var center = _latLonForResult(nze, company);
-  _riskMap = L.map('cri-risk-map', {
-    center: center, zoom: 4,
-    zoomControl: true, attributionControl: true
-  });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; <a href="https://carto.com/">CARTO</a>',
-    subdomains:'abcd', maxZoom:18
-  }).addTo(_riskMap);
+  // Determine real asset locations for known companies
+  var cid = data.source_file==='python_engine' ? _matchCompanyId(company) : null;
+  var compAssets = cid && _COMPANY_ASSET_COORDS[cid] || null;
 
-  // Build pins from engine result assets or fallback to 3 scenario points
-  var pins = [];
-  var results = data.results || [];
-  // Try to get per-asset data if engine returned asset_profiles
-  var assetProfiles = data.asset_profiles || [];
-  if (assetProfiles.length) {
-    assetProfiles.forEach(function(ap){
-      if (ap.lat && ap.lon) {
-        var elf = ap.annual_loss_fraction || 0;
-        pins.push({lat:ap.lat, lon:ap.lon, name:ap.asset_name||ap.asset_id, elf:elf,
-          combined: -(elf*100).toFixed(1), sector: ap.region||''});
-      }
+  // Build pin list
+  var pins=[];
+  if (compAssets) {
+    compAssets.forEach(function(a,i){
+      var cb = (nze && nze.combined_npv_impact_pct) || (nze && nze.npv_impact_pct) || 0;
+      pins.push({lat:a.lat,lon:a.lon,label:a.label,zoom:a.zoom,sector:a.sector,combined:cb,primary:i===0});
     });
   }
-  // Fallback: one pin per scenario for the company
   if (!pins.length) {
-    [[nze,'Net Zero 2050'],[dt,'Delayed Transition'],[cp,'Current Policies']].forEach(function(pair){
-      var r = pair[0], lbl = pair[1];
-      if (!r || !r.ev_bn) return;
-      var ll = _latLonForResult(r, company);
-      // offset slightly so they don't stack
-      ll = [ll[0]+Math.random()*0.8-0.4, ll[1]+Math.random()*0.8-0.4];
-      pins.push({lat:ll[0], lon:ll[1], name:company+' · '+lbl,
-        combined: r.combined_npv_impact_pct || r.npv_impact_pct || 0,
-        sector: r.sector||data.sector||''});
+    [[nze,'Net Zero 2050'],[dt,'Delayed Transition'],[cp,'Current Policies']].forEach(function(pr){
+      var r=pr[0]; if(!r||!r.ev_bn) return;
+      var ll=_latLonForResult(r,company);
+      pins.push({lat:ll[0]+Math.random()*.6-.3,lon:ll[1]+Math.random()*.6-.3,
+        label:company+' · '+pr[1],sector:r.sector||'',
+        combined:r.combined_npv_impact_pct||r.npv_impact_pct||0,primary:false,zoom:6});
     });
   }
+  if (!pins.length){el.innerHTML='<div style="color:var(--faint);padding:40px;text-align:center">No asset locations</div>';return;}
 
-  pins.forEach(function(p){
-    var col = _riskColor(p.combined);
-    var icon = L.divIcon({
-      className:'',
-      html:'<div style="width:14px;height:14px;border-radius:50%;background:'+col+';border:2px solid rgba(255,255,255,.5);box-shadow:0 0 8px '+col+'80"></div>',
-      iconSize:[14,14], iconAnchor:[7,7]
+  var primary = pins.find(function(p){return p.primary;})||pins[0];
+
+  if (typeof maplibregl === 'undefined'){
+    el.innerHTML='<div style="color:var(--faint);padding:40px;text-align:center;font-size:12px">⏳ Loading map library…</div>';
+    return;
+  }
+
+  // Build map style (CARTO dark + satellite source + AWS terrain DEM)
+  var mapStyle={
+    version:8,
+    sources:{
+      'carto-raster':{type:'raster',tileSize:256,
+        tiles:['https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png','https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'],
+        attribution:'© CARTO © OpenStreetMap'},
+      'satellite':{type:'raster',tileSize:256,
+        tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],
+        attribution:'© Esri World Imagery'},
+      'terrain-dem':{type:'raster-dem',tileSize:256,encoding:'terrarium',minzoom:0,maxzoom:15,
+        tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png']}
+    },
+    layers:[{id:'carto-base',type:'raster',source:'carto-raster'}]
+  };
+
+  _mapLibreMap = new maplibregl.Map({
+    container:'cri-risk-map', style:mapStyle,
+    center:[primary.lon,primary.lat],
+    zoom:Math.min(primary.zoom||8,11),
+    pitch:50, bearing:-20, antialias:true,
+    attributionControl:false
+  });
+  _mapLibreMap.addControl(new maplibregl.NavigationControl(),'top-right');
+  _mapLibreMap.addControl(new maplibregl.AttributionControl({compact:true}),'bottom-right');
+
+  _mapLibreMap.on('load',function(){
+    // 3D Terrain
+    _mapLibreMap.setTerrain({source:'terrain-dem',exaggeration:1.8});
+    // Sky
+    _mapLibreMap.setSky({'sky-color':'#0b1f38','sky-horizon-blend':0.5,'horizon-color':'#1d3a5c','horizon-fog-blend':0.4,'fog-color':'#132b47','fog-ground-blend':0.9});
+
+    // Pulse animation state
+    var pulse=0, pulsing=true;
+    var ringLayerIds=[];
+
+    pins.forEach(function(p,idx){
+      var col=_riskColor(p.combined);
+      var elev=_mapLibreMap.queryTerrainElevation([p.lon,p.lat])||0;
+      var elevM=Math.round(elev);
+
+      // Pulsing hazard ring
+      var rsid='ring-src-'+idx, rlid='ring-lyr-'+idx;
+      ringLayerIds.push(rlid);
+      _mapLibreMap.addSource(rsid,{type:'geojson',data:{type:'Feature',geometry:{type:'Point',coordinates:[p.lon,p.lat]}}});
+      _mapLibreMap.addLayer({id:rlid,type:'circle',source:rsid,paint:{
+        'circle-radius':['interpolate',['linear'],['zoom'],4,12,13,80],
+        'circle-color':col,'circle-opacity':0.12,
+        'circle-stroke-width':2,'circle-stroke-color':col,'circle-stroke-opacity':0.6
+      }});
+
+      // Marker + popup
+      var popHtml=
+        '<div style="font-size:12px;min-width:210px;background:#0f2035;color:#f1f5f9;padding:12px;border-radius:10px">'+
+        '<div style="font-weight:700;font-size:13px;margin-bottom:4px;color:#e2e8f0">'+p.label+'</div>'+
+        '<div style="color:#64748b;font-size:11px;margin-bottom:8px">'+p.sector+'</div>'+
+        '<div style="display:flex;gap:12px;margin-bottom:10px">'+
+          '<div><div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:.06em">Elevation</div>'+
+               '<div style="color:#38bdf8;font-weight:700;font-size:14px">'+elevM+'m</div>'+
+               '<div style="font-size:9px;color:#475569">above sea level</div></div>'+
+          '<div><div style="font-size:9px;color:#475569;text-transform:uppercase;letter-spacing:.06em">NPV Impact</div>'+
+               '<div style="color:'+col+';font-weight:700;font-size:14px">'+(p.combined>=0?'+':'')+p.combined.toFixed(1)+'%</div>'+
+               '<div style="font-size:9px;color:#475569">climate-adjusted</div></div>'+
+        '</div>'+
+        '<div style="border-top:1px solid #1e3a5c;padding-top:8px;margin-bottom:8px;font-size:10px;color:#475569;font-weight:600;text-transform:uppercase;letter-spacing:.05em">Event Simulation</div>'+
+        '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px">'+
+          '<button onclick="simulateEvent('flood','+p.lat+','+p.lon+')" style="background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.4);color:#7dd3fc;padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:600">🌊 Flood</button>'+
+          '<button onclick="simulateEvent('fire','+p.lat+','+p.lon+')" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:600">🔥 Fire</button>'+
+          '<button onclick="simulateEvent('heat','+p.lat+','+p.lon+')" style="background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#fcd34d;padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:600">🌡 Heat</button>'+
+          '<button onclick="simulateEvent('wind','+p.lat+','+p.lon+')" style="background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.4);color:#c4b5fd;padding:3px 8px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:600">💨 Cyclone</button>'+
+        '</div>'+
+        '<button onclick="streetLevelView('+p.lat+','+p.lon+')" style="width:100%;background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.4);color:#6ee7b7;padding:4px;border-radius:4px;font-size:10px;cursor:pointer;font-weight:600">📍 Street-Level View</button>'+
+        '</div>';
+
+      new maplibregl.Marker({color:col,scale:p.primary?1.4:0.9})
+        .setLngLat([p.lon,p.lat])
+        .setPopup(new maplibregl.Popup({offset:28,className:'cri-map-popup'}).setHTML(popHtml))
+        .addTo(_mapLibreMap);
     });
-    var marker = L.marker([p.lat, p.lon], {icon:icon}).addTo(_riskMap);
-    marker.bindPopup(
-      '<div style="font-size:12px;color:#1a3a5c;min-width:160px">'+
-      '<strong style="font-size:13px">'+p.name+'</strong><br/>'+
-      (p.sector?'<span style="color:#64748b">'+p.sector+'</span><br/>':'') +
-      '<span style="color:'+col+';font-weight:700">NPV impact: '+(p.combined>=0?'+':'')+p.combined+'%</span>'+
-      '</div>'
-    );
+
+    // Auto-open primary asset popup after a short delay
+    setTimeout(function(){
+      var allMarkers=document.querySelectorAll('#cri-risk-map .maplibregl-marker');
+      if(allMarkers.length) allMarkers[0].click();
+    }, 1200);
+
+    // Pulse rings animation
+    (function doPulse(){
+      if(!pulsing||!_mapLibreMap) return;
+      pulse=(pulse+0.04)%(Math.PI*2);
+      var op=0.08+0.10*Math.abs(Math.sin(pulse));
+      ringLayerIds.forEach(function(id){try{if(_mapLibreMap.getLayer(id))_mapLibreMap.setPaintProperty(id,'circle-opacity',op);}catch(e){}});
+      requestAnimationFrame(doPulse);
+    })();
+    _mapLibreMap.on('remove',function(){pulsing=false;});
   });
 
-  // Legend
-  var legend = L.control({position:'bottomright'});
-  legend.onAdd = function(){
-    var d = L.DomUtil.create('div','');
-    d.style.cssText='background:rgba(11,31,56,.9);color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:11px;border:1px solid rgba(255,255,255,.15)';
-    d.innerHTML='<div style="font-weight:700;margin-bottom:4px">NPV Impact</div>'+
-      '<div>🟢 &gt; −4%  Low</div>'+
-      '<div>🔵 −4 to −10%  Mod</div>'+
-      '<div>🟡 −10 to −20%  High</div>'+
-      '<div>🔴 &lt; −20%  Very High</div>';
-    return d;
-  };
-  legend.addTo(_riskMap);
+  // Event controls toolbar above map
+  var ctrl=document.getElementById('map-event-controls');
+  if(ctrl) ctrl.parentElement.removeChild(ctrl);
+  ctrl=document.createElement('div');
+  ctrl.id='map-event-controls';
+  ctrl.style.cssText='display:flex;gap:6px;align-items:center;padding:9px 12px;background:rgba(11,31,56,.95);border:1px solid var(--border);border-bottom:none;border-radius:12px 12px 0 0;flex-wrap:wrap';
+  ctrl.innerHTML=
+    '<span style="font-size:10px;color:var(--faint);font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-right:4px">Event Sim</span>'+
+    '<button onclick="simulateEvent('flood','+primary.lat+','+primary.lon+')" style="background:rgba(56,189,248,.15);border:1px solid rgba(56,189,248,.4);color:#7dd3fc;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600">🌊 Flood</button>'+
+    '<button onclick="simulateEvent('fire','+primary.lat+','+primary.lon+')" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.4);color:#fca5a5;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600">🔥 Wildfire</button>'+
+    '<button onclick="simulateEvent('heat','+primary.lat+','+primary.lon+')" style="background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.4);color:#fcd34d;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600">🌡 Heat Dome</button>'+
+    '<button onclick="simulateEvent('wind','+primary.lat+','+primary.lon+')" style="background:rgba(167,139,250,.15);border:1px solid rgba(167,139,250,.4);color:#c4b5fd;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600">💨 Cyclone</button>'+
+    '<button onclick="toggleSatellite()" style="background:rgba(99,102,241,.15);border:1px solid rgba(99,102,241,.4);color:#a5b4fc;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600">🛰 Satellite</button>'+
+    '<button onclick="streetLevelView('+primary.lat+','+primary.lon+')" style="background:rgba(29,158,117,.15);border:1px solid rgba(29,158,117,.4);color:#6ee7b7;padding:4px 10px;border-radius:5px;font-size:11px;cursor:pointer;font-weight:600">📍 Street View</button>'+
+    '<button onclick="resetMapView('+primary.lat+','+primary.lon+')" style="background:rgba(100,116,139,.12);border:1px solid rgba(100,116,139,.3);color:#94a3b8;padding:4px 8px;border-radius:5px;font-size:11px;cursor:pointer">↺</button>';
+  el.parentElement.insertBefore(ctrl, el);
 }
 
 // ── HAZARD MATRIX ─────────────────────────────────────────────────────────────
