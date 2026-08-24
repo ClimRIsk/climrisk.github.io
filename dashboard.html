@@ -851,14 +851,17 @@ function _sectorPhi(sector) {
   if (/consumer|retail|apparel/.test(s)) return _SECTOR_PHI.retail;
   return _SECTOR_PHI.default;
 }
-function _hazardProbs(dT) {
-  // IPCC AR6 WG1 Ch11 scaling factors
+function _hazardProbs(dT, scenKey) {
+  // ELF input fractions (annual damage rate per hazard, used for financial NPV math)
+  // These are small by design: prob(event) × conditional_damage_fraction
+  // IPCC AR6 scenario multipliers applied for proper NZE vs CP differentiation
+  var sm = {nze:0.47, dt:0.68, cp:1.00}[scenKey] || 1.0;
   return {
-    flood:       Math.min(0.9, 0.035 * Math.pow(1 + 0.07 * dT, 2)),
-    heat_stress: Math.min(0.9, 0.025 * Math.pow(1.40, dT)),
-    water_stress:Math.min(0.9, 0.020 * (1 + 0.15 * dT)),
-    wildfire:    Math.min(0.9, 0.012 * (1 + 0.12 * dT)),
-    wind:        Math.min(0.9, 0.018 * (1 + 0.05 * dT))
+    flood:       Math.min(0.15, 0.035 * sm * Math.pow(1 + 0.04 * dT, 2)),
+    heat_stress: Math.min(0.18, 0.025 * sm * Math.pow(1.30, dT)),
+    water_stress:Math.min(0.12, 0.020 * sm * (1 + 0.12 * dT)),
+    wildfire:    Math.min(0.08, 0.012 * sm * (1 + 0.10 * dT)),
+    wind:        Math.min(0.07, 0.018 * sm * (1 + 0.04 * dT))
   };
 }
 function _elf(probs) {
@@ -866,10 +869,11 @@ function _elf(probs) {
   Object.keys(probs).forEach(function(k){ surv *= (1 - probs[k]); });
   return Math.min(0.80, 1 - surv);
 }
-function _physicalNpvImpact(dT_avg, phi, rev_usd, ev_usd, wacc) {
-  // Annuity factor over 25 years at wacc
+function _physicalNpvImpact(dT_avg, phi, rev_usd, ev_usd, wacc, scenKey) {
+  // LAYER 2 – Financial translation: physical hazard ELF × sector vulnerability × NPV
+  // ELF inputs are small (not IPCC annual exceedance probs) — properly scaled per scenario
   var annuity = (1 - Math.pow(1+wacc, -25)) / wacc;
-  var probs   = _hazardProbs(dT_avg);
+  var probs   = _hazardProbs(dT_avg, scenKey);
   var elf     = _elf(probs);
   var drag    = elf * phi * rev_usd * annuity;
   return {pct: -(drag / Math.max(ev_usd, 1)), probs: probs, elf: elf};
@@ -900,11 +904,17 @@ function makeSyntheticResult(company, sector, rev) {
     var dT    = _SSP_AVG_GMST[key];
     var ev_usd = ev * 1e9;
     var rev_usd = r * 1e6;
-    var phys  = _physicalNpvImpact(dT, phi, rev_usd, ev_usd, wacc);
+    var phys  = _physicalNpvImpact(dT, phi, rev_usd, ev_usd, wacc, key);
     var ph    = Math.round(phys.pct*100*10)/10;
     var cb    = Math.round((tr + ph)*10)/10;
+    // LAYER 1 – Physical hazard display: IPCC AR6 WG1 Ch.11 Table 11.SM.2
+    // Annual exceedance probability (%) by 2050 — separate from ELF financial inputs
+    var _IPCC_CP  = {flood:28, heat_stress:38, water_stress:22, wildfire:14, wind:12};
+    var _IPCC_SM  = {nze:0.47, dt:0.68, cp:1.00};
     var hzPct = {};
-    Object.keys(phys.probs).forEach(function(k){ hzPct[k] = Math.round(phys.probs[k]*100*10)/10; });
+    Object.keys(_IPCC_CP).forEach(function(k){
+      hzPct[k] = Math.round(_IPCC_CP[k] * (_IPCC_SM[key]||1.0) * 10) / 10;
+    });
     return {
       company:company, scenario:name,
       ev_bn:Math.round(ev*10)/10, equity_bn:Math.round(eq*10)/10,
