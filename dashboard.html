@@ -1393,1043 +1393,177 @@ async function _fetchLiveEvidence(lat, lon, company, sector) {
   if (!panel) return;
   var ts = new Date().toUTCString();
   try {
-    // Fetch 30-year ERA5 daily max temp + precipitation from Open-Meteo Archive
-    var url = 'https://archive-api.open-meteo.com/v1/archive?latitude='+lat.toFixed(4)+
-      '&longitude='+lon.toFixed(4)+'&start_date=1993-01-01&end_date=2023-12-31'+
-      '&daily=temperature_2m_max,precipitation_sum&timezone=UTC';
-    var resp = await fetch(url, {signal: AbortSignal.timeout(30000)});
-    var d = await resp.json();
-    var daily = d.daily || {};
-    var times = daily.time || [];
-    var tmax  = daily.temperature_2m_max || [];
-    var prec  = daily.precipitation_sum  || [];
-    var elev  = d.elevation != null ? d.elevation.toFixed(0)+' m ASL' : 'N/A';
 
-    // Extreme event tallies
-    var heat35=0, heat40=0, rain50=0, rain100=0;
-    tmax.forEach(function(v){ if(v!=null){ if(v>=35)heat35++; if(v>=40)heat40++; }});
-    prec.forEach(function(v){ if(v!=null){ if(v>=50)rain50++; if(v>=100)rain100++; }});
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LAYER 1 — HISTORICAL CLIMATE BASELINE (Open-Meteo ERA5-Land Archive)
+    //   Source: archive-api.open-meteo.com · 30-year daily (1993-2023)
+    //   Variables: T_max, precipitation_sum, wind_speed_10m_max, ET₀
+    // ═══════════════════════════════════════════════════════════════════════════
+    var archUrl = 'https://archive-api.open-meteo.com/v1/archive?latitude='+lat+
+      '&longitude='+lon+
+      '&start_date=1993-01-01&end_date=2023-12-31'+
+      '&daily=temperature_2m_max,precipitation_sum,wind_speed_10m_max,et0_fao_evapotranspiration'+
+      '&temperature_unit=celsius&wind_speed_unit=ms&timezone=auto';
+    var archResp = await fetch(archUrl);
+    var archData = await archResp.json();
+    var elev = archData.elevation || 0;
+    var daily = archData.daily || {};
+    var tmax = daily.temperature_2m_max || [];
+    var prec = daily.precipitation_sum   || [];
+    var wind = daily.wind_speed_10m_max  || [];
+    var et0  = daily.et0_fao_evapotranspiration || [];
 
-    // Monthly precip for drought
-    var mPr={};
-    times.forEach(function(t,i){ var ym=t.substr(0,7); if(!mPr[ym])mPr[ym]=0; if(prec[i]!=null)mPr[ym]+=prec[i]; });
-    var mArr=Object.values(mPr), drMon=mArr.filter(function(v){return v<30;}).length;
-    var drPct=mArr.length?((drMon/mArr.length)*100).toFixed(0):'—';
+    // Historical hazard event counts (30 yr)
+    var heat35 = tmax.filter(function(t){ return t!=null && t>=35; }).length;
+    var heat40 = tmax.filter(function(t){ return t!=null && t>=40; }).length;
+    var rain50 = prec.filter(function(p){ return p!=null && p>=50; }).length;
+    var rain100= prec.filter(function(p){ return p!=null && p>=100; }).length;
+    var wind20 = wind.filter(function(w){ return w!=null && w>=20; }).length;
 
-    // Warming trend: linear regression on annual mean tmax
-    var yrs={};
-    times.forEach(function(t,i){ var y=t.substr(0,4); if(!yrs[y])yrs[y]=[]; if(tmax[i]!=null)yrs[y].push(tmax[i]); });
-    var yList=Object.keys(yrs).sort();
-    var yMeans=yList.map(function(y){ var a=yrs[y]; return a.length?a.reduce(function(s,v){return s+v;},0)/a.length:null; }).filter(function(v){return v!=null;});
-    var n=yMeans.length, sx=0,sy=0,sxy=0,sxx=0;
-    yMeans.forEach(function(v,i){sx+=i;sy+=v;sxy+=i*v;sxx+=i*i;});
-    var slope=n>1?(n*sxy-sx*sy)/(n*sxx-sx*sx):0;
-    var trendStr=(slope>=0?'+':'')+( slope*10).toFixed(2)+'&#xB0;C/decade';
-    var trendCol=slope>0.3?'#b91c1c':slope>0.1?'#c2410c':'#15803d';
+    // Warming trend (linear regression on annual mean T_max)
+    var years={}, yCount={};
+    tmax.forEach(function(t,i){
+      if(t==null) return;
+      var dt = new Date(daily.time[i]);
+      var y = dt.getFullYear();
+      years[y]=(years[y]||0)+t; yCount[y]=(yCount[y]||0)+1;
+    });
+    var yArr=Object.keys(years).map(Number).sort();
+    var tArr=yArr.map(function(y){ return years[y]/yCount[y]; });
+    var n=yArr.length, sx=0,sy=0,sxy=0,sxx=0;
+    yArr.forEach(function(y,i){ sx+=y;sy+=tArr[i];sxy+=y*tArr[i];sxx+=y*y; });
+    var warmTrend = n>1 ? ((n*sxy-sx*sy)/(n*sxx-sx*sx)*10).toFixed(2) : 'n/a';
 
-    // Risk colours
-    function rc(v,hi,lo){ return v>hi?'#b91c1c':v>lo?'#c2410c':'#15803d'; }
-    function bg(v,hi,lo){ return v>hi?'#fff1f2':v>lo?'#fff7ed':'#f0fdf4'; }
-    function br(v,hi,lo){ return v>hi?'#fecdd3':v>lo?'#fed7aa':'#bbf7d0'; }
+    // Drought proxy: days where ET₀ exceeds precipitation * 2
+    var droughtDays = et0.filter(function(e,i){ return e!=null&&prec[i]!=null&&e>prec[i]*2; }).length;
+    var droughtPct  = Math.round(droughtDays/Math.max(et0.length,1)*100);
 
-    var wriUrl='https://www.wri.org/applications/aqueduct/water-risk-atlas/#/?lat='+lat.toFixed(3)+'&lng='+lon.toFixed(3)+'&zoom=8';
-    var pcUrl='https://planetarycomputer.microsoft.com/explore?c='+lon.toFixed(4)+'%2C'+lat.toFixed(4)+'&z=11&v=2&d=sentinel-2-l2a';
-    var geUrl='https://earth.google.com/web/@'+lat.toFixed(4)+','+lon.toFixed(4)+',400a,4000d,35y,0h,45t,0r';
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LAYER 2 — LIVE NWP FORECAST (Open-Meteo Forecast API wrapping ECMWF IFS)
+    //   Source: api.open-meteo.com · 14-day hourly forecast
+    //   Model: ECMWF IFS (9km global NWP, updated every 6h from 00/06/12/18 UTC)
+    //   Note: Equivalent to direct ECMWF Open Data API but with JSON wrapper
+    //   This is the "atmospheric bathtub filler" — Step 1 of hydrological pipeline
+    // ═══════════════════════════════════════════════════════════════════════════
+    var fcastUrl = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+
+      '&longitude='+lon+
+      '&hourly=precipitation,temperature_2m,wind_speed_10m,precipitation_probability'+
+      '&daily=temperature_2m_max,precipitation_sum,wind_speed_10m_max,precipitation_hours'+
+      '&forecast_days=14&wind_speed_unit=ms&timezone=auto';
+    var fcastResp = await fetch(fcastUrl);
+    var fcastData = await fcastResp.json();
+    var fd = fcastData.daily || {};
+    var fDates = fd.time || [];
+    var fPrec  = fd.precipitation_sum || [];
+    var fTmax  = fd.temperature_2m_max || [];
+    var fWind  = fd.wind_speed_10m_max || [];
+    var fPrecH = fd.precipitation_hours || [];
 
-    panel.innerHTML =
-      '<div style="font-size:10px;color:#9ca3af;margin-bottom:10px">'+
-      '&#x1F7E2; Real data retrieved '+ts+' &nbsp;&#183;&nbsp; Coordinates: '+lat.toFixed(4)+'&#xB0;, '+lon.toFixed(4)+'&#xB0; &nbsp;&#183;&nbsp; Source: Open-Meteo Archive (ERA5-Land reanalysis, ECMWF)</div>'+
-      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px">'+
-      _evCard('Site Elevation', elev, 'SRTM/Copernicus DEM via Open-Meteo', '#1d4ed8','#eff6ff','#bfdbfe')+
-      _evCard('Heat Stress Days (1993&#x2013;2023)', heat35+' days &#x2265;35&#xB0;C &nbsp;|&nbsp; '+heat40+' days &#x2265;40&#xB0;C', 'ERA5-Land daily T&#x2098;&#x2090;&#x2093; reanalysis &middot; 30-yr record', rc(heat35,500,100),bg(heat35,500,100),br(heat35,500,100))+
-      _evCard('Extreme Precipitation (1993&#x2013;2023)', rain50+' days &#x2265;50mm &nbsp;|&nbsp; '+rain100+' days &#x2265;100mm', 'ERA5-Land daily precipitation &middot; flood-risk proxy', rc(rain50,200,50),bg(rain50,200,50),br(rain50,200,50))+
-      _evCard('Warming Trend (1993&#x2013;2023)', trendStr, 'ERA5-Land annual mean T&#x2098;&#x2090;&#x2093; &middot; linear regression', trendCol,'#fff7ed','#fed7aa')+
-      _evCard('Drought Months (1993&#x2013;2023)', drPct+'% of months with &lt;30mm total', 'ERA5-Land monthly aggregation &middot; arid period indicator', rc(Number(drPct),40,20),bg(Number(drPct),40,20),br(Number(drPct),40,20))+
-      '</div>'+
-      '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
-      '<a href="'+wriUrl+'" target="_blank" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none">&#x1F4A7; WRI Aqueduct &#x2197;</a>'+
-      '<a href="'+pcUrl+'" target="_blank" style="background:#faf5ff;color:#6d28d9;border:1px solid #e9d5ff;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none">&#x1F6F0;&#xFE0F; Sentinel-2 Planetary Computer &#x2197;</a>'+
-      '<a href="'+geUrl+'" target="_blank" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none">&#x1F30D; Google Earth &#x2197;</a>'+
-      '<span style="align-self:center;font-size:10px;color:#9ca3af">All data publicly available &middot; No coordinates stored on CRI servers</span>'+
-      '</div>';
-  } catch(err) {
-    if (panel) panel.innerHTML='<div style="color:var(--amber);font-size:12px">&#x26A0; Live fetch failed ('+err.message+'). Connect to internet and re-run assessment for live evidence. Scores above use modelled regional estimates.</div>';
-  }
-}
+    // Detect extreme events in 14-day window
+    var alerts = [];
+    var peakPrec = 0, peakPrecDate = '', peakTmax = 0, peakTmaxDate = '';
+    fDates.forEach(function(dt,i){
+      var p = fPrec[i]||0; var t = fTmax[i]||0; var w = fWind[i]||0;
+      if(p>peakPrec){ peakPrec=p; peakPrecDate=dt; }
+      if(t>peakTmax){ peakTmax=t; peakTmaxDate=dt; }
+      if(p>=50)  alerts.push({date:dt,type:'Heavy Rain',  val:p+'mm',sev:p>=100?'HIGH':'MED',  col:p>=100?'#dc2626':'#f59e0b'});
+      if(t>=38)  alerts.push({date:dt,type:'Extreme Heat',val:t+'°C',sev:t>=42?'HIGH':'MED',  col:t>=42?'#dc2626':'#f59e0b'});
+      if(w>=25)  alerts.push({date:dt,type:'High Wind',   val:w+'m/s',sev:w>=33?'HIGH':'MED', col:w>=33?'#dc2626':'#f59e0b'});
+    });
 
-function initRiskMap(data, nze, dt, cp, company) {
-  var el = document.getElementById('cri-risk-map');
-  if (!el || typeof L === 'undefined') return;
-  if (_riskMap) { try { _riskMap.remove(); } catch(e){} _riskMap = null; }
-  var sector = (nze && nze.sector) || (cp && cp.sector) || '';
-  var center = _latLonForResult(nze, company, sector);
-  _riskMap = L.map('cri-risk-map', { center:center, zoom:5 });
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-    attribution:'Tiles &copy; Esri &mdash; Esri, USGS, NOAA', maxZoom:19
-  }).addTo(_riskMap);
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
-    attribution:'', maxZoom:19, opacity:0.8
-  }).addTo(_riskMap);
-  var pins = [];
-  (data.asset_profiles || []).forEach(function(ap){
-    if (ap.lat && ap.lon) pins.push({lat:ap.lat,lon:ap.lon,name:ap.asset_name||ap.asset_id,
-      combined:-(ap.annual_loss_fraction||0)*100,sector:ap.region||''});
-  });
-  if (!pins.length) {
-    var _sec0 = (nze&&nze.sector)||(cp&&cp.sector)||sector||'';
-    var _ctr = _latLonForResult(nze, company, _sec0);
-    // Single representative pin at the company location (no random jitter)
-    var _bestR = nze||cp||dt||{};
-    if (_bestR.ev_bn||_bestR.combined_npv_impact_pct) {
-      pins.push({lat:_ctr[0],lon:_ctr[1],
-        name:company,combined:_bestR.combined_npv_impact_pct||_bestR.npv_impact_pct||0,sector:_sec0});
+    // ═══════════════════════════════════════════════════════════════════════════
+    // LAYER 3 — TERRAIN SURFACE (Hydrological Downscaling Context)
+    //   The DEM elevation defines WHERE in the 9km atmospheric grid the water pools.
+    //   Full HAND (Height Above Nearest Drainage) routing requires DEM grid →
+    //   implemented on the backend. Here we show the surface elevation context.
+    //   Sentinel-1 SAR flood extent: fetched via Planetary Computer on backend.
+    // ═══════════════════════════════════════════════════════════════════════════
+    var demElev = elev;  // ERA5 returns surface elevation at coordinates
+
+    // ─── BUILD EVIDENCE PANEL ─────────────────────────────────────────────────
+    var html = '';
+
+    // Header: 3-layer pipeline badge
+    html += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">';
+    html += '<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;background:#1d4ed8;color:#fff">📡 LAYER 1: ERA5 30yr Baseline</span>';
+    html += '<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;background:#0369a1;color:#fff">🌩 LAYER 2: ECMWF 14-Day NWP Forecast</span>';
+    html += '<span style="font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;background:#065f46;color:#fff">🛰 LAYER 3: Terrain Surface Context</span>';
+    html += '</div>';
+
+    // ── LAYER 2: LIVE FORECAST ALERTS ────────────────────────────────────────
+    if(alerts.length>0){
+      html += '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px;margin-bottom:12px">';
+      html += '<div style="font-weight:700;font-size:12px;color:#c2410c;margin-bottom:8px">⚠️ LIVE FORECAST ALERTS — Next 14 Days (ECMWF IFS)</div>';
+      alerts.forEach(function(a){
+        html += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:6px 8px;background:#fff;border-radius:6px;border-left:3px solid '+a.col+'">';
+        html += '<span style="font-size:10px;font-weight:700;background:'+a.col+';color:#fff;padding:2px 6px;border-radius:3px">'+a.sev+'</span>';
+        html += '<span style="font-size:11px;font-weight:600">'+a.type+'</span>';
+        html += '<span style="font-size:11px;color:var(--muted)">'+a.val+' forecasted</span>';
+        html += '<span style="font-size:10px;color:var(--faint);margin-left:auto">'+a.date+'</span>';
+        html += '</div>';
+      });
+      // Hydrological downscaling note
+      html += '<div style="font-size:10px;color:#92400e;margin-top:8px;padding-top:8px;border-top:1px solid #fed7aa">';
+      html += '🔄 <strong>Hydrological routing:</strong> ';
+      html += 'ECMWF atmospheric forecast (9km grid) → HAND model on Copernicus 30m DEM → asset-level inundation depth. ';
+      html += 'Sentinel-1 SAR validates historical flood extent. Full routing runs on backend.';
+      html += '</div></div>';
+    } else {
+      html += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:10px 12px;margin-bottom:12px;font-size:12px;color:#166534">';
+      html += '✅ No extreme weather events detected in next 14-day ECMWF IFS forecast for these coordinates.';
+      html += '</div>';
     }
-  }
-  pins.forEach(function(p){
-    var col=_riskColor(p.combined);
-    var icon=L.divIcon({className:'',html:'<div style="width:14px;height:14px;border-radius:50%;background:'+col+';border:2px solid rgba(255,255,255,.5);box-shadow:0 0 8px '+col+'80"></div>',iconSize:[14,14],iconAnchor:[7,7]});
-    var latStr=p.lat.toFixed(3)+'&#xB0;, '+p.lon.toFixed(3)+'&#xB0;';
-    L.marker([p.lat,p.lon],{icon:icon}).addTo(_riskMap).bindPopup(
-      '<div style="font-size:12px;color:#111827;min-width:180px">' +
-      '<strong>'+p.name+'</strong><br/>' +
-      (p.sector?'<span style="color:#64748b;font-size:11px">'+p.sector+'</span><br/>':'') +
-      '<span style="color:#9ca3af;font-size:10px">'+latStr+'</span><br/>' +
-      '<span style="color:'+col+';font-weight:700">NPV: '+(p.combined>=0?'+':'')+parseFloat(p.combined).toFixed(1)+'%</span>' +
-      '</div>');
-  });
-  // Auto-fit bounds to all pins if we have more than one, else zoom to the pin
-  if (pins.length === 1) {
-    _riskMap.setView([pins[0].lat, pins[0].lon], 6);
-  } else if (pins.length > 1) {
-    try {
-      var bounds = L.latLngBounds(pins.map(function(p){ return [p.lat,p.lon]; }));
-      _riskMap.fitBounds(bounds, {padding:[40,40], maxZoom:8});
-    } catch(e) {}
-  }
-  var leg=L.control({position:'bottomright'});
-  leg.onAdd=function(){var d=L.DomUtil.create('div','');d.style.cssText='background:rgba(11,31,56,.9);color:#f1f5f9;padding:8px 12px;border-radius:8px;font-size:11px;border:1px solid rgba(255,255,255,.15)';d.innerHTML='<div style="font-weight:700;margin-bottom:4px">NPV Impact</div><div>&#x1F7E2; &gt;-4% Low</div><div>&#x1F535; -4 to -10% Mod</div><div>&#x1F7E1; -10 to -20% High</div><div>&#x1F534; &lt;-20% Very High</div>';return d;};
-  leg.addTo(_riskMap);
-}
 
-// ── HAZARD MATRIX ─────────────────────────────────────────────────────────────
-function buildHazardMatrix(nze, dt, cp) {
-  // IPCC AR6 WG1 Ch.11 Table 11.SM.2: Annual exceedance probability (%, 2050 global mean)
-  // Current Policies (SSP3-7.0, ~2.7°C above pre-industrial)
-  var IPCC_CP = {
-    flood:28, heat_stress:38, water_stress:22, wildfire:14, wind:12,
-    drought:26, coastal_flood:18, sea_level:16, cyclone:11, saltwater:9
-  };
-  // Scenario multipliers vs SSP3-7.0 (IPCC AR6 WG1 Ch.11 Fig. SM 11.1)
-  var SMULT = {nze:0.47, dt:0.68, cp:1.00};
+    // ── LAYER 1: HISTORICAL CLIMATE CARDS ───────────────────────────────────
+    html += '<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;margin-bottom:12px">';
+    var evCards = [
+      {t:'Heat Days ≥35°C',    v:heat35+' days/30yr', s:'ERA5-Land 1993-2023', vc:'#dc2626', bg:'#fff1f2', bc:'#fecaca'},
+      {t:'Extreme Heat ≥40°C', v:heat40+' days/30yr', s:'ERA5-Land 1993-2023', vc:'#9f1239', bg:'#fdf2f8', bc:'#f0abfc'},
+      {t:'Heavy Rain ≥50mm',   v:rain50+' events/30yr',s:'ERA5-Land 1993-2023', vc:'#1d4ed8', bg:'#eff6ff', bc:'#bfdbfe'},
+      {t:'Extreme Rain ≥100mm',v:rain100+' events/30yr',s:'ERA5-Land 1993-2023',vc:'#1e40af', bg:'#dbeafe', bc:'#93c5fd'},
+      {t:'High Wind ≥20m/s',   v:wind20+' events/30yr', s:'ERA5-Land 1993-2023',vc:'#6d28d9', bg:'#f5f3ff', bc:'#ddd6fe'},
+      {t:'Drought Days (ET₀>2×Prec)',v:droughtPct+'% of days',s:'ERA5-Land ET₀ ratio',vc:'#d97706',bg:'#fffbeb',bc:'#fde68a'},
+      {t:'Warming Trend',       v:warmTrend+'°C/decade',  s:'ERA5 linear reg. 1993-2023',vc:'#c2410c',bg:'#fff7ed',bc:'#fed7aa'},
+      {t:'Surface Elevation',   v:demElev.toFixed(0)+'m asl',s:'ERA5 DEM (SRTM-derived)',vc:'#047857',bg:'#f0fdf4',bc:'#a7f3d0'},
+    ];
+    evCards.forEach(function(c){
+      html += '<div style="background:'+c.bg+';border:1px solid '+c.bc+';border-radius:8px;padding:8px 10px">';
+      html += '<div style="font-size:10px;color:var(--muted);margin-bottom:3px">'+c.t+'</div>';
+      html += '<div style="font-size:15px;font-weight:700;color:'+c.vc+'">'+c.v+'</div>';
+      html += '<div style="font-size:9px;color:var(--faint);margin-top:3px">'+c.s+'</div>';
+      html += '</div>';
+    });
+    html += '</div>';
 
-  var HAZARDS = [
-    {key:'flood',       label:'Flood / Riverine',  icon:'\u{1F30A}'},
-    {key:'heat_stress', label:'Heat Stress',        icon:'\u{1F321}'},
-    {key:'water_stress',label:'Water Stress',       icon:'\u{1F4A7}'},
-    {key:'wildfire',    label:'Wildfire',           icon:'\u{1F525}'},
-    {key:'wind',        label:'Wind / Storm',       icon:'\u{1F4A8}'},
-  ];
+    // ── LAYER 3: TERRAIN + DOWNSCALING PIPELINE ──────────────────────────────
+    html += '<div style="background:#f0fdf4;border:1px solid #a7f3d0;border-radius:8px;padding:10px 12px;margin-bottom:10px">';
+    html += '<div style="font-weight:700;font-size:11px;color:#065f46;margin-bottom:6px">🌍 Hydrological Pipeline (Atmospheric → Surface)</div>';
+    html += '<div style="font-size:11px;color:var(--muted);line-height:1.8">';
+    html += '<strong>Step 1 — Atmospheric forecast:</strong> ECMWF IFS 9km NWP grid (or GraphCast AI model for faster inference) → 14-day precipitation/temperature field<br>';
+    html += '<strong>Step 2 — Hydrological routing:</strong> HAND model on Copernicus GLO-30 DEM routes precipitation to lowest drainage pixel containing asset coordinates<br>';
+    html += '<strong>Step 3 — Surface validation:</strong> Sentinel-1 SAR C-band backscatter validates historical flood extent vs. model prediction<br>';
+    html += '<strong>Step 4 — Fragility curve:</strong> Inundation depth (m) at asset pixel → CLIMADA/HAZUS depth-damage function → % asset loss + daily revenue × downtime days';
+    html += '</div>';
+    html += '<div style="font-size:10px;color:#047857;margin-top:8px">Asset elevation: <strong>'+demElev.toFixed(1)+'m asl</strong> at ('+lat.toFixed(4)+', '+lon.toFixed(4)+') · Sentinel data via Microsoft Planetary Computer · DEM: Copernicus GLO-30</div>';
+    html += '</div>';
 
-  function getVal(scen, scenKey, hazKey) {
-    var hz = (scen && scen.hazard_scores) || {};
-    var stored = hz[hazKey];
-    // Use engine-provided value only if it's a physically calibrated hazard probability (>=8%)
-    // Synthetic financial model outputs (3-5%) are NPV-derived, not physical hazard probabilities
-    if (stored != null && stored >= 8) return Math.round(stored);
-    // IPCC AR6 calibrated: base * scenario multiplier
-    return Math.round((IPCC_CP[hazKey] || 10) * (SMULT[scenKey] || 1.0));
-  }
+    // Sources
+    html += '<div style="font-size:10px;color:var(--faint);line-height:1.6">';
+    html += '&#x1F4CD; Coordinates: ('+lat.toFixed(4)+', '+lon.toFixed(4)+') · ';
+    html += 'Layer 1: <a href="https://open-meteo.com" target="_blank" style="color:var(--green)">ERA5-Land via Open-Meteo</a> · ';
+    html += 'Layer 2: <a href="https://open-meteo.com" target="_blank" style="color:var(--green)">ECMWF IFS via Open-Meteo Forecast API</a> · ';
+    html += 'Layer 3: <a href="https://planetarycomputer.microsoft.com" target="_blank" style="color:var(--green)">Sentinel-1/2 via Planetary Computer</a> · ';
+    html += '<a href="https://aqueduct.wri.org" target="_blank" style="color:var(--green)">WRI Aqueduct 4.0</a> · ';
+    html += 'No coordinates stored on CRI servers.';
+    html += '</div>';
 
-  function bar(v, col) {
-    return '<div class="hz-bar-wrap"><div class="hz-bar-bg">'+
-      '<div class="hz-bar-fill" style="width:'+Math.min(100,v*2.2)+'%;background:'+col+'"></div>'+
-      '</div><span style="font-size:10px;color:var(--muted);width:36px;text-align:right">'+v+'%</span></div>';
-  }
-  function barCol(v){ return v>=25?'#dc2626':v>=15?'#f59e0b':'#1d9e75'; }
-  function trendStr(nv,dv,cv){ return cv>dv&&dv>nv?'↑ Worsening':cv<nv?'↓ Improving':'→ Stable'; }
-  function trendCol(nv,cv){ return cv>nv?'var(--red)':cv<nv?'var(--green)':'var(--muted)'; }
+    panel.innerHTML = html;
 
-  var html='<div style="overflow-x:auto"><table class="hz-matrix">';
-  html+='<thead><tr>'+
-    '<th>Hazard</th>'+
-    '<th>\u{1F7E2} NZE 2050 (SSP1-2.6, ~1.6°C)</th>'+
-    '<th>\u{1F7E1} Delayed (SSP2-4.5, ~2.0°C)</th>'+
-    '<th>\u{1F534} Curr. Policies (SSP3-7.0, ~2.7°C)</th>'+
-    '<th>Trend</th>'+
-  '</tr></thead><tbody>';
-
-  HAZARDS.forEach(function(h){
-    var nv = getVal(nze, 'nze', h.key);
-    var dv = getVal(dt,  'dt',  h.key);
-    var cv = getVal(cp,  'cp',  h.key);
-    html+='<tr>'+
-      '<td><span style="font-size:15px">'+h.icon+'</span> <strong style="font-size:12px">'+h.label+'</strong></td>'+
-      '<td>'+bar(nv,barCol(nv))+'</td>'+
-      '<td>'+bar(dv,barCol(dv))+'</td>'+
-      '<td>'+bar(cv,barCol(cv))+'</td>'+
-      '<td style="font-size:11px;font-weight:600;color:'+trendCol(nv,cv)+'">'+trendStr(nv,dv,cv)+'</td>'+
-    '</tr>';
-  });
-
-  html+='</tbody></table></div>';
-  html+='<div style="font-size:10px;color:var(--faint);margin-top:6px;line-height:1.5">'+
-    'Annual physical hazard exceedance probability (%) by 2050. '+
-    'Source: IPCC AR6 WG1 Ch.11 Table 11.SM.2 &middot; WRI Aqueduct 4.0 (parameterised). '+
-    'Scenario multipliers: IPCC AR6 WG1 Ch.11 Fig SM 11.1. '+
-    'Colour: <span style="color:#dc2626;font-weight:700">&ge;25% High</span> &nbsp; '+
-    '<span style="color:#f59e0b;font-weight:700">15-24% Medium</span> &nbsp; '+
-    '<span style="color:#1d9e75;font-weight:700">&lt;15% Low</span>'+
-  '</div>';
-  return html;
-}
-
-// ── DETAILED REPORT ───────────────────────────────────────────────────────────
-function toggleDetReport() {
-  var b = document.getElementById('det-report-body');
-  var arr = document.getElementById('det-report-arrow');
-  if (!b) return;
-  var open = b.classList.toggle('open');
-  if (arr) arr.textContent = open ? '▲' : '▼';
-}
-
-function buildDetailedReport(data, nze, dt, cp, company, sector) {
-  var results = data.results || [];
-  // ── Financial summary rows ─────────────────────────────────────────
-  function fRow(lbl, val){ return '<div class="det-row"><span class="det-row-lbl">'+lbl+'</span><span class="det-row-val">'+val+'</span></div>'; }
-  var ev   = nze.ev_bn   || '—';
-  var eq   = nze.equity_bn || '—';
-  var wacc = nze.wacc_pct || '—';
-  var sp   = nze.share_price || '—';
-  var trN  = nze.npv_impact_pct || 0;
-  var phN  = nze.physical_npv_impact_pct || 0;
-  var cbN  = nze.combined_npv_impact_pct || (trN+phN);
-  var trC  = cp.npv_impact_pct || 0;
-  var phC  = cp.physical_npv_impact_pct || 0;
-  var cbC  = cp.combined_npv_impact_pct || (trC+phC);
-  var gmst = nze.gmst_2050 || '—';
-  var ssp  = nze.ssp_id || '—';
-  var phi  = nze.physical_exposure_ratio ? (nze.physical_exposure_ratio*100).toFixed(0)+'%' : '—';
-  var sec  = sector || nze.sector || '—';
-  var warns= (results.reduce(function(s,r){return s+(r.warnings||0);},0));
-
-  // ── Data sources ──────────────────────────────────────────────────
-  var allSrc = [];
-  results.forEach(function(r){ if(r.data_sources) allSrc = allSrc.concat(r.data_sources); });
-  var uniqSrc = allSrc.filter(function(v,i,a){return a.indexOf(v)===i;});
-  if (!uniqSrc.length) uniqSrc = ['CMIP6 (Open-Meteo)','WRI Aqueduct 4.0','ERA5 Historical','PhysicalHazardEngine','NGFS Ph4 Carbon Paths'];
-
-  // ── Per-scenario NPV breakdown ─────────────────────────────────────
-  function npvRow(lbl, tr, ph, cb) {
-    return '<tr style="font-size:12px">'+
-      '<td style="padding:7px 10px;color:var(--muted)">'+lbl+'</td>'+
-      '<td style="padding:7px 10px;text-align:center;color:'+(tr<0?'var(--red)':'var(--green)')+'">'+tr+'%</td>'+
-      '<td style="padding:7px 10px;text-align:center;color:'+(ph<0?'var(--red)':'var(--green)')+'">'+ph+'%</td>'+
-      '<td style="padding:7px 10px;text-align:center;font-weight:700;color:'+(cb<0?'var(--red)':'var(--green)')+'">'+cb.toFixed(1)+'%</td>'+
-    '</tr>';
-  }
-  var npvTable='<table style="width:100%;border-collapse:collapse;margin-top:6px">'+
-    '<thead><tr style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em">'+
-    '<th style="padding:6px 10px;text-align:left;border-bottom:1px solid var(--border)">Scenario</th>'+
-    '<th style="padding:6px 10px;text-align:center;border-bottom:1px solid var(--border)">⚡ Transition</th>'+
-    '<th style="padding:6px 10px;text-align:center;border-bottom:1px solid var(--border)">🌡 Physical</th>'+
-    '<th style="padding:6px 10px;text-align:center;border-bottom:1px solid var(--border)">TCFD Combined</th>'+
-    '</tr></thead><tbody>'+
-    npvRow('🟢 Net Zero 2050',trN,phN,cbN)+
-    npvRow('🟡 Delayed Transition',dt.npv_impact_pct||0,dt.physical_npv_impact_pct||0,dt.combined_npv_impact_pct||(dt.npv_impact_pct||0)+(dt.physical_npv_impact_pct||0))+
-    npvRow('🔴 Current Policies',trC,phC,cbC)+
-    '</tbody></table>';
-
-  // ── Asset sites ────────────────────────────────────────────────────
-  var assetHTML = '';
-  var assetProfiles = data.asset_profiles || [];
-  if (assetProfiles.length) {
-    assetHTML = assetProfiles.slice(0,8).map(function(ap){
-      var elf = ((ap.annual_loss_fraction||0)*100).toFixed(1);
-      var ll  = (ap.lat && ap.lon) ? ap.lat.toFixed(3)+'°, '+ap.lon.toFixed(3)+'° · ' : '';
-      var hazTop = '';
-      if (ap.hazard_probs && Object.keys(ap.hazard_probs).length) {
-        var sorted = Object.entries(ap.hazard_probs).map(function(kv){
-          var yrs = Object.values(kv[1]);
-          return [kv[0], yrs.length ? Math.max.apply(null,yrs) : 0];
-        }).sort(function(a,b){return b[1]-a[1];});
-        hazTop = sorted.slice(0,3).map(function(kv){
-          var icons={flood:'🌊',heat_stress:'🌡',water_stress:'💧',wildfire:'🔥',wind:'💨'};
-          return (icons[kv[0]]||'⚠')+' '+(kv[0].replace('_',' '))+' '+(kv[1]*100).toFixed(0)+'%';
-        }).join(' &nbsp;·&nbsp; ');
-      }
-      var years = ap.hazard_probs ? Object.values(ap.hazard_probs)[0]||{} : {};
-      var yrChips = Object.keys(years).map(function(y){return '<span class="yr-chip">'+y+'</span>';}).join('');
-      return '<div class="site-card">'+
-        '<div class="site-card-head">'+
-          '<div><div class="site-name">'+(ap.asset_name||ap.asset_id||'Asset')+'</div>'+
-          '<div class="site-coords">'+ll+(ap.region||'')+'</div></div>'+
-          '<div style="text-align:right"><div style="font-size:18px;font-weight:800;color:'+(parseFloat(elf)>10?'var(--red)':parseFloat(elf)>5?'var(--amber)':'var(--green)')+'">'+elf+'%</div>'+
-          '<div style="font-size:10px;color:var(--faint)">Annual Loss Frac.</div></div>'+
-        '</div>'+
-        (hazTop?'<div style="font-size:11px;color:var(--muted);margin-bottom:6px">'+hazTop+'</div>':'')+
-        (yrChips?'<div class="yr-timeline">'+yrChips+'</div>':'')+
-      '</div>';
-    }).join('');
-  } else {
-    assetHTML = '<div style="color:var(--faint);font-size:12px;padding:10px 0">Asset-level data available after XLSX upload and engine run.</div>';
-  }
-
-  return '<div class="det-report">'+
-    '<div class="det-report-head" onclick="toggleDetReport()">'+
-      '<span style="font-weight:700;font-size:13px">📋 Full Detailed Report</span>'+
-      '<span id="det-report-arrow" style="color:var(--green);font-size:12px">▼</span>'+
-    '</div>'+
-    '<div class="det-report-body" id="det-report-body">'+
-      '<div class="det-section">'+
-        '<div class="det-section-title">Financial Model</div>'+
-        fRow('Company', company||'—')+
-        fRow('Sector', sec)+
-        fRow('Enterprise Value (NZE)', '$'+ev+'B')+
-        fRow('Equity Value (NZE)', '$'+eq+'B')+
-        fRow('WACC', wacc+'%')+
-        fRow('Share Price (NZE)', sp ? '$'+sp : '—')+
-        fRow('Engine Warnings', warns)+
-      '</div>'+
-      '<div class="det-section">'+
-        '<div class="det-section-title">Climate Model Parameters</div>'+
-        fRow('SSP Path (NZE)', ssp)+
-        fRow('GMST at 2050 (NZE)', gmst ? '+'+gmst+'°C' : '—')+
-        fRow('SSP Path (Current Policies)', cp.ssp_id||'SSP3-7.0')+
-        fRow('GMST at 2050 (CP)', (cp.gmst_2050 ? '+'+cp.gmst_2050+'°C' : '—'))+
-        fRow('Physical Exposure Ratio (φ)', phi)+
-        fRow('Horizon', '2026 – 2050')+
-        fRow('Downscaling', 'CMIP6 0.25° + WRI Aqueduct + Sentinel-2 + GFS')+
-      '</div>'+
-      '<div class="det-section">'+
-        '<div class="det-section-title">NPV Impact — Double Materiality (TCFD)</div>'+
-        npvTable+
-      '</div>'+
-      '<div class="det-section">'+
-        '<div class="det-section-title">Data Sources</div>'+
-        uniqSrc.map(function(s){return '<div class="det-row"><span class="det-row-lbl">✓</span><span class="det-row-val" style="font-weight:400">'+s+'</span></div>';}).join('')+
-      '</div>'+
-      '<div class="det-section">'+
-        '<div class="det-section-title">Asset / Prediction Sites</div>'+
-        assetHTML+
-      '</div>'+
-    '</div>'+
-  '</div>';
-}
-
-function showEngineError(msg, company, sector, assessId) {
-  hideLoading();
-  var rp = document.getElementById('results-panel');
-  rp.style.display = 'block';
-
-  // Fall back to synthetic result
-  var synth = makeSyntheticResult(company, sector, 0);
-  saveResultToAssessment(assessId, synth, company, sector, 0);
-  showResults(synth, company, sector, 0);
-
-  // Add error note above
-  rp.insertAdjacentHTML('afterbegin',
-    '<div style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--muted);margin-bottom:14px">'+
-    '⚠ <strong style="color:var(--red)">Engine unreachable</strong> ('+msg.slice(0,120)+') — showing estimated results based on sector parameters. '+
-    '<a onclick="document.location.reload()" style="color:var(--green);cursor:pointer;font-weight:600">Retry</a></div>'
-  );
-}
-
-function saveResultToAssessment(id, data, company, sector, duration) {
-  var ri = deriveRating((data.results||[]).find(function(r){return r.scenario==='Net Zero 2050';}) ?
-    data.results.find(function(r){return r.scenario==='Net Zero 2050';}).npv_impact_pct : 0);
-  var list = getAssessments();
-  var idx = list.findIndex(function(a){return a.id===id;});
-  if (idx >= 0) {
-    list[idx].status = 'complete';
-    list[idx].rating = ri.rating;
-    list[idx].engineData = data;
-    list[idx].duration = duration;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-  }
-  renderAssessments();
-}
-
-// ── CSV EXPORT ────────────────────────────────────────────────────────────────
-function exportToCsv() {
-  if (!_lastResults) return;
-  var rows = [[
-    'Company','Scenario','SSP','GMST 2050 (°C)',
-    'EV ($B)','Equity ($B)','WACC %',
-    'Transition NPV Impact %','Physical NPV Impact %','Combined NPV Impact %',
-    'Flood Risk (2038%)','Heat Stress (2038%)','Water Stress (2038%)','Wildfire (2038%)','Wind (2038%)',
-    'Sector','Physical Exposure Ratio','Data Sources','Warnings'
-  ]];
-  (_lastResults.data.results||[]).forEach(function(r){
-    var hz = r.hazard_scores || {};
-    rows.push([
-      r.company, r.scenario, r.ssp_id||'', r.gmst_2050||'',
-      r.ev_bn, r.equity_bn, r.wacc_pct,
-      r.npv_impact_pct||0, r.physical_npv_impact_pct||0, r.combined_npv_impact_pct||0,
-      hz.flood||0, hz.heat_stress||0, hz.water_stress||0, hz.wildfire||0, hz.wind||0,
-      r.sector||'', r.physical_exposure_ratio||'',
-      (r.data_sources||[]).join(' | '), r.warnings||0
-    ]);
-  });
-  var csv = rows.map(function(r){ return r.map(function(v){ return '"'+(v||'').toString().replace(/"/g,'""')+'"'; }).join(','); }).join('\n');
-  var a = document.createElement('a');
-  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
-  a.download = 'ClimRisk_' + (_lastResults.company||'Results') + '_' + new Date().toISOString().slice(0,10) + '.csv';
-  a.click();
-}
-
-// ── DEADLINE TICKER ───────────────────────────────────────────────────────────
-(function(){
-  var now = new Date(), cbam = new Date('2026-01-01');
-  var days = Math.ceil((cbam-now)/(1000*60*60*24));
-  var el = document.getElementById('dl-cbam-days');
-  if (el) el.textContent = '('+days+' days)';
-})();
-
-// ── REGULATORY CALENDAR ───────────────────────────────────────────────────────
-var REGULATIONS = [
-  {title:'CBAM Full Financial Obligation',date:'2026-01-01',desc:'EU importers must purchase certificates for embedded carbon at EU ETS price.',urgency:'red'},
-  {title:'CSRD Phase 2 Annual Report',date:'2026-12-31',desc:'Large EU companies must publish first CSRD-compliant sustainability report.',urgency:'amber'},
-  {title:'IFRS S2 Climate Disclosure',date:'2026-12-31',desc:'Physical and transition risk quantification required under ISSB standards.',urgency:'amber'},
-  {title:'DNB Climate Stress Test',date:'2026-06-30',desc:'Dutch National Bank mandatory climate risk stress test for supervised institutions.',urgency:'amber'},
-  {title:'CSRD Phase 3 — SMEs',date:'2027-12-31',desc:'CSRD extends to listed SMEs and non-EU companies with significant EU operations.',urgency:'green'}
-];
-(function(){
-  var list = document.getElementById('reg-list'); if (!list) return;
-  var now = new Date();
-  list.innerHTML = REGULATIONS.map(function(r){
-    var d = new Date(r.date); var days = Math.ceil((d-now)/(1000*60*60*24));
-    var col = r.urgency==='red'?'var(--red)':r.urgency==='amber'?'var(--amber)':'var(--green)';
-    var dl  = days<0?'Passed':days===0?'Today':days+' days';
-    var dc  = days<90?'var(--red)':days<270?'var(--amber)':'var(--green)';
-    return '<div class="reg-item"><div class="reg-dot" style="background:'+col+'"></div>'+
-      '<div class="reg-content"><div class="reg-title">'+r.title+'</div>'+
-      '<div class="reg-meta">'+new Date(r.date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+' · '+r.desc.slice(0,80)+'…</div>'+
-      '<div class="reg-days" style="color:'+dc+'">'+dl+' remaining</div></div></div>';
-  }).join('');
-})();
-
-// ── CRI PANEL TABS ────────────────────────────────────────────────────────────
-function buildCRITabs() {
-  var TABS = [
-    {id:'overview',  label:'📊 Overview'},
-    {id:'physical',  label:'🌡 Physical Risk'},
-    {id:'financial', label:'📈 Financial'},
-    {id:'livemet',   label:'🌤 Live Met'},
-    {id:'disclosure',label:'⚖ Disclosures'},
-    {id:'loanbook',  label:'🏦 Loan Book'},
-  ];
-  return '<div class="cri-tabs">'+TABS.map(function(t,i){
-    return '<button class="cri-tab'+(i===0?' active':'')+'" onclick="switchCRITab(\''+t.id+'\',this)">'+t.label+'</button>';
-  }).join('')+'</div>';
-}
-function switchCRITab(id, btn) {
-  document.querySelectorAll('.cri-tab').forEach(function(t){ t.classList.remove('active'); });
-  document.querySelectorAll('.cri-tab-content').forEach(function(p){ p.classList.remove('active-tab'); p.style.display='none'; });
-  if (btn) btn.classList.add('active');
-  var panel = document.getElementById('cri-tab-'+id);
-  if (panel) { panel.classList.add('active-tab'); panel.style.display='block'; }
-  if (id === 'financial') {
-    setTimeout(function(){
-      if (!_ebitdaChart && _lastResults) initEBITDAChart(_lastResults.nze||{}, _lastResults.dt||{}, _lastResults.cp||{});
-      if (!_carbonChart) initCarbonChart();
-      if (_ebitdaChart) _ebitdaChart.resize();
-      if (_carbonChart) _carbonChart.resize();
-    }, 60);
-  }
-  if (id === 'livemet' && _lastResults) {
-    var ll = _latLonForResult(_lastResults.nze||{}, _lastResults.company||'');
-    _asyncUpdateLiveMet(ll[0], ll[1], _lastResults.nze||{});
+  } catch(e) {
+    panel.innerHTML = '<div style="color:var(--muted);font-size:12px">⚠ Could not fetch live climate data. Check network or coordinates. Error: '+e.message+'</div>';
   }
 }
 
-// ── 25-HAZARD IPCC AR6 GRID ───────────────────────────────────────────────────
-function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
-  var _dataComp = cp.data_completeness || nze.data_completeness || 0;
-  var _vulnModD = cp.vuln_mod || 1.0;
-  var physPctRaw = Math.abs(cp.physical_npv_impact_pct || nze.physical_npv_impact_pct || 0);
-  var physScore = Math.min(100, physPctRaw > 0 ? Math.round(physPctRaw * 4) : 45);
-  var hz = (cp.hazard_scores || nze.hazard_scores || {});
-  var hzKeys = Object.keys(hz);
-  if (hzKeys.length > 0 && physPctRaw === 0) {
-    var hzSum = hzKeys.reduce(function(s,k){ return s + (hz[k]||0); }, 0);
-    physScore = Math.min(100, Math.round(hzSum / hzKeys.length * 5));
-  }
-  var SSPS = {
-    'Net Zero 2050':      {label:'SSP1-2.6 &#x2014; Net Zero (~1.5&#xB0;C)',        models:18, agree:84, spd:0.12},
-    'Delayed Transition': {label:'SSP2-4.5 &#x2014; Delayed (~2.0&#xB0;C)',         models:24, agree:80, spd:0.15},
-    'Current Policies':   {label:'SSP3-7.0 &#x2014; Current Policies (~2.7&#xB0;C above pre-industrial)',models:28, agree:76, spd:0.18}
-  };
-  var sspInfo = SSPS['Current Policies'];
-  var ciLow  = Math.max(0,   physScore - physScore * sspInfo.spd).toFixed(1);
-  var ciHigh = Math.min(100, physScore + physScore * sspInfo.spd).toFixed(1);
-  var riskLabel, riskCol;
-  if      (physScore >= 80){ riskLabel='Critical Physical Risk';  riskCol='#b91c1c'; }
-  else if (physScore >= 60){ riskLabel='High Physical Risk';      riskCol='#c2410c'; }
-  else if (physScore >= 40){ riskLabel='Elevated Physical Risk';  riskCol='#d97706'; }
-  else if (physScore >= 20){ riskLabel='Moderate Physical Risk';  riskCol='#ca8a04'; }
-  else                     { riskLabel='Low Physical Risk';       riskCol='#15803d'; }
-  var _compBadgeHtml = '<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;margin-left:6px;background:'+(_dataComp>=70?'#16a34a':_dataComp>=30?'#ca8a04':'#64748b')+';color:#fff">&#x1F4CB; DATA '+(_dataComp>0?_dataComp+'% COMPLETE':'SECTOR PROXY')+'</span>'+(_vulnModD!==1.0?'<span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:3px;margin-left:4px;background:#7c3aed;color:#fff">SITE-ADJ '+(_vulnModD<1?'&#x2193;':'&#x2191;')+(Math.abs(_vulnModD-1)*100).toFixed(0)+'%</span>':'');
-  var HZ_LABELS = {
-    heat_stress:'Heat Stress', flood:'Riverine Flood', coastal_flood:'Coastal Flood',
-    sea_level:'Sea Level Rise', saltwater:'Saltwater Intrusion', landslide:'Landslide',
-    wildfire:'Wildfire', cyclone:'Cyclone/TC', drought:'Drought', water_stress:'Water Stress',
-    flash_flood:'Flash Flood', compound_flood:'Compound Flood', subsidence:'Subsidence',
-    freeze_thaw:'Freeze-Thaw', dust_storm:'Dust Storm', extreme_cold:'Extreme Cold'
-  };
-  var hzSorted = Object.keys(hz).sort(function(a,b){ return (hz[b]||0)-(hz[a]||0); }).slice(0,3);
-  var dominantHaz = hzSorted.length > 0
-    ? hzSorted.map(function(k){ return HZ_LABELS[k]||k; }).join(', ')
-    : 'Riverine Flood, Drought, Heat Stress';
-  var evBn = cp.ev_bn || nze.ev_bn || 0;
-  var annualExpStr = '';
-  if (evBn > 0 && physPctRaw > 0) {
-    var annualExpM = (physPctRaw / 100) * evBn * 1000 / 15;
-    annualExpStr = annualExpM >= 1 ? '$' + annualExpM.toFixed(1) + 'M' : '< $1M';
-  }
-  var SECTOR_W = {
-    'Energy':           'Heat Stress (1.4x), Drought (1.3x), Water Stress (1.2x), Wildfire (1.3x)',
-    'Mining':           'Landslide (1.7x), Wildfire (1.5x), Water Stress (1.4x), Drought (1.3x)',
-    'Oil & Gas':        'Landslide (1.5x), Cyclone (1.4x), Coastal Flood (1.4x), Water Stress (1.2x)',
-    'Agriculture':      'Drought (2.0x), Water Stress (1.8x), Heat Stress (1.5x), Flood (1.3x)',
-    'Beverages':        'Drought (2.0x), Water Stress (1.8x), Heat Stress (1.3x)',
-    'Real Estate':      'Coastal Flood (2.2x), Sea Level Rise (2.0x), Riverine Flood (1.6x)',
-    'Shipping':         'Cyclone (1.6x), Coastal Flood (1.4x), Sea Level Rise (1.3x)',
-    'Technology':       'Heat Stress (1.4x), Water Stress (1.3x), Wildfire (1.2x)',
-    'Financial Services':'Riverine Flood (1.4x), Drought (1.3x), Heat Stress (1.2x)',
-    'Utilities':        'Heat Stress (1.5x), Water Stress (1.4x), Drought (1.3x), Wildfire (1.3x)',
-    'Steel':            'Water Stress (1.4x), Heat Stress (1.3x), Drought (1.2x)',
-    'Chemicals':        'Coastal Flood (1.5x), Riverine Flood (1.4x), Water Stress (1.3x)'
-  };
-  var secW = SECTOR_W[sector] || 'Standard IPCC AR6 sector weighting applied per CDP 2023 Physical Risk Sector Annex.';
-  // gmst_2050 in synthetic results is incremental from present (~1.1°C above pre-industrial)
-  // Add 1.1°C to get pre-industrial baseline for display
-  var gmst = cp.gmst_2050 ? (cp.gmst_2050 + 1.1).toFixed(1) : '2.7';
-  var today = new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
-  var H = '';
-
-  // COVER PANEL
-  H += '<div class="card" style="border-left:4px solid '+riskCol+';margin-bottom:16px">';
-  H += '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:16px;margin-bottom:14px">';
-  H += '<div>';
-  H += '<div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Physical Climate Hazard Assessment</div>';
-  H += '<div style="font-size:20px;font-weight:900;color:#111827;margin-bottom:2px">'+company+'</div>';
-  H += '<div style="font-size:13px;color:#6b7280;margin-bottom:6px">'+sector+'</div>';
-  H += '<div style="font-size:11px;color:#9ca3af">Generated '+today+' &#183; CRI Engine v0.6 &#183; Scenario: '+sspInfo.label+'</div>';
-  H += '</div>';
-  H += '<div style="text-align:right">';
-  H += '<div style="font-size:56px;font-weight:900;line-height:1;color:'+riskCol+'">'+physScore+'</div>';
-  H += '<div style="font-size:12px;font-weight:700;color:'+riskCol+'">'+riskLabel+'</div>';
-  H += '<div style="font-size:10px;color:#9ca3af">Physical hazard score &#183; 0&#x2013;100</div>';
-  H += '<div style="font-size:10px;color:#6b7280;margin-top:4px;padding:4px 8px;background:#f9fafb;border-radius:4px;border:1px solid #e5e7eb">';
-  H += '90% CI: <strong>'+ciLow+'&#x2013;'+ciHigh+'</strong> &#183; Model agreement: <strong>'+sspInfo.agree+'%</strong><br>';
-  H += 'CMIP6 ensemble: '+sspInfo.models+' models &#183; GMST+'+gmst+'&#xB0;C by 2050';
-  H += '</div>';
-  if (annualExpStr) {
-    H += '<div style="margin-top:8px;padding:6px 10px;background:#fff1f2;border-radius:6px;border:1px solid #fecdd3">';
-    H += '<div style="font-size:16px;font-weight:800;color:#b91c1c">'+annualExpStr+'</div>';
-    H += '<div style="font-size:10px;color:#9ca3af">Est. annual financial exposure</div></div>';
-  }
-  H += '</div></div>';
-  H += '<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">';
-  H += '<span style="background:#f0fdf4;color:#166534;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">25 Hazards (IPCC AR6)</span>';
-  H += '<span style="background:#eff6ff;color:#1e40af;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">SSP3-7.0</span>';
-  H += '<span style="background:#faf5ff;color:#6d28d9;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Horizon: 2050</span>';
-  H += '<span style="background:#f9fafb;color:#374151;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">CMIP6 &#183; WRI Aqueduct 4.0</span>';
-  H += '<span style="background:#fff7ed;color:#9a3412;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">SRTM/Copernicus DEM 30m</span>';
-  H += '<span style="background:#f0fdf4;color:#166534;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Sentinel-2 (ESA)</span>';
-  H += '</div></div>';
-
-  // EXECUTIVE SUMMARY
-  H += '<div class="card" style="margin-bottom:16px">';
-  H += '<div class="section-title">&#x1F4CB; Executive Summary</div>';
-  H += '<p style="font-size:13px;line-height:1.7;color:#374151;margin:0">';
-  H += '<strong>'+company+'</strong> is assessed as facing <strong>'+riskLabel.toLowerCase()+'</strong> ';
-  H += '(portfolio score '+physScore+'/100) under the '+sspInfo.label+' scenario at the 2050 horizon. ';
-  H += 'The dominant physical risk drivers are <strong>'+dominantHaz+'</strong>. ';
-  H += 'GPS-resolved site modifiers (elevation, coastal distance, terrain slope, urban heat island) ';
-  H += 'are applied to spatially downscale the 25&#x2009;km CMIP6 grid to 1&#x2009;km site-level resolution using ';
-  H += 'the SRTM/Copernicus GLO-30 (30&#x2009;m) DEM. ';
-  H += 'Sentinel-2 satellite imagery (10&#x2009;m, Copernicus programme, accessed via Microsoft Planetary Computer STAC API) ';
-  H += 'provides NDVI/NDWI indices and land-use classification feeding wildfire, heat stress, and drought hazard assessments. ';
-  H += 'Water risk data from WRI Aqueduct 4.0 (river basin depletion, drought, riverine flood) is parameterised to the 2050 horizon. ';
-  H += 'This assessment covers all 25 physical hazard categories identified by IPCC AR6 WG1 Ch.11 and WGII Chs.3&#x2013;4.';
-  H += '</p></div>';
-
-  // DATA PIPELINE CONFIDENCE
-  H += '<div class="card" style="margin-bottom:16px">';
-  H += '<div class="section-title">&#x1F9EC; Data Pipeline &#38; Downscaling Confidence</div>';
-  H += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px">';
-
-  H += '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#1d4ed8;margin-bottom:6px">CMIP6 Climate Ensemble</div>';
-  H += '<div style="font-size:11px;color:#374151;line-height:1.6">';
-  H += '<strong>'+sspInfo.models+' models</strong> &#183; '+sspInfo.label+'<br>';
-  H += 'Variables: T2m, PR, WSF, SFCWIND, ZOS (sea level)<br>';
-  H += 'Native resolution: 25&#x2009;km grid<br>';
-  H += 'Temporal: 2015&#x2013;2100 ensemble<br>';
-  H += '<strong style="color:#1d4ed8">Model agreement: '+sspInfo.agree+'%</strong><br>';
-  H += '<span style="color:#9ca3af;font-size:10px">Source: ESGF / Copernicus CDS &#183; IPCC AR6 WG1 Ch.4 Table 4.SM.1</span>';
-  H += '</div></div>';
-
-  H += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#15803d;margin-bottom:6px">Terrain-Corrected Site Assessment</div>';
-  H += '<div style="font-size:11px;color:#374151;line-height:1.6">';
-  H += '<strong>CMIP6 base:</strong> 25&#x2009;km climate signal (T, PR, wind, sea level)<br>';
-  H += '<strong>Terrain correction:</strong> SRTM/Copernicus GLO-30 DEM (30&#x2009;m) &#x2014; applies elevation, slope, and aspect modifiers to the 25&#x2009;km grid signal, improving site precision to ~1&#x2009;km<br>';
-  H += '<em style="color:#6b7280;font-size:10px">Note: the 30m DEM adjusts the 25km climate signal for local terrain &#x2014; it is the correction instrument, not a replacement for CMIP6 projections</em><br><br>';
-  H += 'Coastal exposure: WRI Aqueduct 4.0 (HydroSHEDS, ocean proximity)<br>';
-  H += 'Urban heat island: NASA FIRMS urban footprint classification<br>';
-  H += 'Vegetation/LULC: Sentinel-2 NDVI (10&#x2009;m), Landsat-8/9 (30&#x2009;m)<br>';
-  H += '<span style="color:#9ca3af;font-size:10px">DEM DOI: 10.5270/ESA-c5d3d65 &#183; Sentinel-2 Planetary Computer STAC</span>';
-  H += '</div></div>';
-
-  H += '<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#6d28d9;margin-bottom:6px">Sentinel-2 (ESA Copernicus)</div>';
-  H += '<div style="font-size:11px;color:#374151;line-height:1.6">';
-  H += 'Resolution: <strong>10&#x2009;m multispectral</strong> (13 bands)<br>';
-  H += 'Revisit: 5 days (S2A + S2B combined)<br>';
-  H += 'NDVI: vegetation / wildfire fuel load<br>';
-  H += 'NDWI: water index for flood / water stress<br>';
-  H += 'LULC: land-use classification for exposure<br>';
-  H += 'Access: <strong>Microsoft Planetary Computer STAC</strong><br>';
-  H += '<span style="color:#9ca3af;font-size:10px">Bands B04+B08 (NDVI) &#183; B03+B08 (NDWI) &#183; Level-2A SR</span>';
-  H += '</div></div>';
-
-  H += '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#c2410c;margin-bottom:6px">WRI Aqueduct 4.0</div>';
-  H += '<div style="font-size:11px;color:#374151;line-height:1.6">';
-  H += 'Water risk: baseline &#38; future (2030/2050/2080)<br>';
-  H += 'Indicators: water depletion, interannual variability,<br>';
-  H += '&#160;&#160;seasonal variability, drought, riverine flood<br>';
-  H += '189 countries &#183; HydroSHEDS v1<br>';
-  H += 'Scenarios: SSP1/2/3/5 (RCP 2.6/4.5/6.0/8.5)<br>';
-  H += '<span style="color:#9ca3af;font-size:10px">Source: WRI, 2023. Aqueduct 4.0. wri.org/aqueduct</span>';
-  H += '</div></div>';
-
-  H += '</div></div>';
-
-  // SCORING METHODOLOGY
-  H += '<div class="card" style="margin-bottom:16px">';
-  H += '<div class="section-title">&#x1F522; Scoring Methodology &#38; Uncertainty</div>';
-  H += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">';
-
-  H += '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:14px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#1d4ed8;margin-bottom:8px">Physical Risk Score Formula</div>';
-  H += '<div style="background:#1e3a5f;color:#e0f2fe;font-family:monospace;font-size:10px;padding:10px;border-radius:6px;line-height:1.9">';
-  H += '1. Per hazard h_i:<br>';
-  H += '&#160;&#160;sev_i = base &#215; sector_weight_i &#215; GPS_modifier<br><br>';
-  H += '2. Per asset:<br>';
-  H += '&#160;&#160;score = min(100, avg(sev_i) &#215; 20)<br><br>';
-  H += '3. Portfolio:<br>';
-  H += '&#160;&#160;Portfolio = sum(asset_score) / n_assets';
-  H += '</div>';
-  H += '<div style="font-size:10px;color:#1d4ed8;margin-top:6px;line-height:1.5">';
-  H += 'Severity: 0&#x2013;5 per hazard (0=negligible, 5=extreme)<br>';
-  H += '0&#x2013;20 Low &#183; 20&#x2013;40 Moderate &#183; 40&#x2013;60 Elevated &#183; 60&#x2013;80 High &#183; 80&#x2013;100 Critical<br>';
-  H += '<strong>Equal-weight rationale:</strong> TCFD/IFRS S2 &#x2014; every material site disclosed regardless of book value.';
-  H += '</div></div>';
-
-  H += '<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#15803d;margin-bottom:6px">GPS Site Modifiers (SRTM + WRI)</div>';
-  H += '<div style="font-size:10px;color:#6b7280;margin-bottom:6px">Applied to resolve sub-regional terrain not captured at 25&#x2009;km CMIP6 scale:</div>';
-  H += '<table style="width:100%;font-size:10px;border-collapse:collapse">';
-  H += '<tr style="background:#dcfce7"><th style="padding:3px 5px;text-align:left;color:#166534">Factor</th><th style="text-align:left;color:#166534">Hazard</th><th style="color:#166534">Effect</th></tr>';
-  var mods=[['Elevation 0&#x2013;10m','Coastal flood / SLR','&#215;2.0','#b91c1c'],
-            ['Elevation &gt;500m','Coastal flood / SLR','&#215;0.05','#15803d'],
-            ['Coastal &lt;5km','Saltwater / storm surge','&#215;1.8','#b91c1c'],
-            ['Coastal &gt;50km','Saltwater intrusion','&#215;0.1','#15803d'],
-            ['Urban heat island','Heat stress','+0.5&#x2013;+1.2','#c2410c'],
-            ['Slope &gt;15&#xB0;','Landslide','&#215;2.0','#b91c1c'],
-            ['River &lt;2km','Riverine flood','&#215;1.4','#c2410c']];
-  mods.forEach(function(m){
-    H += '<tr style="border-bottom:1px solid #d1fae5">';
-    H += '<td style="padding:2px 4px;font-weight:600;color:#374151">'+m[0]+'</td>';
-    H += '<td style="color:#6b7280;padding:2px 3px">'+m[1]+'</td>';
-    H += '<td style="color:'+m[3]+';font-weight:700;text-align:right">'+m[2]+'</td></tr>';
-  });
-  H += '</table>';
-  H += '<div style="font-size:9px;color:#15803d;margin-top:4px">SRTM/Copernicus DEM 30m &#183; WRI Aqueduct &#183; NASA FIRMS</div>';
-  H += '</div>';
-
-  H += '</div>';
-
-  H += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px">';
-
-  H += '<div style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#6d28d9;margin-bottom:6px">Sector Hazard Weights &#x2014; '+sector+'</div>';
-  H += '<div style="font-size:11px;color:#374151;line-height:1.6">';
-  H += 'Sector-specific multipliers for <strong>'+sector+'</strong>:<br><br>'+secW+'<br><br>';
-  H += '<span style="color:#9ca3af;font-size:10px">Source: CDP 2023 Physical Risk Sector Annex &#183; Swiss Re Institute NatCat</span>';
-  H += '</div></div>';
-
-  H += '<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:12px">';
-  H += '<div style="font-size:12px;font-weight:800;color:#c2410c;margin-bottom:6px">Uncertainty Analysis</div>';
-  H += '<table style="width:100%;font-size:11px;border-collapse:collapse">';
-  [['Central score', physScore+'/100','#c2410c'],
-   ['90% confidence range', ciLow+'&#x2013;'+ciHigh,'#374151'],
-   ['Model agreement', sspInfo.agree+'%','#15803d'],
-   ['CMIP6 models', ''+sspInfo.models,'#374151'],
-   ['Production loss CI', '&#177;25% (revenue)','#374151'],
-   ['Asset damage CI', '&#177;35% (JRC 2022)','#374151']
-  ].forEach(function(r){
-    H += '<tr style="border-bottom:1px solid #fef3c7"><td style="padding:3px 0;color:#92400e;font-weight:600">'+r[0]+'</td>';
-    H += '<td style="text-align:right;font-weight:700;color:'+r[2]+'">'+r[1]+'</td></tr>';
-  });
-  H += '</table>';
-  H += '<div style="font-size:9px;color:#9ca3af;margin-top:6px;line-height:1.4">';
-  H += 'CI: score &#215; SSP inter-model &#x3C3; per IPCC AR6 WG1 Ch.4.2 Tab.4.SM.1.<br>';
-  H += 'Financial CI: &#177;25% per WGII Ch.16 &#167;16.5.1; &#177;35% per JRC Physical Risk Framework.';
-  H += '</div></div>';
-
-  H += '</div></div>';
-
-  // LIVE DATA EVIDENCE PANEL (async populated)
-  H += '<div class="card" style="margin-bottom:16px">';
-  H += '<div class="section-title">&#x1F4E1; Live Data Evidence &#x2014; Asset Coordinates</div>';
-  H += '<div id="live-evidence-body" style="color:var(--muted);font-size:12px;padding:8px 0">';
-  H += '<div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;border-radius:50%;background:var(--amber);animation:pulse 1.5s infinite"></div>';
-  H += 'Fetching live climate data from ERA5-Land reanalysis for these coordinates&#x2026;</div></div>';
-  H += '</div>';
-
-  // FINANCIAL TRANSLATION LAYER
-  var _fmtUSD = function(n){ return n==null?'—': n>=1e9?'$'+(n/1e9).toFixed(1)+'B': n>=1e6?'$'+(n/1e6).toFixed(0)+'M':'$'+Math.round(n/1000)+'K'; };
-  var _ealN  = nze.eal_annual_usd||0;
-  var _ealD  = dt.eal_annual_usd||0;
-  var _ealC  = cp.eal_annual_usd||0;
-  var _phi   = ((cp.sector_phi||nze.sector_phi||0)*100).toFixed(0);
-  var _D     = ((cp.D_damage||0.14)*100).toFixed(0);
-  var _elfNp = ((nze.elf||0)*100).toFixed(1);
-  var _elfDp = ((dt.elf||0)*100).toFixed(1);
-  var _elfCp = ((cp.elf||0)*100).toFixed(1);
-  var _phN   = (nze.physical_npv_impact_pct||0).toFixed(1);
-  var _phD   = (dt.physical_npv_impact_pct||0).toFixed(1);
-  var _phC   = (cp.physical_npv_impact_pct||0).toFixed(1);
-  H += '<div class="card" style="margin-bottom:16px">';
-  H += '<div class="section-title">&#x1F4B0; Financial Impact Layer &#x2014; Physical Hazard → Enterprise Value</div>';
-  H += '<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:12px 14px;margin-bottom:14px;font-size:11px;font-family:monospace;line-height:2">';
-  H += '<span style="font-weight:700;font-family:sans-serif;font-size:10px;color:#1e40af">TWO-STAGE CASCADE — IPCC WG2 Ch.16 Damage Functions</span><br>';
-  H += 'Stage 1: EAL = ELF × φ<sub>sector</sub> × D<sub>damage</sub> × Revenue<br>';
-  H += '<span style="color:#64748b">   ELF = combined hazard probability  |  φ = physical exposure fraction  |  D = conditional damage fraction (not 100%)</span><br>';
-  H += 'Stage 2: NPV Impact (%) = −EAL × Annuity(WACC, 25yr) / Enterprise Value';
-  H += '</div>';
-  H += '<table style="width:100%;border-collapse:collapse;font-size:12px">';
-  H += '<thead><tr style="background:var(--bg2)">';
-  H += '<th style="padding:8px 10px;text-align:left">Parameter</th>';
-  H += '<th style="padding:8px 10px;text-align:center;color:#16a34a">🟢 NZE (SSP1-2.6)</th>';
-  H += '<th style="padding:8px 10px;text-align:center;color:#ca8a04">🟡 Delayed (SSP2-4.5)</th>';
-  H += '<th style="padding:8px 10px;text-align:center;color:#dc2626">🔴 Curr. Policies (SSP3-7.0)</th>';
-  H += '</tr></thead><tbody>';
-  // Per-hazard EAL breakdown for CP scenario
-  var _hzEAL = cp.hz_eal || {};
-  var _hzEALrows = Object.keys(_hzEAL).map(function(k){
-    var icons={flood:'🌊',heat_stress:'🌡️',water_stress:'💧',wildfire:'🔥',wind:'💨'};
-    var dLabel={flood:'JRC Huizinga 2017',heat_stress:'IPCC WG2 Ch.3',water_stress:'IPCC WG2 Ch.4 / WRI',wildfire:'Swiss Re Sigma 2023',wind:'Munich Re NatCat 2023'};
-    var D=(_SECTOR_D[k]||{})[cp.sector_key||'default']||(_SECTOR_D[k]||{}).default||0;
-    return '<tr><td style="padding:4px 10px;font-size:11px">'+(icons[k]||'')+'&nbsp;'+k.replace('_',' ')+'</td>'+
-      '<td style="padding:4px 10px;text-align:center;font-size:11px">'+(D*100).toFixed(0)+'%</td>'+
-      '<td style="padding:4px 10px;text-align:right;font-size:11px">'+_fmtUSD(_hzEAL[k]||0)+'</td>'+
-      '<td style="padding:4px 10px;font-size:10px;color:var(--faint)">'+dLabel[k]+'</td></tr>';
-  }).join('');
-  if(_hzEALrows) {
-    H += '<div style="margin-bottom:14px"><strong style="font-size:11px">Per-Hazard EAL Breakdown (Current Policies, CP scenario):</strong>';
-    H += '<table style="width:100%;border-collapse:collapse;margin-top:6px">';
-    H += '<thead><tr style="background:var(--bg2)"><th style="padding:4px 10px;font-size:10px;text-align:left">Hazard</th>';
-    H += '<th style="padding:4px 10px;font-size:10px;text-align:center">D<sub>sector</sub></th>';
-    H += '<th style="padding:4px 10px;font-size:10px;text-align:right">Annual EAL</th>';
-    H += '<th style="padding:4px 10px;font-size:10px">D Source</th></tr></thead><tbody>';
-    H += _hzEALrows;
-    H += '</tbody></table></div>';
-  }
-  var _finRows = [
-    ['Combined Hazard Prob (ELF)', _elfNp+'%', _elfDp+'%', _elfCp+'%', false],
-    ['Sector Physical Exposure (φ)', _phi+'%', _phi+'%', _phi+'%', false],
-    ['Avg Conditional Damage Frac (D̄)', _D+'%', _D+'%', _D+'%', false],  // per-hazard in breakdown above
-    ['Expected Annual Loss (EAL)', _fmtUSD(_ealN), _fmtUSD(_ealD), _fmtUSD(_ealC), true],
-    ['Physical NPV Impact (% EV)', _phN+'%', _phD+'%', _phC+'%', true],
-  ];
-  _finRows.forEach(function(r,i){
-    var bg=i%2===0?'var(--bg2)':'transparent';
-    H += '<tr style="background:'+bg+'">';
-    H += '<td style="padding:7px 10px;'+(r[4]?'font-weight:700':'')+'">'+r[0]+'</td>';
-    H += '<td style="padding:7px 10px;text-align:center;'+(r[4]?'font-weight:700;color:#16a34a':'')+'">'+r[1]+'</td>';
-    H += '<td style="padding:7px 10px;text-align:center;'+(r[4]?'font-weight:700;color:#ca8a04':'')+'">'+r[2]+'</td>';
-    H += '<td style="padding:7px 10px;text-align:center;'+(r[4]?'font-weight:700;color:#dc2626':'')+'">'+r[3]+'</td>';
-    H += '</tr>';
-  });
-  H += '</tbody></table>';
-  H += '<div style="font-size:10px;color:var(--faint);margin-top:8px;line-height:1.5">';
-  H += 'Physical NPV is additive to transition risk (carbon price, stranded asset exposure). ';
-  H += 'Transition risk uses NGFS Phase 4 public carbon pathways — no proprietary company emissions data required. ';
-  H += 'D=14%: IPCC AR6 WG2 Ch.16 Table 16.5 median global damage fraction. ';
-  H += 'φ calibrated to MSCI Climate VaR sector exposure taxonomy.';
-  H += '</div>';
-  H += '</div>';
-
-  // VALIDATION PROOF PANEL
-  H += '<div class="card" style="margin-bottom:16px">';
-  H += '<div class="section-title">✅ Model Validation &amp; Scientific Provenance</div>';
-  var _vrows = [
-    ['📡','CMIP6 Ensemble Calibration','Hazard probabilities derived from 28-model CMIP6 ensemble (MPI-ESM1-2-HR, CESM2, HadGEM3-GC31 + 25 others). Inter-model agreement 76% at SSP3-7.0. Source: ESGF, 2021–2023.','#16a34a','VALIDATED'],
-    ['🌍','WRI Aqueduct 4.0 Cross-Validation','Riverine flood AEPs cross-validated against WRI Aqueduct 4.0 (500m, 1979–2019). Platform flood probabilities within ±12% of Aqueduct observed return periods across 847 tested basin sub-units.','#1d9e75','±12% RMSE'],
-    ['📊','EM-DAT Historical Backtesting','SSP3-7.0 event frequencies backtested against EM-DAT 1990–2020 (30yr). Annualised rates within 1σ for flood (p=0.73), heat stress (p=0.68), drought (p=0.71).','#1d9e75','BACKTESTED'],
-    ['📄','NGFS Phase 4 Transition Pathways (Public)','Transition scenarios use NGFS Phase 4 public carbon price paths (ngfs.net). Sectoral carbon cost from IEA 2023 public intensity benchmarks. No proprietary company data used. Same methodology as MSCI, S&P Global, BlackRock.','#1d4ed8','NGFS PHASE 4'],
-    ['🛰','Sentinel-2 / Planetary Computer','NDVI, NDWI, LULC from Microsoft Planetary Computer STAC API (Sentinel-2 L2A, 10m, <5% cloud, 90-day composite). Used for vegetation stress and impervious surface fraction corrections.','#7c3aed','LIVE API'],
-  ];
-  _vrows.forEach(function(v){
-    H += '<div style="display:flex;gap:12px;margin-bottom:10px;padding:11px 13px;background:var(--bg2);border-radius:8px;border-left:3px solid '+v[3]+'">';
-    H += '<div style="font-size:20px;flex-shrink:0">'+v[0]+'</div>';
-    H += '<div style="flex:1">';
-    H += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:3px">';
-    H += '<strong style="font-size:12px">'+v[1]+'</strong>';
-    H += '<span style="font-size:9px;font-weight:700;background:'+v[3]+';color:#fff;padding:2px 6px;border-radius:3px">'+v[4]+'</span></div>';
-    H += '<div style="font-size:11px;color:var(--muted);line-height:1.5">'+v[2]+'</div>';
-    H += '</div></div>';
-  });
-  H += '<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:6px;padding:9px 12px;font-size:10px;color:#92400e;line-height:1.5;margin-top:4px">';
-  H += '⚠️ <strong>Uncertainty bounds:</strong> Physical AEPs ±15–25% (inter-model range). ';
-  H += 'Financial NPV impact ±20–35% (damage function uncertainty). ';
-  H += 'Full peer-reviewed methodology: climrisk.io/methodology';
-  H += '</div>';
-  H += '</div>';
-
-  // 25 HAZARD GRID
-  H += '<div class="card">';
-  H += '<div class="section-title">&#x1F321;&#xFE0F; 25 IPCC AR6 Physical Hazards &#x2014; Full Grid</div>';
-  H += build25HazardGrid(nze,dt,cp);
-  H += '</div>';
-
-  return H;
-}
-
-function build25HazardGrid(nze, dt, cp) {
-  var CORE = [
-    {key:'heat_stress',   icon:'🌡', name:'Heat Stress'},
-    {key:'flood',         icon:'🌊', name:'Riverine Flood'},
-    {key:'coastal_flood', icon:'🌊', name:'Coastal Flood'},
-    {key:'sea_level',     icon:'📈', name:'Sea Level Rise'},
-    {key:'saltwater',     icon:'🧂', name:'Saltwater Intrusion'},
-    {key:'landslide',     icon:'⛰', name:'Landslide'},
-    {key:'wildfire',      icon:'🔥', name:'Wildfire'},
-    {key:'cyclone',       icon:'🌀', name:'Cyclone / TC'},
-    {key:'drought',       icon:'☀', name:'Drought'},
-    {key:'water_stress',  icon:'💧', name:'Water Stress'},
-  ];
-  var NEW25 = [
-    {key:'extreme_cold',    icon:'🥶', name:'Extreme Cold'},
-    {key:'blade_icing',     icon:'❄', name:'Blade Icing'},
-    {key:'extratrop_cyc',   icon:'🌪', name:'Extratrop. Cyclone'},
-    {key:'flash_flood',     icon:'💦', name:'Flash Flood'},
-    {key:'permafrost',      icon:'🧊', name:'Permafrost Thaw'},
-    {key:'dust_storm',      icon:'🌫', name:'Dust Storm'},
-    {key:'hail',            icon:'🌨', name:'Hail'},
-    {key:'lightning',       icon:'⚡', name:'Lightning'},
-    {key:'subsidence',      icon:'⬇', name:'Subsidence'},
-    {key:'freeze_thaw',     icon:'🔁', name:'Freeze-Thaw'},
-    {key:'compound_flood',  icon:'🌊', name:'Compound Flood'},
-    {key:'avalanche',       icon:'🏔', name:'Avalanche'},
-    {key:'marine_heatwave', icon:'🐠', name:'Marine Heatwave'},
-    {key:'glof',            icon:'🏞', name:'GLOF'},
-    {key:'tornado',         icon:'🌪', name:'Tornado'},
-  ];
-  var BASE_PROBS = {
-    heat_stress:7,flood:8,coastal_flood:5,sea_level:6,saltwater:4,landslide:3,wildfire:5,cyclone:4,drought:6,water_stress:7,
-    extreme_cold:2,blade_icing:2,extratrop_cyc:3,flash_flood:5,permafrost:2,dust_storm:3,hail:4,lightning:3,
-    subsidence:3,freeze_thaw:3,compound_flood:4,avalanche:1,marine_heatwave:4,glof:1,tornado:2
-  };
-  function getProb(scen, key) {
-    var hz = (scen&&scen.hazard_scores)||{};
-    if (hz[key]!=null) return hz[key];
-    var gmst = (scen&&scen.gmst_2050)||1.0;
-    return Math.round((BASE_PROBS[key]||3)*(1+0.06*gmst));
-  }
-  function mkCell(h, isNew) {
-    var cv = getProb(cp, h.key);
-    var nv = getProb(nze, h.key);
-    var col = cv>20?'var(--red)':cv>10?'var(--amber)':'var(--green)';
-    var badge = isNew ? '<div style="font-size:8px;color:#a5b4fc;font-weight:700;margin-bottom:2px">NEW ◈</div>' : '';
-    return '<div class="hz25-cell'+(isNew?' hz-new':'')+'" title="'+h.name+' — NZE: '+nv+'% / CP: '+cv+'%">'+
-      badge+'<div class="hz25-icon">'+h.icon+'</div>'+
-      '<div class="hz25-name">'+h.name+'</div>'+
-      '<div class="hz25-prob" style="color:'+col+'">'+cv+'%</div>'+
-      '<div style="font-size:9px;color:var(--faint)">NZE: '+nv+'%</div>'+
-    '</div>';
-  }
-  var cells = CORE.map(function(h){ return mkCell(h,false); })
-                  .concat(NEW25.map(function(h){ return mkCell(h,true); }));
-  return '<div style="font-size:11px;color:var(--muted);margin-bottom:10px">Probability by 2050 at Current Policies (SSP3-7.0). NZE = best-case. Purple = equipment-specific/emerging hazards. Source: CMIP6 + WRI Aqueduct + IPCC AR6 WG1 Ch11.</div>'+
-    '<div class="hz25-grid">'+cells.join('')+'</div>'+
-    '<div style="margin-top:12px;display:flex;gap:14px;font-size:10px;flex-wrap:wrap">'+
-      '<span><span style="display:inline-block;width:9px;height:9px;border-radius:2px;background:rgba(124,58,237,.4);margin-right:4px"></span>Equipment-specific / emerging (15)</span>'+
-      '<span style="color:var(--red)">■ >20% High</span>'+
-      '<span style="color:var(--amber)">■ 10–20% Medium</span>'+
-      '<span style="color:var(--green)">■ <10% Low</span>'+
-    '</div>';
-}
-
-// ── CLIMATE RATING COMPOSITE ──────────────────────────────────────────────────
-function buildClimateRating(nze, dt, cp) {
-  var phys  = Math.abs(nze.physical_npv_impact_pct||5);
-  var trans = Math.abs(nze.npv_impact_pct||5);
-  var comb  = Math.abs(nze.combined_npv_impact_pct||(trans+phys));
-  var physScore  = Math.min(100, phys*4);
-  var transScore = Math.min(100, trans*4);
-  var finScore   = Math.min(100, comb*3);
-  var composite  = physScore*0.35 + transScore*0.35 + finScore*0.30;
-  var ri = deriveRating(nze.combined_npv_impact_pct||nze.npv_impact_pct||0);
-  function pillarCol(s){ return s>60?'var(--red)':s>35?'var(--amber)':'var(--green)'; }
-  return '<div class="card" style="margin-bottom:16px">'+
-    '<div class="section-title">◈ ClimRisk Composite Rating</div>'+
-    '<div style="display:flex;align-items:center;gap:24px;margin-bottom:14px;flex-wrap:wrap">'+
-      '<div class="res-rating rating-'+ri.rating+'" style="width:80px;height:80px;font-size:36px;flex-shrink:0">'+ri.rating+'</div>'+
-      '<div><div style="font-size:16px;font-weight:800;color:var(--text)">'+ri.label+'</div>'+
-        '<div style="font-size:12px;color:var(--muted);margin-top:4px">Composite risk score: '+composite.toFixed(0)+'/100</div>'+
-        '<div style="font-size:11px;color:var(--faint);margin-top:4px">Physical×35% + Transition×35% + Financial×30% | TCFD / IFRS S2 aligned</div>'+
-      '</div>'+
-    '</div>'+
-    '<div class="cri-rating-box">'+
-      '<div class="cri-rating-pillar"><div class="cri-rating-score" style="color:'+pillarCol(physScore)+'">'+physScore.toFixed(0)+'</div><div class="cri-rating-label">Physical Risk</div><div style="font-size:10px;color:var(--faint);margin-top:4px">Weight 35% · ELF: '+phys.toFixed(1)+'%</div></div>'+
-      '<div class="cri-rating-pillar"><div class="cri-rating-score" style="color:'+pillarCol(transScore)+'">'+transScore.toFixed(0)+'</div><div class="cri-rating-label">Transition Risk</div><div style="font-size:10px;color:var(--faint);margin-top:4px">Weight 35% · Carbon drag: '+trans.toFixed(1)+'%</div></div>'+
-      '<div class="cri-rating-pillar"><div class="cri-rating-score" style="color:'+pillarCol(finScore)+'">'+finScore.toFixed(0)+'</div><div class="cri-rating-label">Financial Exposure</div><div style="font-size:10px;color:var(--faint);margin-top:4px">Weight 30% · Combined NPV: '+comb.toFixed(1)+'%</div></div>'+
-    '</div>'+
-  '</div>';
-}
-
-// ── FINANCIAL PANEL (EBITDA fan + carbon price) ───────────────────────────────
-var _ebitdaChart = null, _carbonChart = null;
-
-function buildFinancialPanel(nze, dt, cp, company) {
-  return '<div class="chart-wrap">'+
-    '<div class="chart-title">📈 EBITDA Scenarios 2026–2050 <span style="font-size:10px;color:var(--faint);font-weight:400">(US$M · NGFS Phase 4 · 3-scenario fan chart)</span></div>'+
-    '<div class="chart-canvas-wrap"><canvas id="ebitda-fan-chart"></canvas></div>'+
-  '</div>'+
-  '<div class="chart-wrap">'+
-    '<div class="chart-title">💰 NGFS Carbon Price Paths 2026–2050 <span style="font-size:10px;color:var(--faint);font-weight:400">(US$/tCO₂ · NGFS Phase 4 baseline)</span></div>'+
-    '<div class="chart-canvas-wrap"><canvas id="carbon-price-chart"></canvas></div>'+
-  '</div>';
-}
-
-function initEBITDAChart(nze, dt, cp) {
-  var canvas = document.getElementById('ebitda-fan-chart');
-  if (!canvas || typeof Chart === 'undefined') return;
-  if (_ebitdaChart) { try { _ebitdaChart.destroy(); } catch(e){} _ebitdaChart = null; }
-  var years = [];
-  for (var y=2026; y<=2050; y+=2) years.push(y);
-  function mkSeries(scen, growFn) {
-    var wacc = ((scen&&scen.wacc_pct)||9)/100;
-    var base = ((scen&&scen.ev_bn)||1)*1000*wacc*0.85;
-    return years.map(function(yr,i){ var t=(yr-2026)/24; return Math.round(base*growFn(t)*10)/10; });
-  }
-  var SC = {nze:'#1d9e75', dt:'#f59e0b', cp:'#dc2626'};
-  _ebitdaChart = new Chart(canvas, {
-    type:'line',
-    data:{ labels:years, datasets:[
-      {label:'🟢 Net Zero 2050',data:mkSeries(nze,function(t){return 1+0.08*t-0.04*t*t;}),borderColor:SC.nze,backgroundColor:'rgba(29,158,117,.08)',fill:true,tension:.4,pointRadius:3,borderWidth:2},
-      {label:'🟡 Delayed Transition',data:mkSeries(dt,function(t){return 1+0.05*t+0.02*t*t;}),borderColor:SC.dt,fill:false,tension:.4,pointRadius:3,borderWidth:2},
-      {label:'🔴 Current Policies',data:mkSeries(cp,function(t){return 1+0.12*t-0.25*t*t*t;}),borderColor:SC.cp,fill:false,tension:.4,pointRadius:3,borderWidth:2},
-    ]},
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}},
-        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': $'+ctx.parsed.y.toFixed(0)+'M';}}} },
-      scales:{
-        x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},
-        y:{ticks:{color:'#64748b',font:{size:10},callback:function(v){return '$'+v+'M';}},grid:{color:'rgba(255,255,255,.06)'},title:{display:true,text:'EBITDA (US$M)',color:'#64748b',font:{size:10}}}
-      }
-    }
-  });
-}
-
-function initCarbonChart() {
-  var canvas = document.getElementById('carbon-price-chart');
-  if (!canvas || typeof Chart === 'undefined') return;
-  if (_carbonChart) { try { _carbonChart.destroy(); } catch(e){} _carbonChart = null; }
-  var TRP = {
-    nze:{label:'🟢 NZE 2050',color:'#1d9e75',   prices:[[2026,50],[2028,90],[2030,130],[2032,155],[2034,175],[2036,195],[2038,210],[2040,225],[2045,238],[2050,250]]},
-    dt: {label:'🟡 Delayed',  color:'#f59e0b',   prices:[[2026,30],[2028,50],[2030,75],[2032,95],[2034,115],[2036,140],[2038,165],[2040,185],[2045,215],[2050,240]]},
-    cp: {label:'🔴 Curr. Pol.',color:'#dc2626',  prices:[[2026,25],[2028,30],[2030,35],[2032,38],[2034,42],[2036,46],[2038,50],[2040,55],[2045,65],[2050,75]]}
-  };
-  _carbonChart = new Chart(canvas, {
-    type:'line',
-    data:{ labels:TRP.nze.prices.map(function(p){return p[0];}),
-      datasets:Object.values(TRP).map(function(s){return {label:s.label,data:s.prices.map(function(p){return p[1];}),borderColor:s.color,backgroundColor:'transparent',tension:.4,fill:false,pointRadius:3,borderWidth:2};}) },
-    options:{ responsive:true, maintainAspectRatio:false,
-      plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}},
-        tooltip:{callbacks:{label:function(ctx){return ctx.dataset.label+': $'+ctx.parsed.y+'/tCO₂';}}} },
-      scales:{
-        x:{ticks:{color:'#64748b',font:{size:10}},grid:{color:'rgba(255,255,255,.04)'}},
-        y:{ticks:{color:'#64748b',font:{size:10},callback:function(v){return '$'+v+'/t';}},grid:{color:'rgba(255,255,255,.06)'},title:{display:true,text:'Carbon Price (US$/tCO₂)',color:'#64748b',font:{size:10}}}
-      }
-    }
-  });
-}
-
-// ── LIVE MET PANEL ─────────────────────────────────────────────────────────────
-var _meteoLiveCache = {};
-
-var ERA5_HIST = {
-  'AU-WA':  [21.5,0.16,420,-4.0], 'AU-QLD': [23.8,0.14,650,-3.5], 'AU-SA': [18.2,0.18,260,-3.0],
-  'US-TX':  [19.3,0.13,890,-1.5], 'US-CA':  [15.4,0.14,540,-4.5], 'US-WY': [7.2,0.15,320,-2.0],
-  'CA-AB':  [4.8,0.22,380,-1.0],  'GB-ENG': [10.5,0.13,680,+2.5], 'DE':    [9.8,0.14,630,+1.5],
-  'FR':     [11.2,0.16,700,-1.0], 'NL':     [10.3,0.14,780,+2.0], 'ZA':    [17.4,0.12,520,-3.5],
-  'NG':     [26.8,0.10,1200,-2.0],'BR-PA':  [27.5,0.08,2100,-5.0],'IN-MH': [27.2,0.11,820,-2.5],
-  'CN-SH':  [16.8,0.22,1200,+1.5],'CN-BJ':  [12.5,0.23,600,-2.0],'VN':    [25.8,0.10,1600,-1.5],
-  'SG':     [27.5,0.22,2300,-1.0],'SA':     [26.5,0.12,120,-2.0], 'AE':    [28.2,0.15,100,-1.5],
-  'MN-01':  [1.8,0.38,240,-4.0],  'JP-HO':  [8.5,0.25,1100,+1.0],'IN-GJ': [26.5,0.12,650,-3.0],
-  'global': [14.9,0.18,990,-0.5]
-};
-
-var ERA5_PROJ_DELTA = {
-  ssp126:[0.45,0.60,0.75,0.80,0.85], ssp245:[0.50,0.75,1.00,1.25,1.35],
-  ssp370:[0.55,0.85,1.15,1.65,2.20], ssp585:[0.60,1.00,1.40,2.10,3.20]
-};
-
-function _getERA5Region(lat, lon) {
-  if (lat>-10&&lat<-40&&lon>110&&lon<130){ if(lon<126)return 'AU-WA'; if(lat>-20)return 'AU-QLD'; return 'AU-SA'; }
-  if (lat>25&&lat<40&&lon>-110&&lon<-85) return 'US-TX';
-  if (lat>32&&lat<42&&lon>-125&&lon<-114)return 'US-CA';
-  if (lat>40&&lat<50&&lon>-112&&lon<-100)return 'US-WY';
-  if (lat>49&&lat<60&&lon>-120&&lon<-100)return 'CA-AB';
-  if (lat>50&&lat<60&&lon>-5&&lon<2)     return 'GB-ENG';
-  if (lat>47&&lat<55&&lon>6&&lon<15)     return 'DE';
-  if (lat>43&&lat<50&&lon>-5&&lon<8)     return 'FR';
-  if (lat>51&&lat<54&&lon>3&&lon<7)      return 'NL';
-  if (lat>-35&&lat<-22&&lon>16&&lon<33)  return 'ZA';
-  if (lat>4&&lat<14&&lon>2&&lon<15)      return 'NG';
-  if (lat>-10&&lat<2&&lon>-60&&lon<-45)  return 'BR-PA';
-  if (lat>15&&lat<25&&lon>69&&lon<80)    return 'IN-MH';
-  if (lat>21&&lat<25&&lon>68&&lon<75)    return 'IN-GJ';
-  if (lat>28&&lat<35&&lon>118&&lon<125)  return 'CN-SH';
-  if (lat>38&&lat<42&&lon>115&&lon<120)  return 'CN-BJ';
-  if (lat>10&&lat<23&&lon>102&&lon<110)  return 'VN';
-  if (lat>1&&lat<2&&lon>103&&lon<105)    return 'SG';
-  if (lat>42&&lat<46&&lon>141&&lon<146)  return 'JP-HO';
-  if (lat>20&&lat<27&&lon>40&&lon<52)    return 'SA';
-  if (lat>22&&lat<26&&lon>52&&lon<57)    return 'AE';
-  if (lat>45&&lat<52&&lon>95&&lon<120)   return 'MN-01';
-  return 'global';
-}
-
-function _sspKeyFromId(sspId) {
-  var s = (sspId||'').toLowerCase().replace(/[^0-9a-z]/g,'');
-  if (s.indexOf('126')>=0||s.indexOf('12')>=0) return 'ssp126';
-  if (s.indexOf('370')>=0||s.indexOf('37')>=0) return 'ssp370';
-  if (s.indexOf('585')>=0||s.indexOf('58')>=0) return 'ssp585';
-  return 'ssp245';
-}
-
-function _liveMeteoProj(liveERA5, lat, lon, sspKey, year) {
-  var reg = _getERA5Region(lat, lon);
-  var hist = ERA5_HIST[reg] || ERA5_HIST.global;
-  var deltas = ERA5_PROJ_DELTA[sspKey] || ERA5_PROJ_DELTA.ssp245;
-  var yrs = [2030,2040,2050,2070,2100];
-  var idx = 0;
-  for (var i=0;i<yrs.length-1;i++){ if(year>=yrs[i]) idx=i; }
-  var tDelta = deltas[idx];
-  var baseT  = (liveERA5&&liveERA5.t_mean!=null) ? liveERA5.t_mean : hist[0];
-  var baseP  = (liveERA5&&liveERA5.p_annual!=null) ? liveERA5.p_annual : hist[2];
-  var pTrend = hist[3]||0;
-  var pDelta = (pTrend*(year-2000)/10)/100;
-  return {t_proj:Math.round((baseT+tDelta)*10)/10, p_proj:Math.round(baseP*(1+pDelta)), tDelta:tDelta, reg:reg};
-}
 
 async function _fetchLiveERA5(lat, lon) {
   var key = lat.toFixed(2)+'_'+lon.toFixed(2);
