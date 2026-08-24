@@ -493,6 +493,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
 
     <div style="background:rgba(29,158,117,.08);border:1px solid rgba(29,158,117,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted)">
       <strong style="color:var(--green)">Engine runs:</strong> CMIP6 physical hazard · ERA5 climate data · WRI Aqueduct · Sentinel-2 imagery · NGFS Phase 4 NZE/DT/CP scenarios · CBAM liability · climate-adjusted DCF. Results appear in this dashboard.
+      <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(29,158,117,.15)">
+        <span id="engine-status-badge" style="font-size:11px;color:var(--faint)"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;margin-right:5px;vertical-align:middle;animation:pulse 1.5s infinite"></span>Warming up engine…</span>
+      </div>
     </div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
@@ -503,6 +506,115 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
 
 <script>
 const ENGINE_URL = 'https://climrisk-github-io.onrender.com';
+
+// ── PYTHON ENGINE: PRE-WARM · KEEP-ALIVE · COMPANY MATCHING ─────────────────
+var _engineStatus     = 'warming';  // 'warming' | 'ready' | 'offline'
+var _PYTHON_COMPANIES = null;       // cached from GET /companies
+
+function _updateEngineStatusBadge() {
+  var badge = document.getElementById('engine-status-badge');
+  if (!badge) return;
+  var map = {
+    warming: {dot:'#f59e0b', txt:'Warming up engine…', anim:true},
+    ready:   {dot:'#1d9e75', txt:'Python engine ready',    anim:false},
+    offline: {dot:'#ef4444', txt:'Engine offline — using estimates', anim:false}
+  };
+  var c = map[_engineStatus] || map.warming;
+  var pulse = c.anim ? ';animation:pulse 1.5s infinite' : '';
+  badge.innerHTML = '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+c.dot+';margin-right:5px;vertical-align:middle'+pulse+'"></span>'+c.txt;
+}
+
+function _pingEngine() {
+  return fetch(ENGINE_URL + '/health', {signal: AbortSignal.timeout(120000)})
+    .then(function(r){ return r.json(); })
+    .then(function(){
+      _engineStatus = 'ready'; _updateEngineStatusBadge();
+      return fetch(ENGINE_URL + '/companies', {signal: AbortSignal.timeout(15000)});
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(cs){ _PYTHON_COMPANIES = cs; })
+    .catch(function(){ _engineStatus = 'offline'; _updateEngineStatusBadge(); });
+}
+
+function _matchCompanyId(name) {
+  if (!_PYTHON_COMPANIES) return null;
+  var n = name.toLowerCase().trim();
+  for (var i = 0; i < _PYTHON_COMPANIES.length; i++) {
+    var c = _PYTHON_COMPANIES[i];
+    if (c.name.toLowerCase() === n) return c.id;
+    if (c.id.replace(/_/g,' ') === n) return c.id;
+    if (n.indexOf(c.id.replace(/_/g,' ')) >= 0) return c.id;
+    if (c.name.toLowerCase().indexOf(n.split(' ')[0]) >= 0 && n.split(' ')[0].length > 3) return c.id;
+  }
+  return null;
+}
+
+function _physNpvPct(years, wacc) {
+  if (!years || !years.length) return 0;
+  var avg = years.reduce(function(s,y){ return s+(y.total_loss_fraction||0); },0)/years.length;
+  var ann = (1-Math.pow(1+wacc,-25))/Math.max(wacc,0.01);
+  return -(avg * ann);
+}
+
+async function _runPythonScoped(cid, company, sector) {
+  var resp = await fetch(ENGINE_URL+'/runs/scoped', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({company_id:cid, scope:'full_cri'}),
+    signal: AbortSignal.timeout(120000)
+  });
+  if (!resp.ok) throw new Error('Engine '+resp.status);
+  var d    = await resp.json();
+  var vr   = d.valuation_results || {};
+  var phys = d.physical          || {};
+  var rr   = d.rating_result     || {};
+  var trans= d.transition        || {};
+  var SM   = [
+    {key:'nze',     name:'Net Zero 2050',     yrs:phys.years_nze,     ssp:'SSP1-2.6',gmst:0.85},
+    {key:'delayed', name:'Delayed Transition', yrs:phys.years_delayed, ssp:'SSP2-4.5',gmst:1.35},
+    {key:'cp',      name:'Current Policies',   yrs:phys.years_cp,      ssp:'SSP3-7.0',gmst:1.70}
+  ];
+  var results = SM.map(function(sm){
+    var v    = vr[sm.key] || {};
+    var wacc = v.wacc_used || 0.09;
+    var tr   = Math.round((v.ebitda_compression_2030_pct||0)*1000)/10;
+    var ph   = Math.round(_physNpvPct(sm.yrs, wacc)*1000)/10;
+    return {
+      company:company, scenario:sm.name,
+      ev_bn:    Math.round((v.enterprise_value||0)/10)/100,
+      equity_bn:Math.round((v.equity_value||0)/10)/100,
+      share_price:Math.round((v.implied_share_price||0)*100)/100,
+      wacc_pct: Math.round(wacc*10000)/100,
+      npv_impact_pct: tr,
+      physical_npv_impact_pct: ph,
+      combined_npv_impact_pct: Math.round((tr+ph)*10)/10,
+      hazard_scores: phys.hazard_breakdown_2035||null,
+      ssp_id:sm.ssp, gmst_2050:sm.gmst,
+      data_sources:['CMIP6','WRI Aqueduct 4.0','NGFS Phase 4','Python CRI Engine'],
+      sector:sector, physical_exposure_ratio:null, warnings:0
+    };
+  });
+  return {
+    source_file:'python_engine', companies_processed:1,
+    scenarios_run:['Net Zero 2050','Delayed Transition','Current Policies'],
+    total_duration_s:0, errors:[], results:results,
+    _python_rating:      rr.rating        || null,
+    _python_rating_label:rr.rating_label  || null,
+    _python_summary:    (rr.summary||'').trim(),
+    _python_physical_score:  phys.physical_score    || null,
+    _python_physical_label:  phys.physical_label    || null,
+    _python_transition_score:trans.transition_score  || null,
+    _python_transition_label:trans.transition_label  || null,
+    _python_composite:   rr.composite_score || null
+  };
+}
+
+// Fire pre-warm immediately on load; keep service alive every 14 min
+document.addEventListener('DOMContentLoaded', function(){
+  _pingEngine();
+  setInterval(function(){
+    fetch(ENGINE_URL+'/health',{signal:AbortSignal.timeout(30000)}).catch(function(){});
+  }, 14*60*1000);
+});
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 var _auth  = sessionStorage.getItem('cri_auth')  || '';
@@ -646,7 +758,19 @@ async function launchAssessment() {
   renderAssessments();
 
   if (!file) {
-    // No file — generate minimal synthetic run with local JS
+    // Try Python engine for known companies first
+    var _cid = _matchCompanyId(company);
+    if (_cid && _engineStatus !== 'offline') {
+      try {
+        var _pyData = await _runPythonScoped(_cid, company, sector);
+        saveResultToAssessment(assessId, _pyData, company, sector, 0);
+        showResults(_pyData, company, sector, 0);
+        return;
+      } catch(_pyErr) {
+        console.warn('Python engine fallback:', _pyErr.message);
+      }
+    }
+    // No file + no match — JS synthetic estimates
     setTimeout(function(){
       var synth = makeSyntheticResult(company, sector, rev);
       saveResultToAssessment(assessId, synth, company, sector, 0);
@@ -858,6 +982,8 @@ function showResults(data, company, sector, duration) {
   var nze_combined = nze.combined_npv_impact_pct != null ? nze.combined_npv_impact_pct : nze.npv_impact_pct;
   var ri = deriveRating(nze_combined);
   var synthetic = data._synthetic ? ' <span style="background:rgba(245,158,11,.15);color:var(--amber);border:1px solid rgba(245,158,11,.3);border-radius:8px;font-size:10px;padding:2px 7px;font-weight:600">ESTIMATED</span>' : '';
+  // Python engine rating badge (when scoped run data is available)
+  var pyRatingBadge = data._python_rating ? ' <span style="background:rgba(29,158,117,.15);color:var(--green);border:1px solid rgba(29,158,117,.3);border-radius:8px;font-size:10px;padding:2px 7px;font-weight:600" title="'+( data._python_summary||'')+'">CRI Engine: '+data._python_rating+' — '+( data._python_rating_label||'')+'</span>' : '';
   var errWarn = data.errors && data.errors.length ? '<div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--amber);margin-bottom:14px">⚠ Engine warnings: '+data.errors.join(' · ')+'</div>' : '';
 
   function scRow(scen, label, ssp) {
