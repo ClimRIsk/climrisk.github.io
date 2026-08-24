@@ -1121,6 +1121,8 @@ function showResults(data, company, sector, duration) {
   rp.scrollIntoView({behavior:'smooth', block:'start'});
   setTimeout(function(){
     initRiskMap(data, nze, dt, cp, company);
+    var _ell = _latLonForResult(nze, company);
+    _fetchLiveEvidence(_ell[0], _ell[1], company, sector);
   }, 80);
   _lastResults = {data:data,company:company,sector:sector,duration:duration,nze:nze,dt:dt,cp:cp};
 }
@@ -1150,14 +1152,94 @@ function _riskColor(combined_pct) {
   if (v <= -4)  return '#3b82f6';
   return '#1d9e75';
 }
+function _evCard(title, value, source, valCol, bgCol, brdCol) {
+  return '<div style="background:'+bgCol+';border:1px solid '+brdCol+';border-radius:8px;padding:10px">'+
+    '<div style="font-size:9px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px">'+title+'</div>'+
+    '<div style="font-size:13px;font-weight:800;color:'+valCol+'">'+value+'</div>'+
+    '<div style="font-size:9px;color:#9ca3af;margin-top:3px">'+source+'</div>'+
+    '</div>';
+}
+
+async function _fetchLiveEvidence(lat, lon, company, sector) {
+  var panel = document.getElementById('live-evidence-body');
+  if (!panel) return;
+  var ts = new Date().toUTCString();
+  try {
+    // Fetch 30-year ERA5 daily max temp + precipitation from Open-Meteo Archive
+    var url = 'https://archive-api.open-meteo.com/v1/archive?latitude='+lat.toFixed(4)+
+      '&longitude='+lon.toFixed(4)+'&start_date=1993-01-01&end_date=2023-12-31'+
+      '&daily=temperature_2m_max,precipitation_sum&timezone=UTC';
+    var resp = await fetch(url, {signal: AbortSignal.timeout(30000)});
+    var d = await resp.json();
+    var daily = d.daily || {};
+    var times = daily.time || [];
+    var tmax  = daily.temperature_2m_max || [];
+    var prec  = daily.precipitation_sum  || [];
+    var elev  = d.elevation != null ? d.elevation.toFixed(0)+' m ASL' : 'N/A';
+
+    // Extreme event tallies
+    var heat35=0, heat40=0, rain50=0, rain100=0;
+    tmax.forEach(function(v){ if(v!=null){ if(v>=35)heat35++; if(v>=40)heat40++; }});
+    prec.forEach(function(v){ if(v!=null){ if(v>=50)rain50++; if(v>=100)rain100++; }});
+
+    // Monthly precip for drought
+    var mPr={};
+    times.forEach(function(t,i){ var ym=t.substr(0,7); if(!mPr[ym])mPr[ym]=0; if(prec[i]!=null)mPr[ym]+=prec[i]; });
+    var mArr=Object.values(mPr), drMon=mArr.filter(function(v){return v<30;}).length;
+    var drPct=mArr.length?((drMon/mArr.length)*100).toFixed(0):'—';
+
+    // Warming trend: linear regression on annual mean tmax
+    var yrs={};
+    times.forEach(function(t,i){ var y=t.substr(0,4); if(!yrs[y])yrs[y]=[]; if(tmax[i]!=null)yrs[y].push(tmax[i]); });
+    var yList=Object.keys(yrs).sort();
+    var yMeans=yList.map(function(y){ var a=yrs[y]; return a.length?a.reduce(function(s,v){return s+v;},0)/a.length:null; }).filter(function(v){return v!=null;});
+    var n=yMeans.length, sx=0,sy=0,sxy=0,sxx=0;
+    yMeans.forEach(function(v,i){sx+=i;sy+=v;sxy+=i*v;sxx+=i*i;});
+    var slope=n>1?(n*sxy-sx*sy)/(n*sxx-sx*sx):0;
+    var trendStr=(slope>=0?'+':'')+( slope*10).toFixed(2)+'&#xB0;C/decade';
+    var trendCol=slope>0.3?'#b91c1c':slope>0.1?'#c2410c':'#15803d';
+
+    // Risk colours
+    function rc(v,hi,lo){ return v>hi?'#b91c1c':v>lo?'#c2410c':'#15803d'; }
+    function bg(v,hi,lo){ return v>hi?'#fff1f2':v>lo?'#fff7ed':'#f0fdf4'; }
+    function br(v,hi,lo){ return v>hi?'#fecdd3':v>lo?'#fed7aa':'#bbf7d0'; }
+
+    var wriUrl='https://www.wri.org/applications/aqueduct/water-risk-atlas/#/?lat='+lat.toFixed(3)+'&lng='+lon.toFixed(3)+'&zoom=8';
+    var pcUrl='https://planetarycomputer.microsoft.com/explore?c='+lon.toFixed(4)+'%2C'+lat.toFixed(4)+'&z=11&v=2&d=sentinel-2-l2a';
+    var geUrl='https://earth.google.com/web/@'+lat.toFixed(4)+','+lon.toFixed(4)+',400a,4000d,35y,0h,45t,0r';
+
+    panel.innerHTML =
+      '<div style="font-size:10px;color:#9ca3af;margin-bottom:10px">'+
+      '&#x1F7E2; Real data retrieved '+ts+' &nbsp;&#183;&nbsp; Coordinates: '+lat.toFixed(4)+'&#xB0;, '+lon.toFixed(4)+'&#xB0; &nbsp;&#183;&nbsp; Source: Open-Meteo Archive (ERA5-Land reanalysis, ECMWF)</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:12px">'+
+      _evCard('Site Elevation', elev, 'SRTM/Copernicus DEM via Open-Meteo', '#1d4ed8','#eff6ff','#bfdbfe')+
+      _evCard('Heat Stress Days (1993&#x2013;2023)', heat35+' days &#x2265;35&#xB0;C &nbsp;|&nbsp; '+heat40+' days &#x2265;40&#xB0;C', 'ERA5-Land daily T&#x2098;&#x2090;&#x2093; reanalysis &middot; 30-yr record', rc(heat35,500,100),bg(heat35,500,100),br(heat35,500,100))+
+      _evCard('Extreme Precipitation (1993&#x2013;2023)', rain50+' days &#x2265;50mm &nbsp;|&nbsp; '+rain100+' days &#x2265;100mm', 'ERA5-Land daily precipitation &middot; flood-risk proxy', rc(rain50,200,50),bg(rain50,200,50),br(rain50,200,50))+
+      _evCard('Warming Trend (1993&#x2013;2023)', trendStr, 'ERA5-Land annual mean T&#x2098;&#x2090;&#x2093; &middot; linear regression', trendCol,'#fff7ed','#fed7aa')+
+      _evCard('Drought Months (1993&#x2013;2023)', drPct+'% of months with &lt;30mm total', 'ERA5-Land monthly aggregation &middot; arid period indicator', rc(Number(drPct),40,20),bg(Number(drPct),40,20),br(Number(drPct),40,20))+
+      '</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+      '<a href="'+wriUrl+'" target="_blank" style="background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none">&#x1F4A7; WRI Aqueduct &#x2197;</a>'+
+      '<a href="'+pcUrl+'" target="_blank" style="background:#faf5ff;color:#6d28d9;border:1px solid #e9d5ff;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none">&#x1F6F0;&#xFE0F; Sentinel-2 Planetary Computer &#x2197;</a>'+
+      '<a href="'+geUrl+'" target="_blank" style="background:#f0fdf4;color:#15803d;border:1px solid #bbf7d0;padding:6px 14px;border-radius:20px;font-size:11px;font-weight:700;text-decoration:none">&#x1F30D; Google Earth &#x2197;</a>'+
+      '<span style="align-self:center;font-size:10px;color:#9ca3af">All data publicly available &middot; No coordinates stored on CRI servers</span>'+
+      '</div>';
+  } catch(err) {
+    if (panel) panel.innerHTML='<div style="color:var(--amber);font-size:12px">&#x26A0; Live fetch failed ('+err.message+'). Connect to internet and re-run assessment for live evidence. Scores above use modelled regional estimates.</div>';
+  }
+}
+
 function initRiskMap(data, nze, dt, cp, company) {
   var el = document.getElementById('cri-risk-map');
   if (!el || typeof L === 'undefined') return;
   if (_riskMap) { try { _riskMap.remove(); } catch(e){} _riskMap = null; }
   var center = _latLonForResult(nze, company);
   _riskMap = L.map('cri-risk-map', { center:center, zoom:4 });
-  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    attribution:'&copy; CARTO', subdomains:'abcd', maxZoom:18
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution:'Tiles &copy; Esri &mdash; Esri, USGS, NOAA', maxZoom:19
+  }).addTo(_riskMap);
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+    attribution:'', maxZoom:19, opacity:0.8
   }).addTo(_riskMap);
   var pins = [];
   (data.asset_profiles || []).forEach(function(ap){
@@ -1717,6 +1799,14 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   H += '</div></div>';
 
   H += '</div></div>';
+
+  // LIVE DATA EVIDENCE PANEL (async populated)
+  H += '<div class="card" style="margin-bottom:16px">';
+  H += '<div class="section-title">&#x1F4E1; Live Data Evidence &#x2014; Asset Coordinates</div>';
+  H += '<div id="live-evidence-body" style="color:var(--muted);font-size:12px;padding:8px 0">';
+  H += '<div style="display:flex;align-items:center;gap:10px"><div style="width:12px;height:12px;border-radius:50%;background:var(--amber);animation:pulse 1.5s infinite"></div>';
+  H += 'Fetching live climate data from ERA5-Land reanalysis for these coordinates&#x2026;</div></div>';
+  H += '</div>';
 
   // 25 HAZARD GRID
   H += '<div class="card">';
