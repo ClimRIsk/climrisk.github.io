@@ -9,54 +9,60 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        navy: {
-          950: "#030912",
-          900: "#060f1e",
-          800: "#0b1f38",
-          700: "#0f2847",
-          600: "#132b47",
-          500: "#1a3a5c",
+        obsidian: {
+          950: "#0A0B0E",
+          900: "#0F1013",
+          800: "#14151A",
+          700: "#1E1F26",
+          600: "#2A2B33",
+          500: "#3F3F46",
         },
-        green: {
-          900: "#0a3d29",
-          800: "#0d4f3c",
-          600: "#138558",
-          500: "#1d9e75",
-          400: "#27b889",
-          300: "#3fd4a4",
-          100: "#c0f5e5",
+        gold: {
+          400: "#E2C158",
+          300: "#D4AF37",
+          200: "#C5A059",
+          100: "#EAD9A0",
         },
         risk: {
-          low:      "#22c55e",
+          low:      "#10B981",
           moderate: "#84cc16",
           elevated: "#f59e0b",
-          high:     "#ef4444",
+          high:     "#EF4444",
           critical: "#dc2626",
         },
+        terminal: "#10B981",
       },
       fontFamily: {
         sans: ["Inter", "system-ui", "sans-serif"],
         mono: ["'JetBrains Mono'", "monospace"],
       },
+      transitionTimingFunction: {
+        institutional: "cubic-bezier(0.22, 1, 0.36, 1)",
+      },
       animation: {
-        "fade-up":     "fadeUp 0.6s ease forwards",
-        "fade-in":     "fadeIn 0.5s ease forwards",
-        "pulse-green": "pulseGreen 2s ease-in-out infinite",
+        "fade-up":     "fadeUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        "fade-in":     "fadeIn 0.5s cubic-bezier(0.22, 1, 0.36, 1) forwards",
+        "pulse-gold":  "pulseGold 2s ease-in-out infinite",
+        "pulse-mono":  "pulseMono 1.4s ease-in-out infinite",
         "ticker":      "ticker 40s linear infinite",
         "blink":       "blink 1.2s step-end infinite",
       },
       keyframes: {
         fadeUp: {
-          "0%":   { opacity: "0", transform: "translateY(24px)" },
+          "0%":   { opacity: "0", transform: "translateY(16px)" },
           "100%": { opacity: "1", transform: "translateY(0)" },
         },
         fadeIn: {
           "0%":   { opacity: "0" },
           "100%": { opacity: "1" },
         },
-        pulseGreen: {
-          "0%, 100%": { boxShadow: "0 0 0 0 rgba(29,158,117,0)" },
-          "50%":      { boxShadow: "0 0 0 8px rgba(29,158,117,0.12)" },
+        pulseGold: {
+          "0%, 100%": { boxShadow: "0 0 0 0 rgba(212,175,55,0)" },
+          "50%":      { boxShadow: "0 0 0 8px rgba(212,175,55,0.12)" },
+        },
+        pulseMono: {
+          "0%, 100%": { opacity: "0.35" },
+          "50%":      { opacity: "1" },
         },
         ticker: {
           "0%":   { transform: "translateX(0)" },
@@ -68,12 +74,12 @@ const config: Config = {
         },
       },
       boxShadow: {
-        "green-glow": "0 0 32px rgba(29,158,117,0.18)",
-        "panel":      "0 1px 0 rgba(255,255,255,0.06) inset, 0 24px 64px rgba(0,0,0,0.5)",
+        "gold-glow": "0 0 32px rgba(212,175,55,0.16)",
+        "panel":     "0 1px 0 rgba(255,255,255,0.05) inset, 0 24px 64px rgba(0,0,0,0.6)",
       },
       backgroundImage: {
-        "grid-dark": `linear-gradient(rgba(29,158,117,0.04) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(29,158,117,0.04) 1px, transparent 1px)`,
+        "grid-dark": `linear-gradient(rgba(212,175,55,0.035) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(212,175,55,0.035) 1px, transparent 1px)`,
       },
       backgroundSize: {
         "grid": "40px 40px",

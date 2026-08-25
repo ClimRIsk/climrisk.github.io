@@ -5,14 +5,20 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
-  --bg:       #060f1e;
-  --surface:  #0b1f38;
-  --border:   rgba(255,255,255,0.07);
-  --green:    #1d9e75;
-  --green-dim: rgba(29,158,117,0.12);
-  --text:     #f1f5f9;
-  --muted:    #64748b;
-  --dim:      #334155;
+  --bg:         #0A0B0E;
+  --surface:    #14151A;
+  --surface-hi: #1E1F26;
+  --border:     rgba(255,255,255,0.08);
+  --border-hi:  rgba(255,255,255,0.16);
+  --gold:       #D4AF37;
+  --gold-dim:   #C5A059;
+  --gold-glow:  rgba(212,175,55,0.16);
+  --crimson:    #EF4444;
+  --terminal:   #10B981;
+  --text:       #E4E4E7;
+  --muted:      #A1A1AA;
+  --dim:        #3F3F46;
+  --ease-inst:  cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 * {
@@ -37,10 +43,10 @@ body {
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: var(--bg); }
 ::-webkit-scrollbar-thumb { background: var(--dim); border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: var(--green); }
+::-webkit-scrollbar-thumb:hover { background: var(--gold-dim); }
 
 /* Selection */
-::selection { background: rgba(29,158,117,0.3); color: #fff; }
+::selection { background: rgba(212,175,55,0.25); color: #fff; }
 
 /* Typography scale */
 .heading-xl {
@@ -73,27 +79,32 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
+  transition: background 0.4s var(--ease-inst), border-color 0.4s var(--ease-inst);
+}
+.panel-hover:hover {
+  background: var(--surface-hi);
+  border-color: var(--border-hi);
 }
 
-/* Green accent rule */
-.green-rule {
+/* Gold accent rule */
+.gold-rule {
   display: block;
   width: 40px;
   height: 2px;
-  background: var(--green);
+  background: var(--gold);
   border-radius: 2px;
 }
 
 /* Gradient text */
 .grad-text {
-  background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+  background: linear-gradient(135deg, #fff 0%, var(--muted) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
-.grad-green {
-  background: linear-gradient(135deg, #3fd4a4 0%, #1d9e75 100%);
+.grad-gold {
+  background: linear-gradient(135deg, #E8C766 0%, var(--gold) 45%, var(--gold-dim) 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -101,67 +112,106 @@ body {
 
 /* Grid background texture */
 .bg-grid {
-  background-image: linear-gradient(rgba(29,158,117,0.04) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(29,158,117,0.04) 1px, transparent 1px);
+  background-image: linear-gradient(rgba(212,175,55,0.035) 1px, transparent 1px),
+                    linear-gradient(90deg, rgba(212,175,55,0.035) 1px, transparent 1px);
   background-size: 40px 40px;
 }
 
 /* Glow effects */
-.glow-green {
-  box-shadow: 0 0 32px rgba(29,158,117,0.2);
+.glow-gold {
+  box-shadow: 0 0 32px var(--gold-glow);
 }
 
-/* Button styles */
+/* Button styles — no scale on hover, border/glow fade only */
 .btn-primary {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: #1d9e75;
-  color: #fff;
+  background: var(--gold);
+  color: #0A0B0E;
   font-weight: 600;
   font-size: 0.9rem;
   padding: 12px 24px;
-  border-radius: 8px;
+  border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+  transition: background 0.4s var(--ease-inst), box-shadow 0.4s var(--ease-inst);
   text-decoration: none;
   letter-spacing: 0.01em;
 }
 .btn-primary:hover {
-  background: #27b889;
-  box-shadow: 0 0 20px rgba(29,158,117,0.3);
-  transform: translateY(-1px);
+  background: #E2C158;
+  box-shadow: 0 0 24px var(--gold-glow);
 }
 .btn-ghost {
   display: inline-flex;
   align-items: center;
   gap: 8px;
   background: transparent;
-  color: #94a3b8;
+  color: var(--muted);
   font-weight: 500;
   font-size: 0.9rem;
   padding: 12px 24px;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  border: 1px solid var(--border);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: color 0.4s var(--ease-inst), border-color 0.4s var(--ease-inst), background 0.4s var(--ease-inst);
   text-decoration: none;
 }
 .btn-ghost:hover {
   color: #fff;
-  border-color: rgba(255,255,255,0.2);
-  background: rgba(255,255,255,0.04);
+  border-color: var(--border-hi);
+  background: rgba(255,255,255,0.03);
 }
 
 /* Ticker tape */
 .ticker-wrap { overflow: hidden; white-space: nowrap; }
 .ticker-inner { display: inline-flex; animation: ticker 40s linear infinite; }
 
-/* Animated counter */
-@keyframes countup {
-  from { opacity: 0; transform: translateY(8px); }
+/* One-time scroll reveal — fade + drift, no parallax */
+.reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 0.6s var(--ease-inst), transform 0.6s var(--ease-inst);
+}
+.reveal.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hero-load fade + drift (one-time, on mount) */
+@keyframes heroDrift {
+  from { opacity: 0; transform: translateY(14px); }
   to   { opacity: 1; transform: translateY(0); }
+}
+.hero-drift { animation: heroDrift 0.8s var(--ease-inst) both; }
+
+/* Pulsing monospace loading text — replaces spinners everywhere */
+@keyframes pulseMono {
+  0%, 100% { opacity: 0.35; }
+  50%      { opacity: 1; }
+}
+.loading-mono {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--gold-dim);
+  animation: pulseMono 1.4s ease-in-out infinite;
+}
+
+/* One-time scanning line, for data visuals only */
+@keyframes scanline {
+  0%   { transform: translateY(-100%); opacity: 0; }
+  10%  { opacity: 1; }
+  90%  { opacity: 1; }
+  100% { transform: translateY(100%); opacity: 0; }
+}
+.scan-line {
+  position: absolute;
+  left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold) 50%, transparent);
+  animation: scanline 1.8s var(--ease-inst) 1;
 }
 
 /* Risk badge */
@@ -170,11 +220,12 @@ body {
   align-items: center;
   gap: 6px;
   padding: 3px 10px;
-  border-radius: 20px;
+  border-radius: 3px;
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.06em;
   text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace;
 }
 
 @layer utilities {

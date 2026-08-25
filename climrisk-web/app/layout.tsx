@@ -5,13 +5,13 @@ import Footer from "./components/Footer";
 
 export const metadata: Metadata = {
   title: {
-    default: "ClimRisk · Climate Financial Risk Intelligence",
+    default: "ClimRisk · Quantitative Climate Risk Advisory",
     template: "%s · ClimRisk",
   },
   description:
-    "Quantify physical risk, transition risk, and financial exposure across your portfolio. Asset by asset. Scenario by scenario. NGFS Phase 4 · IPCC AR6 · CSRD ready.",
+    "A quantitative advisory firm translating peer-reviewed climate science into asset-level financial exposure — Capital-at-Risk, EBITDA compression, and audit-ready disclosure under IFRS S2, TCFD, and CSRD.",
   keywords: [
-    "climate risk",
+    "climate risk advisory",
     "climate financial risk",
     "TCFD",
     "CSRD",
@@ -20,13 +20,14 @@ export const metadata: Metadata = {
     "transition risk",
     "NGFS scenarios",
     "climate stress testing",
+    "carbon auditing",
   ],
   openGraph: {
     type: "website",
     siteName: "ClimRisk",
-    title: "ClimRisk · Climate Financial Risk Intelligence",
+    title: "ClimRisk · Quantitative Climate Risk Advisory",
     description:
-      "Asset-level climate risk quantification for banks, asset managers, and industrial companies.",
+      "Asset-level climate risk quantification and advisory for banks, asset managers, and industrial companies.",
   },
   twitter: {
     card: "summary_large_image",
@@ -48,7 +49,7 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body className="antialiased bg-[#060f1e] text-slate-100 min-h-screen">
+      <body className="antialiased bg-[#0A0B0E] text-zinc-100 min-h-screen">
         <Nav />
         <main>{children}</main>
         <Footer />

@@ -1,78 +1,94 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import Reveal from "../components/Reveal";
 
 export const metadata: Metadata = {
-  title: "Company",
-  description: "ClimRisk B.V. — financial infrastructure for climate risk. Amsterdam. Founded by Shrinivash D Kannan.",
+  title: "The Firm",
+  description:
+    "ClimRisk B.V. — a quantitative climate risk advisory forged in hard-to-abate industry, built on a European regulatory edge. Founded by Shrinivash Dhamodhara Kannan.",
 };
-
-const ROADMAP = [
-  { phase: "Q1 2026", status: "done",    item: "CRI Engine v0.4 · Platform pilot · CSRD and IFRS S2 modules" },
-  { phase: "Q2 2026", status: "current", item: "API v1 · Portfolio aggregation · Scenario sensitivity analysis" },
-  { phase: "Q3 2026", status: "planned", item: "Bank loan book module · Real estate · Interactive asset map" },
-  { phase: "Q4 2026", status: "planned", item: "Enterprise tier · SBTi tracker · Bloomberg and MSCI integrations" },
-];
 
 export default function CompanyPage() {
   return (
-    <section className="min-h-screen flex flex-col justify-center px-6 pt-28 pb-20">
-      <div className="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-16 items-center">
-        <div>
-          <span className="text-xs font-mono text-green-500 tracking-widest mb-4 block">Company</span>
-          <h1 className="heading-xl text-white mb-5 text-balance">
-            Financial infrastructure<br />for climate risk.
-          </h1>
-          <p className="text-slate-400 text-lg leading-relaxed mb-5">
-            ClimRisk builds the engine layer between raw climate science and capital decisions.
-            The gap: regulatory frameworks demand financial quantification, but the existing toolchain
-            produces qualitative ratings. We produce dollars, euros, and basis points.
+    <div className="pt-40 pb-32 px-6">
+      <div className="max-w-4xl mx-auto mb-24">
+        <Reveal>
+          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">The Firm</p>
+          <h1 className="heading-xl grad-text mb-6">Built from inside the industries we assess.</h1>
+          <p className="text-lg text-zinc-400 leading-relaxed max-w-2xl">
+            ClimRisk is not a software company that learned climate science. It is a climate and
+            industrial background that built the software it wished existed.
           </p>
-          <p className="text-slate-500 leading-relaxed mb-10">
-            Founded by{" "}
-            <a
-              href="https://www.linkedin.com/in/shrinivash-dhamodhara-kannan/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-slate-300 hover:text-white underline underline-offset-2 decoration-slate-600 hover:decoration-white transition-colors"
-            >
-              Shrinivash D Kannan
-            </a>
-            . Based in Amsterdam.
-            ClimRisk B.V. · KVK 95420134.
-          </p>
-          <div className="flex flex-wrap gap-4 mb-12">
-            <Link href="/contact" className="btn-primary">Work with us →</Link>
-            <Link href="mailto:shri@climrisk.io" className="btn-ghost">shri@climrisk.io</Link>
-          </div>
-        </div>
-        <div>
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-5">Roadmap</p>
-          <div className="space-y-2">
-            {ROADMAP.map((r) => (
-              <div
-                key={r.phase}
-                className={`flex items-start gap-4 rounded-lg border px-4 py-3 ${
-                  r.status === "current"
-                    ? "border-green-500/25 bg-green-500/5"
-                    : r.status === "done"
-                    ? "border-white/7 bg-[#0b1f38]/40"
-                    : "border-white/4 bg-[#0b1f38]/20"
-                }`}
-              >
-                <span className="text-xs font-mono text-slate-600 shrink-0 w-14">{r.phase}</span>
-                <span className="text-sm text-slate-400 flex-1">{r.item}</span>
-                <span className={`text-xs font-mono shrink-0 ${
-                  r.status === "done" ? "text-green-500" :
-                  r.status === "current" ? "text-green-400 animate-pulse" :
-                  "text-slate-700"
-                }`}>
-                  {r.status === "done" ? "✓" : r.status === "current" ? "now" : "·"}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
+        </Reveal>
       </div>
-    </section>
+
+      <div className="max-w-4xl mx-auto space-y-20">
+        <Reveal>
+          <div className="grid md:grid-cols-[160px_1fr] gap-10">
+            <span className="text-xs font-mono text-zinc-600">01</span>
+            <div>
+              <h2 className="heading-md text-white mb-4">Forged in Hard-to-Abate Sectors</h2>
+              <p className="text-zinc-400 leading-relaxed">
+                Our leadership's grounding is operational, not academic. Before building the CRI
+                Engine, our team worked as geologists and corporate sustainability leads inside
+                heavy manufacturing and cement — one of the hardest-to-abate sectors in the global
+                economy. That means the hazard models and abatement curves underneath our advisory
+                work are calibrated against what actually happens on a plant floor and a mine site,
+                not what a spreadsheet assumes should happen.
+              </p>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delayMs={80}>
+          <div className="grid md:grid-cols-[160px_1fr] gap-10">
+            <span className="text-xs font-mono text-zinc-600">02</span>
+            <div>
+              <h2 className="heading-md text-white mb-4">The European Regulatory Edge</h2>
+              <p className="text-zinc-400 leading-relaxed">
+                Our team holds specialized postgraduate degrees from institutions like Erasmus
+                University Rotterdam, giving us a native fluency in the European regulatory
+                architecture — CSRD, IFRS S2, and the supervisory expectations of the ECB and
+                national regulators — before a single client engagement begins. We are not
+                translating American software into European compliance language after the fact.
+              </p>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delayMs={160}>
+          <div className="grid md:grid-cols-[160px_1fr] gap-10">
+            <span className="text-xs font-mono text-zinc-600">03</span>
+            <div>
+              <h2 className="heading-md text-white mb-4">Our Leadership</h2>
+              <p className="text-zinc-400 leading-relaxed mb-6">
+                ClimRisk is led by founder{" "}
+                <a
+                  href="https://www.linkedin.com/in/shrinivash-dhamodhara-kannan/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-white underline underline-offset-2 decoration-zinc-600 hover:decoration-gold-300 transition-colors"
+                >
+                  Shrinivash Dhamodhara Kannan
+                </a>
+                , whose background spans geology, corporate sustainability in heavy industry, and
+                postgraduate specialization in the European regulatory environment. ClimRisk B.V.
+                is based in Amsterdam.
+              </p>
+              <p className="text-zinc-600 text-sm font-mono">
+                ClimRisk B.V. · Amsterdam, Netherlands · KVK 95420134
+              </p>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+
+      <div className="max-w-4xl mx-auto mt-24 pt-16 border-t border-white/8 flex flex-wrap gap-4">
+        <Reveal>
+          <Link href="/contact" className="btn-primary">Engage the Firm</Link>
+          <Link href="mailto:shri@climrisk.io" className="btn-ghost ml-4">shri@climrisk.io</Link>
+        </Reveal>
+      </div>
+    </div>
   );
 }

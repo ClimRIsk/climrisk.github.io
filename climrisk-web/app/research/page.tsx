@@ -1,72 +1,98 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Reveal from "../components/Reveal";
 
 export const metadata: Metadata = {
-  title: "Research",
-  description: "CRI methodology documents, validation studies, LinkedIn articles, and engine changelog.",
+  title: "Intelligence & Research",
+  description:
+    "Technical briefs and sector deep dives from the ClimRisk research desk — physical and transition risk, translated into financial terms.",
 };
 
-const PUBLICATIONS = [
-  { type: "Methodology",      title: "The CRI Scoring Framework",              status: "On request",   href: "mailto:shri@climrisk.io?subject=CRI Methodology Document" },
-  { type: "Validation",       title: "CRI Engine v0.4 Validation Report",      status: "On request",   href: "mailto:shri@climrisk.io?subject=CRI Validation Report" },
-  { type: "LinkedIn article", title: "Heineken: Water Stress as Balance Sheet Risk", status: "Published", href: "https://linkedin.com/in/shrinivash" },
-  { type: "Release notes",    title: "CRI Engine v0.4 — Changelog",            status: "Released",     href: "mailto:shri@climrisk.io?subject=Engine v0.4 Documentation" },
-];
-
-const SOURCES = [
-  { name: "WRI Aqueduct 4.0",         role: "Water risk · basin-level" },
-  { name: "NASA NEX-GDDP-CMIP6",      role: "Temperature · precipitation" },
-  { name: "NGFS Phase 4",             role: "Demand curves · carbon prices" },
-  { name: "IPCC AR6 WG2",             role: "Hazard-to-loss transfer functions" },
-  { name: "EU ETS forward curves",    role: "Carbon cost trajectories" },
-  { name: "EM-DAT",                   role: "Historical loss validation" },
+const BRIEFS = [
+  {
+    kicker: "Flagship Study",
+    title: "We Ran 21 Global Industries Through Every Climate Scenario",
+    detail: "A coal power plant in Germany breaks even on carbon costs at $27/tonne — the EU price today is $65. The full sector-by-sector break-even map, from coal power to oil refining.",
+  },
+  {
+    kicker: "Physical Risk · South & Southeast Asia",
+    title: "The Supply Chain Tax",
+    detail: "In April 2024 a heat dome settled over South and Southeast Asia and did not move for three weeks. What that costs a global supply chain, quantified.",
+  },
+  {
+    kicker: "Physical Risk · South Asia · Agricultural Finance · August 2026",
+    title: "The Financial Anatomy of a Monsoon Deficit",
+    detail: "What happens to global markets when India's rain fails — a deep dive into agricultural credit exposure under a shifting monsoon.",
+  },
+  {
+    kicker: "Physical Risk · India",
+    title: "The Productivity Tax",
+    detail: "In May 2024, temperatures crossed 45°C simultaneously across Rajasthan, Uttar Pradesh, and Haryana. The labor-productivity cost of that heatwave, modelled.",
+  },
+  {
+    kicker: "Macro Risk",
+    title: "The Financial Anatomy of a Super El Niño",
+    detail: "What the physical parameters of a super El Niño tell investors — before the headlines catch up.",
+  },
+  {
+    kicker: "Sector Deep Dive · Beverages",
+    title: "Assessing Physical and Transition Climate Risk in Beverages: Carlsberg Group",
+    detail: "A CRFM deep dive into water stress and carbon transition exposure across a global brewer's asset base.",
+  },
+  {
+    kicker: "Sector Deep Dive · Luxury Goods",
+    title: "Assessing Physical and Transition Climate Risk in Luxury Goods: Kering Group",
+    detail: "Physical and transition risk across a luxury goods supply chain, quantified asset by asset.",
+  },
+  {
+    kicker: "Sector Deep Dive · Manufacturing",
+    title: "Assessing Physical and Transition Climate Risk in Manufacturing: Michelin Group",
+    detail: "A CRFM deep dive into physical and transition exposure across a global manufacturing footprint.",
+  },
+  {
+    kicker: "Sector Deep Dive · Agriculture",
+    title: "Assessing Physical and Transition Climate Risk in Agriculture: European Olive Oil Cooperatives",
+    detail: "Physical risk quantification for one of Europe's most climate-exposed agricultural sectors.",
+  },
 ];
 
 export default function ResearchPage() {
   return (
-    <section className="min-h-screen flex flex-col justify-center px-6 pt-28 pb-20">
-      <div className="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-16 items-start">
-        <div>
-          <span className="text-xs font-mono text-green-500 tracking-widest mb-4 block">Research</span>
-          <h1 className="heading-xl text-white mb-5 text-balance">
-            Every number.<br />A named source.
-          </h1>
-          <p className="text-slate-400 text-lg leading-relaxed mb-10">
-            The engine is only as credible as its sources and its tests.
-            Methodology documents and validation reports available on request.
+    <div className="pt-40 pb-32 px-6">
+      <div className="max-w-4xl mx-auto mb-16">
+        <Reveal>
+          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Intelligence & Research</p>
+          <h1 className="heading-xl grad-text mb-6">Research from the desk.</h1>
+          <p className="text-lg text-zinc-400 leading-relaxed max-w-2xl">
+            Technical briefs and sector deep dives, published as we run them — physical and
+            transition risk, always translated into financial terms.
           </p>
-          <div className="space-y-2 mb-10">
-            {PUBLICATIONS.map((p) => (
-              <a
-                key={p.title}
-                href={p.href}
-                target={p.href.startsWith("http") ? "_blank" : undefined}
-                className="flex items-center justify-between rounded-lg border border-white/7 bg-[#0b1f38]/40 px-4 py-3 hover:border-white/14 hover:bg-[#0b1f38] transition-all group"
-              >
-                <div>
-                  <span className="text-xs text-slate-600 font-mono mr-3">{p.type}</span>
-                  <span className="text-sm text-slate-300 group-hover:text-white transition-colors">{p.title}</span>
-                </div>
-                <span className={`text-xs font-mono shrink-0 ml-4 ${p.status === "Published" || p.status === "Released" ? "text-green-500" : "text-slate-600"}`}>
-                  {p.status}
-                </span>
-              </a>
-            ))}
-          </div>
-          <Link href="/contact" className="btn-primary">Request methodology doc →</Link>
-        </div>
-        <div>
-          <p className="text-xs text-slate-500 uppercase tracking-widest font-semibold mb-5">Data sources</p>
-          <div className="space-y-2">
-            {SOURCES.map((s) => (
-              <div key={s.name} className="flex items-center justify-between rounded-lg border border-white/6 bg-[#0b1f38]/30 px-4 py-3">
-                <span className="text-sm text-white font-medium">{s.name}</span>
-                <span className="text-xs text-slate-600 ml-4">{s.role}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        </Reveal>
       </div>
-    </section>
+
+      <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
+        {BRIEFS.map((b, i) => (
+          <Reveal key={b.title} delayMs={(i % 4) * 60}>
+            <article className="panel panel-hover p-7 h-full">
+              <p className="text-xs font-mono text-zinc-600 mb-3 uppercase tracking-wide">{b.kicker}</p>
+              <h2 className="text-white font-semibold leading-snug mb-3">{b.title}</h2>
+              <p className="text-sm text-zinc-500 leading-relaxed">{b.detail}</p>
+            </article>
+          </Reveal>
+        ))}
+      </div>
+
+      <div className="max-w-5xl mx-auto mt-16 pt-10 border-t border-white/8">
+        <Reveal>
+          <p className="text-sm text-zinc-500">
+            For the full text of any brief, or to discuss commissioning sector-specific research,
+            contact the research desk at{" "}
+            <a href="mailto:shri@climrisk.io" className="text-white hover:text-gold-200 transition-colors font-mono">
+              shri@climrisk.io
+            </a>
+            .
+          </p>
+        </Reveal>
+      </div>
+    </div>
   );
 }

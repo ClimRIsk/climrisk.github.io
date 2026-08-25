@@ -1,158 +1,192 @@
-"use client";
-
-import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import Reveal from "./components/Reveal";
+import CounterUp from "./components/CounterUp";
 
-const ENGINE_STEPS = [
-  { id: 1, label: "Ingesting asset coordinates",  time: 0,    detail: "5 assets · 4 countries" },
-  { id: 2, label: "WRI Aqueduct 4.0 query",       time: 900,  detail: "Water stress per basin" },
-  { id: 3, label: "IPCC AR6 hazard matrix",       time: 1800, detail: "25 hazard types" },
-  { id: 4, label: "NGFS Phase 4 scenarios",       time: 2700, detail: "NZE · DT · CP" },
-  { id: 5, label: "Physical loss quantification", time: 3500, detail: "Annual damage rates" },
-  { id: 6, label: "Carbon cost modelling",        time: 4300, detail: "EU ETS · Scope 1+2" },
-  { id: 7, label: "DCF + WACC uplift",            time: 5100, detail: "EV at risk computed" },
-  { id: 8, label: "CRI Rating",                   time: 5800, detail: "Score · Rating · Report" },
+const MANDATES = [
+  {
+    tag: "01",
+    title: "Carbon Auditing & Data Assurance",
+    body: "Algorithmic imputation and unified data consolidation that turn fragmented emissions records into audit-ready baselines.",
+    href: "/capabilities#carbon-auditing",
+  },
+  {
+    tag: "02",
+    title: "Dynamic Life Cycle Assessments",
+    body: "Asset-level hazard mapping and operational degradation modelling, translated directly into financial terms.",
+    href: "/capabilities#lca",
+  },
+  {
+    tag: "03",
+    title: "Regulatory Transition & Physical Stress Testing",
+    body: "NGFS-aligned scenario execution, translated into PD & LGD credit-risk terms, and defended at the collateral level.",
+    href: "/capabilities#stress-testing",
+  },
 ];
 
-const RESULTS = [
-  { label: "CRI Score",   value: "68/100", badge: "D",      color: "#ef4444" },
-  { label: "Water risk",  value: "$1.4B",  badge: "HIGH",   color: "#f59e0b" },
-  { label: "NPV at risk", value: "$575M",  badge: "↓",      color: "#ef4444" },
-  { label: "EV impact",   value: "−12.8%", badge: "NZE",    color: "#ef4444" },
+const INTELLIGENCE = [
+  {
+    kicker: "Flagship Study",
+    title: "We Ran 21 Global Industries Through Every Climate Scenario",
+    detail: "Break-even carbon prices from $27/t (coal power) to $82/t (oil refining) — the full sector-by-sector exposure map.",
+    href: "/research",
+  },
+  {
+    kicker: "Physical Risk · South & SE Asia",
+    title: "The Supply Chain Tax",
+    detail: "A heat dome over South and Southeast Asia and its direct line to landed cost.",
+    href: "/research",
+  },
+  {
+    kicker: "Physical Risk · South Asia · Agricultural Finance",
+    title: "The Monsoon, Repriced",
+    detail: "What a shifting monsoon does to agricultural credit books across South Asia.",
+    href: "/research",
+  },
 ];
-
-function EngineSimulation() {
-  const [step, setStep] = useState(0);
-  const [running, setRunning] = useState(false);
-  const [done, setDone] = useState(false);
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
-
-  function runEngine() {
-    if (running) return;
-    setRunning(true);
-    setDone(false);
-    setStep(0);
-    timers.current.forEach(clearTimeout);
-    timers.current = ENGINE_STEPS.map((s, i) =>
-      setTimeout(() => {
-        setStep(i + 1);
-        if (i === ENGINE_STEPS.length - 1) { setRunning(false); setDone(true); }
-      }, s.time)
-    );
-  }
-
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
-
-  return (
-    <div className="rounded-xl overflow-hidden border border-white/8 shadow-panel">
-      <div className="flex items-center gap-2 px-4 py-3 border-b border-white/6 bg-black/30">
-        <span className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-        <span className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-        <span className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
-        <span className="ml-3 text-xs text-slate-500 font-mono">cri-engine · Heineken N.V. · 5 assets</span>
-        <button
-          onClick={runEngine}
-          disabled={running}
-          className={`ml-auto text-xs px-3 py-1 rounded font-mono border transition-all ${
-            running
-              ? "border-green-500/20 bg-green-900/30 text-green-500 cursor-wait"
-              : "border-green-500/30 bg-green-500/10 text-green-400 hover:bg-green-500/20 cursor-pointer"
-          }`}
-        >
-          {running ? "▶ running..." : done ? "▶ run again" : "▶ run analysis"}
-        </button>
-      </div>
-      <div className="bg-[#030912] p-4 space-y-1.5 min-h-[220px] font-mono text-xs">
-        {step === 0 && !done && (
-          <p className="text-slate-700">$ cri run --company heineken-nv --scenarios all</p>
-        )}
-        {ENGINE_STEPS.slice(0, step).map((s) => (
-          <div key={s.id} className="flex items-center gap-3">
-            <span className="text-green-500 shrink-0">✓</span>
-            <span className="text-slate-300">{s.label}</span>
-            <span className="text-slate-700 ml-auto shrink-0 hidden sm:block">{s.detail}</span>
-          </div>
-        ))}
-        {running && step < ENGINE_STEPS.length && (
-          <div className="flex items-center gap-2 text-green-400">
-            <span className="animate-blink">█</span>
-            <span className="text-slate-500">{ENGINE_STEPS[step]?.label}...</span>
-          </div>
-        )}
-      </div>
-      {done && (
-        <div className="bg-[#060f1e] border-t border-white/6 px-4 py-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-3">
-            {RESULTS.map((r) => (
-              <div key={r.label} className="bg-white/3 rounded-lg p-3 border border-white/5">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs text-slate-600">{r.label}</span>
-                  <span className="text-xs font-bold px-1.5 rounded" style={{ color: r.color, background: `${r.color}18` }}>
-                    {r.badge}
-                  </span>
-                </div>
-                <div className="text-base font-bold text-white font-mono">{r.value}</div>
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-xs text-slate-700 font-mono">CRI Engine v0.4 · NGFS Phase 4 · IPCC AR6</span>
-            <Link href="/platform" className="text-xs text-green-400 hover:text-green-300 transition-colors">
-              Full platform →
-            </Link>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 export default function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="relative min-h-screen flex flex-col justify-center px-6 pt-24 pb-16 overflow-hidden">
-        <div className="absolute inset-0 bg-grid-dark bg-grid opacity-100 pointer-events-none" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[500px] rounded-full bg-green-500/4 blur-3xl pointer-events-none" />
-
-        <div className="relative max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-16 items-center">
-          {/* Left: copy */}
-          <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-green-500/25 bg-green-500/6 mb-8">
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse-green" />
-              <span className="text-xs font-medium text-green-400 tracking-wide">CRI Engine v0.4 · NGFS Phase 4</span>
-            </div>
-            <h1 className="heading-xl text-white mb-6 text-balance">
-              Climate intelligence<br />for{" "}
-              <span className="grad-green">capital decisions.</span>
-            </h1>
-            <p className="text-slate-400 text-lg leading-relaxed mb-10 max-w-xl">
-              Asset-level climate risk. Quantified in dollars, euros, and basis points.
-              Upload a portfolio. Receive financial exposure and CSRD-ready disclosure in minutes.
-            </p>
-            <div className="flex flex-wrap gap-4 mb-10">
-              <Link href="/contact" className="btn-primary text-base px-6 py-3.5">
-                Book a demo
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><path d="M5 12h14M12 5l7 7-7 7" /></svg>
-              </Link>
-              <Link href="https://climrisk.io/app.html" target="_blank" className="btn-ghost text-base px-6 py-3.5">
-                Access platform
-              </Link>
-            </div>
-            <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
-              {["CSRD Art.29a", "IFRS S2", "TCFD", "EU Taxonomy", "BRSR"].map((f) => (
-                <span key={f} className="flex items-center gap-1.5 text-xs text-slate-600">
-                  <span className="w-1 h-1 rounded-full bg-green-500/40" />{f}
-                </span>
-              ))}
-            </div>
+      <section className="relative pt-40 pb-24 px-6 overflow-hidden">
+        <div className="absolute inset-0 bg-grid opacity-40 pointer-events-none" />
+        <div className="max-w-5xl mx-auto relative">
+          <div className="hero-drift inline-flex items-center gap-2 text-xs font-mono text-gold-200 border border-white/8 rounded-full px-3 py-1.5 mb-8">
+            <span className="w-1.5 h-1.5 rounded-full bg-terminal" />
+            CRI ENGINE v0.5 · NGFS PHASE 4 · CMIP6
+          </div>
+          <h1 className="hero-drift animation-delay-200 heading-xl grad-text mb-6">
+            A Quantitative Advisory Firm<br />for a <span className="grad-gold">Repricing World.</span>
+          </h1>
+          <p className="hero-drift animation-delay-400 text-lg text-zinc-400 max-w-2xl leading-relaxed mb-10">
+            We translate peer-reviewed climate science into asset-level financial exposure —
+            Capital-at-Risk, EBITDA compression, and audit-ready disclosure under IFRS&nbsp;S2, TCFD, and CSRD.
+          </p>
+          <div className="hero-drift animation-delay-600 flex flex-wrap items-center gap-4">
+            <Link href="/contact" className="btn-primary">
+              Book a Technical Demo
+            </Link>
+            <Link href="/engine" className="btn-ghost">
+              See the Engine
+            </Link>
           </div>
 
-          {/* Right: engine demo */}
-          <div>
-            <EngineSimulation />
+          <div className="hero-drift animation-delay-600 mt-14 pt-8 border-t border-white/8">
+            <p className="text-xs uppercase tracking-widest text-zinc-600 mb-4">
+              Powered by frameworks and data from
+            </p>
+            <div className="flex flex-wrap gap-x-10 gap-y-3 text-sm font-mono text-zinc-500">
+              <span>NGFS</span>
+              <span>IPCC</span>
+              <span>WRI Aqueduct</span>
+              <span>Copernicus</span>
+              <span>TCFD</span>
+            </div>
           </div>
         </div>
+      </section>
+
+      {/* Stats strip */}
+      <section className="px-6 py-16 border-y border-white/8">
+        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
+          {[
+            { value: 21, suffix: "", label: "Industries stress-tested" },
+            { value: 25, suffix: "+", label: "Physical hazard types" },
+            { value: 4, suffix: "", label: "NGFS scenario pathways" },
+            { value: 92, suffix: "%", label: "Model confidence, audited" },
+          ].map((s) => (
+            <Reveal key={s.label}>
+              <div className="text-center md:text-left">
+                <CounterUp value={s.value} suffix={s.suffix} className="text-4xl font-bold text-white" />
+                <p className="text-sm text-zinc-500 mt-2">{s.label}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* Three mandates */}
+      <section className="px-6 py-24 max-w-6xl mx-auto">
+        <Reveal>
+          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Our Mandate</p>
+          <h2 className="heading-lg grad-text mb-16 max-w-2xl">
+            Three practices. One discipline: translating physical reality into financial language.
+          </h2>
+        </Reveal>
+        <div className="grid md:grid-cols-3 gap-6">
+          {MANDATES.map((m, i) => (
+            <Reveal key={m.title} delayMs={i * 120}>
+              <Link href={m.href} className="panel panel-hover block p-8 h-full">
+                <span className="text-xs font-mono text-zinc-600">{m.tag}</span>
+                <h3 className="heading-md text-white mt-4 mb-3">{m.title}</h3>
+                <p className="text-sm text-zinc-400 leading-relaxed">{m.body}</p>
+                <span className="inline-flex items-center gap-1.5 text-sm text-gold-200 mt-6">
+                  Learn more
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                  </svg>
+                </span>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* Infrastructure teaser */}
+      <section className="px-6 py-24 border-t border-white/8">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+          <Reveal>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Under the Hood</p>
+            <h2 className="heading-lg grad-text mb-6">The CRI Engine</h2>
+            <p className="text-zinc-400 leading-relaxed mb-8">
+              Every conclusion we deliver traces back to a geospatial pipeline built on IPCC AR6 hazard
+              matrices and NGFS Phase 4 scenarios — asset coordinates in, Capital-at-Risk out, with full
+              methodological transparency at every step.
+            </p>
+            <Link href="/engine" className="btn-ghost">
+              Read the technical whitepaper
+            </Link>
+          </Reveal>
+          <Reveal delayMs={120}>
+            <div className="panel h-72 flex items-center justify-center relative overflow-hidden">
+              <div className="scan-line" style={{ top: "20%" }} />
+              <span className="loading-mono">GEOSPATIAL_ENGINE · SEE /engine FOR LIVE RENDER</span>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Recent intelligence */}
+      <section className="px-6 py-24 max-w-6xl mx-auto">
+        <Reveal>
+          <div className="flex items-end justify-between mb-16 flex-wrap gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Recent Intelligence</p>
+              <h2 className="heading-lg grad-text">Research from the desk</h2>
+            </div>
+            <Link href="/research" className="btn-ghost">View all research</Link>
+          </div>
+        </Reveal>
+        <div className="grid md:grid-cols-3 gap-6">
+          {INTELLIGENCE.map((a, i) => (
+            <Reveal key={a.title} delayMs={i * 120}>
+              <Link href={a.href} className="panel panel-hover block p-7 h-full">
+                <p className="text-xs font-mono text-zinc-600 mb-3">{a.kicker}</p>
+                <h3 className="text-white font-semibold leading-snug mb-3">{a.title}</h3>
+                <p className="text-sm text-zinc-500 leading-relaxed">{a.detail}</p>
+              </Link>
+            </Reveal>
+          ))}
+        </div>
+      </section>
+
+      {/* Final close */}
+      <section className="px-6 py-32 border-t border-white/8 text-center">
+        <Reveal>
+          <h2 className="heading-lg grad-text mb-4">See how we map 10,000 assets in under 5 minutes.</h2>
+          <p className="text-zinc-500 mb-10">Book a Technical Demo — no obligation, no boilerplate deck.</p>
+          <Link href="/contact" className="btn-primary">Book a Technical Demo</Link>
+        </Reveal>
       </section>
     </>
   );
