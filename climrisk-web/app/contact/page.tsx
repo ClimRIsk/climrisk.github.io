@@ -1,85 +1,69 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Reveal from "../components/Reveal";
+import EngagementForm from "../components/EngagementForm";
 
 export const metadata: Metadata = {
-  title: "Contact",
-  description: "Book a demo, request platform access, or ask a technical question. shri@climrisk.io",
+  title: "Engage the Firm",
+  description:
+    "ClimRisk takes on a limited number of quarterly engagements. Submit inquiry parameters to begin the engagement protocol, or request an NDA.",
 };
 
-const OPTIONS = [
-  {
-    label: "Book a demo",
-    desc: "30-minute walkthrough using your sector. Live analysis, no data sharing required.",
-    action: "Schedule →",
-    href: "mailto:shri@climrisk.io?subject=Demo Request",
-    accent: true,
-  },
-  {
-    label: "Request platform access",
-    desc: "Pilot codes available. Upload up to 50 assets and receive full financial risk outputs.",
-    action: "Request →",
-    href: "mailto:shri@climrisk.io?subject=Platform Access Request",
-    accent: false,
-  },
-  {
-    label: "Technical question",
-    desc: "Engine methodology, API integration, NGFS calibration. Response within 24 hours.",
-    action: "Email →",
-    href: "mailto:shri@climrisk.io?subject=Technical Question",
-    accent: false,
-  },
-  {
-    label: "Partnership",
-    desc: "Data providers, consultancies, institutional distributors. Tell us what you are building.",
-    action: "Get in touch →",
-    href: "mailto:shri@climrisk.io?subject=Partnership Enquiry",
-    accent: false,
-  },
+const PROTOCOL = [
+  { n: "01", t: "Inquiry", d: "You submit inquiry parameters below. We review scope, sector, and regulatory driver before responding." },
+  { n: "02", t: "NDA & Scoping Call", d: "Qualified inquiries receive an NDA and a scoping call to define the asset universe and deliverable." },
+  { n: "03", t: "Engagement Proposal", d: "A fixed-scope proposal — timeline, deliverables, and fee — is issued for sign-off before work begins." },
+  { n: "04", t: "Delivery", d: "Engine outputs, audit-ready reports, and a working session to defend the methodology to your stakeholders." },
 ];
 
 export default function ContactPage() {
   return (
-    <section className="min-h-screen flex flex-col justify-center px-6 pt-28 pb-20">
-      <div className="max-w-7xl mx-auto w-full grid md:grid-cols-2 gap-16 items-center">
-        <div>
-          <span className="text-xs font-mono text-green-500 tracking-widest mb-4 block">Contact</span>
-          <h1 className="heading-xl text-white mb-5 text-balance">
-            Let us run<br />your portfolio.
-          </h1>
-          <p className="text-slate-400 text-lg leading-relaxed mb-8">
-            30-minute demo. Live analysis on your sector.
-            No setup. No data sharing required for the demo.
+    <div className="pt-40 pb-32 px-6">
+      <div className="max-w-4xl mx-auto mb-16">
+        <Reveal>
+          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Engage the Firm</p>
+          <h1 className="heading-xl grad-text mb-6">A limited number of engagements, by design.</h1>
+          <p className="text-lg text-zinc-400 leading-relaxed max-w-2xl">
+            ClimRisk takes on a limited number of engagements each quarter to preserve the depth of
+            our diligence. All engagements begin under NDA. Submit the parameters below to start the
+            engagement protocol.
           </p>
-          <div className="space-y-3 mb-10 text-sm text-slate-500">
-            <div><span className="text-slate-600 font-mono mr-3">Email</span>
-              <Link href="mailto:shri@climrisk.io" className="text-white hover:text-green-400 transition-colors font-mono">shri@climrisk.io</Link>
-            </div>
-            <div><span className="text-slate-600 font-mono mr-3">Response</span> Within 24 hours</div>
-            <div><span className="text-slate-600 font-mono mr-3">Location</span> Amsterdam, Netherlands</div>
-          </div>
-        </div>
-        <div className="space-y-3">
-          {OPTIONS.map((o) => (
-            <Link
-              key={o.label}
-              href={o.href}
-              className={`group flex items-center justify-between rounded-xl border px-5 py-4 transition-all duration-200 ${
-                o.accent
-                  ? "border-green-500/30 bg-green-500/5 hover:border-green-500/50 hover:bg-green-500/8"
-                  : "border-white/7 bg-[#0b1f38]/40 hover:border-white/14 hover:bg-[#0b1f38]"
-              }`}
-            >
-              <div className="flex-1 min-w-0 mr-4">
-                <p className={`font-semibold text-sm mb-1 ${o.accent ? "text-white" : "text-slate-200"}`}>{o.label}</p>
-                <p className="text-xs text-slate-500 leading-relaxed">{o.desc}</p>
-              </div>
-              <span className={`text-sm shrink-0 font-medium transition-colors ${o.accent ? "text-green-400" : "text-slate-600 group-hover:text-white"}`}>
-                {o.action}
-              </span>
-            </Link>
-          ))}
-        </div>
+        </Reveal>
       </div>
-    </section>
+
+      <div className="max-w-5xl mx-auto grid lg:grid-cols-[1fr_1.1fr] gap-16">
+        <Reveal>
+          <div>
+            <p className="text-xs uppercase tracking-widest text-zinc-500 font-mono mb-6">The Engagement Protocol</p>
+            <div className="space-y-5">
+              {PROTOCOL.map((s) => (
+                <div key={s.n} className="flex gap-5">
+                  <span className="text-sm font-mono text-gold-200 shrink-0 pt-0.5">{s.n}</span>
+                  <div>
+                    <h3 className="text-white font-semibold text-sm mb-1">{s.t}</h3>
+                    <p className="text-xs text-zinc-500 leading-relaxed">{s.d}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="mt-10 pt-8 border-t border-white/8 text-sm text-zinc-500 space-y-2">
+              <p>
+                <span className="text-zinc-600 font-mono mr-3">Location</span>Amsterdam, Netherlands
+              </p>
+              <p>
+                For direct media or academic inquiries, please contact our research desk at{" "}
+                <a href="mailto:shri@climrisk.io" className="text-white hover:text-gold-200 transition-colors font-mono">
+                  shri@climrisk.io
+                </a>
+                .
+              </p>
+            </div>
+          </div>
+        </Reveal>
+
+        <Reveal delayMs={100}>
+          <EngagementForm />
+        </Reveal>
+      </div>
+    </div>
   );
 }
