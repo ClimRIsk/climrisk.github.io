@@ -1636,15 +1636,22 @@ function initRiskMap(data, nze, dt, cp, company) {
     attribution:'', maxZoom:19, opacity:0.8
   }).addTo(_riskMap);
   var pins = [];
-  (data.asset_profiles || []).forEach(function(ap){
-    if (ap.lat && ap.lon) pins.push({lat:ap.lat,lon:ap.lon,name:ap.asset_name||ap.asset_id,
-      combined:-(ap.annual_loss_fraction||0)*100,sector:ap.region||''});
-  });
+  // Prefer real asset locations from engine (v0.7 — asset_locations field)
+  var _engineLocs = (cp&&cp.asset_locations) || (nze&&nze.asset_locations) || (dt&&dt.asset_locations) || [];
+  var _bestR = nze||cp||dt||{};
+  if (_engineLocs.length) {
+    _engineLocs.forEach(function(al){
+      if (al.lat != null && al.lon != null) {
+        pins.push({lat:al.lat, lon:al.lon, name:al.name||company,
+          combined:_bestR.combined_npv_impact_pct||_bestR.npv_impact_pct||0,
+          sector:(nze&&nze.sector)||(cp&&cp.sector)||''});
+      }
+    });
+  }
+  // Fallback: derive location from company name/region
   if (!pins.length) {
     var _sec0 = (nze&&nze.sector)||(cp&&cp.sector)||sector||'';
     var _ctr = _latLonForResult(nze, company, _sec0);
-    // Single representative pin at the company location (no random jitter)
-    var _bestR = nze||cp||dt||{};
     if (_bestR.ev_bn||_bestR.combined_npv_impact_pct) {
       pins.push({lat:_ctr[0],lon:_ctr[1],
         name:company,combined:_bestR.combined_npv_impact_pct||_bestR.npv_impact_pct||0,sector:_sec0});
@@ -2088,7 +2095,7 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   H += '<div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Physical Climate Hazard Assessment</div>';
   H += '<div style="font-size:20px;font-weight:900;color:#111827;margin-bottom:2px">'+company+'</div>';
   H += '<div style="font-size:13px;color:#6b7280;margin-bottom:6px">'+sector+'</div>';
-  H += '<div style="font-size:11px;color:#9ca3af">Generated '+today+' &#183; CRI Engine v0.6 &#183; Scenario: '+sspInfo.label+'</div>';
+  H += '<div style="font-size:11px;color:#9ca3af">Generated '+today+' &#183; CRI Engine v0.7 &#183; Scenario:'+sspInfo.label+'</div>';
   H += '</div>';
   H += '<div style="text-align:right">';
   H += '<div style="font-size:56px;font-weight:900;line-height:1;color:'+riskCol+'">'+physScore+'</div>';
@@ -2363,6 +2370,205 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   H += '⚠️ <strong>Uncertainty bounds:</strong> Physical AEPs ±15–25% (inter-model range). ';
   H += 'Financial NPV impact ±20–35% (damage function uncertainty). ';
   H += 'Full peer-reviewed methodology: climrisk.io/methodology';
+  H += '</div>';
+  H += '</div>';
+
+  // HAZARD TRAJECTORY 2026→2050
+  var _traj = cp.hazard_trajectory || nze.hazard_trajectory || {};
+  var _trajYrs = [2026, 2028, 2030, 2032, 2035, 2038, 2040, 2045, 2050];
+  var _critYr  = cp.critical_year || nze.critical_year || null;
+  var _warmDlt = cp.warming_delta_c != null ? cp.warming_delta_c : (nze.warming_delta_c != null ? nze.warming_delta_c : null);
+  var _hasLive = cp.has_live_data || nze.has_live_data || false;
+  var _trajKeys = Object.keys(_traj).sort(function(a,b){
+    var _av = Math.max.apply(null, Object.keys(_traj[a]||{}).map(function(k){ return _traj[a][k]||0; }).concat([0]));
+    var _bv = Math.max.apply(null, Object.keys(_traj[b]||{}).map(function(k){ return _traj[b][k]||0; }).concat([0]));
+    return _bv - _av;
+  }).slice(0,8);
+
+  H += '<div class="card" style="margin-bottom:16px">';
+  H += '<div class="section-title">&#x23F1;&#xFE0F; Hazard Progression 2026&#x2192;2050 &#x2014; CMIP6 Annual Exceedance Probability</div>';
+  if (_critYr || _warmDlt != null) {
+    H += '<div style="background:#fff1f2;border:1px solid #fecdd3;border-radius:6px;padding:9px 12px;margin-bottom:12px;font-size:12px;line-height:1.6">';
+    if (_critYr) H += '&#x26A0;&#xFE0F; <strong>Critical threshold year: '+_critYr+'</strong> &#x2014; combined hazard loss first exceeds 5% EAL. ';
+    if (_warmDlt != null) H += '&#x1F321;&#xFE0F; Asset-location warming: <strong>+'+_warmDlt.toFixed(1)+'&#xB0;C</strong> above 1990 baseline. ';
+    if (_hasLive) H += '<span style="color:#16a34a;font-weight:700">&#x2705; CMIP6 data resolved to this asset location.</span>';
+    H += '</div>';
+  }
+  if (_trajKeys.length > 0) {
+    H += '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;font-size:11px">';
+    H += '<thead><tr style="background:var(--bg2)">';
+    H += '<th style="padding:6px 10px;text-align:left;font-weight:700">Hazard</th>';
+    _trajYrs.forEach(function(yr){ H += '<th style="padding:6px 7px;text-align:center;font-weight:600">'+yr+'</th>'; });
+    H += '<th style="padding:6px 8px;text-align:center;font-weight:600">Trend</th></tr></thead><tbody>';
+    _trajKeys.forEach(function(key, _ri) {
+      var _yrMap = _traj[key] || {};
+      var _lbl = HZ_LABELS[key] || key.replace(/_/g,' ');
+      var _vals = _trajYrs.map(function(yr){ var v=_yrMap[yr]||_yrMap[''+yr]; return (v!=null&&!isNaN(v))?+v:null; });
+      var _first = null; for(var _fi=0;_fi<_vals.length;_fi++){if(_vals[_fi]!=null){_first=_vals[_fi];break;}}
+      var _last  = null; for(var _li=_vals.length-1;_li>=0;_li--){if(_vals[_li]!=null){_last=_vals[_li];break;}}
+      var _trendTxt, _trendCol;
+      if(_last!=null&&_first!=null&&_last>_first*1.12){_trendTxt='&#x2197; Worsening';_trendCol='#b91c1c';}
+      else if(_last!=null&&_first!=null&&_last<_first*0.9){_trendTxt='&#x2198; Improving';_trendCol='#15803d';}
+      else{_trendTxt='&#x27A1; Stable';_trendCol='#6b7280';}
+      H += '<tr style="background:'+(_ri%2===0?'var(--bg2)':'transparent')+';border-bottom:1px solid var(--border)">';
+      H += '<td style="padding:5px 10px;font-weight:600">'+_lbl+'</td>';
+      _vals.forEach(function(v){
+        var _vc = v==null?'#9ca3af':v>20?'#b91c1c':v>12?'#c2410c':v>6?'#ca8a04':'#15803d';
+        H += '<td style="padding:5px 7px;text-align:center;color:'+_vc+';font-weight:'+(v!=null&&v>10?700:400)+'">'+
+             (v!=null?v.toFixed(1)+'%':'&#x2014;')+'</td>';
+      });
+      H += '<td style="padding:5px 8px;text-align:center;font-size:10px;font-weight:700;color:'+_trendCol+'">'+_trendTxt+'</td></tr>';
+    });
+    H += '</tbody></table></div>';
+    H += '<div style="font-size:10px;color:var(--faint);margin-top:8px;line-height:1.5">';
+    H += 'AEP at resolved asset location &#183; CMIP6 SSP3-7.0 (Current Policies) &#183; ';
+    H += '<span style="color:#b91c1c">&#x25A0; &gt;20% High</span> &#183; ';
+    H += '<span style="color:#c2410c">&#x25A0; 12&#x2013;20% Elevated</span> &#183; ';
+    H += '<span style="color:#ca8a04">&#x25A0; 6&#x2013;12% Moderate</span> &#183; ';
+    H += '<span style="color:#15803d">&#x25A0; &lt;6% Low</span>';
+    H += '</div>';
+  } else {
+    H += '<div style="background:var(--bg2);border-radius:6px;padding:14px;font-size:12px;color:var(--muted)">';
+    H += '&#x1F4CD; Per-year hazard trajectory will populate here once the engine resolves an asset location. ';
+    H += 'Upload a file containing asset coordinates (lat/lon columns) to receive full 2026&#x2013;2050 time-series projections.';
+    H += '</div>';
+  }
+  H += '</div>';
+
+  // STRUCTURAL RESILIENCE RECOMMENDATIONS
+  var _SREC = {
+    heat_stress:[
+      'Upgrade HVAC cooling capacity &#x2014; estimate +15&#x2013;22% additional load by 2040 under SSP3-7.0. Commission thermal load study before next plant replacement cycle.',
+      'Install cool/reflective roofing (Solar Reflectance Index &gt;65) to cut surface temperature by 2&#x2013;4&#xB0;C and reduce HVAC demand.',
+      'Add fixed or adjustable external shading over glazed facades and exposed rooftop plant/equipment.',
+      'Establish mandatory worker cooling stations and hydration protocols for outdoor operations above 35&#xB0;C wet-bulb.',
+      'Install temperature monitoring at critical equipment (switchgear, servers, transformers) with automated load-shedding thresholds.'
+    ],
+    flood:[
+      'Commission a site-specific Flood Risk Assessment (1-in-200yr return period) using LiDAR DEM.',
+      'Install demountable flood barriers (minimum 0.8&#x2013;1.2m above 1:200yr flood level) at all site entry points.',
+      'Relocate electrical switchgear, UPS, and server rooms to minimum 1.2m above ground floor &#x2014; or above predicted 2050 flood level if higher.',
+      'Waterproof ground-floor walls to 1.0m with cementitious or bituminous tanking system.',
+      'Install sump pumps with battery/generator backup and automatic float-switch activation.',
+      'Upgrade on-site drainage to handle 1:100yr storm event + 30% climate uplift factor.'
+    ],
+    coastal_flood:[
+      'Commission coastal hydraulic modelling with +0.5m sea-level rise uplift to 2050.',
+      'Install coastal defence (sheet piling, rock armour, or tide gates) to assessed 1:200yr + SLR threat level.',
+      'Elevate all critical plant above predicted 2050 storm surge + 0.5m freeboard.',
+      'Install real-time tidal/surge early-warning system tied to site operational shutdown procedures.',
+      'Review site insurance for SLR exclusions; consider parametric flood cover.'
+    ],
+    sea_level:[
+      'Undertake Coastal Vulnerability Index assessment (CVI per IPCC AR6 WG1 Ch.9 metrics).',
+      'Elevate ground floor slab by minimum 0.6m at next major capex cycle.',
+      'Install subsurface drainage and waterproof membrane to foundation level.',
+      'Review insurance terms for sea-level exclusions and consider parametric flood cover.'
+    ],
+    drought:[
+      'Audit total water consumption per unit output and set a 20&#x2013;30% reduction target.',
+      'Install closed-loop cooling-water recycling to reduce freshwater draw by 40&#x2013;60%.',
+      'Commission rainwater harvesting system (minimum 3-month operational buffer in 500mm/yr rainfall zone).',
+      'Secure alternative water supply agreement with utility or groundwater licence as operational backup.',
+      'Install real-time flow metering and automated leak-detection across all process water circuits.'
+    ],
+    water_stress:[
+      'Conduct water-risk due diligence with WRI Aqueduct 4.0 across all supplier and operational sites.',
+      'Reduce water intensity by 25%+ through process optimisation, recycling, and substitution.',
+      'Implement tiered water tariff contingency plan for periods of regulatory supply restriction.',
+      'Review product formulation for water-intensive inputs and explore lower-water substitutes.'
+    ],
+    wildfire:[
+      'Create and maintain a minimum 30m defensible space radius of cleared, non-combustible vegetation.',
+      'Upgrade exterior cladding and roofing to Class A fire rating (UL 790 or local equivalent).',
+      'Install ember-resistant vents with 1/16&#x22; stainless steel mesh (Class A rated).',
+      'Install perimeter deluge/sprinkler system with independent water tank and generator backup.',
+      'Develop a site Wildfire Evacuation Plan with an annual drill and pre-positioned suppression equipment.',
+      'Review and manage all trees within 1.5&#xD7; mature height from buildings.'
+    ],
+    cyclone:[
+      'Commission wind uplift assessment per AS/NZS 1170.2 or ASCE 7 and upgrade roof fixings to 115% of design load.',
+      'Inspect and reinforce all cladding connections &#x2014; hybrid structural adhesive/mechanical fastener systems preferred.',
+      'Install pressure-equalization vents to prevent differential pressure failure during extreme-wind events.',
+      'Protect rooftop HVAC, PV arrays, and communications masts with wind barriers rated to site design speed.',
+      'Develop 72-hour operational continuity plan for post-cyclone recovery with pre-positioned materials.'
+    ],
+    landslide:[
+      'Commission geotechnical site investigation including slope stability analysis (Factor of Safety target: 1.5 minimum).',
+      'Install retaining walls or slope stabilisation (soil nails, rock bolts, geosynthetics) where FoS &lt;1.5.',
+      'Construct upslope drainage channels to intercept and divert surface run-off before it saturates slopes.',
+      'Install displacement monitoring pins with automated alert at 20mm cumulative movement threshold.',
+      'Review and improve secondary access route independent of any high-risk slope.'
+    ],
+    subsidence:[
+      'Commission geotechnical survey with settlement monitoring to establish baseline movement rates.',
+      'Install crack monitoring gauges on load-bearing walls and at foundation step-joints.',
+      'Consider underpinning (mini-piles or jet grouting) if differential settlement exceeds 20mm.',
+      'Maintain consistent drainage to prevent differential soil-moisture changes that drive shrink-swell cycles.',
+      'Remove or root-barrier trees within 1.5&#xD7; mature height of foundations.'
+    ],
+    flash_flood:[
+      'Install upstream flow gauge and early-warning system with 30-minute response protocol.',
+      'Raise all door thresholds and fit flood boards at every site entry point.',
+      'Increase culvert/drainage capacity to 1:100yr 1-hour storm + 30% climate uplift factor.',
+      'Designate assembly points and evacuation routes that avoid flood-prone areas.',
+      'Fit non-return valves on all surface-water drainage connections to prevent backflow.'
+    ],
+    compound_flood:[
+      'Assess combined fluvial + coastal flood probability under 2050 sea level conditions (Monte Carlo joint-probability analysis).',
+      'Ensure flood defences account for simultaneous riverine and storm-surge events.',
+      'Install real-time monitoring of both river level and sea state with integrated alert protocols.',
+      'Review site insurance for compound event exclusions which are increasingly prevalent post-2020.'
+    ]
+  };
+
+  var _topRec = Object.keys(hz).sort(function(a,b){ return (hz[b]||0)-(hz[a]||0); }).slice(0,5);
+  var _hasRec = _topRec.some(function(k){ return !!_SREC[k]; });
+
+  H += '<div class="card" style="margin-bottom:16px">';
+  H += '<div class="section-title">&#x1F527; Structural Resilience Recommendations &#x2014; Top Hazards &#xD7; '+sector+'</div>';
+  H += '<div style="font-size:11px;color:var(--muted);margin-bottom:14px">';
+  H += 'Specific engineering controls to reduce physical climate losses at this location. ';
+  H += 'Ranked by hazard AEP severity. Requires site-specific engineering design for implementation.';
+  H += '</div>';
+
+  if (_hasRec) {
+    var _rcols = ['#b91c1c','#c2410c','#d97706','#ca8a04','#374151'];
+    var _rbgs  = ['#fff1f2','#fff7ed','#fffbeb','#f9fafb','#f9fafb'];
+    var _icons = {heat_stress:'&#x1F321;',flood:'&#x1F30A;',coastal_flood:'&#x1F30A;',
+                  sea_level:'&#x1F4C8;',drought:'&#x2600;',water_stress:'&#x1F4A7;',
+                  wildfire:'&#x1F525;',cyclone:'&#x1F300;',landslide:'&#x26F0;',
+                  subsidence:'&#x2B07;',flash_flood:'&#x1F4A6;',compound_flood:'&#x1F30A;'};
+    _topRec.forEach(function(key, _idx) {
+      var _recs = _SREC[key]; if(!_recs) return;
+      var _prob = hz[key]||0;
+      var _lbl  = HZ_LABELS[key]||key.replace(/_/g,' ');
+      var _icon = _icons[key]||'&#x26A0;';
+      var _col  = _rcols[Math.min(_idx,_rcols.length-1)];
+      var _bg   = _rbgs[Math.min(_idx,_rbgs.length-1)];
+      H += '<div style="background:'+_bg+';border:1px solid #e5e7eb;'+ (_idx===0?'border-left:4px solid '+_col+';':'')+
+           'border-radius:8px;padding:12px 14px;margin-bottom:10px">';
+      H += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap">';
+      H += '<span style="font-size:18px">'+_icon+'</span>';
+      H += '<strong style="font-size:13px;color:'+_col+'">'+_lbl+'</strong>';
+      H += '<span style="font-size:11px;font-weight:700;background:'+(_prob>20?_col:'rgba(0,0,0,.08')+';color:'+(_prob>20?'#fff':_col)+';padding:2px 9px;border-radius:12px">'+_prob.toFixed(0)+'% AEP&#xA0;@&#xA02050</span>';
+      if(_idx===0) H += '<span style="font-size:9px;font-weight:700;color:#fff;background:'+_col+';padding:2px 7px;border-radius:3px;letter-spacing:.05em">PRIMARY RISK</span>';
+      H += '</div>';
+      H += '<ol style="margin:0;padding-left:20px">';
+      _recs.forEach(function(r){
+        H += '<li style="font-size:11px;color:#374151;line-height:1.65;margin-bottom:4px">'+r+'</li>';
+      });
+      H += '</ol></div>';
+    });
+  } else {
+    H += '<div style="background:var(--bg2);border-radius:6px;padding:14px;font-size:12px;color:var(--muted)">';
+    H += '&#x1F4CD; Upload an asset file with coordinates to receive location-specific structural engineering recommendations calibrated to your top hazards.';
+    H += '</div>';
+  }
+  H += '<div style="font-size:10px;color:var(--faint);margin-top:8px;line-height:1.5">';
+  H += '&#9888;&#xFE0F; Recommendations are indicative engineering controls based on hazard type &#xD7; sector exposure at the identified location. ';
+  H += 'Detailed design requires site-specific engineering assessment per applicable codes (BS EN, Eurocode, AS/NZS, ASCE/AISC). ';
+  H += 'CRI does not provide engineering design or professional engineering services.';
   H += '</div>';
   H += '</div>';
 
