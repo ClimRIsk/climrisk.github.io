@@ -663,8 +663,9 @@ document.addEventListener('DOMContentLoaded', function(){
   setInterval(function(){
     fetch(ENGINE_URL+'/health',{signal:AbortSignal.timeout(30000)}).catch(function(){});
   }, 14*60*1000);
-  // Ensure stats always render on load (covers incognito / cleared storage)
+  // Render whatever is in localStorage first (instant), then fetch from engine
   renderAssessments();
+  loadEngineCompanies();
 });
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
@@ -723,22 +724,7 @@ function downloadTemplate() {
 
 // ── LOCAL STORAGE (with in-memory fallback for file:// and Safari restrictions) ──
 var STORAGE_KEY = 'cri_assessments';
-var _now = Date.now();
-var _BASE_SEED = [
-  {id:'seed-bhp',     company:'BHP Group',           sector:'Metals & Mining',    country:'Australia',
-   date:new Date(_now - 1*86400000).toISOString(), status:'complete',
-   physScore:71, topHazard:'Cyclone / Wind',   assets:14, rating:'C'},
-  {id:'seed-morelli', company:'Morelli Cement S.p.A', sector:'Cement',             country:'Italy',
-   date:new Date(_now - 3*86400000).toISOString(), status:'complete',
-   physScore:58, topHazard:'Heat Stress',      assets:6,  rating:'C'},
-  {id:'seed-ing',     company:'ING Group N.V.',        sector:'Financial Services', country:'Netherlands',
-   date:new Date(_now - 5*86400000).toISOString(), status:'complete',
-   physScore:32, topHazard:'Flood (Riverine)', assets:4,  rating:'B'},
-  {id:'seed-heineken',company:'Heineken N.V.',          sector:'Food & Beverage',   country:'Netherlands',
-   date:new Date(_now - 8*86400000).toISOString(), status:'complete',
-   physScore:48, topHazard:'Water Stress',     assets:8,  rating:'B'}
-];
-// In-memory store: survives Safari file:// localStorage block
+// In-memory store — populated from the Python engine on load
 var _MEM_STORE = null;
 
 function _lsGet() {
@@ -749,23 +735,59 @@ function _lsSet(list) {
 }
 
 function getAssessments() {
-  // 1. Check in-memory store first (always works)
   if (_MEM_STORE !== null) return _MEM_STORE;
-  // 2. Try localStorage (works on https://, blocked on file://)
+  // Only restore user-run assessments from localStorage (no fake seed)
   var stored = _lsGet();
   if (stored && stored.length > 0) {
-    // Drop stale 'running' entries from prior sessions
-    stored = stored.filter(function(a){ return a.status !== 'running'; });
-    // Merge in any seed companies that are missing
-    var ids = stored.map(function(a){ return a.id; });
-    var missing = _BASE_SEED.filter(function(s){ return ids.indexOf(s.id) < 0; });
-    _MEM_STORE = missing.concat(stored);
+    _MEM_STORE = stored.filter(function(a){ return a.status !== 'running'; });
     return _MEM_STORE;
   }
-  // 3. First load — start with seed data
-  _MEM_STORE = _BASE_SEED.slice();
-  _lsSet(_MEM_STORE);
+  _MEM_STORE = [];
   return _MEM_STORE;
+}
+
+// Load companies + ratings from the Python engine and populate the dashboard
+function loadEngineCompanies() {
+  fetch(ENGINE_URL + '/companies', {signal: AbortSignal.timeout(12000)})
+    .then(function(r){ return r.ok ? r.json() : Promise.reject(r.status); })
+    .then(function(companies){
+      // Fire ratings in parallel (free tier — gives A-E label)
+      var ratingPromises = companies.map(function(c){
+        return fetch(ENGINE_URL + '/ratings', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json'},
+          body: JSON.stringify({company_id: c.id, tier: 'free'}),
+          signal: AbortSignal.timeout(20000)
+        }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
+      });
+      return Promise.all(ratingPromises).then(function(ratings){
+        return companies.map(function(c, i){ return {_c: c, _r: ratings[i]}; });
+      });
+    })
+    .then(function(pairs){
+      // Don't overwrite user-run assessments already in the store
+      var existing = _lsGet() || [];
+      var existingIds = existing.map(function(a){ return a.id; });
+      var engineRows = pairs.map(function(p){
+        var c = p._c; var r = p._r;
+        return {
+          id:         'eng-' + c.id,
+          company:    c.name,
+          sector:     c.sector,
+          country:    c.region,
+          date:       new Date().toISOString(),
+          status:     'complete',
+          physScore:  r ? (r.physical_risk_score || null) : null,
+          topHazard:  r ? (r.physical_risk_label || null) : null,
+          assets:     c.assets ? c.assets.length : null,
+          rating:     r ? (r.rating || null) : null
+        };
+      }).filter(function(row){ return existingIds.indexOf(row.id) < 0; });
+      _MEM_STORE = engineRows.concat(existing.filter(function(a){ return a.status !== 'running'; }));
+      _lsSet(_MEM_STORE);
+      renderAssessments();
+    })
+    .catch(function(){ /* engine offline — dashboard stays empty until user runs an assessment */ });
 }
 
 function saveAssessment(a) {
