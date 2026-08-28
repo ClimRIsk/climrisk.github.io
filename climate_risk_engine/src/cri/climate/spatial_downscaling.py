@@ -633,6 +633,73 @@ class SpatialDownscaler:
         # ── 7. Derived hazard probabilities ───────────────────────────────
         signals = self._derive_hazard_probs(signals, gis)
 
+        # ── 8. Sentinel-2 satellite enrichment (AWS Open Data) ────────────
+        # Provides NDVI, cloud cover, and drought/flood flags from real
+        # Sentinel-2 L2A scenes via Element84 STAC API (no auth required).
+        try:
+            from cri.connectors.sentinel2_stac import (
+                get_satellite_signals,
+                risk_adjustment_from_signals,
+            )
+            sat = get_satellite_signals(lat, lon, months_back=18)
+            if not sat.error:
+                adj = risk_adjustment_from_signals(sat)
+                if "flood" in adj:
+                    signals.flood_riverine_prob = round(
+                        min(0.90, signals.flood_riverine_prob + adj["flood"]), 3
+                    )
+                if "wildfire" in adj:
+                    signals.wildfire_prob = round(
+                        min(0.70, signals.wildfire_prob + adj["wildfire"]), 3
+                    )
+                if "heat_stress" in adj:
+                    signals.heat_stress_prob = round(
+                        min(0.95, signals.heat_stress_prob + adj["heat_stress"]), 3
+                    )
+                signals.data_sources["satellite"] = (
+                    f"Sentinel-2 L2A (AWS/Element84 STAC, "
+                    f"{sat.scene_count} scenes, {sat.date_range})"
+                )
+        except Exception:
+            pass  # satellite enrichment is best-effort
+
+        # ── 9. NOAA GFS near-term forecast enrichment (Open-Meteo) ───────
+        # Provides 16-day extreme weather signals to flag assets currently
+        # under heat waves, heavy rain, or wind events (acute physical risk).
+        if year <= datetime.datetime.utcnow().year + 1:
+            try:
+                from cri.connectors.noaa_gfs import get_forecast_signals
+                fc = get_forecast_signals(lat, lon, days=16)
+                if not fc.error:
+                    hd = fc.hazard_delta
+                    if "heat_stress" in hd:
+                        signals.heat_stress_prob = round(
+                            min(0.95, signals.heat_stress_prob + hd["heat_stress"]), 3
+                        )
+                    if "flood" in hd:
+                        signals.flood_riverine_prob = round(
+                            min(0.90, signals.flood_riverine_prob + hd["flood"]), 3
+                        )
+                    if "wildfire" in hd:
+                        signals.wildfire_prob = round(
+                            min(0.70, signals.wildfire_prob + hd["wildfire"]), 3
+                        )
+                    if "wind" in hd:
+                        # Store wind delta on data_sources; wind isn't a separate field
+                        # in HazardSignals but hazard_matrix will read it from sources tag
+                        signals.data_sources["wind_delta"] = str(round(hd["wind"], 4))
+                    if "water_stress" in hd:
+                        # Nudge drought prob slightly
+                        signals.drought_prob = round(
+                            min(0.85, signals.drought_prob + hd["water_stress"]), 3
+                        )
+                    signals.data_sources["forecast"] = (
+                        f"NOAA GFS + ECMWF (Open-Meteo, 16-day, "
+                        f"extreme_score={fc.extreme_event_score:.2f})"
+                    )
+            except Exception:
+                pass  # forecast enrichment is best-effort
+
         return signals
 
     def _derive_hazard_probs(

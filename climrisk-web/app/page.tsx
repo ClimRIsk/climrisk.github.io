@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Reveal from "./components/Reveal";
 import CounterUp from "./components/CounterUp";
+import GlobeBackground from "./components/GlobeBackground";
 
 const MANDATES = [
   {
@@ -49,8 +50,19 @@ export default function Home() {
     <>
       {/* Hero */}
       <section className="relative pt-40 pb-24 px-6 overflow-hidden">
-        <div className="absolute inset-0 bg-grid opacity-40 pointer-events-none" />
-        <div className="max-w-5xl mx-auto relative">
+        <GlobeBackground />
+        <div
+          aria-hidden="true"
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 1,
+            pointerEvents: "none",
+            background:
+              "linear-gradient(to right, rgba(10,11,14,0.95) 0%, rgba(10,11,14,0.82) 45%, rgba(10,11,14,0.45) 75%, rgba(10,11,14,0.15) 100%)",
+          }}
+        />
+        <div className="max-w-5xl mx-auto relative" style={{ zIndex: 2 }}>
           <div className="hero-drift inline-flex items-center gap-2 text-xs font-mono text-gold-200 border border-white/8 rounded-full px-3 py-1.5 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-terminal" />
             CRI ENGINE v0.5 · NGFS PHASE 4 · CMIP6
