@@ -33,16 +33,7 @@ export default function Nav() {
       <nav className="max-w-7xl mx-auto px-6 flex items-center h-16 gap-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-          <svg width="32" height="32" viewBox="0 0 36 36" fill="none" xmlns="http://www.w3.org/2000/svg" className="transition-opacity group-hover:opacity-90">
-            <circle cx="18" cy="18" r="18" fill="#0A0B0E"/>
-            <circle cx="18" cy="18" r="16.2" stroke="#D4AF37" strokeWidth="0.9" fill="none"/>
-            <line x1="14" y1="5" x2="14" y2="11" stroke="#D4AF37" strokeWidth="1.6" strokeLinecap="round"/>
-            <rect x="7"  y="21" width="4" height="9"  rx="1.2" fill="#C5A059" opacity="0.82"/>
-            <rect x="13" y="17" width="4" height="13" rx="1.2" fill="#D4AF37" opacity="0.95"/>
-            <rect x="19" y="14" width="4" height="16" rx="1.2" fill="#C5A059" opacity="0.82"/>
-            <path d="M5 18 C8 13,12 23,18 18 C24 13,28 20,31 17" stroke="#EAD9A0" strokeWidth="1.6" fill="none" strokeLinecap="round"/>
-            <circle cx="25" cy="10" r="4" fill="#D4AF37" opacity="0.96"/>
-          </svg>
+          <img src="/logo-mark.png" width="32" height="32" alt="ClimRisk" style={{ objectFit: "contain" }} />
           <span className="text-white font-bold text-lg tracking-tight">
             Clim<span className="text-gold-300">Risk</span>
           </span>

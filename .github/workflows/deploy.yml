@@ -30,13 +30,14 @@ jobs:
         run: npm run build
         working-directory: climrisk-web
 
-      # Keep the existing platform HTML files accessible at their current URLs
+      # Keep the existing platform demo pages accessible at their current URLs.
+      # IMPORTANT: never copy the legacy root index.html here — that overwrites
+      # the Next.js app's real homepage (out/index.html) on every deploy.
       - name: Copy platform app files into build output
         run: |
           cp app.html          climrisk-web/out/app.html
           cp dashboard.html    climrisk-web/out/dashboard.html
           cp ClimRisk_Platform.html climrisk-web/out/CRI_Demo.html
-          cp index.html climrisk-web/out/index.html
         continue-on-error: true   # graceful if any file was removed
 
       # GitHub Pages needs a CNAME file for the custom domain
