@@ -32,10 +32,7 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 md:col-span-1">
             <div className="flex items-center gap-2 mb-4">
-              <img src="/logo-mark.png" width="28" height="28" alt="ClimRisk" style={{ objectFit: "contain" }} />
-              <span className="text-white font-bold">
-                Clim<span className="text-gold-300">Risk</span>
-              </span>
+              <img src="/logo.png" width="150" height="144" alt="ClimRisk" style={{ height: "40px", width: "auto" }} />
             </div>
             <p className="text-zinc-500 text-xs leading-relaxed mb-4">
               A quantitative advisory firm translating climate science into financial exposure.
