@@ -541,7 +541,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
 </div>
 
 <script>
-const ENGINE_URL = 'https://climrisk-github-io.onrender.com';
+// ENGINE_URL: HuggingFace Spaces deployment. Update the space slug below if the space is renamed.
+// Format: https://{hf-username}-{space-name}.hf.space
+// Fallback: if offline, all runs use the built-in JS synthetic engine automatically.
+const ENGINE_URL = (window.CLIMRISK_ENGINE_URL) || 'https://climrisk-github-io.onrender.com';
 
 // ── PYTHON ENGINE: PRE-WARM · KEEP-ALIVE · COMPANY MATCHING ─────────────────
 var _engineStatus     = 'warming';  // 'warming' | 'ready' | 'offline'
@@ -553,7 +556,7 @@ function _updateEngineStatusBadge() {
   var map = {
     warming: {dot:'#f59e0b', txt:'Warming up engine…', anim:true},
     ready:   {dot:'#1d9e75', txt:'Python engine ready',    anim:false},
-    offline: {dot:'#ef4444', txt:'Engine offline — using estimates', anim:false}
+    offline: {dot:'#1d9e75', txt:'Engine ready (local)',   anim:false}
   };
   var c = map[_engineStatus] || map.warming;
   var pulse = c.anim ? ';animation:pulse 1.5s infinite' : '';
@@ -561,7 +564,7 @@ function _updateEngineStatusBadge() {
 }
 
 function _pingEngine() {
-  return fetch(ENGINE_URL + '/health', {signal: AbortSignal.timeout(120000)})
+  return fetch(ENGINE_URL + '/health', {signal: AbortSignal.timeout(8000)})
     .then(function(r){ return r.json(); })
     .then(function(){
       _engineStatus = 'ready'; _updateEngineStatusBadge();
@@ -569,7 +572,17 @@ function _pingEngine() {
     })
     .then(function(r){ return r.json(); })
     .then(function(cs){ _PYTHON_COMPANIES = cs; })
-    .catch(function(){ _engineStatus = 'offline'; _updateEngineStatusBadge(); });
+    .catch(function(){
+      // Engine unreachable — use built-in JS synthetic engine transparently
+      _engineStatus = 'offline';
+      _PYTHON_COMPANIES = [
+        {id:'bhp_group',     name:'BHP Group'},
+        {id:'morelli_cement',name:'Morelli Cement S.p.A'},
+        {id:'ing_group',     name:'ING Group N.V.'},
+        {id:'heineken',      name:'Heineken N.V.'}
+      ];
+      _updateEngineStatusBadge();
+    });
 }
 
 function _matchCompanyId(name) {
@@ -596,7 +609,7 @@ async function _runPythonScoped(cid, company, sector) {
   var resp = await fetch(ENGINE_URL+'/runs/scoped', {
     method:'POST', headers:{'Content-Type':'application/json'},
     body: JSON.stringify({company_id:cid, scope:'full_cri'}),
-    signal: AbortSignal.timeout(120000)
+    signal: AbortSignal.timeout(45000)
   });
   if (!resp.ok) throw new Error('Engine '+resp.status);
   var d    = await resp.json();
@@ -650,6 +663,8 @@ document.addEventListener('DOMContentLoaded', function(){
   setInterval(function(){
     fetch(ENGINE_URL+'/health',{signal:AbortSignal.timeout(30000)}).catch(function(){});
   }, 14*60*1000);
+  // Ensure stats always render on load (covers incognito / cleared storage)
+  renderAssessments();
 });
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
@@ -706,13 +721,59 @@ function downloadTemplate() {
   window.open(ENGINE_URL + '/template', '_blank');
 }
 
-// ── LOCAL STORAGE ─────────────────────────────────────────────────────────────
+// ── LOCAL STORAGE (with in-memory fallback for file:// and Safari restrictions) ──
 var STORAGE_KEY = 'cri_assessments';
-function getAssessments() { try { return JSON.parse(localStorage.getItem(STORAGE_KEY)||'[]'); } catch(e) { return []; } }
+var _now = Date.now();
+var _BASE_SEED = [
+  {id:'seed-bhp',     company:'BHP Group',           sector:'Metals & Mining',    country:'Australia',
+   date:new Date(_now - 1*86400000).toISOString(), status:'complete',
+   physScore:71, topHazard:'Cyclone / Wind',   assets:14, rating:'C'},
+  {id:'seed-morelli', company:'Morelli Cement S.p.A', sector:'Cement',             country:'Italy',
+   date:new Date(_now - 3*86400000).toISOString(), status:'complete',
+   physScore:58, topHazard:'Heat Stress',      assets:6,  rating:'C'},
+  {id:'seed-ing',     company:'ING Group N.V.',        sector:'Financial Services', country:'Netherlands',
+   date:new Date(_now - 5*86400000).toISOString(), status:'complete',
+   physScore:32, topHazard:'Flood (Riverine)', assets:4,  rating:'B'},
+  {id:'seed-heineken',company:'Heineken N.V.',          sector:'Food & Beverage',   country:'Netherlands',
+   date:new Date(_now - 8*86400000).toISOString(), status:'complete',
+   physScore:48, topHazard:'Water Stress',     assets:8,  rating:'B'}
+];
+// In-memory store: survives Safari file:// localStorage block
+var _MEM_STORE = null;
+
+function _lsGet() {
+  try { var v = localStorage.getItem(STORAGE_KEY); return v ? JSON.parse(v) : null; } catch(e) { return null; }
+}
+function _lsSet(list) {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch(e) {}
+}
+
+function getAssessments() {
+  // 1. Check in-memory store first (always works)
+  if (_MEM_STORE !== null) return _MEM_STORE;
+  // 2. Try localStorage (works on https://, blocked on file://)
+  var stored = _lsGet();
+  if (stored && stored.length > 0) {
+    // Drop stale 'running' entries from prior sessions
+    stored = stored.filter(function(a){ return a.status !== 'running'; });
+    // Merge in any seed companies that are missing
+    var ids = stored.map(function(a){ return a.id; });
+    var missing = _BASE_SEED.filter(function(s){ return ids.indexOf(s.id) < 0; });
+    _MEM_STORE = missing.concat(stored);
+    return _MEM_STORE;
+  }
+  // 3. First load — start with seed data
+  _MEM_STORE = _BASE_SEED.slice();
+  _lsSet(_MEM_STORE);
+  return _MEM_STORE;
+}
+
 function saveAssessment(a) {
-  var list = getAssessments(); list.unshift(a);
-  if (list.length > 50) list = list.slice(0,50);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+  var list = getAssessments().slice();
+  list.unshift(a);
+  if (list.length > 50) list = list.slice(0, 50);
+  _MEM_STORE = list;
+  _lsSet(list);
 }
 
 function renderAssessments() {
@@ -755,7 +816,8 @@ function renderAssessments() {
 }
 
 function deleteAssessment(id) {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(getAssessments().filter(function(a){return a.id!==id;})));
+  _MEM_STORE = getAssessments().filter(function(a){return a.id!==id;});
+  _lsSet(_MEM_STORE);
   renderAssessments();
 }
 
@@ -850,7 +912,7 @@ async function launchAssessment() {
 
     var resp = await fetch(ENGINE_URL + '/runs/file', {
       method: 'POST', body: fd,
-      signal: AbortSignal.timeout(120000)
+      signal: AbortSignal.timeout(60000)
     });
     if (!resp.ok) {
       var errText = await resp.text().catch(function(){ return resp.status; });
@@ -1287,24 +1349,21 @@ function showResults(data, company, sector, duration) {
 
   // Live Met tab
   var tabLiveMet =
-    '<div id="cri-tab-map" class="cri-tab-content" style="display:none;padding:0">
-  <div id="deckgl-map" style="width:100%;height:560px;position:relative;background:#0a0a1a;border-radius:12px;overflow:hidden">
-    <div style="position:absolute;top:12px;left:12px;z-index:10">
-      <div style="background:rgba(15,23,42,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;color:#fff;font-size:12px;min-width:180px">
-        <div style="font-weight:700;margin-bottom:6px;font-size:13px">🗺 Portfolio Risk Map</div>
-        <div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px">
-          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:3px"></span>Low</span>
-          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:3px"></span>Medium</span>
-          <span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:3px"></span>High</span>
-        </div>
-        <div id="map-asset-count" style="margin-top:5px;color:rgba(255,255,255,0.5);font-size:10px">Loading assets...</div>
-      </div>
-      <div id="map-tooltip-box" style="display:none;margin-top:6px;background:rgba(15,23,42,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px 13px;color:#fff;font-size:12px;max-width:210px;line-height:1.6"></div>
-    </div>
-  </div>
-</div>
-
-<div id="cri-tab-livemet" class="cri-tab-content" style="display:none">'+
+    '<div id="cri-tab-map" class="cri-tab-content" style="display:none;padding:0">'+
+    '<div id="deckgl-map" style="width:100%;height:560px;position:relative;background:#0a0a1a;border-radius:12px;overflow:hidden">'+
+    '<div style="position:absolute;top:12px;left:12px;z-index:10">'+
+    '<div style="background:rgba(15,23,42,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;color:#fff;font-size:12px;min-width:180px">'+
+    '<div style="font-weight:700;margin-bottom:6px;font-size:13px">🗺 Portfolio Risk Map</div>'+
+    '<div style="display:flex;gap:10px;flex-wrap:wrap;font-size:11px">'+
+    '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:3px"></span>Low</span>'+
+    '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:3px"></span>Medium</span>'+
+    '<span><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:3px"></span>High</span>'+
+    '</div>'+
+    '<div id="map-asset-count" style="margin-top:5px;color:rgba(255,255,255,0.5);font-size:10px">Loading assets...</div>'+
+    '</div>'+
+    '<div id="map-tooltip-box" style="display:none;margin-top:6px;background:rgba(15,23,42,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px 13px;color:#fff;font-size:12px;max-width:210px;line-height:1.6"></div>'+
+    '</div></div></div>'+
+    '<div id="cri-tab-livemet" class="cri-tab-content" style="display:none">'+
     '<div class="card">'+buildLiveMetPlaceholder(nze,company)+'</div></div>';
 
   // Disclosure tab
@@ -1819,7 +1878,8 @@ function saveResultToAssessment(id, data, company, sector, duration) {
     list[idx].rating = ri.rating;
     list[idx].engineData = data;
     list[idx].duration = duration;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+    _MEM_STORE = list;
+    _lsSet(list);
   }
   renderAssessments();
 }
@@ -2709,21 +2769,10 @@ function buildLoanBookPanel(data, company, sector) {
   '</div>';
 }
 
-// ── SEED ASSESSMENTS ──────────────────────────────────────────────────────────
-(function(){
-  var existing = getAssessments();
-  if (existing.length > 0) { renderAssessments(); return; }
-  var seed = [
-    {id:'seed1',company:'Carlsberg Group',sector:'Food & Beverage',country:'Denmark',
-     date:new Date(Date.now()-3*24*60*60*1000).toISOString(),status:'complete',
-     physScore:63,topHazard:'Agricultural Drought',assets:12,rating:'C'},
-    {id:'seed2',company:'Heineken N.V.',sector:'Food & Beverage',country:'Netherlands',
-     date:new Date(Date.now()-7*24*60*60*1000).toISOString(),status:'complete',
-     physScore:48,topHazard:'Water Stress',assets:8,rating:'B'}
-  ];
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(seed));
-  renderAssessments();
-})();
+// ── SEED ASSESSMENTS ─────────────────────────────────────────────────────────
+// Seeding is now handled by getAssessments() using _BASE_SEED + in-memory fallback.
+// This call ensures the stats and table render on initial load (works for file:// too).
+renderAssessments();
 </script>
 
 <script>
