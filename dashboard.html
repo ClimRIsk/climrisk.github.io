@@ -556,32 +556,38 @@ function _updateEngineStatusBadge() {
   var map = {
     warming: {dot:'#f59e0b', txt:'Warming up engine…', anim:true},
     ready:   {dot:'#1d9e75', txt:'Python engine ready',    anim:false},
-    offline: {dot:'#1d9e75', txt:'Engine ready (local)',   anim:false}
+    offline: {dot:'#dc2626', txt:'Engine offline — retry or check Render',   anim:false}
   };
   var c = map[_engineStatus] || map.warming;
   var pulse = c.anim ? ';animation:pulse 1.5s infinite' : '';
   badge.innerHTML = '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:'+c.dot+';margin-right:5px;vertical-align:middle'+pulse+'"></span>'+c.txt;
 }
 
-function _pingEngine() {
-  return fetch(ENGINE_URL + '/health', {signal: AbortSignal.timeout(8000)})
+// Render free tier has ~30-50s cold start — retry with back-off until alive
+function _pingEngine(attempt) {
+  attempt = attempt || 1;
+  var timeout = attempt === 1 ? 60000 : 30000; // 60s first attempt, 30s after
+  return fetch(ENGINE_URL + '/health', {signal: AbortSignal.timeout(timeout)})
     .then(function(r){ return r.json(); })
     .then(function(){
       _engineStatus = 'ready'; _updateEngineStatusBadge();
-      return fetch(ENGINE_URL + '/companies', {signal: AbortSignal.timeout(15000)});
+      return fetch(ENGINE_URL + '/companies', {signal: AbortSignal.timeout(20000)});
     })
     .then(function(r){ return r.json(); })
-    .then(function(cs){ _PYTHON_COMPANIES = cs; })
+    .then(function(cs){
+      _PYTHON_COMPANIES = cs;
+      // Refresh dashboard with real engine companies
+      loadEngineCompanies();
+    })
     .catch(function(){
-      // Engine unreachable — use built-in JS synthetic engine transparently
-      _engineStatus = 'offline';
-      _PYTHON_COMPANIES = [
-        {id:'bhp_group',     name:'BHP Group'},
-        {id:'morelli_cement',name:'Morelli Cement S.p.A'},
-        {id:'ing_group',     name:'ING Group N.V.'},
-        {id:'heineken',      name:'Heineken N.V.'}
-      ];
-      _updateEngineStatusBadge();
+      if (attempt < 3) {
+        // Retry once more — Render sometimes needs two tries after a long sleep
+        setTimeout(function(){ _pingEngine(attempt + 1); }, 5000);
+      } else {
+        _engineStatus = 'offline';
+        _PYTHON_COMPANIES = [];
+        _updateEngineStatusBadge();
+      }
     });
 }
 
@@ -899,7 +905,8 @@ async function launchAssessment() {
   if (!file) {
     // Try Python engine for known companies first
     var _cid = _matchCompanyId(company);
-    if (_cid && _engineStatus !== 'offline') {
+    if (_cid) {
+      // Engine may still be waking up — try with long timeout regardless of status
       try {
         var _pyData = await _runPythonScoped(_cid, company, sector);
         if (userLat !== null && userLon !== null) {
@@ -909,20 +916,22 @@ async function launchAssessment() {
         showResults(_pyData, company, sector, 0);
         return;
       } catch(_pyErr) {
-        console.warn('Python engine fallback:', _pyErr.message);
+        console.warn('Python engine error:', _pyErr.message);
+        // Mark failed assessment and surface the error — don't silently fake it
+        _MEM_STORE = getAssessments().map(function(a){
+          return a.id===assessId ? Object.assign({},a,{status:'failed'}) : a;
+        });
+        renderAssessments();
+        alert('Engine error: ' + _pyErr.message + '\n\nThe Render engine may need a minute to wake up — try again shortly.');
+        return;
       }
     }
-    // No file + no match — JS synthetic estimates
-    setTimeout(function(){
-      var synth = makeSyntheticResult(company, sector, rev);
-      if (userLat !== null && userLon !== null) {
-        (synth.results||[]).forEach(function(r){ r.lat=userLat; r.lon=userLon; r.country=country||r.country; });
-      } else if (country) {
-        (synth.results||[]).forEach(function(r){ r.country=country; });
-      }
-      saveResultToAssessment(assessId, synth, company, sector, 0);
-      showResults(synth, company, sector, 0);
-    }, 2500);
+    // Company not in engine seed list — require Excel file
+    _MEM_STORE = getAssessments().map(function(a){
+      return a.id===assessId ? Object.assign({},a,{status:'failed'}) : a;
+    });
+    renderAssessments();
+    alert('Company "' + company + '" is not in the engine\'s database.\n\nUpload the company\'s asset Excel file so the engine can run a full assessment.');
     return;
   }
 
@@ -1874,20 +1883,27 @@ function buildDetailedReport(data, nze, dt, cp, company, sector) {
 
 function showEngineError(msg, company, sector, assessId) {
   hideLoading();
+  // Mark assessment as failed — do NOT produce synthetic results
+  if (assessId) {
+    _MEM_STORE = getAssessments().map(function(a) {
+      return a.id === assessId ? Object.assign({}, a, {status: 'failed'}) : a;
+    });
+    _lsSet(_MEM_STORE);
+    renderAssessments();
+  }
+
   var rp = document.getElementById('results-panel');
   rp.style.display = 'block';
-
-  // Fall back to synthetic result
-  var synth = makeSyntheticResult(company, sector, 0);
-  saveResultToAssessment(assessId, synth, company, sector, 0);
-  showResults(synth, company, sector, 0);
-
-  // Add error note above
-  rp.insertAdjacentHTML('afterbegin',
-    '<div style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.25);border-radius:10px;padding:12px 16px;font-size:12px;color:var(--muted);margin-bottom:14px">'+
-    '⚠ <strong style="color:var(--red)">Engine unreachable</strong> ('+msg.slice(0,120)+') — showing estimated results based on sector parameters. '+
-    '<a onclick="document.location.reload()" style="color:var(--green);cursor:pointer;font-weight:600">Retry</a></div>'
-  );
+  rp.innerHTML =
+    '<div style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.3);border-radius:12px;padding:20px 22px;font-size:13px;color:var(--muted);margin-bottom:14px">'+
+    '<div style="font-size:15px;font-weight:700;color:var(--red);margin-bottom:8px">⚠ Engine error</div>'+
+    '<div style="margin-bottom:12px">'+msg.slice(0,200)+'</div>'+
+    '<div style="font-size:12px;color:var(--faint)">The Render engine may need up to 60 s to wake from sleep on the free tier. '+
+    'Wait a moment and click Retry, or upload a correctly formatted Excel file.</div>'+
+    '<div style="margin-top:14px;display:flex;gap:10px">'+
+    '<button onclick="document.location.reload()" style="background:var(--green);color:#fff;border:none;border-radius:7px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer">↺ Retry</button>'+
+    '<a href="https://climrisk-github-io.onrender.com/template" target="_blank" style="background:var(--surf);color:var(--fg);border:1px solid var(--border);border-radius:7px;padding:8px 18px;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none">⬇ Download Template</a>'+
+    '</div></div>';
 }
 
 function saveResultToAssessment(id, data, company, sector, duration) {
