@@ -35,7 +35,8 @@ jobs:
         run: |
           cp app.html          climrisk-web/out/app.html
           cp dashboard.html    climrisk-web/out/dashboard.html
-          cp CRI_Demo.html     climrisk-web/out/CRI_Demo.html
+          cp ClimRisk_Platform.html climrisk-web/out/CRI_Demo.html
+          cp index.html climrisk-web/out/index.html
         continue-on-error: true   # graceful if any file was removed
 
       # GitHub Pages needs a CNAME file for the custom domain
@@ -54,3 +55,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: climrisk-web/out
           cname: climrisk.io
+          force_orphan: true
