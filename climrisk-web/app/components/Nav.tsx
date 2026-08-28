@@ -33,10 +33,7 @@ export default function Nav() {
       <nav className="max-w-7xl mx-auto px-6 flex items-center h-16 gap-8">
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2.5 shrink-0 group">
-          <img src="/logo-mark.png" width="32" height="32" alt="ClimRisk" style={{ objectFit: "contain" }} />
-          <span className="text-white font-bold text-lg tracking-tight">
-            Clim<span className="text-gold-300">Risk</span>
-          </span>
+          <img src="/logo.png" width="150" height="144" alt="ClimRisk" style={{ height: "44px", width: "auto" }} />
         </Link>
 
         {/* Desktop nav */}
