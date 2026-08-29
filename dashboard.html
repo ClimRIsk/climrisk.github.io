@@ -1576,32 +1576,91 @@ async function _fetchLiveEvidence(lat, lon, company, sector) {
     var _bridgeYrKeys = Object.keys(_bridgeYrs).sort();
 
     // ═══════════════════════════════════════════════════════════════════════════
-    // LAYER 3 — LIVE NWP FORECAST (Open-Meteo wrapping ECMWF IFS, 9km, 14-day)
-    //   This is the "atmospheric bathtub filler" — Step 1 of hydrological pipeline
-    //   Real pipeline: ECMWF IFS → HAND model on GLO-30 DEM → asset inundation depth
+    // LAYER 3 — MULTI-MODEL PROBABILISTIC ENSEMBLE FORECAST
+    //   Source A: ECMWF IFS 0.25° ensemble — 51 perturbed members, 15-day horizon
+    //   Source B: NOAA GFS — hosted on AWS S3 Open Data (noaa-gfs-bdp-pds bucket)
+    //             accessed via Open-Meteo API (free, CORS-friendly, no key required)
+    //   Output: P(event) = fraction of ensemble members exceeding threshold per day
+    //   Cumulative: P(at least one exceedance over 15 days) via complement rule
     // ═══════════════════════════════════════════════════════════════════════════
-    var fcastData = await fetch(
-      'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+
-      '&daily=temperature_2m_max,precipitation_sum,wind_speed_10m_max,precipitation_hours'+
-      '&forecast_days=14&wind_speed_unit=ms&timezone=auto'
-    ).then(function(r){return r.json();});
-    var fd=fcastData.daily||{};
-    var fDates=fd.time||[], fPrec=fd.precipitation_sum||[], fTmax=fd.temperature_2m_max||[], fWind=fd.wind_speed_10m_max||[];
+    var _ensGfs = await Promise.all([
+      fetch('https://ensemble-api.open-meteo.com/v1/ensemble?latitude='+lat+'&longitude='+lon+
+        '&daily=temperature_2m_max,precipitation_sum,wind_speed_10m_max'+
+        '&models=ecmwf_ifs025&forecast_days=15&timezone=auto'
+      ).then(function(r){return r.json();}),
+      fetch('https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+
+        '&daily=temperature_2m_max,precipitation_sum,wind_speed_10m_max'+
+        '&models=gfs_global&forecast_days=15&wind_speed_unit=ms&timezone=auto'
+      ).then(function(r){return r.json();})
+    ]);
+    var ensData=_ensGfs[0], gfsData=_ensGfs[1];
 
-    var alerts=[];
-    fDates.forEach(function(dt,i){
-      var p=fPrec[i]||0,t=fTmax[i]||0,w=fWind[i]||0;
-      if(p>=50)  alerts.push({date:dt,type:'Heavy Rain',   val:p+'mm',  sev:p>=100?'HIGH':'MED',col:p>=100?'#dc2626':'#f59e0b'});
-      if(t>=38)  alerts.push({date:dt,type:'Extreme Heat', val:t+'°C', sev:t>=42?'HIGH':'MED',col:t>=42?'#dc2626':'#f59e0b'});
-      if(w>=25)  alerts.push({date:dt,type:'High Wind',    val:w+'m/s', sev:w>=33?'HIGH':'MED',col:w>=33?'#dc2626':'#f59e0b'});
-    });
+    // Parse ECMWF IFS ensemble members (member00=control, member01-50=perturbed)
+    var ed=ensData.daily||{};
+    var ensDates=ed.time||[], nDays=ensDates.length;
+    function _getMembers(d,v){
+      var arr=[];
+      for(var m=0;m<=50;m++){
+        var k=v+'_member'+String(m).padStart(2,'0');
+        if(d[k]&&d[k].length) arr.push(d[k]);
+      }
+      return arr;
+    }
+    var _tmaxM=_getMembers(ed,'temperature_2m_max');
+    var _precM=_getMembers(ed,'precipitation_sum');
+    var _windM=_getMembers(ed,'wind_speed_10m_max');
+    var _nM=Math.max(_tmaxM.length,1);
+
+    // Per-day event probability (fraction of ECMWF members exceeding threshold)
+    var _pH35=[],_pH40=[],_pR50=[],_pR100=[],_pW25=[],_pW33=[];
+    for(var _di=0;_di<nDays;_di++){
+      var _h35=0,_h40=0,_r50=0,_r100=0,_w25=0,_w33=0;
+      for(var _mi=0;_mi<_tmaxM.length;_mi++){var _t=_tmaxM[_mi][_di]||0;if(_t>=35)_h35++;if(_t>=40)_h40++;}
+      for(var _mi=0;_mi<_precM.length;_mi++){var _p=_precM[_mi][_di]||0;if(_p>=50)_r50++;if(_p>=100)_r100++;}
+      for(var _mi=0;_mi<_windM.length;_mi++){var _w=_windM[_mi][_di]||0;if(_w>=25)_w25++;if(_w>=33)_w33++;}
+      _pH35.push(_h35/_nM);_pH40.push(_h40/_nM);
+      _pR50.push(_r50/_nM);_pR100.push(_r100/_nM);
+      _pW25.push(_w25/_nM);_pW33.push(_w33/_nM);
+    }
+
+    // 15-day cumulative: P(at least one exceedance) = 1 − ∏(1 − P_day)
+    function _pAny(pArr){return 1-pArr.reduce(function(a,p){return a*(1-p);},1);}
+    var _P15={
+      heat35:_pAny(_pH35),heat40:_pAny(_pH40),
+      rain50:_pAny(_pR50),rain100:_pAny(_pR100),
+      wind25:_pAny(_pW25),wind33:_pAny(_pW33)
+    };
+
+    // NOAA GFS reference (model agreement check)
+    var _gd=gfsData.daily||{};
+    var _gTmax=_gd.temperature_2m_max||[],_gPrec=_gd.precipitation_sum||[];
+    var _gfsMaxT=Math.max.apply(null,_gTmax.filter(function(x){return x!=null;}).concat([0]));
+    var _gfsMaxP=Math.max.apply(null,_gPrec.filter(function(x){return x!=null;}).concat([0]));
+    var _gfsDates=_gd.time||[];
+
+    // Per-day ECMWF ensemble median (50th percentile)
+    function _medDay(mArr,di){
+      if(!mArr.length) return 0;
+      var v=mArr.map(function(m){return m[di]||0;}).sort(function(a,b){return a-b;});
+      var mid=Math.floor(v.length/2);
+      return v.length%2===0?(v[mid-1]+v[mid])/2:v[mid];
+    }
+
+    // Alerts from ECMWF ensemble median (de-duplicated by type)
+    var alerts=[],_seen={};
+    for(var _di=0;_di<nDays;_di++){
+      var _mt=_medDay(_tmaxM,_di),_mp=_medDay(_precM,_di),_mw=_medDay(_windM,_di);
+      if(_mp>=50&&!_seen['rain']){alerts.push({date:ensDates[_di],type:'Heavy Rain',val:Math.round(_mp)+'mm median',prob:Math.round(_pR50[_di]*100),sev:_pR50[_di]>=0.5?'HIGH':'MED',col:_pR50[_di]>=0.5?'#dc2626':'#f59e0b'});_seen['rain']=1;}
+      if(_mt>=38&&!_seen['heat']){alerts.push({date:ensDates[_di],type:'Extreme Heat',val:_mt.toFixed(1)+'°C median',prob:Math.round(_pH35[_di]*100),sev:_pH35[_di]>=0.5?'HIGH':'MED',col:_pH35[_di]>=0.5?'#dc2626':'#f59e0b'});_seen['heat']=1;}
+      if(_mw>=25&&!_seen['wind']){alerts.push({date:ensDates[_di],type:'High Wind',val:_mw.toFixed(1)+'m/s median',prob:Math.round(_pW25[_di]*100),sev:_pW25[_di]>=0.5?'HIGH':'MED',col:_pW25[_di]>=0.5?'#dc2626':'#f59e0b'});_seen['wind']=1;}
+    }
 
     // ─── BUILD UI ─────────────────────────────────────────────────────────────
     var html='';
     html+='<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px">';
     html+='<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#1d4ed8;color:#fff">📡 LAYER 1: ERA5 30yr Baseline 1993–2023</span>';
     html+='<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#c2410c;color:#fff">🕒 LAYER 2: Observed Bridge 2024–'+_bridgeEndStr.slice(0,4)+'</span>';
-    html+='<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#0369a1;color:#fff">⛈ LAYER 3: ECMWF 14-Day NWP</span>';
+    html+='<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#4338ca;color:#fff">⛈ LAYER 3: ECMWF 51-Ens + NOAA GFS (AWS)</span>';
     html+='<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:#065f46;color:#fff">🛰 LAYER 4: Terrain / HAND Routing</span>';
     html+='</div>';
 
@@ -1647,12 +1706,13 @@ async function _fetchLiveEvidence(lat, lon, company, sector) {
 
     if(alerts.length>0){
       html+='<div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:10px 12px;margin-bottom:10px">';
-      html+='<div style="font-weight:700;font-size:12px;color:#c2410c;margin-bottom:6px">⚠️ LAYER 3 LIVE FORECAST ALERTS — Next 14 Days (ECMWF IFS 9km)</div>';
+      html+='<div style="font-weight:700;font-size:12px;color:#c2410c;margin-bottom:6px">⚠️ LAYER 3 PROBABILISTIC ALERTS — ECMWF 51-member ensemble · NOAA GFS (AWS Open Data)</div>';
       alerts.forEach(function(a){
         html+='<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px;padding:5px 8px;background:#fff;border-radius:6px;border-left:3px solid '+a.col+'">';
         html+='<span style="font-size:10px;font-weight:700;background:'+a.col+';color:#fff;padding:2px 5px;border-radius:3px">'+a.sev+'</span>';
         html+='<span style="font-size:11px;font-weight:600">'+a.type+'</span>';
         html+='<span style="font-size:11px;color:var(--muted)">'+a.val+'</span>';
+        html+='<span style="font-size:10px;font-weight:700;color:'+a.col+';margin-left:4px">'+a.prob+'% of members</span>';
         html+='<span style="font-size:10px;color:var(--faint);margin-left:auto">'+a.date+'</span>';
         html+='</div>';
       });
@@ -1665,6 +1725,66 @@ async function _fetchLiveEvidence(lat, lon, company, sector) {
       html+='✅ No extreme weather events in next 14-day ECMWF IFS forecast for this location.';
       html+='</div>';
     }
+
+    // ─── 15-DAY PROBABILISTIC EVENT SUMMARY ──────────────────────────────────
+    html+='<div style="background:#1e1b4b;border:1px solid #4338ca;border-radius:8px;padding:12px 14px;margin-bottom:10px">';
+    html+='<div style="font-weight:700;font-size:12px;color:#a5b4fc;margin-bottom:8px">📊 15-DAY EVENT PROBABILITY — ECMWF 51-Member Ensemble + NOAA GFS (AWS Open Data)</div>';
+    html+='<div style="font-size:10px;color:#818cf8;margin-bottom:10px">P(at least one exceedance over next 15 days) · '+_nM+' ECMWF ensemble members · NOAA GFS used as reference model</div>';
+    var _probCards=[
+      {label:'Heat ≥35°C',prob:_P15.heat35,col:'#f87171',bg:'rgba(248,113,113,.12)'},
+      {label:'Heat ≥40°C',prob:_P15.heat40,col:'#fca5a5',bg:'rgba(252,165,165,.08)'},
+      {label:'Heavy Rain ≥50mm',prob:_P15.rain50,col:'#60a5fa',bg:'rgba(96,165,250,.12)'},
+      {label:'Extreme Rain ≥100mm',prob:_P15.rain100,col:'#818cf8',bg:'rgba(129,140,248,.12)'},
+      {label:'High Wind ≥25m/s',prob:_P15.wind25,col:'#34d399',bg:'rgba(52,211,153,.1)'},
+      {label:'Storm Wind ≥33m/s',prob:_P15.wind33,col:'#6ee7b7',bg:'rgba(110,231,183,.08)'},
+    ];
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:6px">';
+    _probCards.forEach(function(pc){
+      var pct=Math.round(pc.prob*100);
+      var sev=pct>=60?'HIGH':pct>=30?'MEDIUM':'LOW';
+      var sevCol=pct>=60?'#f87171':pct>=30?'#fbbf24':'#34d399';
+      html+='<div style="background:'+pc.bg+';border:1px solid '+pc.col+'33;border-radius:6px;padding:8px 10px">';
+      html+='<div style="font-size:9px;color:#94a3b8;font-weight:600;margin-bottom:3px">'+pc.label+'</div>';
+      html+='<div style="font-size:22px;font-weight:800;color:'+pc.col+';line-height:1">'+pct+'%</div>';
+      html+='<div style="font-size:9px;color:'+sevCol+';font-weight:700;margin-bottom:4px">'+sev+'</div>';
+      html+='<div style="height:4px;border-radius:2px;background:rgba(255,255,255,.1);overflow:hidden">';
+      html+='<div style="height:100%;width:'+pct+'%;background:'+pc.col+';border-radius:2px;transition:width .5s"></div>';
+      html+='</div>';
+      html+='</div>';
+    });
+    html+='</div>';
+    // Day-by-day probability heatmap (compact grid)
+    if(ensDates.length){
+      html+='<div style="margin-top:10px;overflow-x:auto">';
+      html+='<div style="font-size:9px;color:#818cf8;margin-bottom:4px">Day-by-day probability heatmap (darker = higher risk)</div>';
+      html+='<table style="border-collapse:collapse;font-size:8px;color:#c7d2fe;min-width:100%">';
+      html+='<tr><td style="padding:2px 4px;white-space:nowrap;color:#94a3b8">Hazard</td>';
+      ensDates.forEach(function(d){html+='<td style="padding:2px 3px;text-align:center;color:#64748b">'+d.slice(5)+'</td>';});
+      html+='</tr>';
+      var _hmRows=[
+        {label:'Heat35',arr:_pH35,col:'248,113,113'},
+        {label:'Rain50',arr:_pR50,col:'96,165,250'},
+        {label:'Wind25',arr:_pW25,col:'52,211,153'}
+      ];
+      _hmRows.forEach(function(row){
+        html+='<tr><td style="padding:2px 4px;white-space:nowrap;color:#94a3b8">'+row.label+'</td>';
+        row.arr.forEach(function(p){
+          var alpha=Math.max(0.05,p).toFixed(2);
+          html+='<td style="background:rgba('+row.col+','+alpha+');border-radius:2px;padding:2px 3px;text-align:center">';
+          html+=p>0.05?Math.round(p*100)+'%':'·';
+          html+='</td>';
+        });
+        html+='</tr>';
+      });
+      html+='</table></div>';
+    }
+    // NOAA GFS model agreement
+    var _gfsAgree = (_gfsMaxT>=35&&_P15.heat35>0.05)||(_gfsMaxP>=50&&_P15.rain50>0.05);
+    html+='<div style="margin-top:8px;font-size:10px;color:#818cf8">';
+    html+='🛰 NOAA GFS (AWS): max T='+_gfsMaxT.toFixed(1)+'°C · max precip='+_gfsMaxP.toFixed(0)+'mm/day · ';
+    html+=_gfsAgree?'<span style="color:#34d399">✅ GFS corroborates ECMWF ensemble signal</span>':'<span style="color:#fbbf24">⚠ GFS shows lower signal than ECMWF ensemble</span>';
+    html+='</div>';
+    html+='</div>';
 
     // Historical cards
     html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(135px,1fr));gap:7px;margin-bottom:10px">';
@@ -1691,7 +1811,7 @@ async function _fetchLiveEvidence(lat, lon, company, sector) {
     html+='<br><span style="font-size:10px;color:#047857">Asset at '+lat.toFixed(4)+'°, '+lon.toFixed(4)+'° · Elevation: '+elev.toFixed(1)+'m asl</span>';
     html+='</div>';
 
-    html+='<div style="font-size:10px;color:var(--faint)">📍 Sources: ERA5-Land 1993–2023 baseline + 2024–'+_bridgeEndStr.slice(0,4)+' observed bridge (Open-Meteo archive API) · ECMWF IFS 14-day NWP (Open-Meteo forecast API) · Sentinel-1/2 (Microsoft Planetary Computer) · WRI Aqueduct 4.0 · No coordinates stored on CRI servers.</div>';
+    html+='<div style="font-size:10px;color:var(--faint)">📍 Sources: ERA5-Land 1993–2023 baseline + 2024–'+_bridgeEndStr.slice(0,4)+' observed bridge (Open-Meteo archive API) · ECMWF IFS 0.25° 51-member ensemble (Open-Meteo ensemble API) · NOAA GFS (AWS Open Data: s3://noaa-gfs-bdp-pds, via Open-Meteo) · Sentinel-1/2 (Microsoft Planetary Computer) · WRI Aqueduct 4.0 · No coordinates stored on CRI servers.</div>';
 
     panel.innerHTML=html;
 
