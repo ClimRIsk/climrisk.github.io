@@ -17,6 +17,7 @@ const BRIEFS = [
     kicker: "Physical Risk · South & Southeast Asia",
     title: "The Supply Chain Tax",
     detail: "In April 2024 a heat dome settled over South and Southeast Asia and did not move for three weeks. What that costs a global supply chain, quantified.",
+    href: "https://climriskresearch.substack.com/p/the-supply-chain-tax",
   },
   {
     kicker: "Physical Risk · South Asia · Agricultural Finance · August 2026",
@@ -70,15 +71,29 @@ export default function ResearchPage() {
       </div>
 
       <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6">
-        {BRIEFS.map((b, i) => (
-          <Reveal key={b.title} delayMs={(i % 4) * 60}>
-            <article className="panel panel-hover p-7 h-full">
-              <p className="text-xs font-mono text-zinc-600 mb-3 uppercase tracking-wide">{b.kicker}</p>
-              <h2 className="text-white font-semibold leading-snug mb-3">{b.title}</h2>
-              <p className="text-sm text-zinc-500 leading-relaxed">{b.detail}</p>
-            </article>
-          </Reveal>
-        ))}
+        {BRIEFS.map((b, i) => {
+          const Wrapper = b.href ? "a" : "article";
+          const linkProps = b.href
+            ? { href: b.href, target: "_blank", rel: "noopener noreferrer" }
+            : {};
+          return (
+            <Reveal key={b.title} delayMs={(i % 4) * 60}>
+              <Wrapper {...linkProps} className="panel panel-hover p-7 h-full block">
+                <p className="text-xs font-mono text-zinc-600 mb-3 uppercase tracking-wide">{b.kicker}</p>
+                <h2 className="text-white font-semibold leading-snug mb-3">{b.title}</h2>
+                <p className="text-sm text-zinc-500 leading-relaxed">{b.detail}</p>
+                {b.href && (
+                  <span className="inline-flex items-center gap-1.5 text-sm text-gold-200 mt-5">
+                    Read the full brief
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M7 17 17 7M7 7h10v10"/>
+                    </svg>
+                  </span>
+                )}
+              </Wrapper>
+            </Reveal>
+          );
+        })}
       </div>
 
       <div className="max-w-5xl mx-auto mt-16 pt-10 border-t border-white/8">
