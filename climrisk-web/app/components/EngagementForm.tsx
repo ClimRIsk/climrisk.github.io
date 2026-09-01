@@ -2,6 +2,8 @@
 
 import { useState, FormEvent } from "react";
 
+const INQUIRY_ENDPOINT = "https://climrisk-github-io.onrender.com/inquiry";
+
 const ENGAGEMENT_TYPES = [
   "Technical Demo",
   "Regulatory Advisory (CSRD / IFRS S2 / TCFD)",
@@ -40,30 +42,38 @@ const selectClass =
 const inputClass = selectClass;
 
 export default function EngagementForm() {
-  const [sent, setSent] = useState(false);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    const fd = new FormData(e.currentTarget);
-    const lines = [
-      `Engagement Type: ${fd.get("engagementType")}`,
-      `Institution Type: ${fd.get("institutionType")}`,
-      `Assets Under Consideration: ${fd.get("assetRange")}`,
-      `Primary Regulatory Driver: ${fd.get("regulatoryDriver")}`,
-      `Timeline: ${fd.get("timeline")}`,
-      ``,
-      `Name: ${fd.get("name")}`,
-      `Institution: ${fd.get("institution")}`,
-      `Email: ${fd.get("email")}`,
-      ``,
-      `Notes:`,
-      String(fd.get("notes") || ""),
-    ].join("\n");
+    const form = e.currentTarget;
+    const fd = new FormData(form);
 
-    const subject = encodeURIComponent(`Engagement Inquiry — ${fd.get("engagementType")}`);
-    const body = encodeURIComponent(lines);
-    window.location.href = `mailto:shri@climrisk.io?subject=${subject}&body=${body}`;
-    setSent(true);
+    const payload = {
+      engagement_type: String(fd.get("engagementType") || ""),
+      institution_type: String(fd.get("institutionType") || ""),
+      asset_range: String(fd.get("assetRange") || ""),
+      regulatory_driver: String(fd.get("regulatoryDriver") || ""),
+      timeline: String(fd.get("timeline") || ""),
+      name: String(fd.get("name") || ""),
+      institution: String(fd.get("institution") || ""),
+      email: String(fd.get("email") || ""),
+      notes: String(fd.get("notes") || ""),
+    };
+
+    setStatus("sending");
+    try {
+      const res = await fetch(INQUIRY_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error(`Request failed (${res.status})`);
+      setStatus("sent");
+      form.reset();
+    } catch (err) {
+      setStatus("error");
+    }
   }
 
   return (
@@ -124,18 +134,23 @@ export default function EngagementForm() {
           <textarea name="notes" rows={3} className={`${inputClass} resize-none`} />
         </Field>
 
-        <button type="submit" className="btn-primary w-full justify-center">
-          Submit Inquiry / Request NDA
+        <button type="submit" className="btn-primary w-full justify-center" disabled={status === "sending"}>
+          {status === "sending" ? "Submitting…" : "Submit Inquiry / Request NDA"}
         </button>
 
         <p className="text-xs text-zinc-600 leading-relaxed">
-          This opens a pre-filled email to shri@climrisk.io in your mail client — nothing is
-          transmitted automatically. If your client doesn't open, email the details above directly.
+          Your inquiry is sent directly to the ClimRisk team — nothing opens in your own mail client.
         </p>
 
-        {sent && (
+        {status === "sent" && (
           <p className="text-xs text-terminal font-mono">
-            Your mail client should now be open with the inquiry pre-filled.
+            Inquiry received. We&apos;ll be in touch shortly.
+          </p>
+        )}
+        {status === "error" && (
+          <p className="text-xs text-red-400 font-mono">
+            Something went wrong submitting your inquiry. Please email{" "}
+            <a href="mailto:shri@climrisk.io" className="underline">shri@climrisk.io</a> directly.
           </p>
         )}
       </form>

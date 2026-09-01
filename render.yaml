@@ -8,5 +8,11 @@ services:
     envVars:
       - key: CRI_CACHE_DIR
         value: /tmp/cri_cache
+      - key: RESEND_API_KEY
+        sync: false
+      - key: INQUIRY_NOTIFY_EMAIL
+        value: shri@climrisk.io
+      - key: INQUIRY_FROM_EMAIL
+        value: onboarding@resend.dev
     healthCheckPath: /health
     autoDeploy: true

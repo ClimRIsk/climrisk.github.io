@@ -90,6 +90,27 @@ class RunRequest(BaseModel):
     custom_scenario: Optional[CustomScenarioParams] = None
 
 
+class InquiryRequest(BaseModel):
+    """Engagement inquiry submitted from the marketing site's /contact form."""
+
+    engagement_type: str
+    institution_type: str
+    asset_range: str
+    regulatory_driver: str
+    timeline: str
+    name: str
+    institution: str
+    email: str
+    notes: Optional[str] = ""
+
+
+class InquiryResponse(BaseModel):
+    """Response for POST /inquiry."""
+
+    received: bool
+    message: str
+
+
 class HealthResponse(BaseModel):
     """Response for GET /health."""
 

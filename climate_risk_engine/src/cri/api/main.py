@@ -16,9 +16,13 @@ except ImportError:
     )
 # ─────────────────────────────────────────────────────────────────────────────
 
+import logging
+import os
 import tempfile
 from pathlib import Path
 from typing import Optional
+
+import requests
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -47,6 +51,8 @@ from .schemas import (
     DisclosureResponse,
     HazardYearOut,
     HealthResponse,
+    InquiryRequest,
+    InquiryResponse,
     PhysicalHazardReportResponse,
     PhysicalReportRequest,
     PhysicalRiskOut,
@@ -91,6 +97,15 @@ SCENARIO_REGISTRY = {
 
 COMPANY_REGISTRY = get_all_companies()
 
+logger = logging.getLogger("cri.api.inquiry")
+
+# Engagement-inquiry notification config (contact form on the marketing site).
+# RESEND_API_KEY must be set in Render's environment for real email delivery;
+# every inquiry is logged either way so nothing is lost if it's unset.
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
+INQUIRY_NOTIFY_EMAIL = os.environ.get("INQUIRY_NOTIFY_EMAIL", "shri@climrisk.io")
+INQUIRY_FROM_EMAIL = os.environ.get("INQUIRY_FROM_EMAIL", "onboarding@resend.dev")
+
 # Custom scenarios created via POST /scenarios are stored here at runtime.
 # Not persisted across restarts; persistence is a Phase 2 feature.
 CUSTOM_SCENARIO_REGISTRY: dict[str, Scenario] = {}
@@ -116,6 +131,60 @@ def _build_custom_scenario(params: CustomScenarioParams, scenario_id: str = 'cus
 def health() -> HealthResponse:
     """Health check endpoint."""
     return HealthResponse(status="ok", version="0.3.0")
+
+
+@app.post("/inquiry", response_model=InquiryResponse)
+def submit_inquiry(request: InquiryRequest) -> InquiryResponse:
+    """Receive an engagement inquiry from the marketing site's contact form
+    and notify the ClimRisk team by email.
+
+    The inquiry is always logged server-side (visible in Render's logs) so
+    nothing is lost even when email delivery isn't configured or fails.
+    """
+    lines = [
+        f"Engagement Type: {request.engagement_type}",
+        f"Institution Type: {request.institution_type}",
+        f"Assets Under Consideration: {request.asset_range}",
+        f"Primary Regulatory Driver: {request.regulatory_driver}",
+        f"Timeline: {request.timeline}",
+        "",
+        f"Name: {request.name}",
+        f"Institution: {request.institution}",
+        f"Email: {request.email}",
+        "",
+        "Notes:",
+        request.notes or "(none)",
+    ]
+    body_text = "\n".join(lines)
+
+    logger.info("New engagement inquiry received:\n%s", body_text)
+
+    if not RESEND_API_KEY:
+        logger.warning("RESEND_API_KEY is not set — inquiry was logged but no email was sent.")
+        return InquiryResponse(received=True, message="Inquiry received.")
+
+    try:
+        resp = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json={
+                "from": f"ClimRisk Website <{INQUIRY_FROM_EMAIL}>",
+                "to": [INQUIRY_NOTIFY_EMAIL],
+                "reply_to": request.email,
+                "subject": f"Engagement Inquiry — {request.engagement_type}",
+                "text": body_text,
+            },
+            timeout=10,
+        )
+        if resp.status_code >= 400:
+            logger.error("Resend API error %s: %s", resp.status_code, resp.text)
+    except Exception as exc:  # noqa: BLE001 — never let email delivery break the form
+        logger.error("Failed to send inquiry email: %s", exc)
+
+    return InquiryResponse(received=True, message="Inquiry received.")
 
 
 @app.get("/scenarios", response_model=list[ScenarioResponse])
