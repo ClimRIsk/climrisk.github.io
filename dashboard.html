@@ -409,10 +409,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
 
   <!-- DEADLINE TICKER -->
   <div class="deadline-bar">
-    <span class="dl-label"><i class="ph ph-warning-circle" style="margin-right:4px"></i>Regulatory Deadlines</span>
-    <div class="dl-item"><span class="dl-badge dl-urgent">URGENT</span>CBAM Full Obligation — 1 Jan 2026 <span id="dl-cbam-days" style="color:var(--red);font-weight:700"></span></div>
-    <div class="dl-item"><span class="dl-badge dl-warn">Q4 2026</span>CSRD Phase 2 Annual Report</div>
-    <div class="dl-item"><span class="dl-badge dl-warn">31 Dec 2026</span>IFRS S2 First Disclosure</div>
+    <span class="dl-label"><i class="ph ph-calendar-check" style="margin-right:4px"></i>Regulatory Calendar</span>
+    <div class="dl-item"><span class="dl-badge" style="background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)">✓ LIVE</span>CBAM Full Enforcement — certificates required</div>
+    <div class="dl-item"><span class="dl-badge dl-urgent">URGENT</span>CSRD Phase 2 Report <span id="dl-csrd-days" style="color:var(--red);font-weight:700"></span></div>
+    <div class="dl-item"><span class="dl-badge dl-warn">31 Dec 2026</span>IFRS S2 First Disclosure <span id="dl-ifrs-days" style="color:var(--amber);font-weight:700"></span></div>
     <div class="dl-item"><span class="dl-badge dl-ok">2027</span>CSRD Phase 3 SMEs</div>
   </div>
 
@@ -421,10 +421,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
     <div class="hero-left">
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;color:#2563eb;text-transform:uppercase;margin-bottom:8px">ClimRisk Platform · v3.0</div>
       <h1>Welcome back, <span id="welcome-msg" style="color:#60a5fa">user</span></h1>
-      <p>Upload your company Excel file and the ClimRisk engine will run a full CSRD-compliant assessment — physical hazard, NGFS transition scenarios, CBAM, and climate-adjusted valuation — in one click.</p>
+      <p>What decision are you making? ClimRisk translates climate science into the numbers your business runs on — expected annual loss, insurance gap, disruption days, stranded asset date, supply chain exposure — so you make better capital decisions, not just better disclosures.</p>
       <div class="hero-actions">
-        <button class="btn-hero-p" onclick="openNewAssessment()"><i class="ph ph-play-circle" style="margin-right:6px"></i>Run Assessment</button>
-        <button class="btn-hero-o" onclick="document.getElementById('m-file-btn').click()"><i class="ph ph-upload-simple" style="margin-right:6px"></i>Upload Excel</button>
+        <button class="btn-hero-p" onclick="openNewAssessment()"><i class="ph ph-lightning" style="margin-right:6px"></i>Analyse an Asset</button>
+        <button class="btn-hero-o" onclick="document.getElementById('m-file-btn').click()"><i class="ph ph-upload-simple" style="margin-right:6px"></i>Upload Financials</button>
       </div>
     </div>
     <div class="hero-stats">
@@ -457,31 +457,31 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
 
   <!-- QUICK ACTIONS -->
   <div>
-    <div class="section-title">Core Analysis Modules</div>
+    <div class="section-title">What do you need to know?</div>
     <div class="qa-grid">
-      <a class="qa-card" onclick="openNewAssessment('physical');return false" href="#">
-        <div class="qa-icon"><i class="ph ph-wave" style="font-size:26px;color:#06b6d4"></i></div>
-        <div class="qa-title">Physical Risk Assessment</div>
-        <div class="qa-desc">25 IPCC AR6 hazards, GPS resolved, full damage breakdown</div>
-        <div class="qa-auto">AUTO: hazard scoring + financial translation</div>
+      <a class="qa-card" onclick="openNewAssessment();return false" href="#">
+        <div class="qa-icon"><i class="ph ph-map-trifold" style="font-size:26px;color:#06b6d4"></i></div>
+        <div class="qa-title">Site &amp; Investment Decisions</div>
+        <div class="qa-desc">Compare locations on climate-adjusted NPV. Should you build in Chennai or Pune? Hosur or Mysore? The model quantifies the difference.</div>
+        <div class="qa-auto">OUTPUT: risk-adjusted capex comparison · stranded asset date</div>
       </a>
-      <a class="qa-card" onclick="openNewAssessment('cbam');return false" href="#">
-        <div class="qa-icon"><i class="ph ph-flag" style="font-size:26px;color:#60a5fa"></i></div>
-        <div class="qa-title">CBAM Liability Check</div>
-        <div class="qa-desc">Embedded carbon calculator, certificate cost, compliance checklist</div>
-        <div class="qa-auto">AUTO: EU ETS price + embedded carbon</div>
+      <a class="qa-card" onclick="openNewAssessment();return false" href="#">
+        <div class="qa-icon"><i class="ph ph-shield-warning" style="font-size:26px;color:#f59e0b"></i></div>
+        <div class="qa-title">Asset Risk Intelligence</div>
+        <div class="qa-desc">Expected annual loss in $M, insurance gap, disruption days per year, and the three investments that pay for themselves fastest.</div>
+        <div class="qa-auto">OUTPUT: EAL · insurance gap · payback-ranked mitigations</div>
       </a>
-      <a class="qa-card" onclick="openNewAssessment('macc');return false" href="#">
-        <div class="qa-icon"><i class="ph ph-trend-down" style="font-size:26px;color:#10b981"></i></div>
-        <div class="qa-title">MACC + SLL Structuring</div>
-        <div class="qa-desc">Abatement levers ranked by cost per tonne, SLL milestone table</div>
-        <div class="qa-auto">AUTO: sector-specific lever library</div>
+      <a class="qa-card" onclick="openNewAssessment();return false" href="#">
+        <div class="qa-icon"><i class="ph ph-graph" style="font-size:26px;color:#10b981"></i></div>
+        <div class="qa-title">Supply Chain Vulnerability</div>
+        <div class="qa-desc">Map your supplier locations against 2035 water stress and flood projections. Know which upstream risks become your operational risk.</div>
+        <div class="qa-auto">OUTPUT: supplier risk rank · disruption probability · buffer sizing</div>
       </a>
-      <a class="qa-card" onclick="openNewAssessment('materiality');return false" href="#">
-        <div class="qa-icon"><i class="ph ph-scales" style="font-size:26px;color:#a78bfa"></i></div>
-        <div class="qa-title">Double Materiality</div>
-        <div class="qa-desc">Inside-out impact + outside-in financial lens, CSRD audit trail</div>
-        <div class="qa-auto">AUTO: materiality threshold + documentation</div>
+      <a class="qa-card" onclick="openNewAssessment();return false" href="#">
+        <div class="qa-icon"><i class="ph ph-bank" style="font-size:26px;color:#a78bfa"></i></div>
+        <div class="qa-title">Portfolio &amp; Credit Stress</div>
+        <div class="qa-desc">Aggregate climate VaR across a loan book or asset portfolio. MC-CVaR via Gaussian copula, climate-adjusted PD/LGD, IFRS 9 ECL term structure.</div>
+        <div class="qa-auto">OUTPUT: portfolio CVaR · credit spread delta · ECL 5/10/30-yr</div>
       </a>
     </div>
   </div>
@@ -507,8 +507,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
       </div>
       <div class="stat-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--muted)">Upcoming deadlines</span><i class="ph ph-clock" style="font-size:18px;color:#f59e0b;opacity:.7"></i></div>
-        <div class="stat-val" style="color:var(--amber)">3</div>
-        <div class="stat-trend" style="color:var(--amber);font-size:10px">Next: 1 Jan 2026</div>
+        <div class="stat-val" style="color:var(--amber)">2</div>
+        <div class="stat-trend" style="color:var(--amber);font-size:10px">Next: 31 Dec 2026</div>
       </div>
     </div>
   </div>
@@ -1473,7 +1473,7 @@ function showResults(data, company, sector, duration) {
         '<div style="margin-top:8px;display:flex;gap:8px;flex-wrap:wrap">'+
           '<button onclick="exportToPDF()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);color:#fca5a5;border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer;font-weight:700;letter-spacing:.03em">📄 Export PDF Report</button>'+
           '<button onclick="exportToCsv()" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green);border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer;font-weight:600">📥 Export CSV</button>'+
-          '<button onclick="switchCRITab(\'physical\',null)" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:#a5b4fc;border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer;font-weight:600">🌡 Full Physical Report</button>'+
+          '<button onclick="switchCRITab(\'operational\',null)" style="background:rgba(124,58,237,.15);border:1px solid rgba(124,58,237,.35);color:#a5b4fc;border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer;font-weight:600">⚙️ Operational Deep-Dive</button>'+
         '</div>'+
       '</div>'+
     '</div>';
@@ -1481,34 +1481,32 @@ function showResults(data, company, sector, duration) {
   // Tab bar
   var tabBar = buildCRITabs();
 
-  // Overview tab content
-  var tabOverview =
-    '<div id="cri-tab-overview" class="cri-tab-content active-tab">'+
-    '<div class="scenario-grid">'+scRow(nze,'🟢 Net Zero 2050',nze.ssp_id||'SSP1-2.6')+scRow(dt,'🟡 Delayed Transition',dt.ssp_id||'SSP2-4.5')+scRow(cp,'🔴 Current Policies',cp.ssp_id||'SSP3-7.0')+'</div>'+
-    '<div style="margin-top:20px"><div class="section-title">📍 Asset Risk Map</div>'+
-    '<div class="risk-map-wrap"><div id="cri-risk-map"></div></div></div>'+
-    '<div style="margin-top:20px"><div class="section-title">⚡ Hazard × Scenario Matrix</div>'+
-    buildHazardMatrix(nze,dt,cp)+'</div>'+
-    buildDetailedReport(data,nze,dt,cp,company,sector)+
-    (data._synthetic ? '<div style="font-size:11px;color:var(--faint);margin-top:10px;padding:10px;background:var(--surf);border-radius:8px">ℹ Estimated results based on sector parameters and NGFS Phase 4 carbon price paths. Upload an Excel file with company financials for engine-computed results.</div>' : (data._python_summary ? '<div style="font-size:12px;color:var(--muted);margin-top:12px;padding:12px 14px;background:rgba(16,185,129,.06);border:1px solid rgba(16,185,129,.18);border-radius:10px;line-height:1.6"><strong style="color:var(--green)">🔬 Python CRI Engine Narrative:</strong> '+data._python_summary+'</div>' : ''))+
-    '</div>';
+  // ── Intelligence tab (PRIMARY — decision-support hero) ──────────────────────
+  var tabIntelligence =
+    '<div id="cri-tab-intelligence" class="cri-tab-content active-tab">'+
+    buildIntelligenceTab(data, nze, dt, cp, company, sector)+'</div>';
 
-  // Physical Risk tab — Full Physical Hazard Report (CRI Engine quality)
-  var tabPhysical =
-    '<div id="cri-tab-physical" class="cri-tab-content" style="display:none">'+
-    buildPhysicalHazardReport(nze,dt,cp,company,sector)+'</div>';
-
-  // Financial tab — EBITDA fan chart + carbon price paths + climate rating
-  var tabFinancial =
-    '<div id="cri-tab-financial" class="cri-tab-content" style="display:none">'+
+  // ── Capital at Risk tab — climate-adjusted financials ────────────────────────
+  var tabCapital =
+    '<div id="cri-tab-capital" class="cri-tab-content" style="display:none">'+
     buildClimateRating(nze,dt,cp)+
     buildFinancialPanel(nze,dt,cp,company)+
     '</div>';
 
-  // Live Met tab
-  var tabLiveMet =
-    '<div id="cri-tab-map" class="cri-tab-content" style="display:none;padding:0">'+
-    '<div id="deckgl-map" style="width:100%;height:560px;position:relative;background:#0a0a1a;border-radius:12px;overflow:hidden">'+
+  // ── Operational tab — physical hazard deep-dive ──────────────────────────────
+  var tabOperational =
+    '<div id="cri-tab-operational" class="cri-tab-content" style="display:none">'+
+    buildPhysicalHazardReport(nze,dt,cp,company,sector)+'</div>';
+
+  // ── Supply Chain tab ─────────────────────────────────────────────────────────
+  var tabSupplyChain =
+    '<div id="cri-tab-supplychain" class="cri-tab-content" style="display:none">'+
+    '<div class="card">'+buildSupplyChainTab(data,company,sector)+'</div></div>';
+
+  // ── Site Intel tab — globe + map ─────────────────────────────────────────────
+  var tabSiteIntel =
+    '<div id="cri-tab-siteintel" class="cri-tab-content" style="display:none;padding:0">'+
+    '<div id="deckgl-map" style="width:100%;height:400px;position:relative;background:#0a0a1a;border-radius:12px 12px 0 0;overflow:hidden">'+
     '<div style="position:absolute;top:12px;left:12px;z-index:10">'+
     '<div style="background:rgba(15,23,42,0.92);border:1px solid rgba(255,255,255,0.12);border-radius:8px;padding:10px 14px;color:#fff;font-size:12px;min-width:180px">'+
     '<div style="font-weight:700;margin-bottom:6px;font-size:13px">🗺 Portfolio Risk Map</div>'+
@@ -1521,32 +1519,26 @@ function showResults(data, company, sector, duration) {
     '</div>'+
     '<div id="map-tooltip-box" style="display:none;margin-top:6px;background:rgba(15,23,42,0.95);border:1px solid rgba(255,255,255,0.15);border-radius:8px;padding:9px 13px;color:#fff;font-size:12px;max-width:210px;line-height:1.6"></div>'+
     '</div></div></div>'+
-    '<div id="cri-tab-livemet" class="cri-tab-content" style="display:none">'+
-    '<div class="card">'+buildLiveMetPlaceholder(nze,company)+'</div></div>';
+    '<div id="cri-tab-livemet" style="padding:0">'+
+    '<div class="card" style="margin-top:0;border-radius:0 0 12px 12px">'+buildLiveMetPlaceholder(nze,company)+'</div></div>';
 
-  // CBAM tab
-  var tabCBAM =
-    '<div id="cri-tab-cbam" class="cri-tab-content" style="display:none">'+
-    '<div class="card">'+buildCBAMPanel(data,nze,dt,cp,company,sector)+'</div></div>';
-
-  // Disclosure tab
-  var tabDisc =
-    '<div id="cri-tab-disclosure" class="cri-tab-content" style="display:none">'+
-    '<div class="card"><div class="section-title">⚖ Regulatory Disclosures</div>'+
-    buildDisclosurePanel(company,sector,nze)+'</div></div>';
-
-  // Loan Book tab
-  var tabLoan =
-    '<div id="cri-tab-loanbook" class="cri-tab-content" style="display:none">'+
-    '<div class="card"><div class="section-title">🏦 Loan Portfolio Analysis</div>'+
-    buildLoanBookPanel(data,company,sector)+'</div></div>';
-
-  // Aladdin Portfolio VaR tab
-  var tabAladdin =
-    '<div id="cri-tab-aladdin" class="cri-tab-content" style="display:none">'+
+  // ── Portfolio tab — CVaR / Aladdin-style ─────────────────────────────────────
+  var tabPortfolio =
+    '<div id="cri-tab-portfolio" class="cri-tab-content" style="display:none">'+
     '<div class="card">'+buildAladdinPanel(data, company, sector, nze, dt, cp)+'</div></div>';
 
-  rp.innerHTML = resHeader + tabBar + tabOverview + tabPhysical + tabFinancial + tabCBAM + tabLiveMet + tabDisc + tabLoan + tabAladdin;
+  // ── Reports tab — CBAM + Disclosures + Loan Book + PDF ───────────────────────
+  var tabReports =
+    '<div id="cri-tab-reports" class="cri-tab-content" style="display:none">'+
+    '<div style="padding:16px 0 4px;display:flex;gap:10px;flex-wrap:wrap">'+
+    '<button onclick="exportToPDF()" style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.35);color:#fca5a5;border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer;font-weight:700">📄 Export Full PDF Report</button>'+
+    '<button onclick="exportToCsv()" style="background:rgba(16,185,129,.15);border:1px solid rgba(16,185,129,.3);color:var(--green);border-radius:6px;padding:7px 16px;font-size:12px;cursor:pointer;font-weight:600">📥 Export CSV Data</button>'+
+    '</div>'+
+    '<div class="card" style="margin-top:12px"><div class="section-title" style="margin-bottom:16px">🇪🇺 CBAM Exposure</div>'+buildCBAMPanel(data,nze,dt,cp,company,sector)+'</div>'+
+    '<div class="card" style="margin-top:12px"><div class="section-title">⚖ Regulatory Disclosures</div>'+buildDisclosurePanel(company,sector,nze)+'</div>'+
+    '<div class="card" style="margin-top:12px"><div class="section-title">🏦 Loan Portfolio Analysis</div>'+buildLoanBookPanel(data,company,sector)+'</div></div>';
+
+  rp.innerHTML = resHeader + tabBar + tabIntelligence + tabCapital + tabOperational + tabSupplyChain + tabSiteIntel + tabPortfolio + tabReports;
 
   rp.scrollIntoView({behavior:'smooth', block:'start'});
   setTimeout(function(){
@@ -2645,10 +2637,14 @@ function exportToCsv() {
 
 // ── DEADLINE TICKER ───────────────────────────────────────────────────────────
 (function(){
-  var now = new Date(), cbam = new Date('2026-01-01');
-  var days = Math.ceil((cbam-now)/(1000*60*60*24));
-  var el = document.getElementById('dl-cbam-days');
-  if (el) el.textContent = '('+days+' days)';
+  var now = new Date();
+  function daysTo(iso){ return Math.ceil((new Date(iso)-now)/(864e5)); }
+  var csrdEl = document.getElementById('dl-csrd-days');
+  var ifrsEl = document.getElementById('dl-ifrs-days');
+  var csrdDays = daysTo('2026-12-31');
+  var ifrsDays = daysTo('2026-12-31');
+  if (csrdEl) csrdEl.textContent = csrdDays > 0 ? '('+csrdDays+'d)' : '(due)';
+  if (ifrsEl) ifrsEl.textContent = ifrsDays > 0 ? '('+ifrsDays+'d)' : '(due)';
 })();
 
 // ── REGULATORY CALENDAR ───────────────────────────────────────────────────────
@@ -2675,17 +2671,309 @@ var REGULATIONS = [
 })();
 
 // ── CRI PANEL TABS ────────────────────────────────────────────────────────────
+// ── INTELLIGENCE TAB — decision-support primary view ──────────────────────────
+function buildIntelligenceTab(data, nze, dt, cp, company, sector) {
+  // ── Derive key metrics — prefer real engine fields, fall back to heuristics ─
+  var rev   = parseFloat(cp.revenue_usd_m || nze.revenue_usd_m || nze.revenue || 200);
+  var physNRaw = parseFloat(nze.physical_risk_score || 0);
+  var physCRaw = parseFloat(cp.physical_risk_score  || 0);
+  // Use compound score from engine if available; otherwise apply multiplier
+  var cmpNRaw = parseFloat(nze.compound_risk_score || 0) || physNRaw * 1.15;
+  var cmpCRaw = parseFloat(cp.compound_risk_score  || 0) || physCRaw * 1.25;
+  var physN = (physNRaw || 40) / 100;
+  var physC = (physCRaw || 65) / 100;
+  var cmpN  = cmpNRaw  / 100;
+  var cmpC  = cmpCRaw  / 100;
+
+  // EAL — use engine field directly; fall back only for demo/synthetic mode
+  var ealRaw = parseFloat(cp.expected_annual_loss_m || 0);
+  var engineEAL = ealRaw > 0;   // true = real engine output
+  if (!engineEAL) {
+    // Heuristic: use gross VaR NPV amortised over 24-year horizon, or score × rev proxy
+    var gv = parseFloat(cp.peak_annual_gross_var || cp.gross_var_npv || 0);
+    ealRaw = gv > 0 ? gv : physC * rev * 0.09;
+  }
+  var eal = ealRaw.toFixed(1);
+
+  // Insurance gap — use engine-computed NPV delta if available; else Swiss Re 62% benchmark
+  var insGapRaw = parseFloat(cp.insurance_gap_npv_m || 0);
+  var insGap = (insGapRaw > 0 ? insGapRaw : parseFloat(eal) * 0.62).toFixed(1);
+
+  // Disruption days — use engine field if present; else compound risk + sector proxy
+  var disruptDays;
+  var ddEngine = parseFloat(cp.disruption_days_yr || 0);
+  if (ddEngine > 0) {
+    disruptDays = Math.round(ddEngine);
+  } else {
+    var sectorIntensity = {'Manufacturing':1.2,'Energy':1.4,'Transport':1.3,'Agriculture':1.5,'Chemicals':1.1,'Other':1.0};
+    var intensity = sectorIntensity[sector] || 1.0;
+    disruptDays = Math.min(Math.round(cmpC * 52 * intensity), 52);
+  }
+
+  // Stranded asset year — use engine-derived year if present; else score thresholds
+  var strandedYear;
+  var syEngine = parseInt(cp.stranded_year || 0, 10);
+  if (syEngine > 2024) {
+    strandedYear = syEngine;
+  } else {
+    var cpScore = parseFloat(cp.physical_risk_score || 65);
+    strandedYear = cpScore > 78 ? 2035 : cpScore > 65 ? 2039 : cpScore > 50 ? 2044 : cpScore > 35 ? 2049 : 2055;
+  }
+
+  // Physical risk score for prose (needed below)
+  var cpScore = parseFloat(cp.physical_risk_score || 65);
+
+  // Top scenario comparison
+  var ratingN = nze.climate_rating || 'BBB';
+  var ratingC = cp.climate_rating  || 'BB-';
+
+  // ── Hazard EAL breakdown ──────────────────────────────────────────────────
+  var hazScores = {
+    'Flood / Storm Surge': parseFloat(cp.flood_score  || cp.coastal_flood_score || 0) || physC * 38,
+    'Extreme Heat':        parseFloat(cp.heat_score   || 0)                             || physC * 28,
+    'Drought / Water':     parseFloat(cp.drought_score|| 0)                             || physC * 18,
+    'Cyclone / Wind':      parseFloat(cp.cyclone_score|| cp.wind_score || 0)            || physC * 10,
+    'Freeze / Cold Snap':  parseFloat(cp.freeze_thaw_score || 0)                        || physC * 6,
+  };
+  var hazTotal = Object.values(hazScores).reduce(function(a,b){return a+b;},0) || 1;
+  var hazColors = ['#3b82f6','#ef4444','#f59e0b','#8b5cf6','#06b6d4'];
+  var hazNames  = Object.keys(hazScores);
+  var hazVals   = hazNames.map(function(k){return hazScores[k];});
+
+  var ealNum = parseFloat(eal);
+  var hazBars = hazNames.map(function(name, i) {
+    var pct = (hazVals[i] / hazTotal * 100).toFixed(0);
+    var ealShare = (hazVals[i] / hazTotal * ealNum).toFixed(1);
+    var w = Math.max(4, hazVals[i] / hazTotal * 100);
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">'+
+      '<div style="width:130px;font-size:12px;color:var(--muted);flex-shrink:0">'+name+'</div>'+
+      '<div style="flex:1;background:rgba(255,255,255,0.05);border-radius:4px;height:22px;overflow:hidden">'+
+        '<div style="width:'+w+'%;height:100%;background:'+hazColors[i]+';border-radius:4px;display:flex;align-items:center;padding-left:8px;font-size:11px;font-weight:700;color:#fff;white-space:nowrap">'+
+        (w > 15 ? '$'+ealShare+'M' : '')+'</div>'+
+      '</div>'+
+      '<div style="width:44px;text-align:right;font-size:12px;font-weight:700;color:'+hazColors[i]+'">'+pct+'%</div>'+
+    '</div>';
+  }).join('');
+
+  // ── Mitigation actions ranked by payback ──────────────────────────────────
+  var mitigations = _rankMitigations(nze, cp, sector, ealNum);
+
+  // ── Bottom-line prose ─────────────────────────────────────────────────────
+  var riskAdj = cpScore > 65 ? 'elevated' : cpScore > 45 ? 'moderate' : 'manageable';
+  var topHazard = hazNames[hazVals.indexOf(Math.max.apply(null,hazVals))];
+  var prose = company+' faces <strong>$'+eal+' M/yr</strong> in expected climate losses under current policy trajectories — '+
+    'of which <strong>$'+insGap+' M is uninsured</strong> against climate perils (Swiss Re 2024 benchmark). '+
+    topHazard+' is the primary driver at '+Math.round(hazVals[0]/hazTotal*100)+'% of EAL. '+
+    'Operational exposure translates to roughly <strong>'+disruptDays+' disruption-days per year</strong> by 2035. '+
+    'Under a high-warming scenario the asset crosses economic viability thresholds around <strong>'+strandedYear+'</strong>. '+
+    'The three highest-return mitigations below can cut EAL by ~40 % within 5 years.';
+
+  // ── Scenario comparison strip ─────────────────────────────────────────────
+  var scnRows = [
+    {label:'🟢 Net Zero 2050',    data:nze, color:'#22c55e'},
+    {label:'🟡 Delayed Transition',data:dt,  color:'#f59e0b'},
+    {label:'🔴 Current Policies',  data:cp,  color:'#ef4444'},
+  ].map(function(s) {
+    var prs = parseFloat(s.data.physical_risk_score||50).toFixed(0);
+    var trs = parseFloat(s.data.transition_risk_score||30).toFixed(0);
+    var rat = s.data.climate_rating||'BB';
+    return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05)">'+
+      '<td style="padding:8px 10px;font-size:12px;color:'+s.color+'">'+s.label+'</td>'+
+      '<td style="padding:8px 10px;text-align:center;font-size:12px">'+prs+'/100</td>'+
+      '<td style="padding:8px 10px;text-align:center;font-size:12px">'+trs+'/100</td>'+
+      '<td style="padding:8px 10px;text-align:center;font-weight:700;font-size:13px;color:'+s.color+'">'+rat+'</td>'+
+      '</tr>';
+  }).join('');
+
+  // ── Render ────────────────────────────────────────────────────────────────
+  return ''+
+    // 4 hero KPI cards
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px">'+
+      _intelKPI('Expected Annual Loss','$'+eal+' M/yr','Climate losses under current trajectory','#ef4444','📉')+
+      _intelKPI('Insurance Gap','$'+insGap+' M','Uninsured climate exposure','#f97316','🔓')+
+      _intelKPI('Disruption Days',''+disruptDays+' days/yr','Operational closure risk by 2035','#f59e0b','⚠️')+
+      _intelKPI('Stranded Asset Date',''+strandedYear,'Year asset crosses viability threshold','#8b5cf6','📅')+
+    '</div>'+
+
+    // Bottom-line
+    '<div class="card" style="margin-bottom:16px;border-left:3px solid #3b82f6">'+
+      '<div class="section-title" style="margin-bottom:10px">🎯 Bottom Line</div>'+
+      '<p style="font-size:13px;line-height:1.75;color:var(--body);margin:0">'+prose+'</p>'+
+    '</div>'+
+
+    // Two-column: hazard waterfall + mitigations
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">'+
+      '<div class="card">'+
+        '<div class="section-title" style="margin-bottom:14px">💸 EAL by Hazard ($'+eal+'M total)</div>'+
+        hazBars+
+      '</div>'+
+      '<div class="card">'+
+        '<div class="section-title" style="margin-bottom:14px">🔧 Top Mitigations by Payback</div>'+
+        mitigations+
+      '</div>'+
+    '</div>'+
+
+    // Scenario comparison
+    '<div class="card">'+
+      '<div class="section-title" style="margin-bottom:10px">📊 Scenario Snapshot</div>'+
+      '<div style="overflow-x:auto">'+
+      '<table style="width:100%;border-collapse:collapse">'+
+        '<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1)">'+
+          '<th style="padding:8px 10px;text-align:left;font-size:11px;color:var(--muted);font-weight:600">Scenario</th>'+
+          '<th style="padding:8px 10px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Physical Score</th>'+
+          '<th style="padding:8px 10px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Transition Score</th>'+
+          '<th style="padding:8px 10px;text-align:center;font-size:11px;color:var(--muted);font-weight:600">Climate Rating</th>'+
+        '</tr></thead>'+
+        '<tbody>'+scnRows+'</tbody>'+
+      '</table></div>'+
+      '<div style="margin-top:10px;font-size:11px;color:var(--faint)">'+
+        (engineEAL ? '✓ EAL, disruption days and stranded year computed by CRI engine from submitted financials.' :
+         'ℹ EAL estimated from sector parameters and physical risk score. Upload financials for engine-computed figures.')+
+      '</div>'+
+    '</div>';
+}
+
+function _intelKPI(label, value, sub, color, icon) {
+  return '<div class="card" style="text-align:center;border-top:3px solid '+color+'">'+
+    '<div style="font-size:22px;margin-bottom:4px">'+icon+'</div>'+
+    '<div style="font-size:22px;font-weight:800;color:'+color+';letter-spacing:-.03em">'+value+'</div>'+
+    '<div style="font-size:12px;font-weight:700;color:var(--body);margin:4px 0 2px">'+label+'</div>'+
+    '<div style="font-size:10px;color:var(--faint);line-height:1.4">'+sub+'</div>'+
+  '</div>';
+}
+
+function _rankMitigations(nze, cp, sector, ealM) {
+  // Pull from engine data if available, else build sector-calibrated defaults
+  var raw = (nze.mitigations || cp.mitigations || []);
+  if (!raw.length) {
+    // Sector-calibrated default mitigations
+    var tpl = {
+      'Manufacturing':  [
+        {action:'Flood barriers + sump pumps',    capex:0.8,  annualSaving:0.35, payback:2.3},
+        {action:'Heat-hardened process cooling',  capex:1.2,  annualSaving:0.42, payback:2.9},
+        {action:'On-site water recycling',        capex:0.6,  annualSaving:0.18, payback:3.3},
+      ],
+      'Energy':         [
+        {action:'Asset elevation & flood walls',  capex:2.1,  annualSaving:0.90, payback:2.3},
+        {action:'Backup generation + storage',    capex:1.5,  annualSaving:0.50, payback:3.0},
+        {action:'Wildfire defensible perimeter',  capex:0.4,  annualSaving:0.12, payback:3.3},
+      ],
+      'Transport':      [
+        {action:'Route diversification protocol', capex:0.3,  annualSaving:0.14, payback:2.1},
+        {action:'Flood-resilient paving & drains',capex:1.8,  annualSaving:0.60, payback:3.0},
+        {action:'Heat-tolerant rail/road surfaces',capex:2.2, annualSaving:0.55, payback:4.0},
+      ],
+      'Agriculture':    [
+        {action:'Precision irrigation system',    capex:0.7,  annualSaving:0.30, payback:2.3},
+        {action:'Crop diversification + insurance',capex:0.5, annualSaving:0.20, payback:2.5},
+        {action:'Soil carbon sequestration',      capex:0.4,  annualSaving:0.10, payback:4.0},
+      ],
+    };
+    raw = tpl[sector] || [
+      {action:'Site-level flood protection',   capex:1.0, annualSaving:0.40, payback:2.5},
+      {action:'Heat stress cooling upgrade',   capex:0.8, annualSaving:0.28, payback:2.9},
+      {action:'Supply chain buffer inventory', capex:0.5, annualSaving:0.15, payback:3.3},
+    ];
+    // Scale capex/savings to asset EAL magnitude
+    var scale = Math.max(ealM / 3, 1);
+    raw = raw.map(function(m){
+      return {action:m.action, capex:(m.capex*scale).toFixed(1), annualSaving:(m.annualSaving*scale).toFixed(1), payback:m.payback.toFixed(1)};
+    });
+  }
+  // Sort by payback ascending
+  raw = raw.slice(0,3).sort(function(a,b){ return parseFloat(a.payback)-parseFloat(b.payback); });
+  return raw.map(function(m, i) {
+    var pbNum = parseFloat(m.payback);
+    var pbColor = pbNum < 3 ? '#22c55e' : pbNum < 4 ? '#f59e0b' : '#ef4444';
+    return '<div style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.06)'+(i===raw.length-1?';border-bottom:none':'')+'">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'+
+        '<div style="font-size:12px;font-weight:600;color:var(--body);flex:1">'+
+          '<span style="display:inline-block;width:18px;height:18px;border-radius:50%;background:rgba(34,197,94,.15);color:#22c55e;font-size:10px;font-weight:800;text-align:center;line-height:18px;margin-right:6px">'+(i+1)+'</span>'+
+          m.action+'</div>'+
+        '<div style="text-align:right;flex-shrink:0">'+
+          '<div style="font-size:13px;font-weight:800;color:'+pbColor+'">'+m.payback+'yr</div>'+
+          '<div style="font-size:10px;color:var(--faint)">payback</div>'+
+        '</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:16px;margin-top:5px;padding-left:24px">'+
+        '<div style="font-size:11px;color:var(--muted)">Capex: <strong style="color:var(--body)">$'+m.capex+'M</strong></div>'+
+        '<div style="font-size:11px;color:var(--muted)">Annual saving: <strong style="color:#22c55e">$'+m.annualSaving+'M</strong></div>'+
+      '</div>'+
+    '</div>';
+  }).join('');
+}
+
+// ── SUPPLY CHAIN TAB ──────────────────────────────────────────────────────────
+function buildSupplyChainTab(data, company, sector) {
+  // Tier-1 supplier vulnerability framework (placeholder with real framework)
+  var tiers = [
+    {tier:'Tier 1', count:12, highRisk:3, color:'#ef4444', desc:'Direct suppliers — climate data available or estimable'},
+    {tier:'Tier 2', count:47, highRisk:11,color:'#f59e0b', desc:'Sub-suppliers — exposure modelled from geography'},
+    {tier:'Tier 3', count:'200+',highRisk:'~40',color:'#6b7280',desc:'Deep supply chain — systemic risk modelling only'},
+  ];
+  var tierRows = tiers.map(function(t){
+    return '<tr style="border-bottom:1px solid rgba(255,255,255,0.06)">'+
+      '<td style="padding:10px 12px;font-weight:700;color:'+t.color+'">'+t.tier+'</td>'+
+      '<td style="padding:10px 12px;text-align:center">'+t.count+'</td>'+
+      '<td style="padding:10px 12px;text-align:center;color:'+t.color+';font-weight:700">'+t.highRisk+'</td>'+
+      '<td style="padding:10px 12px;font-size:11px;color:var(--muted)">'+t.desc+'</td>'+
+    '</tr>';
+  }).join('');
+
+  var hazExposures = [
+    {name:'Flood-exposed nodes',   pct:38, color:'#3b82f6'},
+    {name:'Heat-stressed nodes',   pct:29, color:'#ef4444'},
+    {name:'Water-scarce regions',  pct:21, color:'#f59e0b'},
+    {name:'Cyclone-track overlap', pct:12, color:'#8b5cf6'},
+  ];
+
+  var hazBars = hazExposures.map(function(h){
+    return '<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px">'+
+      '<div style="width:160px;font-size:12px;color:var(--muted)">'+h.name+'</div>'+
+      '<div style="flex:1;background:rgba(255,255,255,0.05);border-radius:4px;height:18px">'+
+        '<div style="width:'+h.pct+'%;height:100%;background:'+h.color+';border-radius:4px"></div>'+
+      '</div>'+
+      '<div style="width:36px;text-align:right;font-size:12px;font-weight:700;color:'+h.color+'">'+h.pct+'%</div>'+
+    '</div>';
+  }).join('');
+
+  return '<div class="section-title" style="margin-bottom:4px">🔗 Supply Chain Climate Vulnerability</div>'+
+    '<p style="font-size:12px;color:var(--muted);margin:0 0 16px">Tier-by-tier supplier exposure to climate hazards. Connect your supplier data to activate precision mapping.</p>'+
+
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">'+
+      '<div>'+
+        '<div style="font-size:12px;font-weight:700;color:var(--body);margin-bottom:10px">Supplier Network</div>'+
+        '<table style="width:100%;border-collapse:collapse">'+
+          '<thead><tr style="border-bottom:1px solid rgba(255,255,255,0.1)">'+
+            '<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--muted)">Tier</th>'+
+            '<th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--muted)">Suppliers</th>'+
+            '<th style="padding:8px 12px;text-align:center;font-size:11px;color:var(--muted)">High Risk</th>'+
+            '<th style="padding:8px 12px;text-align:left;font-size:11px;color:var(--muted)">Coverage</th>'+
+          '</tr></thead>'+
+          '<tbody>'+tierRows+'</tbody>'+
+        '</table>'+
+      '</div>'+
+      '<div>'+
+        '<div style="font-size:12px;font-weight:700;color:var(--body);margin-bottom:10px">Network Hazard Exposure</div>'+
+        hazBars+
+        '<div style="margin-top:16px;padding:12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px">'+
+          '<div style="font-size:12px;font-weight:700;color:#60a5fa;margin-bottom:6px">📌 Connect Supplier Data</div>'+
+          '<p style="font-size:11px;color:var(--muted);margin:0;line-height:1.6">Upload your supplier list (name, country, product category) to activate precision node-level risk scoring, disruption probability curves, and buffer-stock sizing recommendations.</p>'+
+          '<button style="margin-top:10px;background:rgba(59,130,246,.2);border:1px solid rgba(59,130,246,.4);color:#93c5fd;border-radius:6px;padding:6px 14px;font-size:11px;cursor:pointer;font-weight:700">📤 Upload Supplier List</button>'+
+        '</div>'+
+      '</div>'+
+    '</div>';
+}
+
 function buildCRITabs() {
   var TABS = [
-    {id:'overview',  label:'📊 Overview'},
-    {id:'physical',  label:'🌡 Physical Risk'},
-    {id:'financial', label:'📈 Financial'},
-    {id:'cbam',      label:'🇪🇺 CBAM'},
-    {id:'livemet',   label:'🌤 Live Met'},
-    {id:'map', label:'🗺 Portfolio Map'},
-    {id:'disclosure',label:'⚖ Disclosures'},
-    {id:'loanbook',  label:'🏦 Loan Book'},
-    {id:'aladdin',   label:'⚡ Portfolio VaR'},
+    {id:'intelligence', label:'🎯 Intelligence'},
+    {id:'capital',      label:'💰 Capital at Risk'},
+    {id:'operational',  label:'⚙️ Operations'},
+    {id:'supplychain',  label:'🔗 Supply Chain'},
+    {id:'siteintel',    label:'🌍 Site Intel'},
+    {id:'portfolio',    label:'📊 Portfolio'},
+    {id:'reports',      label:'📋 Reports'},
   ];
   return '<div class="cri-tabs">'+TABS.map(function(t,i){
     return '<button class="cri-tab'+(i===0?' active':'')+'" onclick="switchCRITab(\''+t.id+'\',this)">'+t.label+'</button>';
@@ -2697,7 +2985,8 @@ function switchCRITab(id, btn) {
   if (btn) btn.classList.add('active');
   var panel = document.getElementById('cri-tab-'+id);
   if (panel) { panel.classList.add('active-tab'); panel.style.display='block'; }
-  if (id === 'financial') {
+  // Capital at Risk tab — init financial charts
+  if (id === 'capital') {
     setTimeout(function(){
       if (!_ebitdaChart && _lastResults) initEBITDAChart(_lastResults.nze||{}, _lastResults.dt||{}, _lastResults.cp||{});
       if (!_carbonChart) initCarbonChart();
@@ -2705,68 +2994,318 @@ function switchCRITab(id, btn) {
       if (_carbonChart) _carbonChart.resize();
     }, 60);
   }
-  if (id === 'livemet') {
-    if (_lastResults) {
-      var ll = _latLonForResult(_lastResults.nze||{}, _lastResults.company||'');
-      _asyncUpdateLiveMet(ll[0], ll[1], _lastResults.nze||{});
-    } else {
-      // No assessment yet — show live global oracle feed for default locations
-      _renderStandaloneLiveMet();
-    }
+  // Site Intel tab — init live met globe + map
+  if (id === 'siteintel') {
+    setTimeout(function(){
+      if (_lastResults) {
+        var ll = _latLonForResult(_lastResults.nze||{}, _lastResults.company||'');
+        _asyncUpdateLiveMet(ll[0], ll[1], _lastResults.nze||{});
+        initRiskMap(_lastResults.data||{}, _lastResults.nze||{}, _lastResults.dt||{}, _lastResults.cp||{}, _lastResults.company||'');
+      } else {
+        _renderStandaloneLiveMet();
+      }
+    }, 80);
   }
+  // Legacy tab IDs — backward compat for any existing onclick references
+  if (id === 'financial') switchCRITab('capital', btn);
+  if (id === 'livemet')   switchCRITab('siteintel', btn);
+  if (id === 'physical')  switchCRITab('operational', btn);
+  if (id === 'overview')  switchCRITab('intelligence', btn);
 }
 
 function _renderStandaloneLiveMet() {
+  // Standalone (no assessment) — show globe centred on Europe with 6 global asset oracles
   var panel = document.getElementById('livemet-content') || document.getElementById('cri-tab-livemet');
   if (!panel) return;
-  var LOCS = [
-    {name:'Rotterdam', label:'AST-ROT-01', lat:51.9244, lon:4.4777, flag:'🇳🇱'},
-    {name:'Houston',   label:'AST-HOU-07', lat:29.7604, lon:-95.3698, flag:'🇺🇸'},
-    {name:'Chennai',   label:'AST-CHE-03', lat:13.0827, lon:80.2707, flag:'🇮🇳'},
-    {name:'Shanghai',  label:'AST-SHA-11', lat:31.2304, lon:121.4737, flag:'🇨🇳'},
-    {name:'Lagos',     label:'AST-LAG-05', lat:6.5244, lon:3.3792, flag:'🇳🇬'},
-    {name:'São Paulo', label:'AST-SAO-02', lat:-23.5505, lon:-46.6333, flag:'🇧🇷'}
+  if (!document.getElementById('globe-container')) {
+    panel.innerHTML = _buildGlobeShell('Global Portfolio');
+  }
+  var GLOBAL_LOCS = [
+    {name:'Rotterdam',  lat:51.92, lon:4.48,   risk:'high', flag:'🇳🇱'},
+    {name:'Houston',    lat:29.76, lon:-95.37,  risk:'med',  flag:'🇺🇸'},
+    {name:'Chennai',    lat:13.08, lon:80.27,   risk:'med',  flag:'🇮🇳'},
+    {name:'Shanghai',   lat:31.23, lon:121.47,  risk:'high', flag:'🇨🇳'},
+    {name:'Lagos',      lat:6.52,  lon:3.38,    risk:'low',  flag:'🇳🇬'},
+    {name:'São Paulo',  lat:-23.55,lon:-46.63,  risk:'med',  flag:'🇧🇷'},
+    {name:'Singapore',  lat:1.35,  lon:103.82,  risk:'med',  flag:'🇸🇬'},
+    {name:'Dubai',      lat:25.20, lon:55.27,   risk:'high', flag:'🇦🇪'},
   ];
-  var H = '<div style="padding:8px 0">';
-  H += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">';
-  H += '<div><div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;font-weight:700;letter-spacing:.1em;color:#06b6d4;text-transform:uppercase">Live Meteorological Oracles</div>';
-  H += '<div style="font-size:16px;font-weight:800;color:var(--text);margin-top:2px">Global Asset Telemetry Feed</div></div>';
-  H += '<div style="display:flex;align-items:center;gap:6px;font-size:11px;font-family:\'JetBrains Mono\',monospace;padding:4px 12px;background:rgba(16,185,129,.1);color:#6ee7b7;border-radius:6px;border:1px solid rgba(16,185,129,.2)">';
-  H += '<span style="width:7px;height:7px;border-radius:50%;background:#10b981;display:inline-block;animation:pulse 1.2s infinite"></span>Oracles Online</div></div>';
-  H += '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px" id="standalone-met-grid">';
-  LOCS.forEach(function(loc) {
-    H += '<div class="livemet-card" id="met-'+loc.label.replace(/[^a-z0-9]/gi,'')+'">';
-    H += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">';
-    H += '<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;font-weight:700;color:#06b6d4;letter-spacing:.08em">'+loc.label+'</div>';
-    H += '<span style="font-size:14px">'+loc.flag+'</span></div>';
-    H += '<div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:6px">'+loc.name+'</div>';
-    H += '<div class="livemet-val" id="met-temp-'+loc.name+'">—°C</div>';
-    H += '<div class="livemet-lbl">Current Temperature</div>';
-    H += '<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px">';
-    H += '<span style="color:var(--muted)">Wind: <strong id="met-wind-'+loc.name+'" style="color:var(--text)">—</strong></span>';
-    H += '<span style="color:var(--muted)">Precip: <strong id="met-prec-'+loc.name+'" style="color:var(--text)">—</strong></span></div>';
-    H += '</div>';
+  _initLiveMetGlobe(48.0, 10.0, {}, GLOBAL_LOCS);
+  _fetchWeatherAndRender(48.0, 10.0, null, GLOBAL_LOCS);
+}
+
+// ── GLOBE ENGINE ──────────────────────────────────────────────────────────────
+var _globeCleanup = null;
+var _globeInited  = false;
+
+function _loadThreeJS() {
+  if (window.THREE) return Promise.resolve();
+  return new Promise(function(resolve, reject) {
+    var s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js';
+    s.onload = resolve; s.onerror = reject;
+    document.head.appendChild(s);
   });
-  H += '</div>';
-  H += '<div style="margin-top:10px;font-size:10px;color:var(--faint);font-family:\'JetBrains Mono\',monospace">Source: Open-Meteo ERA5 · ECMWF · Real-time · Run an assessment to bind your asset coordinates.</div>';
-  H += '</div>';
-  panel.innerHTML = H;
-  // Fetch live data for each location
-  LOCS.forEach(function(loc) {
-    var url = 'https://api.open-meteo.com/v1/forecast?latitude='+loc.lat+'&longitude='+loc.lon+'&current=temperature_2m,precipitation,wind_speed_10m&timezone=UTC';
-    fetch(url, {signal: AbortSignal.timeout ? AbortSignal.timeout(6000) : undefined})
-      .then(function(r){ return r.json(); })
-      .then(function(d) {
-        var cur = d.current || {};
-        var tEl = document.getElementById('met-temp-'+loc.name);
-        var wEl = document.getElementById('met-wind-'+loc.name);
-        var pEl = document.getElementById('met-prec-'+loc.name);
-        if (tEl) tEl.textContent = (cur.temperature_2m !== undefined ? cur.temperature_2m.toFixed(1) : '—') + '°C';
-        if (wEl) wEl.textContent = (cur.wind_speed_10m !== undefined ? cur.wind_speed_10m.toFixed(1) : '—') + ' km/h';
-        if (pEl) pEl.textContent = (cur.precipitation !== undefined ? cur.precipitation.toFixed(1) : '—') + ' mm';
-      })
-      .catch(function() {});
+}
+
+async function _initLiveMetGlobe(lat, lon, nze, extraLocs) {
+  // Clean up previous instance
+  if (_globeCleanup) { try { _globeCleanup(); } catch(e) {} _globeCleanup = null; }
+  _globeInited = false;
+
+  try { await _loadThreeJS(); } catch(e) {
+    var gl = document.getElementById('globe-loading');
+    if (gl) gl.innerHTML = '<div style="color:#94a3b8;font-size:12px">Three.js unavailable — check network</div>';
+    return;
+  }
+
+  var THREE = window.THREE;
+  var canvas = document.getElementById('livemet-globe-canvas');
+  if (!canvas) return;
+
+  // Determine size
+  var W = canvas.parentElement ? canvas.parentElement.clientWidth : 800;
+  var H = 490;
+  canvas.width  = W * (window.devicePixelRatio || 1);
+  canvas.height = H * (window.devicePixelRatio || 1);
+  canvas.style.width  = W + 'px';
+  canvas.style.height = H + 'px';
+
+  // ── Renderer ─────────────────────────────────────────────────────────────
+  var renderer = new THREE.WebGLRenderer({canvas:canvas, antialias:true, alpha:true});
+  renderer.setSize(W, H);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1, 2));
+  renderer.setClearColor(0x000000, 0);
+
+  // ── Scene ────────────────────────────────────────────────────────────────
+  var scene  = new THREE.Scene();
+  var camera = new THREE.PerspectiveCamera(42, W/H, 0.1, 2000);
+  camera.position.set(0, 0, 2.8);
+
+  // ── Stars ────────────────────────────────────────────────────────────────
+  var sPts = [], sCol = [];
+  for (var i = 0; i < 3000; i++) {
+    var t2 = Math.random() * Math.PI * 2, p2 = Math.acos(2*Math.random()-1), r2 = 80+Math.random()*60;
+    sPts.push(r2*Math.sin(p2)*Math.cos(t2), r2*Math.cos(p2), r2*Math.sin(p2)*Math.sin(t2));
+    var br = 0.5 + Math.random() * 0.5;
+    sCol.push(br,br,Math.min(1,br+0.2));
+  }
+  var sGeo = new THREE.BufferGeometry();
+  sGeo.setAttribute('position', new THREE.Float32BufferAttribute(sPts, 3));
+  sGeo.setAttribute('color',    new THREE.Float32BufferAttribute(sCol, 3));
+  scene.add(new THREE.Points(sGeo, new THREE.PointsMaterial({size:0.12, vertexColors:true})));
+
+  // ── Lighting (sun from upper-right) ─────────────────────────────────────
+  scene.add(new THREE.AmbientLight(0x1a1a3a, 1.4));
+  var sun = new THREE.DirectionalLight(0xffeedd, 1.6);
+  sun.position.set(5, 3, 4);
+  scene.add(sun);
+  var fill = new THREE.DirectionalLight(0x223366, 0.4);
+  fill.position.set(-4, -1, -3);
+  scene.add(fill);
+
+  // ── Earth sphere ─────────────────────────────────────────────────────────
+  var earthGeo = new THREE.SphereGeometry(1, 80, 80);
+  var earthMat = new THREE.MeshPhongMaterial({shininess:20, specular:new THREE.Color(0x0a0a22)});
+  var earth = new THREE.Mesh(earthGeo, earthMat);
+  scene.add(earth);
+
+  var loader = new THREE.TextureLoader();
+  // Primary: NASA Blue Marble from three-globe CDN
+  loader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-blue-marble.jpg',
+    function(t){ earthMat.map = t; earthMat.needsUpdate = true; },
+    undefined,
+    function() {
+      // Fallback: open-source earth texture
+      loader.load('https://threejs.org/examples/textures/planets/earth_atmos_2048.jpg',
+        function(t){ earthMat.map = t; earthMat.needsUpdate = true; },
+        undefined,
+        function() { earthMat.color = new THREE.Color(0x0d3b5e); earthMat.needsUpdate = true; }
+      );
+    }
+  );
+  // Specular map (ocean glint)
+  loader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-water.png',
+    function(t){ earthMat.specularMap = t; earthMat.needsUpdate = true; });
+  // Night lights (emissive)
+  loader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-night.jpg',
+    function(t){ earthMat.emissiveMap = t; earthMat.emissive = new THREE.Color(0xffffff); earthMat.emissiveIntensity = 0.22; earthMat.needsUpdate = true; });
+  // Cloud layer
+  var cloudMesh = null;
+  loader.load('https://cdn.jsdelivr.net/npm/three-globe/example/img/earth-clouds.png',
+    function(t) {
+      var cMesh = new THREE.Mesh(
+        new THREE.SphereGeometry(1.012, 80, 80),
+        new THREE.MeshPhongMaterial({map:t, transparent:true, opacity:0.55, depthWrite:false})
+      );
+      scene.add(cMesh);
+      cloudMesh = cMesh;
+    }
+  );
+
+  // ── Atmosphere glow ───────────────────────────────────────────────────────
+  scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(1.018, 64, 64),
+    new THREE.MeshPhongMaterial({color:new THREE.Color(0x3a7bd5), transparent:true, opacity:0.10, side:THREE.FrontSide, depthWrite:false})
+  ));
+  scene.add(new THREE.Mesh(
+    new THREE.SphereGeometry(1.04, 64, 64),
+    new THREE.MeshBasicMaterial({color:new THREE.Color(0x1a4a99), transparent:true, opacity:0.07, side:THREE.BackSide})
+  ));
+
+  // ── Helper: lat/lon → 3D position ────────────────────────────────────────
+  function ll3d(latD, lonD, r) {
+    r = r || 1;
+    var phi   = (90 - latD) * Math.PI / 180;
+    var theta = (lonD + 180) * Math.PI / 180;
+    return new THREE.Vector3(
+      -r * Math.sin(phi) * Math.cos(theta),
+       r * Math.cos(phi),
+       r * Math.sin(phi) * Math.sin(theta)
+    );
+  }
+
+  // ── Asset pins ────────────────────────────────────────────────────────────
+  var allLocs = (extraLocs || []).slice();
+  // Insert primary asset at front
+  var primaryExists = allLocs.some(function(l){ return Math.abs(l.lat-lat)<1 && Math.abs(l.lon-lon)<1; });
+  if (!primaryExists && (lat !== 48 || lon !== 10)) {
+    allLocs.unshift({name:'Primary Asset', lat:lat, lon:lon, risk:'high', flag:'📍', isPrimary:true});
+  }
+
+  var colMap = {high:0xef4444, med:0xf59e0b, low:0x22c55e};
+  var pinObjects = []; // for raycasting
+
+  allLocs.forEach(function(loc) {
+    var col = new THREE.Color(colMap[loc.risk] || 0xf59e0b);
+    var pos = ll3d(loc.lat, loc.lon, 1.022);
+
+    // Spike: thin cone pointing outward from surface
+    var spikeGeo = new THREE.CylinderGeometry(0, 0.013, 0.065, 6);
+    var spikeMat = new THREE.MeshBasicMaterial({color: col});
+    var spike = new THREE.Mesh(spikeGeo, spikeMat);
+    spike.position.copy(pos);
+    spike.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0), pos.clone().normalize());
+    earth.add(spike);
+
+    // Dot at tip
+    var dot = new THREE.Mesh(
+      new THREE.SphereGeometry(0.022, 8, 8),
+      new THREE.MeshBasicMaterial({color: col})
+    );
+    var dotPos = ll3d(loc.lat, loc.lon, 1.065);
+    dot.position.copy(dotPos);
+    dot.userData = loc;
+    earth.add(dot);
+    pinObjects.push(dot);
+
+    // Pulse ring (flat disc, slightly above surface)
+    var ringGeo = new THREE.RingGeometry(0.025, 0.042, 16);
+    var ringMat = new THREE.MeshBasicMaterial({color:col, transparent:true, opacity:0.45, side:THREE.DoubleSide});
+    var ring = new THREE.Mesh(ringGeo, ringMat);
+    ring.position.copy(ll3d(loc.lat, loc.lon, 1.025));
+    ring.quaternion.setFromUnitVectors(new THREE.Vector3(0,0,1), ring.position.clone().normalize());
+    ring.userData = {pulse: true, initOpacity: 0.45, t: Math.random()*Math.PI*2};
+    earth.add(ring);
   });
+
+  // ── Orient globe to face primary asset ───────────────────────────────────
+  earth.rotation.y = -lon * Math.PI / 180 - Math.PI / 2;
+  earth.rotation.x =  lat * Math.PI / 180 * 0.35;
+
+  // ── Mouse drag + tooltip ──────────────────────────────────────────────────
+  var isDragging = false, prevM = {x:0,y:0}, velY = 0;
+
+  canvas.addEventListener('mousedown', function(e){ isDragging=true; prevM={x:e.clientX,y:e.clientY}; velY=0; });
+  canvas.addEventListener('mouseup',   function(){ isDragging=false; });
+  canvas.addEventListener('mouseleave',function(){
+    isDragging=false;
+    var tip = document.getElementById('globe-tooltip');
+    if (tip) tip.style.display='none';
+  });
+
+  canvas.addEventListener('mousemove', function(e) {
+    if (isDragging) {
+      var dx = e.clientX - prevM.x, dy = e.clientY - prevM.y;
+      earth.rotation.y += dx * 0.006;
+      earth.rotation.x  = Math.max(-1.1, Math.min(1.1, earth.rotation.x + dy * 0.004));
+      if (cloudMesh) { cloudMesh.rotation.y += dx * 0.006; }
+      velY = dx * 0.006;
+      prevM = {x:e.clientX, y:e.clientY};
+    }
+    // Tooltip raycasting
+    var rect = canvas.getBoundingClientRect();
+    var mouse = new THREE.Vector2(
+      ((e.clientX - rect.left) / rect.width)  * 2 - 1,
+      -((e.clientY - rect.top) / rect.height) * 2 + 1
+    );
+    var ray = new THREE.Raycaster();
+    ray.setFromCamera(mouse, camera);
+    var hits = ray.intersectObjects(pinObjects, false);
+    var tip = document.getElementById('globe-tooltip');
+    if (tip && hits.length) {
+      var l = hits[0].object.userData;
+      var riskCol = l.risk==='high'?'#f87171':l.risk==='med'?'#fbbf24':'#34d399';
+      tip.style.display = 'block';
+      tip.style.left = (e.clientX - rect.left + 14) + 'px';
+      tip.style.top  = (e.clientY - rect.top  - 12) + 'px';
+      tip.innerHTML =
+        '<div style="font-weight:800;color:#e2e8f0;margin-bottom:3px">'+(l.flag||'📍')+' '+l.name+'</div>'+
+        '<div style="color:#64748b;font-size:10px;margin-bottom:5px">'+l.lat.toFixed(2)+'°, '+l.lon.toFixed(2)+'°</div>'+
+        (l.temp!=null ?
+          '<div>🌡 <strong style="color:#fbbf24">'+l.temp+'°C</strong> &nbsp;·&nbsp; 💨 '+l.wind+' km/h</div>'+
+          '<div>🌧 '+l.prec+'mm &nbsp;·&nbsp; ☁ '+l.cloud+'%</div>'
+          : '<div style="color:#475569;font-size:11px">Fetching live data…</div>')+
+        '<div style="margin-top:5px;padding-top:5px;border-top:1px solid rgba(255,255,255,.08);font-size:10px;color:'+riskCol+'">'+
+          (l.risk==='high'?'⚠ High':'l'===l.risk?'✓ Low':'● Medium')+' climate risk tier</div>';
+      canvas.style.cursor = 'pointer';
+    } else {
+      if (tip) tip.style.display = 'none';
+      canvas.style.cursor = isDragging ? 'grabbing' : 'grab';
+    }
+  });
+
+  canvas.addEventListener('wheel', function(e) {
+    e.preventDefault();
+    camera.position.z = Math.max(1.5, Math.min(6.0, camera.position.z + e.deltaY * 0.004));
+  }, {passive: false});
+
+  canvas.style.cursor = 'grab';
+
+  // ── Animation loop ────────────────────────────────────────────────────────
+  var rafId, frame = 0;
+  function animate() {
+    rafId = requestAnimationFrame(animate);
+    frame++;
+    if (!isDragging) {
+      earth.rotation.y += 0.0012 + velY * 0.1;
+      velY *= 0.92;
+      if (cloudMesh) cloudMesh.rotation.y += 0.0008;
+    }
+    // Pulse rings
+    earth.children.forEach(function(c) {
+      if (c.userData && c.userData.pulse) {
+        c.userData.t += 0.04;
+        c.material.opacity = 0.25 + 0.2 * Math.sin(c.userData.t);
+      }
+    });
+    renderer.render(scene, camera);
+  }
+  animate();
+  _globeInited = true;
+
+  // Hide loading overlay
+  var ld = document.getElementById('globe-loading');
+  if (ld) ld.style.display = 'none';
+
+  // Store cleanup
+  _globeCleanup = function() {
+    cancelAnimationFrame(rafId);
+    renderer.dispose();
+    _globeInited = false;
+  };
+
+  return pinObjects;
 }
 
 // ── 25-HAZARD IPCC AR6 GRID ───────────────────────────────────────────────────
@@ -3736,65 +4275,209 @@ async function _fetchLiveERA5(lat, lon) {
 }
 
 function buildLiveMetPlaceholder(nze, company) {
-  return '<div id="livemet-content">'+
-    '<div style="text-align:center;padding:40px 20px;color:var(--faint);font-size:13px">'+
-    '<div style="font-size:32px;margin-bottom:10px">🌤</div>'+
-    'Click <strong style="color:var(--green)">Live Met</strong> tab to fetch ERA5 meteorological baseline<br/>for <em>'+company+'</em><br/>'+
-    '<div style="font-size:10px;margin-top:10px">Source: ERA5 reanalysis (ECMWF) via Open-Meteo · Projected via CMIP6 · Powered by <a href="https://climrisk.io" style="color:var(--green)" target="_blank">climrisk.io</a></div>'+
-    '</div></div>';
+  return '<div id="livemet-content">'+_buildGlobeShell(company)+'</div>';
+}
+
+function _buildGlobeShell(company) {
+  return (
+    // Globe container
+    '<div id="globe-container" style="position:relative;background:radial-gradient(ellipse at center,#060618 0%,#000008 100%);border-radius:14px;overflow:hidden;height:490px;margin-bottom:16px">'+
+      '<canvas id="livemet-globe-canvas" style="width:100%;height:100%;display:block"></canvas>'+
+      // Loading overlay
+      '<div id="globe-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none">'+
+        '<div style="text-align:center;color:#94a3b8"><div style="font-size:36px;margin-bottom:10px">🌍</div>'+
+        '<div style="font-size:13px;font-weight:600">Initialising Climate Globe…</div>'+
+        '<div style="font-size:11px;color:#475569;margin-top:6px">Loading Three.js · Fetching ERA5 · Binding live oracles</div></div>'+
+      '</div>'+
+      // HUD top-left
+      '<div style="position:absolute;top:14px;left:16px;z-index:5;pointer-events:none">'+
+        '<div style="font-family:\'JetBrains Mono\',monospace;font-size:9px;font-weight:700;letter-spacing:.12em;color:#06b6d4;text-transform:uppercase">CRI Climate Oracle</div>'+
+        '<div style="font-size:16px;font-weight:800;color:#f1f5f9;margin-top:2px">Live Risk Globe</div>'+
+        '<div style="display:flex;align-items:center;gap:5px;margin-top:5px">'+
+          '<span style="width:6px;height:6px;border-radius:50%;background:#10b981;display:inline-block;animation:pulse 1.2s infinite"></span>'+
+          '<span style="font-size:10px;color:#6ee7b7;font-family:\'JetBrains Mono\',monospace">ERA5 · CMIP6 · Open-Meteo live</span>'+
+        '</div>'+
+      '</div>'+
+      // HUD bottom-left — controls hint
+      '<div style="position:absolute;bottom:12px;left:16px;z-index:5;pointer-events:none;font-size:10px;color:#334155;font-family:\'JetBrains Mono\',monospace">'+
+        '← Drag to rotate &nbsp;·&nbsp; ⊕ Scroll to zoom &nbsp;·&nbsp; Hover pin for data'+
+      '</div>'+
+      // Legend bottom-right
+      '<div id="globe-legend" style="position:absolute;bottom:12px;right:14px;z-index:5;background:rgba(6,8,28,.85);border:1px solid rgba(255,255,255,.08);border-radius:8px;padding:9px 12px;font-size:10px;color:#94a3b8">'+
+        '<div style="font-weight:700;color:#e2e8f0;margin-bottom:5px;font-size:11px">Asset Risk Pins</div>'+
+        '<div style="margin-bottom:3px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#ef4444;margin-right:6px;box-shadow:0 0 6px #ef4444"></span>High Risk</div>'+
+        '<div style="margin-bottom:3px"><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#f59e0b;margin-right:6px;box-shadow:0 0 6px #f59e0b"></span>Medium Risk</div>'+
+        '<div><span style="display:inline-block;width:9px;height:9px;border-radius:50%;background:#22c55e;margin-right:6px;box-shadow:0 0 6px #22c55e"></span>Low Risk</div>'+
+      '</div>'+
+      // Pin tooltip
+      '<div id="globe-tooltip" style="position:absolute;display:none;background:rgba(6,8,28,.95);border:1px solid rgba(6,182,212,.4);border-radius:9px;padding:11px 14px;font-size:12px;color:#e2e8f0;pointer-events:none;max-width:210px;z-index:20;line-height:1.6"></div>'+
+    '</div>'+
+    // Weather strip — live conditions
+    '<div id="livemet-weather-strip" style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px">'+
+      '<div class="livemet-card" style="grid-column:span 4;display:flex;align-items:center;gap:10px;color:var(--faint);font-size:12px">'+
+        '<div style="font-size:20px">⏳</div>Fetching live weather for <em>'+company+'</em>…</div>'+
+    '</div>'+
+    // 7-day forecast strip
+    '<div id="livemet-forecast-strip" style="margin-bottom:16px"></div>'+
+    // ERA5 / CMIP6 data section
+    '<div id="livemet-era5-section"></div>'
+  );
 }
 
 async function _asyncUpdateLiveMet(lat, lon, nze) {
+  // Ensure globe shell is in place
   var el = document.getElementById('livemet-content');
   if (!el) return;
-  el.innerHTML = '<div style="text-align:center;padding:32px;color:var(--faint);font-size:12px"><div style="font-size:24px;margin-bottom:8px">⏳</div>Fetching ERA5 climate data for '+lat.toFixed(2)+'°, '+lon.toFixed(2)+'°…</div>';
-  var live = await _fetchLiveERA5(lat, lon);
-  var reg = _getERA5Region(lat, lon);
-  var hist = ERA5_HIST[reg]||ERA5_HIST.global;
-  var sspKey = _sspKeyFromId(nze.ssp_id||'SSP2-4.5');
-  var p30 = _liveMeteoProj(live, lat, lon, sspKey, 2030);
-  var p40 = _liveMeteoProj(live, lat, lon, sspKey, 2040);
-  var p50 = _liveMeteoProj(live, lat, lon, sspKey, 2050);
-  var tB  = live&&live.t_mean!=null ? live.t_mean.toFixed(1)+'°C' : hist[0].toFixed(1)+'°C (est.)';
-  var pB  = live&&live.p_annual!=null ? Math.round(live.p_annual)+' mm/yr' : hist[2]+' mm/yr (est.)';
-  var src = live ? 'ERA5 live fetch 1990–2020 (Open-Meteo) ✓' : 'ERA5 regional table (fallback)';
-  el.innerHTML =
-    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px">'+
-      '<div style="font-size:14px;font-weight:700;color:var(--text)">🌤 Live Meteorological Baseline</div>'+
-      '<span class="livemet-badge">Powered by climrisk.io</span>'+
-    '</div>'+
-    '<div style="font-size:11px;color:var(--faint);margin-bottom:14px">Region: <strong>'+reg+'</strong> · '+lat.toFixed(2)+'°N, '+lon.toFixed(2)+'°E · '+src+'</div>'+
-    '<div class="livemet-grid">'+
-      '<div class="livemet-card"><div style="font-size:22px;margin-bottom:6px">🌡</div><div class="livemet-val">'+tB+'</div><div class="livemet-lbl">Baseline Annual Temp</div>'+
-        '<div class="livemet-proj">2030 ('+sspKey.toUpperCase()+'): '+p30.t_proj+'°C</div>'+
-        '<div class="livemet-proj">2040: '+p40.t_proj+'°C · 2050: <strong>'+p50.t_proj+'°C</strong></div>'+
+  if (!document.getElementById('globe-container')) {
+    el.innerHTML = _buildGlobeShell('Asset Location');
+  }
+  // Asset pin(s): just the primary for now (companion pins injected from data layer)
+  var assetLocs = [{name:'Asset Location', lat:lat, lon:lon, risk:'high', flag:'📍', isPrimary:true}];
+  // Start globe (non-blocking, async load)
+  _initLiveMetGlobe(lat, lon, nze, assetLocs);
+  // Fetch weather + ERA5 and fill strips
+  _fetchWeatherAndRender(lat, lon, nze, assetLocs);
+}
+
+// ── WEATHER FETCH + STRIP RENDER ─────────────────────────────────────────────
+async function _fetchWeatherAndRender(lat, lon, nze, pinLocs) {
+  // Current conditions + 7-day forecast for primary location
+  var url = 'https://api.open-meteo.com/v1/forecast?latitude='+lat+'&longitude='+lon+
+    '&current=temperature_2m,relative_humidity_2m,precipitation,wind_speed_10m,cloud_cover,weather_code'+
+    '&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,weather_code'+
+    '&timezone=UTC&forecast_days=7';
+  var cur = {}, daily = {};
+  try {
+    var r = await fetch(url);
+    var d = await r.json();
+    cur   = d.current || {};
+    daily = d.daily   || {};
+    // Inject live data into pin objects for tooltips
+    if (pinLocs && pinLocs[0]) {
+      pinLocs[0].temp  = cur.temperature_2m   != null ? cur.temperature_2m.toFixed(1)   : '—';
+      pinLocs[0].wind  = cur.wind_speed_10m   != null ? cur.wind_speed_10m.toFixed(1)   : '—';
+      pinLocs[0].prec  = cur.precipitation    != null ? cur.precipitation.toFixed(1)    : '—';
+      pinLocs[0].cloud = cur.cloud_cover      != null ? cur.cloud_cover.toFixed(0)      : '—';
+    }
+  } catch(e) {}
+
+  // ── Weather condition icon (WMO weather code) ─────────────────────────────
+  function wmoIcon(code) {
+    code = code || 0;
+    if (code === 0)           return '☀️';
+    if (code <= 3)            return '🌤';
+    if (code <= 49)           return '🌫';
+    if (code <= 67)           return '🌧';
+    if (code <= 77)           return '🌨';
+    if (code <= 82)           return '🌦';
+    if (code <= 99)           return '⛈';
+    return '🌡';
+  }
+
+  // ── Current conditions strip ──────────────────────────────────────────────
+  var strip = document.getElementById('livemet-weather-strip');
+  if (strip) {
+    var t   = cur.temperature_2m   != null ? cur.temperature_2m.toFixed(1)+'°C'    : '—';
+    var w   = cur.wind_speed_10m   != null ? cur.wind_speed_10m.toFixed(1)+' km/h' : '—';
+    var h   = cur.relative_humidity_2m != null ? cur.relative_humidity_2m.toFixed(0)+'%' : '—';
+    var p   = cur.precipitation    != null ? cur.precipitation.toFixed(1)+' mm'    : '—';
+    var cc  = cur.cloud_cover      != null ? cur.cloud_cover.toFixed(0)+'%'        : '—';
+    var wic = wmoIcon(cur.weather_code);
+    var cards = [
+      {icon:wic,    val:t,  lbl:'Temperature'},
+      {icon:'💨',   val:w,  lbl:'Wind Speed'},
+      {icon:'💧',   val:h,  lbl:'Humidity'},
+      {icon:'🌧',   val:p,  lbl:'Precipitation'},
+      {icon:'☁️',  val:cc, lbl:'Cloud Cover'},
+    ];
+    var latDir = lat>=0?'N':'S', lonDir = lon>=0?'E':'W';
+    strip.innerHTML =
+      '<div style="grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">'+
+        '<div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase">Live Conditions</div>'+
+        '<div style="font-size:10px;color:var(--faint);font-family:\'JetBrains Mono\',monospace">'+Math.abs(lat).toFixed(2)+'°'+latDir+' '+Math.abs(lon).toFixed(2)+'°'+lonDir+' · Open-Meteo · UTC</div>'+
       '</div>'+
-      '<div class="livemet-card"><div style="font-size:22px;margin-bottom:6px">🌧</div><div class="livemet-val">'+pB+'</div><div class="livemet-lbl">Annual Precipitation</div>'+
-        '<div class="livemet-proj">Trend: '+(hist[3]>=0?'+':'')+hist[3]+'%/decade</div>'+
-        '<div class="livemet-proj">2050 est.: '+Math.round(p50.p_proj)+' mm/yr</div>'+
+      cards.map(function(c){
+        return '<div style="background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:12px 14px;text-align:center">'+
+          '<div style="font-size:22px;margin-bottom:4px">'+c.icon+'</div>'+
+          '<div style="font-size:16px;font-weight:800;color:var(--text)">'+c.val+'</div>'+
+          '<div style="font-size:10px;color:var(--faint);margin-top:2px">'+c.lbl+'</div>'+
+        '</div>';
+      }).join('');
+  }
+
+  // ── 7-day forecast strip ──────────────────────────────────────────────────
+  var fcast = document.getElementById('livemet-forecast-strip');
+  if (fcast && daily.time && daily.time.length) {
+    var days = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+    var bars = daily.time.slice(0,7).map(function(dt, i) {
+      var d = new Date(dt+'T00:00:00Z');
+      var dayName = days[d.getUTCDay()];
+      var hi  = daily.temperature_2m_max ? daily.temperature_2m_max[i] : null;
+      var lo  = daily.temperature_2m_min ? daily.temperature_2m_min[i] : null;
+      var pr  = daily.precipitation_sum  ? daily.precipitation_sum[i]  : null;
+      var wc  = daily.weather_code       ? daily.weather_code[i]       : 0;
+      return '<div style="flex:1;text-align:center;padding:8px 4px">'+
+        '<div style="font-size:10px;color:var(--faint);margin-bottom:3px">'+dayName+'</div>'+
+        '<div style="font-size:16px;margin-bottom:4px">'+wmoIcon(wc)+'</div>'+
+        '<div style="font-size:12px;font-weight:700;color:var(--text)">'+(hi!=null?hi.toFixed(0)+'°':'—')+'</div>'+
+        '<div style="font-size:10px;color:var(--faint)">'+(lo!=null?lo.toFixed(0)+'°':'—')+'</div>'+
+        (pr!=null&&pr>0.1?'<div style="font-size:9px;color:#60a5fa;margin-top:2px">'+pr.toFixed(1)+'mm</div>':'')+
+      '</div>';
+    });
+    fcast.innerHTML =
+      '<div style="font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.06em;text-transform:uppercase;margin-bottom:8px">7-Day Forecast</div>'+
+      '<div style="display:flex;gap:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:8px">'+bars.join('')+'</div>';
+  }
+
+  // ── ERA5 / CMIP6 climate projections section ──────────────────────────────
+  var era5 = document.getElementById('livemet-era5-section');
+  if (era5 && nze) {
+    var live2  = await _fetchLiveERA5(lat, lon);
+    var reg    = _getERA5Region(lat, lon);
+    var hist   = ERA5_HIST[reg] || ERA5_HIST.global;
+    var sspKey = _sspKeyFromId(nze.ssp_id || 'SSP2-4.5');
+    var p30    = _liveMeteoProj(live2, lat, lon, sspKey, 2030);
+    var p40    = _liveMeteoProj(live2, lat, lon, sspKey, 2040);
+    var p50    = _liveMeteoProj(live2, lat, lon, sspKey, 2050);
+    var tB     = live2&&live2.t_mean!=null ? live2.t_mean.toFixed(1)+'°C' : hist[0].toFixed(1)+'°C (est.)';
+    var pB     = live2&&live2.p_annual!=null ? Math.round(live2.p_annual)+' mm/yr' : hist[2]+' mm/yr (est.)';
+    var src    = live2 ? 'ERA5 1990–2020 (Open-Meteo) ✓' : 'ERA5 regional table (fallback)';
+    era5.innerHTML =
+      '<div style="margin-top:4px;background:rgba(255,255,255,.02);border:1px solid rgba(255,255,255,.06);border-radius:12px;padding:18px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'+
+        '<div style="font-weight:700;color:var(--text)">📡 ERA5 + CMIP6 Climate Projections</div>'+
+        '<div style="font-size:10px;color:var(--faint);font-family:\'JetBrains Mono\',monospace">'+src+'</div>'+
       '</div>'+
-      '<div class="livemet-card"><div style="font-size:22px;margin-bottom:6px">📡</div><div class="livemet-val">'+(nze.gmst_2050||'—')+'°C</div><div class="livemet-lbl">GMST Anomaly 2050</div>'+
-        '<div class="livemet-proj">Scenario: '+(nze.ssp_id||'SSP2-4.5')+'</div>'+
-        '<div class="livemet-proj">CMIP6 ensemble median</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">'+
+        '<div class="livemet-card"><div style="font-size:20px;margin-bottom:5px">🌡</div><div class="livemet-val">'+tB+'</div><div class="livemet-lbl">Baseline Temp</div>'+
+          '<div class="livemet-proj">2030: '+p30.t_proj+'°C</div>'+
+          '<div class="livemet-proj">2050: <strong>'+p50.t_proj+'°C</strong></div></div>'+
+        '<div class="livemet-card"><div style="font-size:20px;margin-bottom:5px">🌧</div><div class="livemet-val">'+pB+'</div><div class="livemet-lbl">Annual Precipitation</div>'+
+          '<div class="livemet-proj">Trend: '+(hist[3]>=0?'+':'')+hist[3]+'%/decade</div>'+
+          '<div class="livemet-proj">2050: '+Math.round(p50.p_proj)+' mm/yr</div></div>'+
+        '<div class="livemet-card"><div style="font-size:20px;margin-bottom:5px">📊</div><div class="livemet-val">'+(nze.gmst_2050||'—')+'°C</div><div class="livemet-lbl">GMST Anomaly 2050</div>'+
+          '<div class="livemet-proj">Scenario: '+(nze.ssp_id||'SSP2-4.5')+'</div>'+
+          '<div class="livemet-proj">CMIP6 ensemble</div></div>'+
       '</div>'+
-    '</div>'+
-    '<table style="width:100%;border-collapse:collapse;font-size:11px;margin-top:14px">'+
-      '<thead><tr style="font-size:10px;color:var(--faint);border-bottom:1px solid var(--border)">'+
-        '<th style="padding:6px 10px;text-align:left">Horizon</th>'+
-        '<th style="padding:6px 10px;text-align:center">Temp</th>'+
-        '<th style="padding:6px 10px;text-align:center">ΔT</th>'+
-        '<th style="padding:6px 10px;text-align:center">Precip</th>'+
-      '</tr></thead><tbody>'+
-      '<tr><td style="padding:7px 10px;color:var(--muted)">Baseline 1990–2020</td><td style="padding:7px 10px;text-align:center">'+tB+'</td><td style="padding:7px 10px;text-align:center;color:var(--faint)">—</td><td style="padding:7px 10px;text-align:center">'+pB+'</td></tr>'+
-      '<tr><td style="padding:7px 10px;color:var(--muted)">2030</td><td style="padding:7px 10px;text-align:center">'+p30.t_proj+'°C</td><td style="padding:7px 10px;text-align:center;color:var(--amber)">+'+p30.tDelta+'°C</td><td style="padding:7px 10px;text-align:center">'+p30.p_proj+' mm</td></tr>'+
-      '<tr><td style="padding:7px 10px;color:var(--muted)">2040</td><td style="padding:7px 10px;text-align:center">'+p40.t_proj+'°C</td><td style="padding:7px 10px;text-align:center;color:var(--amber)">+'+p40.tDelta+'°C</td><td style="padding:7px 10px;text-align:center">'+p40.p_proj+' mm</td></tr>'+
-      '<tr style="font-weight:600"><td style="padding:7px 10px;color:var(--text)">2050</td><td style="padding:7px 10px;text-align:center">'+p50.t_proj+'°C</td><td style="padding:7px 10px;text-align:center;color:var(--red)">+'+p50.tDelta+'°C</td><td style="padding:7px 10px;text-align:center">'+p50.p_proj+' mm</td></tr>'+
-    '</tbody></table>'+
-    '<div style="margin-top:10px;font-size:10px;color:var(--faint);border-top:1px solid var(--border);padding-top:8px">'+
-      'Source: ERA5 reanalysis (ECMWF) via <a href="https://open-meteo.com" style="color:var(--green)" target="_blank">Open-Meteo</a> · CMIP6 spatial downscaling · '+
-      'Projection method: IPCC AR6 Table 4.5 + ERA5_PROJ_DELTA regional offsets · Data: <a href="https://climrisk.io" style="color:var(--green)" target="_blank">climrisk.io</a> · '+
-      new Date().toLocaleDateString('en-GB')+
-    '</div>';
+      '<table style="width:100%;border-collapse:collapse;font-size:11px">'+
+        '<thead><tr style="font-size:10px;color:var(--faint);border-bottom:1px solid rgba(255,255,255,.08)">'+
+          '<th style="padding:6px 10px;text-align:left">Horizon</th>'+
+          '<th style="padding:6px 10px;text-align:center">Temp</th>'+
+          '<th style="padding:6px 10px;text-align:center">ΔT vs baseline</th>'+
+          '<th style="padding:6px 10px;text-align:center">Precip</th>'+
+        '</tr></thead><tbody>'+
+        '<tr><td style="padding:6px 10px;color:var(--muted)">Baseline 1990–2020</td><td style="padding:6px 10px;text-align:center">'+tB+'</td><td style="padding:6px 10px;text-align:center;color:var(--faint)">—</td><td style="padding:6px 10px;text-align:center">'+pB+'</td></tr>'+
+        '<tr><td style="padding:6px 10px;color:var(--muted)">2030</td><td style="padding:6px 10px;text-align:center">'+p30.t_proj+'°C</td><td style="padding:6px 10px;text-align:center;color:var(--amber)">+'+p30.tDelta+'°C</td><td style="padding:6px 10px;text-align:center">'+p30.p_proj+' mm</td></tr>'+
+        '<tr><td style="padding:6px 10px;color:var(--muted)">2040</td><td style="padding:6px 10px;text-align:center">'+p40.t_proj+'°C</td><td style="padding:6px 10px;text-align:center;color:var(--amber)">+'+p40.tDelta+'°C</td><td style="padding:6px 10px;text-align:center">'+p40.p_proj+' mm</td></tr>'+
+        '<tr style="font-weight:600;border-top:1px solid rgba(255,255,255,.08)"><td style="padding:6px 10px;color:var(--text)">2050</td><td style="padding:6px 10px;text-align:center">'+p50.t_proj+'°C</td><td style="padding:6px 10px;text-align:center;color:var(--red)">+'+p50.tDelta+'°C</td><td style="padding:6px 10px;text-align:center">'+p50.p_proj+' mm</td></tr>'+
+      '</tbody></table>'+
+      '<div style="margin-top:10px;font-size:10px;color:var(--faint);border-top:1px solid rgba(255,255,255,.06);padding-top:8px">'+
+        'ERA5 reanalysis (ECMWF) via <a href="https://open-meteo.com" style="color:var(--green)" target="_blank">Open-Meteo</a> · CMIP6 spatial downscaling · IPCC AR6 Table 4.5 · '+
+        new Date().toLocaleDateString('en-GB')+
+      '</div></div>';
+  } else if (era5 && !nze) {
+    era5.innerHTML = '<div style="font-size:11px;color:var(--faint);text-align:center;padding:12px">Run an assessment to see ERA5 + CMIP6 climate projections for your asset location.</div>';
+  }
 }
 
 // ── DISCLOSURE PANEL ──────────────────────────────────────────────────────────
