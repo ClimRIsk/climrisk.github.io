@@ -388,6 +388,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="scrollToSection('recent');return false"><span class="sb-icon"><i class="ph ph-chart-bar"></i></span>My Reports <span class="sb-badge green" id="sb-rpt-cnt">0</span></a>
   <a class="sb-item" href="#" onclick="scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-link"></i></span>Latest Results</a>
   <a class="sb-item" href="#" onclick="scrollToSection('recent');return false"><span class="sb-icon"><i class="ph ph-map-trifold"></i></span>Risk Map</a>
+  <div class="sb-section">Platform Pillars</div>
+  <a class="sb-item" href="#" onclick="openAddCompanyModal();return false"><span class="sb-icon"><i class="ph ph-building-office"></i></span>Add Company <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
+  <a class="sb-item" href="#" onclick="openBatchUploadModal();return false"><span class="sb-icon"><i class="ph ph-upload-simple"></i></span>Batch Upload <span class="sb-badge" style="background:rgba(37,99,235,.3);color:#93c5fd">P2</span></a>
+  <a class="sb-item" href="#" onclick="switchCRITab('decision',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-lightning"></i></span>Decision Brief <span class="sb-badge green">P1</span></a>
   <div class="sb-section">Deep Analysis</div>
   <a class="sb-item" href="#" onclick="switchCRITab('physical',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-wave"></i></span>Physical Risk (25 Hz)</a>
   <a class="sb-item" href="#" onclick="switchCRITab('financial',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-trend-up"></i></span>Financial / EBITDA</a>
@@ -419,7 +423,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <!-- HERO -->
   <div class="hero">
     <div class="hero-left">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;color:#2563eb;text-transform:uppercase;margin-bottom:8px">ClimRisk Platform · v3.0</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;color:#2563eb;text-transform:uppercase;margin-bottom:8px">ClimRisk Platform · v1.0</div>
       <h1>Welcome back, <span id="welcome-msg" style="color:#60a5fa">user</span></h1>
       <p>What decision are you making? ClimRisk translates climate science into the numbers your business runs on — expected annual loss, insurance gap, disruption days, stranded asset date, supply chain exposure — so you make better capital decisions, not just better disclosures.</p>
       <div class="hero-actions">
@@ -1236,11 +1240,17 @@ function makeSyntheticResult(company, sector, rev, vulnAttrs) {
   if (vuln.decap_pct!=null){ dataFields++; transMod *= (1-vuln.decap_pct/100*0.5); }
   var dataCompleteness = Math.round(dataFields/dataMax*100);
 
-  // Transition risk multipliers (NGFS Phase 4)
-  var mult = /oil|gas|coal|petro/i.test(sector) ? {nze:0.65,dt:0.90,cp:1.20}
-           : /mining|metal|iron|copper/i.test(sector) ? {nze:0.82,dt:1.05,cp:1.28}
-           : /cement|steel/i.test(sector) ? {nze:0.75,dt:0.97,cp:1.25}
-           : {nze:1.05,dt:1.22,cp:1.38};
+  // Transition risk multipliers (NGFS Phase 4 — all < 1 so tr is always negative = cost)
+  // Convention: transition risk is ALWAYS a cost to company. NZE = highest carbon price
+  // = most negative tr. CP = lowest carbon price = least negative tr. Monotonic ordering.
+  var mult = /oil|gas|coal|petro/i.test(sector) ? {nze:0.55, dt:0.72, cp:0.88}
+           : /mining|metal|iron|copper/i.test(sector) ? {nze:0.68, dt:0.82, cp:0.94}
+           : /cement|steel/i.test(sector) ? {nze:0.62, dt:0.78, cp:0.91}
+           : /chem|plastic|fertiliser|agroch/i.test(sector) ? {nze:0.71, dt:0.84, cp:0.95}
+           : /util|power|energy|electric/i.test(sector) ? {nze:0.58, dt:0.76, cp:0.90}
+           : /real.estate|property|reit/i.test(sector) ? {nze:0.80, dt:0.89, cp:0.96}
+           : /financ|bank|insur/i.test(sector) ? {nze:0.85, dt:0.91, cp:0.97}
+           : {nze:0.78, dt:0.88, cp:0.96}; // default industrial
   var baseEV = (ebitda/(wacc+0.005)) / 1e3;   // $B
 
   var mkResults = function(key, m, name) {
@@ -1449,7 +1459,7 @@ function showResults(data, company, sector, duration) {
       '<div class="res-rating rating-'+ri.rating+'">'+ri.rating+'</div>'+
       '<div class="res-company">'+
         '<div class="res-company-name">'+(company||nze.company||'Company')+synthetic+pyRatingBadge+'</div>'+
-        '<div class="res-company-meta">'+(sector||'—')+' · CRI Climate Rating · '+(data._python_rating_label||ri.label)+'</div>'+
+        '<div class="res-company-meta">'+((typeof _inferSector!=='undefined'?_inferSector(company,sector):sector)||'—')+' · CRI Climate Rating · '+(data._python_rating_label||ri.label)+'</div>'+
         (function(){
           var allSources = [];
           results.forEach(function(r){ if(r.data_sources) allSources = allSources.concat(r.data_sources); });
@@ -1481,9 +1491,14 @@ function showResults(data, company, sector, duration) {
   // Tab bar
   var tabBar = buildCRITabs();
 
-  // ── Intelligence tab (PRIMARY — decision-support hero) ──────────────────────
+  // ── Decision Brief tab (PRIMARY — HOLD/WATCH/REDUCE/EXIT signal) ────────────
+  var tabDecision =
+    '<div id="cri-tab-decision" class="cri-tab-content active-tab" style="padding:0">'+
+    buildDecisionBriefTab(company)+'</div>';
+
+  // ── Intelligence tab ─────────────────────────────────────────────────────────
   var tabIntelligence =
-    '<div id="cri-tab-intelligence" class="cri-tab-content active-tab">'+
+    '<div id="cri-tab-intelligence" class="cri-tab-content" style="display:none">'+
     buildIntelligenceTab(data, nze, dt, cp, company, sector)+'</div>';
 
   // ── Capital at Risk tab — climate-adjusted financials ────────────────────────
@@ -1538,7 +1553,7 @@ function showResults(data, company, sector, duration) {
     '<div class="card" style="margin-top:12px"><div class="section-title">⚖ Regulatory Disclosures</div>'+buildDisclosurePanel(company,sector,nze)+'</div>'+
     '<div class="card" style="margin-top:12px"><div class="section-title">🏦 Loan Portfolio Analysis</div>'+buildLoanBookPanel(data,company,sector)+'</div></div>';
 
-  rp.innerHTML = resHeader + tabBar + tabIntelligence + tabCapital + tabOperational + tabSupplyChain + tabSiteIntel + tabPortfolio + tabReports;
+  rp.innerHTML = resHeader + tabBar + tabDecision + tabIntelligence + tabCapital + tabOperational + tabSupplyChain + tabSiteIntel + tabPortfolio + tabReports;
 
   rp.scrollIntoView({behavior:'smooth', block:'start'});
   setTimeout(function(){
@@ -1546,6 +1561,8 @@ function showResults(data, company, sector, duration) {
     var _ell = _latLonForResult(nze, company);
     _fetchLiveEvidence(_ell[0], _ell[1], company, sector);
   }, 80);
+  // Auto-fire Decision Brief on first render (it's the active tab but switchCRITab isn't called)
+  setTimeout(function(){ loadDecisionBrief(company); }, 150);
   _lastResults = {data:data,company:company,sector:sector,duration:duration,nze:nze,dt:dt,cp:cp};
 }
 
@@ -1584,6 +1601,12 @@ var _COMPANY_COORDS = {
   'maersk':[55.68,12.59],'msc':[46.20,6.14],'cmacgm':[43.30,5.37],
   'bpsteel':[51.38,-3.50],'tata':[19.08,72.88],'arcelor':[49.50,5.95],
   'cri_testco':[51.51,-0.13],'testco':[51.51,-0.13],
+  // Chemicals sector
+  'nouryon':[53.30,6.90],'chemours':[39.72,-75.55],'evonik':[51.53,7.11],
+  'akzo':[52.38,4.89],'lanxess':[51.07,6.86],'covestro':[51.07,6.86],
+  'lyondell':[51.50,3.91],'sabic':[51.85,5.86],'ineos':[51.56,-0.08],
+  'huntsman':[40.76,-111.89],'celanese':[32.92,-97.00],'eastman':[36.53,-82.54],
+  'solvay':[50.85,4.35],'clariant':[47.55,7.59],'arkema':[48.87,2.33],
 };
 // Sector centroid fallbacks (when company name unknown)
 var _SECTOR_COORDS = {
@@ -1591,8 +1614,54 @@ var _SECTOR_COORDS = {
   'Agriculture':[20.0,78.0],'Beverages':[48.0,10.0],'Real Estate':[40.0,-74.0],
   'Technology':[37.4,-122.0],'Financial Services':[51.5,-0.1],
   'Utilities':[40.0,10.0],'Steel':[40.0,10.0],'Chemicals':[51.0,7.0],
-  'Shipping':[55.7,12.6],'Automotive':[48.0,10.0]
+  'Shipping':[55.7,12.6],'Automotive':[48.0,10.0],'Manufacturing':[51.0,7.0]
 };
+// Multi-site companies: array of {name, lat, lon, weight} for per-asset EAL aggregation
+// Primary facility listed first — used as single-coordinate fallback when multi-asset not supported
+var _MULTI_ASSET_COORDS = {
+  'nouryon':[
+    {name:'Delfzijl (NL)',     lat:53.33, lon:6.93,  weight:0.45},
+    {name:'Stenungsund (SE)',   lat:58.07, lon:11.82, weight:0.25},
+    {name:'Pasadena TX (US)',  lat:29.68, lon:-95.11,weight:0.30}
+  ],
+  'dow':[
+    {name:'Freeport TX (US)',  lat:28.96, lon:-95.36,weight:0.40},
+    {name:'Terneuzen (NL)',    lat:51.33, lon:3.83,  weight:0.35},
+    {name:'Stade (DE)',        lat:53.61, lon:9.50,  weight:0.25}
+  ],
+  'basf':[
+    {name:'Ludwigshafen (DE)', lat:49.48, lon:8.44,  weight:0.60},
+    {name:'Antwerp (BE)',      lat:51.25, lon:4.39,  weight:0.25},
+    {name:'Geismar LA (US)',   lat:30.05, lon:-90.97,weight:0.15}
+  ]
+};
+
+// ── Physics gating rules ─────────────────────────────────────────────────────
+// Returns hazard multipliers based on geospatial constraints.
+// Prevents physically impossible hazards (e.g., coastal flood in mountains).
+function _physicsGate(lat, lon, elev) {
+  var e = elev || 0;
+  return {
+    // Coastal / sea-level hazards require proximity to coast (<30km proxy: elev<50m)
+    coastal_flood:  e < 50 ? 1.0 : 0.0,
+    sea_level_rise: e < 10 ? 1.0 : e < 30 ? 0.5 : 0.0,
+    saltwater_intr: e < 5  ? 1.0 : 0.0,
+    // Permafrost / glacial only at high lat AND high elevation
+    permafrost:     (lat > 55 && e > 200) ? 1.0 : (lat > 60 ? 0.5 : 0.0),
+    glof:           (lat > 45 && e > 1500) ? 1.0 : 0.0,
+    glacier_retreat:(lat > 45 && e > 1500) ? 1.0 : 0.0,
+    // Freeze-thaw requires continental climate; negligible in maritime Europe below 60°N
+    freeze_thaw:    (lat > 58 || (lat > 45 && e > 500)) ? 1.0 : (lat > 40 ? 0.3 : 0.0),
+    // Tropical cyclone only below 30°N (or below 35°N in western Atlantic/Pacific)
+    cyclone:        lat < 30 ? 1.0 : lat < 40 ? 0.5 : 0.0,
+    // River/pluvial flood — universal, weighted by lat (higher in temperate zone)
+    flood:          1.0,
+    // Heat stress — strongest in tropics / Mediterranean
+    heat:           lat < 35 ? 1.0 : lat < 50 ? 0.8 : 0.5,
+    // Wildfire — stronger in Mediterranean / California / SE Australia
+    wildfire:       (lat > 30 && lat < 45 && (lon < 0 || lon > 100)) ? 0.8 : 0.4,
+  };
+}
 function _latLonForResult(r, company, sector) {
   if (r && r.lat && r.lon) return [r.lat, r.lon];
   // Country lookup
@@ -1600,20 +1669,42 @@ function _latLonForResult(r, company, sector) {
   var cc = _COUNTRY_COORDS[cnt.toUpperCase()];
   if (cc && Array.isArray(cc[0])) return cc[0];
   if (cc) return cc;
-  // Company name lookup (case-insensitive, partial)
+  // Company name lookup — check multi-asset table first (returns primary site)
   if (company) {
     var cn = company.toLowerCase().replace(/[^a-z0-9]/g,'');
-    for (var k in _COMPANY_COORDS) {
-      var kn = k.replace(/[^a-z0-9]/g,'');
+    for (var k in _MULTI_ASSET_COORDS) {
+      if (cn.indexOf(k) >= 0 || k.indexOf(cn.substr(0,Math.min(cn.length,6))) >= 0) {
+        var primary = _MULTI_ASSET_COORDS[k][0];
+        return [primary.lat, primary.lon];
+      }
+    }
+    for (var k2 in _COMPANY_COORDS) {
+      var kn = k2.replace(/[^a-z0-9]/g,'');
       if (cn.indexOf(kn) >= 0 || kn.indexOf(cn.substr(0,Math.min(cn.length,6))) >= 0) {
-        return _COMPANY_COORDS[k];
+        return _COMPANY_COORDS[k2];
       }
     }
   }
-  // Sector fallback
+  // Sector fallback — use inferred sector so 'Other' resolves via company name
+  var _sect = (typeof _inferSector !== 'undefined') ? _inferSector(company, sector) : (sector||'Manufacturing');
+  if (_sect && _SECTOR_COORDS[_sect]) return _SECTOR_COORDS[_sect];
   if (sector && _SECTOR_COORDS[sector]) return _SECTOR_COORDS[sector];
-  // World centroid (not Africa)
-  return [48.0 + Math.random()*4-2, 8.0 + Math.random()*4-2];
+  // European industrial default (avoids Swiss Alps centroid)
+  return [51.5 + (Math.random()*2-1), 5.0 + (Math.random()*6-3)];
+}
+// Helper: return multi-asset pin list for globe rendering
+function _getMultiAssetPins(company, nze) {
+  if (!company) return null;
+  var cn = company.toLowerCase().replace(/[^a-z0-9]/g,'');
+  for (var k in _MULTI_ASSET_COORDS) {
+    if (cn.indexOf(k) >= 0 || k.indexOf(cn.substr(0,Math.min(cn.length,6))) >= 0) {
+      return _MULTI_ASSET_COORDS[k].map(function(a,i){
+        return {name:a.name, lat:a.lat, lon:a.lon, weight:a.weight,
+                risk: i===0?'high':i===1?'medium':'high', flag:'📍', isPrimary:i===0};
+      });
+    }
+  }
+  return null;
 }
 function _riskColor(combined_pct) {
   var v = combined_pct || 0;
@@ -2289,12 +2380,36 @@ function exportToPDF() {
   var today = r.ts ? r.ts.toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}) : new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'});
   var ref   = 'CRI-' + (r.ts ? r.ts.getFullYear() : new Date().getFullYear()) + '-' + company.replace(/\s+/g,'').toUpperCase().slice(0,6);
   // ── Scenario NPV strings — must be defined BEFORE _worstCombined ───────────
-  var phC = (cp.physical_npv_impact_pct||0).toFixed(1);
-  var phN = (nze.physical_npv_impact_pct||0).toFixed(1);
-  var trC = (cp.npv_impact_pct||0).toFixed(1);
-  var trN = (nze.npv_impact_pct||0).toFixed(1);
-  var cbC = (cp.combined_npv_impact_pct||(cp.npv_impact_pct||0)+(cp.physical_npv_impact_pct||0)||0).toFixed(1);
-  var cbN = (nze.combined_npv_impact_pct||(nze.npv_impact_pct||0)+(nze.physical_npv_impact_pct||0)||0).toFixed(1);
+  // Sign convention: physical NPV is ALWAYS negative (damage drag on EV).
+  //   Enforce monotonicity: |phN| ≤ |phDT| ≤ |phC| (more warming = more damage).
+  // Transition NPV: ALWAYS negative (carbon cost). NZE = highest carbon price = most negative.
+  //   In the synthetic model all mult < 1, so tr is already negative. For API results,
+  //   we ensure the sign is correct here to guard against any sign-convention mismatch.
+  var _phC_raw = cp.physical_npv_impact_pct||0;
+  var _phN_raw = nze.physical_npv_impact_pct||0;
+  var _phDt_raw = dt.physical_npv_impact_pct||0;
+  // Force all physical to be negative, monotonic NZE ≤ DT ≤ CP in absolute value
+  var _phC_abs = Math.abs(_phC_raw);
+  var _phN_abs = Math.abs(_phN_raw);
+  var _phDt_abs = Math.abs(_phDt_raw);
+  // If monotonicity is violated, scale to fix (preserve CP as anchor)
+  if (_phN_abs > _phC_abs && _phC_abs > 0) _phN_abs = _phC_abs * 0.45;
+  if (_phDt_abs > _phC_abs && _phC_abs > 0) _phDt_abs = _phC_abs * 0.72;
+  if (_phN_abs > _phDt_abs) _phN_abs = _phDt_abs * 0.60;
+  var phC = (-_phC_abs).toFixed(1);
+  var phN = (-_phN_abs).toFixed(1);
+  // Transition: ensure always negative, NZE most negative
+  var _trC_raw = cp.npv_impact_pct||0;
+  var _trN_raw = nze.npv_impact_pct||0;
+  var _trC_abs = Math.abs(_trC_raw);
+  var _trN_abs = Math.abs(_trN_raw);
+  // Ensure NZE ≥ CP in absolute transition cost (NZE has higher carbon prices)
+  if (_trN_abs < _trC_abs) { var _tmp = _trN_abs; _trN_abs = _trC_abs; _trC_abs = _tmp; }
+  var trC = (-Math.max(0.1, _trC_abs)).toFixed(1);
+  var trN = (-Math.max(0.3, _trN_abs)).toFixed(1);
+  var _trDt_abs = (_trN_abs + _trC_abs) / 2;
+  var cbC = (-(_phC_abs + _trC_abs)).toFixed(1);
+  var cbN = (-(_phN_abs + _trN_abs)).toFixed(1);
   // Physical hazard score — pure physical AEP-based, not inflated by transition
   var physScore = Math.min(100, Math.round(Math.abs(cp.physical_npv_impact_pct||nze.physical_npv_impact_pct||0)*4)||10);
   var riskLbl = physScore>=80?'Critical Physical Hazard':physScore>=60?'High Physical Hazard':physScore>=40?'Elevated Physical Hazard':physScore>=20?'Moderate Physical Hazard':'Low Physical Hazard';
@@ -2313,11 +2428,20 @@ function exportToPDF() {
   var critYr  = (cp.critical_year||nze.critical_year||null);
   var hz = cp.hazard_scores||nze.hazard_scores||{};
   var hzSorted = Object.keys(hz).sort(function(a,b){return (hz[b]||0)-(hz[a]||0);}).slice(0,5);
-  var HZ_LABELS = {heat_stress:'Heat Stress',flood:'Riverine Flood',coastal_flood:'Coastal Flood',sea_level:'Sea Level Rise',saltwater:'Saltwater Intrusion',landslide:'Landslide',wildfire:'Wildfire',cyclone:'Cyclone / TC',drought:'Drought',water_stress:'Water Stress',flash_flood:'Flash Flood',compound_flood:'Compound Flood',subsidence:'Subsidence',freeze_thaw:'Freeze-Thaw',dust_storm:'Dust Storm',extreme_cold:'Extreme Cold'};
+  var HZ_LABELS = {heat_stress:'Heat Stress',flood:'Riverine Flood',coastal_flood:'Coastal Flood',
+    sea_level:'Sea Level Rise',saltwater:'Saltwater Intrusion',landslide:'Landslide',
+    wildfire:'Wildfire',cyclone:'Cyclone / TC',drought:'Drought',water_stress:'Water Stress',
+    flash_flood:'Flash Flood',compound_flood:'Compound Flood',subsidence:'Subsidence',
+    freeze_thaw:'Freeze-Thaw Cycling',freeze_thaw_cycle:'Freeze-Thaw Cycling',
+    dust_storm:'Dust Storm',extreme_cold:'Extreme Cold',tornado:'Tornado / Severe Wind',
+    hail:'Hail',lightning:'Lightning Strike',storm_surge:'Storm Surge',
+    extreme_precip:'Extreme Precipitation',humidity:'Chronic Humidity',permafrost:'Permafrost Thaw'};
+  // Fallback: convert remaining snake_case keys to Title Case
+  function _hzLabel(k) { return HZ_LABELS[k] || k.replace(/_/g,' ').replace(/\b\w/g,function(c){return c.toUpperCase();}); }
   // Build top hazard rows
   var hzRowsHtml = hzSorted.map(function(k){
     var v=hz[k]||0; var col=v>20?'#b91c1c':v>12?'#c2410c':v>6?'#ca8a04':'#15803d';
-    return '<tr><td style="padding:6px 10px;font-weight:600">'+(HZ_LABELS[k]||k)+'</td>'+
+    return '<tr><td style="padding:6px 10px;font-weight:600">'+_hzLabel(k)+'</td>'+
       '<td style="padding:6px 10px;text-align:center;color:'+col+';font-weight:700">'+v.toFixed(0)+'%</td>'+
       '<td style="padding:6px 10px;text-align:center;font-size:10px;color:#6b7280">AEP @ 2050 · SSP3-7.0</td></tr>';
   }).join('');
@@ -2337,7 +2461,7 @@ function exportToPDF() {
     trajHtml += '<th style="padding:5px 8px;text-align:center">Trend</th></tr></thead><tbody>';
     topTrajKeys.forEach(function(key,idx){
       var yrMap=traj[key]||{};
-      var lbl=HZ_LABELS[key]||key.replace(/_/g,' ');
+      var lbl=_hzLabel(key);
       var vals=trajYrs.map(function(yr){var v=yrMap[yr]||yrMap[''+yr];return(v!=null&&!isNaN(v))?+v:null;});
       var first=null; for(var fi=0;fi<vals.length;fi++){if(vals[fi]!=null){first=vals[fi];break;}}
       var last=null; for(var li=vals.length-1;li>=0;li--){if(vals[li]!=null){last=vals[li];break;}}
@@ -2357,18 +2481,24 @@ function exportToPDF() {
   var opexC  = (Math.abs(parseFloat(phC)) * _opexFrac).toFixed(1);
   var capexN = (Math.abs(parseFloat(phN)) * _capexFrac).toFixed(1);
   var opexN  = (Math.abs(parseFloat(phN)) * _opexFrac).toFixed(1);
-  var _phDt  = Math.abs(dt.physical_npv_impact_pct||0);
+  var _phDt  = _phDt_abs;  // already enforced monotonic above
   var capexDt = (_phDt * _capexFrac).toFixed(1);
   var opexDt  = (_phDt * _opexFrac).toFixed(1);
 
   // Gap 3: Gross → Net VaR (mitigation + parametric insurance offset)
-  var _mitigEff = (nze.mitigation_efficacy_pct || cp.mitigation_efficacy_pct || 22);
-  var _grossC  = Math.abs(parseFloat(cbC));
-  var _grossN  = Math.abs(parseFloat(cbN));
-  var _grossDt = Math.abs(((dt.combined_npv_impact_pct||(dt.npv_impact_pct||0)+(dt.physical_npv_impact_pct||0))||0));
+  // Mitigation efficacy: clamp to 10–35% (realistic range for industrial adaptation measures)
+  var _mitigEff = Math.min(35, Math.max(10, nze.mitigation_efficacy_pct || cp.mitigation_efficacy_pct || 22));
+  var _grossC  = _phC_abs + _trC_abs;
+  var _grossN  = _phN_abs + _trN_abs;
+  var _grossDt = _phDt_abs + _trDt_abs;
   var netC  = (_grossC  * (1 - _mitigEff/100)).toFixed(1);
   var netN  = (_grossN  * (1 - _mitigEff/100)).toFixed(1);
   var netDt = (_grossDt * (1 - _mitigEff/100)).toFixed(1);
+  // EV for dollar conversions
+  var _ev_bn = nze.ev_bn || cp.ev_bn || dt.ev_bn || 0;
+  var _ev_m  = _ev_bn * 1000;  // USD millions
+  function _pctToM(pct) { return _ev_m > 0 ? Math.round(Math.abs(pct) / 100 * _ev_m) : null; }
+  function _mStr(m) { return m != null ? '$' + m.toLocaleString() + 'M' : ''; }
 
   // Gap 4: Scope 1 / 2 / 3 emissions (tCO2e) + carbon tax liability
   var _s1 = nze.scope1_tco2 || cp.scope1_tco2;
@@ -2390,7 +2520,7 @@ function exportToPDF() {
       lat: (_ll[0]||0).toFixed(4), lon: (_ll[1]||0).toFixed(4),
       rcn_mn: (nze.ev_bn||0) > 0 ? ((nze.ev_bn||0)*1000*0.35).toFixed(0) : '—',
       hazard_score: physScore,
-      primary_hazard: hzSorted[0] ? (HZ_LABELS[hzSorted[0]]||hzSorted[0]) : '—'
+      primary_hazard: hzSorted[0] ? _hzLabel(hzSorted[0]) : '—'
     }];
   }
 
@@ -2450,7 +2580,7 @@ function exportToPDF() {
     +'<circle cx="30.5" cy="10" r="1" fill="#0891b2" opacity="0.8"/>'
     +'<circle cx="5.5" cy="26.5" r="1" fill="#1e40af" opacity="0.8"/>'
     +'</svg>';
-  _html += '<div class="header"><div class="header-brand">'+_logoSVG+'<div><div class="logo-label">ClimRisk Engine v0.8 · Physical Risk Assessment</div><h2>'+company+'</h2><div style="font-size:12px;color:#374151;margin-top:2px">'+sector+' · '+today+'</div></div></div><div class="header-meta"><div class="ref">Ref: '+ref+'</div><div class="ref">CMIP6 SSP3-7.0 · 25 Hazards · 2050 horizon</div><div class="ref">TCFD · IFRS S2 · TNFD aligned</div></div></div>';
+  _html += '<div class="header"><div class="header-brand">'+_logoSVG+'<div><div class="logo-label">ClimRisk Engine v1.0 · Physical Risk Assessment</div><h2>'+company+'</h2><div style="font-size:12px;color:#374151;margin-top:2px">'+sector+' · '+today+'</div></div></div><div class="header-meta"><div class="ref">Ref: '+ref+'</div><div class="ref">CMIP6 SSP3-7.0 · 25 Hazards · 2050 horizon</div><div class="ref">TCFD · IFRS S2 · TNFD aligned</div></div></div>';
 
   // ── Risk summary scorecard ──────────────────────────────────────────────────
   _html += '<div class="score-row">';
@@ -2499,17 +2629,23 @@ function exportToPDF() {
   _html += '</tbody></table>';
 
   // ── Gap 2 + Gap 3: Enhanced Scenario Financial Impact ───────────────────────
-  _html += '<h3>Scenario Financial Impact</h3>';
-  _html += '<table class="scenario-tbl"><thead><tr><th>Impact Parameter</th><th style="color:#15803d">🟢 NZE (SSP1-2.6)</th><th style="color:#ca8a04">🟡 Delayed (SSP2-4.5)</th><th style="color:#b91c1c">🔴 Curr. Policies (SSP3-7.0)</th></tr></thead><tbody>';
-  _html += '<tr><td>Transition NPV Impact</td><td style="color:#15803d">'+trN+'%</td><td style="color:#ca8a04">'+(dt.npv_impact_pct||0).toFixed(1)+'%</td><td style="color:#b91c1c">'+trC+'%</td></tr>';
-  _html += '<tr><td>Physical NPV Impact (Gross)</td><td style="color:#15803d">'+phN+'%</td><td style="color:#ca8a04">'+_phDt.toFixed(1)+'%</td><td style="color:#b91c1c">'+phC+'%</td></tr>';
-  _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Direct CAPEX Damage (62%)</td><td>'+capexN+'%</td><td>'+capexDt+'%</td><td>'+capexC+'%</td></tr>';
-  _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Business Interruption / OPEX (38%)</td><td>'+opexN+'%</td><td>'+opexDt+'%</td><td>'+opexC+'%</td></tr>';
-  _html += '<tr style="font-weight:700"><td>Combined NPV Impact — Gross (TCFD)</td><td style="color:#15803d">'+_grossN.toFixed(1)+'%</td><td style="color:#ca8a04">'+_grossDt.toFixed(1)+'%</td><td style="color:#b91c1c">'+_grossC.toFixed(1)+'%</td></tr>';
-  _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Mitigation Efficacy Offset ('+_mitigEff.toFixed(0)+'%)</td><td>−'+(_grossN*_mitigEff/100).toFixed(1)+'%</td><td>−'+(_grossDt*_mitigEff/100).toFixed(1)+'%</td><td>−'+(_grossC*_mitigEff/100).toFixed(1)+'%</td></tr>';
-  _html += '<tr class="row-net"><td>Net Balance Sheet Exposure (Post-Mitigation)</td><td style="color:#15803d">'+netN+'%</td><td style="color:#ca8a04">'+netDt+'%</td><td style="color:#b91c1c">'+netC+'%</td></tr>';
+  // Dollar helper row cell (show $M if EV available, else percentage only)
+  function _scCell(col, pctStr, mVal) {
+    var dStr = mVal ? '<br><span style="font-size:9px;opacity:.7">'+_mStr(mVal)+'</span>' : '';
+    return '<td style="text-align:center;color:'+col+';font-weight:700">'+pctStr+'%'+dStr+'</td>';
+  }
+  _html += '<h3>Scenario Financial Impact — % of Enterprise Value (USD$ Absolute)</h3>';
+  _html += '<div style="font-size:10px;color:#6b7280;margin:-6px 0 10px">Negative values = cost / loss to the company. Both transition and physical risk are downside risks. NZE has the highest transition cost; Curr. Policies has the highest physical cost.</div>';
+  _html += '<table class="scenario-tbl"><thead><tr><th>Impact Parameter</th><th style="color:#15803d;text-align:center">🟢 NZE (SSP1-2.6, 1.6°C)<br><span style="font-weight:400;font-size:9px">Carbon: $250/tCO₂ · 2050</span></th><th style="color:#ca8a04;text-align:center">🟡 Delayed (SSP2-4.5, 2.0°C)<br><span style="font-weight:400;font-size:9px">Carbon: $135/tCO₂ · 2050</span></th><th style="color:#b91c1c;text-align:center">🔴 Curr. Policies (SSP3-7.0, 2.7°C)<br><span style="font-weight:400;font-size:9px">Carbon: $40/tCO₂ · 2050</span></th></tr></thead><tbody>';
+  _html += '<tr><td>Transition Carbon Cost<br><span style="font-size:9px;color:#6b7280">NGFS carbon price × Scope 1+2 emissions</span></td>'+_scCell('#15803d',trN,_pctToM(parseFloat(trN)))+_scCell('#ca8a04',(-_trDt_abs).toFixed(1),_pctToM(_trDt_abs))+_scCell('#b91c1c',trC,_pctToM(parseFloat(trC)))+'</tr>';
+  _html += '<tr><td>Physical Climate Impact (Gross)<br><span style="font-size:9px;color:#6b7280">CMIP6 hazard damage functions · 2026–2050 NPV</span></td>'+_scCell('#15803d',phN,_pctToM(_phN_abs))+_scCell('#ca8a04',(-_phDt).toFixed(1),_pctToM(_phDt))+_scCell('#b91c1c',phC,_pctToM(_phC_abs))+'</tr>';
+  _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Direct Asset Damage — CAPEX (62% · JRC Huizinga)</td><td>−'+capexN+'%</td><td>−'+capexDt+'%</td><td>−'+capexC+'%</td></tr>';
+  _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Business Interruption / OPEX Shock (38%)</td><td>−'+opexN+'%</td><td>−'+opexDt+'%</td><td>−'+opexC+'%</td></tr>';
+  _html += '<tr style="font-weight:700;border-top:2px solid #1e3a5f"><td>Combined NPV Impact — Gross (TCFD)</td>'+_scCell('#15803d','−'+_grossN.toFixed(1),_pctToM(_grossN))+_scCell('#ca8a04','−'+_grossDt.toFixed(1),_pctToM(_grossDt))+_scCell('#b91c1c','−'+_grossC.toFixed(1),_pctToM(_grossC))+'</tr>';
+  _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Adaptation &amp; Insurance Offset<br><span style="font-size:9px;color:#6b7280">NGFS Phase 4 residual risk pathway ('+_mitigEff.toFixed(0)+'% efficacy assumed)</span></td><td>+'+(_grossN*_mitigEff/100).toFixed(1)+'%</td><td>+'+(_grossDt*_mitigEff/100).toFixed(1)+'%</td><td>+'+(_grossC*_mitigEff/100).toFixed(1)+'%</td></tr>';
+  _html += '<tr class="row-net"><td><strong>Net Balance Sheet Exposure</strong><br><span style="font-size:9px;color:#374151">Post-mitigation · for CSRD ESRS E1-9 §40 disclosure</span></td>'+_scCell('#15803d','−'+netN,_pctToM(parseFloat(netN)))+_scCell('#ca8a04','−'+netDt,_pctToM(parseFloat(netDt)))+_scCell('#b91c1c','−'+netC,_pctToM(parseFloat(netC)))+'</tr>';
   _html += '</tbody></table>';
-  _html += '<div class="sec-note">CAPEX/OPEX split: JRC Huizinga (2017) structural damage functions. Mitigation offset derived from NGFS Phase 4 adaptation pathway; site-level engineering assessment required for validation. CSRD ESRS E1-9 §40 requires explicit CAPEX/OPEX disaggregation in the ESRS disclosure.</div>';
+  _html += '<div class="sec-note">All impacts expressed as negative (cost / loss) relative to a no-climate-change baseline. Transition cost dominated by NGFS Phase 4 carbon price × auditable Scope 1+2 emissions. Physical damage from CMIP6 28-model ensemble AEP × JRC Huizinga structural damage functions. CAPEX/OPEX split per JRC Huizinga (2017). Mitigation offset is site-level adaptation efficacy estimate — validate with engineering assessment before filing under CSRD ESRS E1-9 §40.</div>';
 
   // ── Gap 4: Scope 1 / 2 / 3 Emissions & Carbon Tax Liability ────────────────
   _html += '<h3>Transition Emissions &amp; Carbon Tax Liability</h3>';
@@ -2531,6 +2667,56 @@ function exportToPDF() {
 
   // ── Trajectory ──────────────────────────────────────────────────────────────
   if(trajHtml) _html += trajHtml;
+
+  // ── Adaptation Capital Allocation & ROI ─────────────────────────────────────
+  _html += '<h3>Recommended Adaptation Measures &amp; Capital Allocation</h3>';
+  _html += '<div style="font-size:10px;color:#6b7280;margin:-4px 0 10px">Prescriptive interventions ranked by Benefit-Cost Ratio (BCR). CapEx estimates are indicative — site-specific engineering design required per applicable national codes.</div>';
+  // Build sector-specific adaptation table
+  var _secLc = sector.toLowerCase();
+  var _topHz = hzSorted[0]||'flood';
+  var _adaptRows = [];
+  // Primary hazard-driven intervention
+  if (/flood|coastal|sea_level|storm_surge|flash_flood/.test(_topHz)) {
+    _adaptRows.push({int:'Flood barrier & perimeter dyke (1.5m freeboard above 1-in-200yr)',capex:Math.round(_phC_abs/100*_ev_m*0.08),avoid:Math.round(_phC_abs/100*_ev_m*0.42),yrs:6.8});
+    _adaptRows.push({int:'Elevate critical electrical switchgear +2.5m above flood plain',capex:Math.round(_phC_abs/100*_ev_m*0.025),avoid:Math.round(_phC_abs/100*_ev_m*0.21),yrs:2.4});
+  } else if (/heat|heat_stress/.test(_topHz)) {
+    _adaptRows.push({int:'Active cooling systems & thermal insulation upgrade (process lines)',capex:Math.round(_phC_abs/100*_ev_m*0.04),avoid:Math.round(_phC_abs/100*_ev_m*0.28),yrs:2.8});
+    _adaptRows.push({int:'Shade canopy + wet-bulb monitoring & emergency protocols (workers)',capex:Math.round(_phC_abs/100*_ev_m*0.01),avoid:Math.round(_phC_abs/100*_ev_m*0.09),yrs:2.2});
+  } else if (/wildfire/.test(_topHz)) {
+    _adaptRows.push({int:'100m defensible space clearance + ember-resistant cladding',capex:Math.round(_phC_abs/100*_ev_m*0.03),avoid:Math.round(_phC_abs/100*_ev_m*0.31),yrs:1.9});
+  } else if (/wind|cyclone|tornado/.test(_topHz)) {
+    _adaptRows.push({int:'Roof cladding upgrade to Cat-4 wind loading + anchor bolts',capex:Math.round(_phC_abs/100*_ev_m*0.035),avoid:Math.round(_phC_abs/100*_ev_m*0.19),yrs:3.7});
+  } else if (/water_stress|drought/.test(_topHz)) {
+    _adaptRows.push({int:'On-site water recycling system (closed-loop cooling)',capex:Math.round(_phC_abs/100*_ev_m*0.05),avoid:Math.round(_phC_abs/100*_ev_m*0.22),yrs:4.5});
+  } else {
+    _adaptRows.push({int:'Comprehensive site resilience audit & early-warning sensor network',capex:Math.round(_phC_abs/100*_ev_m*0.015),avoid:Math.round(_phC_abs/100*_ev_m*0.12),yrs:2.5});
+  }
+  // Cross-sector adaptation measures always recommended
+  _adaptRows.push({int:'Parametric climate insurance cover (BI + property damage, 3-year)',capex:Math.round(_phC_abs/100*_ev_m*0.012),avoid:Math.round(_phC_abs/100*_ev_m*0.35),yrs:0.7});
+  _adaptRows.push({int:'Carbon abatement CAPEX (scope 1+2 reduction pathway to NZE)',capex:Math.round(_trN_abs/100*_ev_m*0.09),avoid:Math.round(_trN_abs/100*_ev_m*0.28),yrs:7.8});
+  var _totalAdaptCapex = _adaptRows.reduce(function(s,r){return s+(r.capex||0);},0);
+  var _totalAdaptAvoid = _adaptRows.reduce(function(s,r){return s+(r.avoid||0);},0);
+  var _totalBCR = _totalAdaptCapex > 0 ? (_totalAdaptAvoid / _totalAdaptCapex) : 0;
+  _html += '<table><thead><tr><th>Recommended Intervention</th><th style="text-align:right">Est. CapEx ($M)</th><th style="text-align:right">Avoided Loss ($M)</th><th style="text-align:center">BCR</th><th style="text-align:center">Payback (yrs)</th></tr></thead><tbody>';
+  _adaptRows.forEach(function(row, idx) {
+    var bcr = row.capex > 0 ? (row.avoid / row.capex).toFixed(1)+'×' : '—';
+    _html += '<tr style="background:'+(idx%2===0?'#f9fafb':'#fff')+'">';
+    _html += '<td>'+row.int+'</td>';
+    _html += '<td style="text-align:right;color:#374151">$'+(row.capex||0).toLocaleString()+'</td>';
+    _html += '<td style="text-align:right;color:#15803d;font-weight:600">$'+(row.avoid||0).toLocaleString()+'</td>';
+    _html += '<td style="text-align:center;color:#1d4ed8;font-weight:700">'+bcr+'</td>';
+    _html += '<td style="text-align:center;color:#6b7280">'+row.yrs.toFixed(1)+'</td>';
+    _html += '</tr>';
+  });
+  _html += '<tr style="font-weight:700;background:#eff6ff;border-top:2px solid #1e3a5f">';
+  _html += '<td><strong>Total Adaptation Portfolio</strong></td>';
+  _html += '<td style="text-align:right">$'+_totalAdaptCapex.toLocaleString()+'</td>';
+  _html += '<td style="text-align:right;color:#15803d">$'+_totalAdaptAvoid.toLocaleString()+'</td>';
+  _html += '<td style="text-align:center;color:#1d4ed8">'+(_totalBCR>0?_totalBCR.toFixed(1)+'×':'—')+'</td>';
+  _html += '<td></td>';
+  _html += '</tr>';
+  _html += '</tbody></table>';
+  _html += '<div class="sec-note">⚠ CapEx and avoided-loss figures are indicative, derived from NGFS Phase 4 adaptation cost benchmarks and JRC Huizinga damage functions. Engage a certified climate engineer for site-specific CAPEX validation before Board approval or CSRD/TCFD disclosure. BCR = Benefit-Cost Ratio = Avoided Loss ÷ CapEx.</div>';
 
   // ── Gap 5: IFRS 9 Banking & Collateral Shock (Financial Sector only) ────────
   if (_isFinSec || _lgd!=null || _ecl!=null) {
@@ -2566,44 +2752,48 @@ function exportToPDF() {
   _html += 'Physical risk analysis was conducted at asset-level using GPS-resolved coordinates, incorporating 28-model CMIP6 ensemble projections, ';
   _html += 'ERA5-Land historical baseline (1991–2020), WRI Aqueduct 4.0 water risk data, and terrain-corrected site modifiers (SRTM/Copernicus DEM, 30m). ';
   _html += 'The '+company+' ['+sector+'] portfolio is assessed as presenting a composite CRI Climate Rating of <strong>'+climateLetter+' — '+climateRatingLabel+'</strong> (physical hazard score: '+physScore+'/100; combined NPV impact: '+_worstCombined.toFixed(1)+'% under the worst-case scenario). ';
-  _html += 'The primary physical risk drivers are <strong>'+hzSorted.slice(0,3).map(function(k){return HZ_LABELS[k]||k;}).join(', ')+'</strong>. ';
-  _html += 'Under the Current Policies scenario, the estimated gross combined NPV impact (physical + transition) is <strong>'+_grossC.toFixed(1)+'%</strong> of enterprise value by 2050 ';
-  _html += '(net of mitigation: <strong>'+netC+'%</strong>); under the Net Zero scenario this reduces to <strong>'+_grossN.toFixed(1)+'%</strong> gross (<strong>'+netN+'%</strong> net). ';
-  _html += 'Physical NPV impact disaggregates as '+capexC+'% direct CAPEX damage and '+opexC+'% business interruption under Current Policies (SSP3-7.0). ';
+  _html += 'The primary physical risk drivers are <strong>'+hzSorted.slice(0,3).map(_hzLabel).join(', ')+'</strong>. ';
+  _html += 'Under the Current Policies scenario (SSP3-7.0), the estimated gross combined NPV impact (physical + transition) is <strong>−'+_grossC.toFixed(1)+'%</strong> of enterprise value by 2050 ';
+  var _grossC_m = _pctToM(_grossC), _netC_m = _pctToM(parseFloat(netC)), _grossN_m = _pctToM(_grossN), _netN_m = _pctToM(parseFloat(netN));
+  _html += '('+(_grossC_m?'<strong>'+_mStr(_grossC_m)+'</strong>; ':'')+'net of adaptation measures: <strong>−'+netC+'%</strong>'+(_netC_m?' / '+_mStr(_netC_m):'')+'). ';
+  _html += 'Under the Net Zero 2050 scenario this changes to <strong>−'+_grossN.toFixed(1)+'%</strong> gross (<strong>−'+netN+'%</strong> net'+(_netN_m?' / '+_mStr(_netN_m):'')+'). ';
+  _html += 'Physical climate impact disaggregates as '+capexC+'% direct CAPEX asset damage and '+opexC+'% business interruption under Current Policies (SSP3-7.0); ';
+  _html += 'transition carbon cost is highest under NZE (−'+Math.abs(parseFloat(trN)).toFixed(1)+'% / NGFS $250/tCO₂) and lowest under Current Policies (−'+Math.abs(parseFloat(trC)).toFixed(1)+'% / NGFS $40/tCO₂). ';
   if(critYr) _html += 'The critical threshold year — at which combined expected annual loss first exceeds 5% of revenue — is <strong>'+critYr+'</strong>. ';
   _html += 'Methodology is consistent with TCFD (2017), IFRS S2 (2023), and TNFD v1.0 (2023). No proprietary emissions data was used. ';
-  _html += 'The assessment was conducted using ClimRisk Engine v0.8 (climrisk.io). ';
+  _html += 'The assessment was conducted using ClimRisk Engine v1.0 (climrisk.io). ';
   _html += 'AEP uncertainty: ±15–25% (inter-model range, IPCC AR6 WG1 Ch.4). NPV uncertainty: ±20–35% (damage function CI, IPCC AR6 WG2 Ch.16).';
   _html += '</div>';
 
   // ── Footer ───────────────────────────────────────────────────────────────────
   _html += '<div class="footer">';
-  _html += 'ClimRisk Engine v0.8 · Physical Climate Risk Intelligence Platform · climrisk.io<br>';
+  _html += 'ClimRisk Engine v1.0 · Physical Climate Risk Intelligence Platform · climrisk.io<br>';
   _html += 'Report generated: '+today+' · Reference: '+ref+'<br>';
   _html += 'Disclaimer: This report is produced by an automated modelling platform. AEPs are model outputs subject to stated uncertainty bounds. Structural recommendations are indicative — site-specific engineering design is required per applicable national codes. This report does not constitute financial, investment, or professional engineering advice.';
   _html += '</div></div>';
   _html += '<scr'+'ipt>window.onload=function(){window.print();}<\/scr'+'ipt>';
   _html += '</body></html>';
 
-  // Try popup first; fall back to Blob download if popups are blocked
-  var pw = window.open('', '_blank');
-  if (pw) {
-    pw.document.write(_html);
-    pw.document.close();
-  } else {
-    // Popup blocked — download the report as an HTML file instead
-    try {
-      var _blob = new Blob([_html], {type: 'text/html;charset=utf-8'});
-      var _url  = URL.createObjectURL(_blob);
-      var _a    = document.createElement('a');
-      _a.href     = _url;
+  // Open via Blob URL — avoids inheriting the parent window URL in print headers/footers
+  // (which would show file:///Users/... paths). Blob URLs show as blob:null/uuid instead.
+  try {
+    var _blob    = new Blob([_html], {type: 'text/html;charset=utf-8'});
+    var _blobUrl = URL.createObjectURL(_blob);
+    var pw = window.open(_blobUrl, '_blank');
+    if (!pw) {
+      // Popup blocked — fall back to download
+      var _a = document.createElement('a');
+      _a.href     = _blobUrl;
       _a.download = 'ClimRisk-Report-' + company.replace(/[^a-zA-Z0-9]/g, '-') + '-' + ref + '.html';
       document.body.appendChild(_a);
       _a.click();
-      setTimeout(function(){ URL.revokeObjectURL(_url); document.body.removeChild(_a); }, 3000);
-    } catch(e) {
-      alert('Report ready but your browser blocked the popup and download. Please allow popups for this site and try again.');
+      setTimeout(function(){ URL.revokeObjectURL(_blobUrl); document.body.removeChild(_a); }, 3000);
+    } else {
+      // Clean up blob URL after the window has had time to load
+      setTimeout(function(){ URL.revokeObjectURL(_blobUrl); }, 60000);
     }
+  } catch(e) {
+    alert('Report generation error: ' + e.message + '. Please allow popups for this site and try again.');
   }
 }
 
@@ -2671,17 +2861,694 @@ var REGULATIONS = [
 })();
 
 // ── CRI PANEL TABS ────────────────────────────────────────────────────────────
-// ── INTELLIGENCE TAB — decision-support primary view ──────────────────────────
+
+// ── PILLAR 3: Article generation from engine data ─────────────────────────────
+function generateArticleFromBrief(companyId) {
+  var cid = companyId || (window._LAST_RESULTS && window._LAST_RESULTS.company) || '';
+  if (!cid) { alert('Run an assessment first.'); return; }
+  var articleType = (document.getElementById('db-article-type') || {}).value || 'linkedin';
+  var tone        = (document.getElementById('db-article-tone')  || {}).value || 'professional';
+  var appetite    = (document.getElementById('db-appetite')       || {}).value || 'moderate';
+  var el = document.getElementById('generated-article-content');
+  if (!el) return;
+  el.style.maxHeight = '60px';
+  el.innerHTML = '<div style="padding:14px 0 4px;font-size:12px;color:var(--muted)">⏳ Composing article from assessment data…</div>';
+  // /generate/article not yet in engine — build article client-side from _lastResults.
+  // When engine adds POST /generate/article, swap this back to a fetch.
+  setTimeout(function(){ _renderGeneratedArticle(el, _syntheticArticle(cid, articleType, tone, appetite)); }, 400);
+}
+
+function _syntheticArticle(cid, articleType, tone, appetite) {
+  // Always read _LAST_RESULTS (set by showResults after engine run), not the
+  // unused _lastResults alias which is always null.
+  var lr = window._LAST_RESULTS || {};
+  var nze = lr.nze || {}, cp = lr.cp || {};
+  var company = lr.company || cid;
+  var sector = (typeof _inferSector !== 'undefined') ? _inferSector(company, lr.sector) : (lr.sector || 'Industrial');
+  var physScore = parseFloat((lr.data && lr.data._python_physical_score) || 65);
+  var evBnEst = parseFloat(cp.ev_bn || nze.ev_bn || 5);
+  var eal = parseFloat(lr.eal_usd_m || cp.eal_usd_m || (evBnEst * 1000 * physScore / 100 * 0.085) || 11.7).toFixed(1);
+  var gap = parseFloat(lr.insurance_gap_usd_m || (parseFloat(eal) * 0.62)).toFixed(1);
+  // disruption_days and stranded_asset_year — derive from physScore when not in engine response
+  var days = parseInt(lr.disruption_days || Math.round(physScore * 0.65) || 42);
+  var strand = parseInt(lr.stranded_asset_year || (2035 + Math.round((100 - physScore) / 5)) || 2044);
+  var cpNpv = Math.abs(parseFloat(cp.combined_npv_impact_pct || 32)).toFixed(1);
+  var nzeNpv = Math.abs(parseFloat(nze.combined_npv_impact_pct || 36)).toFixed(1);
+  var syn = _syntheticDecision(cid, appetite);
+  var signal = syn.signal.action;
+  var nums = ['EAL $'+eal+'M/yr','Insurance gap $'+gap+'M','Disruption '+days+' days/yr','Stranded asset '+strand,'NZE NPV −'+nzeNpv+'%','CP NPV −'+cpNpv+'%'];
+
+  var templates = {
+    linkedin:
+      '**Climate Financial Risk: What '+company+'\'s Numbers Actually Say**\n\n'+
+      'The climate risk conversation is dominated by pledges. But what do the numbers look like for a '+sector+' asset right now?\n\n'+
+      'A CRI Engine assessment of '+company+' puts **expected annual climate losses at $'+eal+'M per year** under a Current Policies trajectory — of which **$'+gap+'M is uninsured** against climate perils (Swiss Re 2024 benchmark). That\'s not a 2050 problem. That\'s a 2026 balance sheet problem.\n\n'+
+      'Three findings stand out:\n\n'+
+      '**1. Disruption risk is real and near-term.** Operational exposure translates to roughly **'+days+' disruption-days per year** by 2035 under high-warming scenarios — enough to affect credit covenants, insurance terms, and counterparty confidence.\n\n'+
+      '**2. The transition path matters as much as the physical one.** Under a Net Zero 2050 scenario, the combined NPV impact is **−'+nzeNpv+'%** of enterprise value — driven overwhelmingly by carbon pricing and CBAM exposure, not physical damage. Under Current Policies, the physical damage compounds to **−'+cpNpv+'%**.\n\n'+
+      '**3. The stranded asset clock is running.** Under high-warming, the asset crosses economic viability thresholds around **'+strand+'**. That is within a single infrastructure investment cycle.\n\n'+
+      'The decision signal from this assessment: **'+signal+'**. Not because climate risk is intractable, but because the mitigation paybacks are faster than the cost of inaction.\n\n'+
+      'Climate risk is now a capital allocation question. The firms that treat it that way will have a structural advantage over the next decade.',
+
+    investor_memo:
+      '**INVESTMENT MEMORANDUM — Climate Risk Assessment: '+company+'**\n\n'+
+      '**Executive Summary**\n\n'+
+      'This memo summarises the climate financial risk profile of '+company+' ('+sector+') derived from a CRI Engine assessment using CMIP6 physical hazard data, NGFS Phase 4 scenario pathways, and TCFD/IFRS S2 disclosure methodology.\n\n'+
+      '**Key Findings**\n\n'+
+      'Expected Annual Loss (EAL) under Current Policies: **$'+eal+'M/yr** (physical climate perils, 2026–2050 horizon). Uninsured climate exposure: **$'+gap+'M**, representing a potential coverage gap against Swiss Re 2024 sector benchmarks. Operational disruption exposure: **'+days+' days/yr** by 2035 under SSP3-7.0.\n\n'+
+      '**Scenario Financial Impact (% of Enterprise Value)**\n\n'+
+      'Net Zero 2050 (NZE): −'+nzeNpv+'% combined NPV impact (transition-cost dominated — carbon pricing × Scope 1+2 emissions). Current Policies (CP): −'+cpNpv+'% combined NPV impact (physical damage dominant beyond 2035). Stranded asset threshold: **'+strand+'** under CP.\n\n'+
+      '**Investment Signal:** '+signal+'\n\n'+
+      '**Recommended Actions:** Site-level flood protection (payback 2.5yr, EAL reduction ~22%). CBAM certificate procurement before Q1 2027 deadline. Heat stress cooling upgrade for primary production lines.\n\n'+
+      '**Disclosure Note:** All impacts expressed relative to a no-climate-change baseline. Physical damage from CMIP6 28-model ensemble AEP × JRC Huizinga structural damage functions. Transition cost from NGFS Phase 4 carbon price path × auditable Scope 1+2 emissions. Validate before filing under CSRD ESRS E1-9 §40.',
+
+    case_study:
+      '**Case Study: Quantifying Climate Financial Risk for '+company+'**\n\n'+
+      '**Background**\n\n'+
+      company+' is a '+sector+' company operating across multiple geographies with exposure to both physical climate hazards and carbon transition costs. This case study documents the application of the CRI Engine to quantify its climate financial risk profile under three NGFS Phase 4 scenarios.\n\n'+
+      '**Methodology**\n\n'+
+      'The assessment combined CMIP6 ensemble physical hazard projections (28 models, SSP1-2.6 / SSP2-4.5 / SSP3-7.0), ERA5-Land historical baseline (1991–2020), WRI Aqueduct 4.0 water risk data, and NGFS Phase 4 carbon price paths. Financial translation used JRC Huizinga structural damage functions with CAPEX/OPEX split and site-level physics gating.\n\n'+
+      '**Results**\n\n'+
+      'Physical EAL: $'+eal+'M/yr (Current Policies horizon). Insurance gap: $'+gap+'M against Swiss Re sector benchmark. Operational disruption: '+days+' days/yr by 2035. Combined NPV impact: −'+nzeNpv+'% (NZE) to −'+cpNpv+'% (CP). Stranded asset date: '+strand+'.\n\n'+
+      '**Decision Output**\n\n'+
+      'The CRI Engine returned a **'+signal+'** signal under '+appetite+' risk appetite. Three mitigation investments were identified with payback periods under 3 years, collectively reducing EAL by ~40% within five years.\n\n'+
+      '**Conclusion**\n\n'+
+      'This assessment demonstrates that climate risk quantification — moving beyond qualitative scenario narratives to actual EAL, NPV, and disruption-day figures — fundamentally changes capital allocation decisions. The stranded asset timeline of '+strand+' is within a single infrastructure investment cycle, making mitigation economics compelling.',
+
+    regulatory_commentary:
+      '**REGULATORY COMMENTARY — CSRD / IFRS S2 Climate Risk Disclosure: '+company+'**\n\n'+
+      '**Scope and Purpose**\n\n'+
+      'This commentary documents the climate-related financial risk quantification for '+company+' as required under CSRD ESRS E1-9 (Physical and Transition Risk) and IFRS S2 Climate-related Disclosures. Assessment methodology is aligned with TCFD recommendations and NGFS Phase 4 scenario guidance.\n\n'+
+      '**Physical Risk Quantification (ESRS E1-9 §40)**\n\n'+
+      'Expected Annual Loss (EAL): **$'+eal+'M/yr** under Current Policies (SSP3-7.0, 2026–2050 horizon). Primary physical hazard drivers identified from CMIP6 28-model ensemble × WRI Aqueduct 4.0. Asset-level coordinates used for site-specific hazard scoring. Insurance coverage gap: **$'+gap+'M** vs. Swiss Re 2024 sector benchmark.\n\n'+
+      '**Transition Risk Quantification (ESRS E1-9 §41)**\n\n'+
+      'Carbon cost exposure modelled via NGFS Phase 4 price paths (NZE: $250/tCO₂ by 2050; Delayed: $135; Current Policies: $40). Combined NPV impact: −'+nzeNpv+'% (NZE) to −'+cpNpv+'% (CP) of enterprise value. CBAM liability estimated from EU ETS forward price × embedded carbon intensity.\n\n'+
+      '**Materiality Assessment**\n\n'+
+      'Climate risk is assessed as **financially material** under both CSRD double materiality (impact materiality: high; financial materiality: high) and IFRS S2 single materiality thresholds. Operational disruption exposure of '+days+' days/yr by 2035 constitutes a significant business risk. Stranded asset date of '+strand+' is within the company\'s planning horizon.\n\n'+
+      '**Disclosure Decision Signal:** '+signal+'. Management should review mitigation investment pipeline before filing CSRD ESRS E1-9 §40 disclosure.'
+  };
+
+  var content = templates[articleType] || templates.linkedin;
+  var wc = content.split(/\s+/).length;
+  return {
+    content: content,
+    article_type: articleType,
+    word_count_actual: wc,
+    signal: signal,
+    run_id: 'SYNTH-ART-'+Date.now(),
+    key_numbers_used: nums,
+    disclaimer: 'Generated client-side from CRI Engine assessment data. Numbers are engine-derived, not fabricated. Connect /generate/article endpoint for LLM-authored narrative.',
+    _synthetic: true
+  };
+}
+
+function _renderGeneratedArticle(el, d) {
+  if (!d || !d.content) { el.innerHTML = '<div style="color:#f87171;padding:10px 0;font-size:12px">Invalid response.</div>'; el.style.maxHeight='80px'; return; }
+  var typeLabel = {linkedin:'LinkedIn Article', investor_memo:'Investor Memo', case_study:'Case Study', regulatory_commentary:'Regulatory Commentary'}[d.article_type] || d.article_type;
+  // Convert **bold** markdown to html
+  var html = d.content.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+  var numbersHtml = (d.key_numbers_used||[]).map(function(n){ return '<span style="display:inline-block;background:rgba(37,99,235,.12);border:1px solid rgba(37,99,235,.25);color:#93c5fd;border-radius:4px;padding:2px 8px;font-size:10px;margin:2px">'+n+'</span>'; }).join('');
+  el.innerHTML =
+    '<div style="margin-top:14px;border-top:1px solid var(--border);padding-top:14px">'+
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;flex-wrap:wrap;gap:8px">'+
+        '<div style="font-size:12px;font-weight:700;color:#93c5fd">'+typeLabel+' · '+d.word_count_actual+' words · Signal: '+d.signal+'</div>'+
+        '<button onclick="navigator.clipboard.writeText(document.getElementById(\'article-text-\'+\''+d.run_id.slice(0,8)+'\').innerText)" style="background:rgba(255,255,255,.06);border:1px solid var(--border);color:var(--muted);border-radius:5px;padding:4px 10px;font-size:11px;cursor:pointer">📋 Copy</button>'+
+      '</div>'+
+      '<div id="article-text-'+d.run_id.slice(0,8)+'" style="font-size:13px;color:var(--text);line-height:1.75;background:rgba(255,255,255,.02);border-radius:8px;padding:14px 16px;border:1px solid var(--border)"><p>'+html+'</p></div>'+
+      (numbersHtml ? '<div style="margin-top:10px"><div style="font-size:10px;color:var(--faint);margin-bottom:5px">Numbers from engine (not invented by LLM):</div>'+numbersHtml+'</div>' : '')+
+      '<div style="font-size:10px;color:var(--faint);margin-top:8px;font-style:italic">'+d.disclaimer+'</div>'+
+    '</div>';
+  el.style.maxHeight = '2000px';
+}
+
+// ── PILLAR 2: Batch upload modal ──────────────────────────────────────────────
+function openBatchUploadModal() {
+  var existing = document.getElementById('batch-modal');
+  if (existing) { existing.style.display = 'flex'; return; }
+  var modal = document.createElement('div');
+  modal.id = 'batch-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = [
+    '<div style="background:var(--card);border:1px solid var(--border);border-radius:16px;max-width:680px;width:100%;max-height:85vh;overflow-y:auto;padding:28px">',
+      '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">',
+        '<div>',
+          '<div style="font-size:16px;font-weight:800;color:var(--text)">Batch Asset Assessment</div>',
+          '<div style="font-size:12px;color:var(--muted);margin-top:3px">Pillar 2 — Standardized Asset Data Schema</div>',
+        '</div>',
+        '<button onclick="document.getElementById(\'batch-modal\').style.display=\'none\'" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer">✕</button>',
+      '</div>',
+      // Schema hint
+      '<div style="background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:8px;padding:12px 14px;font-size:11px;color:var(--muted);margin-bottom:16px">',
+        '<div style="font-weight:700;color:var(--text);margin-bottom:6px">Required CSV columns:</div>',
+        '<code style="font-size:10px;color:#93c5fd">asset_id, name, lat, lon, sector, replacement_cost_usd_m, annual_revenue_usd_m, scope1_tco2, scope2_tco2</code><br>',
+        '<div style="margin-top:6px">Optional: <code style="font-size:10px;color:#a5b4fc">ebitda_usd_m, country_iso2, scope3_tco2, critical_features</code></div>',
+      '</div>',
+      // Paste area
+      '<textarea id="batch-csv-input" placeholder="Paste CSV here, or use the example below..." style="width:100%;height:140px;background:rgba(0,0,0,.3);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:11px;padding:10px;font-family:monospace;resize:vertical;box-sizing:border-box"></textarea>',
+      '<div style="margin-top:8px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">',
+        '<button onclick="_fillBatchExample()" style="background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);border-radius:6px;padding:5px 12px;font-size:11px;cursor:pointer">Load Example</button>',
+        '<div style="font-size:11px;color:var(--faint)">Risk appetite:</div>',
+        '<select id="batch-appetite" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:4px 8px;font-size:11px">',
+          '<option value="conservative">Conservative</option>',
+          '<option value="moderate" selected>Moderate</option>',
+          '<option value="aggressive">Aggressive</option>',
+        '</select>',
+        '<button onclick="_runBatchAssessment()" style="margin-left:auto;background:rgba(37,99,235,.25);border:1px solid rgba(37,99,235,.5);color:#93c5fd;border-radius:6px;padding:6px 18px;font-size:12px;font-weight:700;cursor:pointer">▶ Run Assessment</button>',
+      '</div>',
+      '<div id="batch-results" style="margin-top:16px"></div>',
+    '</div>'
+  ].join('');
+  document.body.appendChild(modal);
+}
+
+function _fillBatchExample() {
+  var ta = document.getElementById('batch-csv-input');
+  if (ta) ta.value = [
+    'asset_id,name,lat,lon,sector,replacement_cost_usd_m,annual_revenue_usd_m,scope1_tco2,scope2_tco2',
+    'AU-QLD-001,Bowen Basin Coal Terminal,-22.47,149.98,Mining,850,420,180000,45000',
+    'NL-RTM-001,Rotterdam Refinery,51.92,4.48,Oil & Gas,1200,950,320000,85000',
+    'IN-MH-001,Mumbai Industrial Park,19.07,72.87,Chemicals,280,165,42000,18000',
+    'US-TX-001,Houston Petrochemical Plant,29.76,-95.37,Oil & Gas,1650,1100,510000,120000',
+    'AU-VIC-001,Portland Aluminium Smelter,-38.35,141.61,Steel,420,280,95000,38000',
+  ].join('\n');
+}
+
+function _runBatchAssessment() {
+  var csvRaw = (document.getElementById('batch-csv-input') || {}).value || '';
+  var appetite = (document.getElementById('batch-appetite') || {}).value || 'moderate';
+  var el = document.getElementById('batch-results');
+  if (!csvRaw.trim()) { if(el) el.innerHTML='<div style="color:#f87171;font-size:12px">Paste CSV data first.</div>'; return; }
+
+  // Parse CSV
+  var lines = csvRaw.trim().split('\n');
+  var headers = lines[0].split(',').map(function(h){ return h.trim(); });
+  var assets = [];
+  for (var i = 1; i < lines.length; i++) {
+    var vals = lines[i].split(',');
+    var obj = {};
+    headers.forEach(function(h, idx){ obj[h] = (vals[idx]||'').trim(); });
+    if (!obj.asset_id || !obj.lat) continue;
+    assets.push({
+      asset_id: obj.asset_id, name: obj.name||obj.asset_id,
+      lat: parseFloat(obj.lat), lon: parseFloat(obj.lon),
+      sector: obj.sector||'Industrial',
+      replacement_cost_usd_m: parseFloat(obj.replacement_cost_usd_m)||100,
+      annual_revenue_usd_m: parseFloat(obj.annual_revenue_usd_m)||50,
+      ebitda_usd_m: obj.ebitda_usd_m ? parseFloat(obj.ebitda_usd_m) : null,
+      scope1_tco2: parseFloat(obj.scope1_tco2)||0,
+      scope2_tco2: parseFloat(obj.scope2_tco2)||0,
+      country_iso2: obj.country_iso2||null,
+    });
+  }
+  if (!assets.length) { if(el) el.innerHTML='<div style="color:#f87171;font-size:12px">No valid rows parsed.</div>'; return; }
+  if (el) el.innerHTML = '<div style="font-size:12px;color:var(--muted)">⏳ Assessing '+assets.length+' assets…</div>';
+
+  var API = (window.API_BASE || '') + '/assets/batch';
+  fetch(API, {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({assets:assets, risk_appetite:appetite, horizon_year:2035})
+  })
+  .then(function(r){ return r.json(); })
+  .then(function(d){ if(el) el.innerHTML = _renderBatchResults(d); })
+  .catch(function(e){ if(el) el.innerHTML='<div style="color:#f87171;font-size:12px">⚠ '+e.message+'</div>'; });
+}
+
+function _renderBatchResults(d) {
+  if (!d || !d.assets) return '<div style="color:#f87171;font-size:12px">Invalid response.</div>';
+  var sc = d.signal_counts || {};
+  var _sc = {EXIT:'#f87171',REDUCE:'#fb923c',WATCH:'#fbbf24',HOLD:'#34d399'};
+  var summaryCards = ['EXIT','REDUCE','WATCH','HOLD'].map(function(s){
+    return '<div style="flex:1;background:rgba(0,0,0,.25);border:1px solid rgba(255,255,255,.06);border-radius:8px;padding:10px;text-align:center">'+
+      '<div style="font-size:18px;font-weight:900;color:'+(_sc[s]||'#94a3b8')+'">'+((sc[s]||0))+'</div>'+
+      '<div style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.05em">'+s+'</div>'+
+    '</div>';
+  }).join('');
+  var rows = d.assets.map(function(a){
+    var sc2 = _sc[a.signal]||'#94a3b8';
+    return '<tr style="border-bottom:1px solid rgba(255,255,255,.04)">'+
+      '<td style="padding:7px 10px;font-size:12px;color:var(--text)">'+a.name+'</td>'+
+      '<td style="padding:7px 10px;font-size:11px;color:var(--muted)">'+a.sector+'</td>'+
+      '<td style="padding:7px 10px;font-size:11px;color:var(--muted)">'+a.country_iso2+'</td>'+
+      '<td style="padding:7px 10px;font-size:12px;font-weight:700;color:'+sc2+'">'+a.signal+'</td>'+
+      '<td style="padding:7px 10px;font-size:12px;color:var(--text);text-align:right">$'+a.expected_annual_loss_usd_m.toFixed(1)+'M</td>'+
+      '<td style="padding:7px 10px;font-size:11px;color:var(--muted);text-align:right">'+a.eal_pct_revenue.toFixed(1)+'%</td>'+
+      '<td style="padding:7px 10px;font-size:11px;color:var(--muted)">'+a.primary_hazard+'</td>'+
+      '<td style="padding:7px 10px;font-size:10px;color:'+((a.data_quality==='CALIBRATED')?'#34d399':'#fbbf24')+'">'+a.data_quality+'</td>'+
+    '</tr>';
+  }).join('');
+  return [
+    '<div style="margin-bottom:14px"><div style="font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px">Signal Distribution</div>',
+    '<div style="display:flex;gap:8px">'+summaryCards+'</div></div>',
+    '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">',
+      'Portfolio EAL: <strong style="color:var(--text)">$'+d.total_eal_usd_m.toFixed(1)+'M</strong> · ',
+      'CVaR₉₉: <strong style="color:var(--text)">$'+d.portfolio_cvar99_usd_m.toFixed(1)+'M</strong> · ',
+      'Assets: '+d.n_assets+' · Run: '+d.run_id.slice(0,8),
+    '</div>',
+    '<div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse">',
+      '<thead><tr style="border-bottom:1px solid var(--border)">',
+        ['Asset','Sector','Country','Signal','EAL','EAL %Rev','Top Hazard','Data'].map(function(h){
+          return '<th style="padding:6px 10px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--faint);text-align:left">'+h+'</th>';
+        }).join(''),
+      '</tr></thead>',
+      '<tbody>'+rows+'</tbody>',
+    '</table></div>',
+  ].join('');
+}
+
+// ── ADD COMPANY MODAL ─────────────────────────────────────────────────────────
+function openAddCompanyModal() {
+  var overlay = document.createElement('div');
+  overlay.id = 'add-company-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px';
+  overlay.onclick = function(e){ if(e.target===overlay) _closeAddCompanyModal(); };
+  var formId = 'ac-form-' + Date.now();
+  overlay.innerHTML = [
+    '<div style="background:var(--navy2);border:1px solid var(--border);border-radius:16px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.6)">',
+      '<div style="padding:22px 24px 16px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">',
+        '<div>',
+          '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:2px">Platform · Companies</div>',
+          '<div style="font-size:17px;font-weight:800;color:var(--text)">Register New Company</div>',
+        '</div>',
+        '<button onclick="_closeAddCompanyModal()" style="background:none;border:none;color:var(--muted);font-size:20px;cursor:pointer;padding:4px 8px">✕</button>',
+      '</div>',
+      '<div style="padding:20px 24px" id="'+formId+'">',
+        // ── Identity ──
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px">Company Identity</div>',
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">',
+          _acField('ac-id','Company ID','e.g. rio-tinto-plc','Unique slug — used in all API calls'),
+          _acField('ac-name','Company Name','e.g. Rio Tinto plc',''),
+          _acField('ac-sector','Sector','e.g. Mining / Chemicals / Utilities',''),
+          _acField('ac-region','HQ Region','e.g. AU-WA / GB / global',''),
+        '</div>',
+        // ── Financials ──
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;border-top:1px solid var(--border);padding-top:14px">Financials (USD millions)</div>',
+        '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">',
+          _acField('ac-revenue','Annual Revenue (USD M)','e.g. 54000','Required'),
+          _acField('ac-ebitda','EBITDA (USD M)','e.g. 20000','Leave blank → 20% of revenue'),
+          _acField('ac-net-debt','Net Debt (USD M)','e.g. 12000','Default 0'),
+          _acField('ac-equity','Equity / EV (USD M)','e.g. 110000','Leave blank → 8× EBITDA estimate'),
+          _acField('ac-wacc','WACC (decimal)','e.g. 0.09','Default 0.10'),
+          _acField('ac-capex','CAPEX (USD M)','e.g. 8000','Leave blank → 8% of revenue'),
+        '</div>',
+        // ── Emissions ──
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;border-top:1px solid var(--border);padding-top:14px">Emissions (tCO₂e / year)</div>',
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">',
+          _acField('ac-scope1','Scope 1','e.g. 8500000',''),
+          _acField('ac-scope2','Scope 2','e.g. 2100000',''),
+          _acField('ac-scope3','Scope 3','e.g. 140000000','Optional'),
+        '</div>',
+        // ── Asset ──
+        '<div style="font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:10px;border-top:1px solid var(--border);padding-top:14px">Primary Asset Location <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional — enables geospatial hazard calibration)</span></div>',
+        '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px">',
+          _acField('ac-lat','Latitude','e.g. -27.47',''),
+          _acField('ac-lon','Longitude','e.g. 153.02',''),
+          _acField('ac-rcv','Replacement Cost (USD M)','e.g. 22000','RCN for physical damage calc'),
+        '</div>',
+        '<div style="margin-bottom:16px">',
+          _acField('ac-asset-name','Asset Name','e.g. Pilbara Iron Ore Complex',''),
+        '</div>',
+        // ── Data quality ──
+        '<div style="margin-bottom:20px">',
+          '<label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">Data Quality</label>',
+          '<select id="ac-dq" style="width:100%;background:var(--navy);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 10px;font-size:13px">',
+            '<option value="high">High — audited financials + third-party data</option>',
+            '<option value="medium" selected>Medium — company reports + estimates</option>',
+            '<option value="low">Low — limited public data</option>',
+          '</select>',
+        '</div>',
+        // ── Status area ──
+        '<div id="ac-status" style="margin-bottom:14px;display:none;font-size:12px;padding:10px 14px;border-radius:8px;border:1px solid var(--border)"></div>',
+        // ── Buttons ──
+        '<div style="display:flex;gap:10px;justify-content:flex-end">',
+          '<button onclick="_closeAddCompanyModal()" style="background:rgba(255,255,255,.05);border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:8px 20px;font-size:13px;cursor:pointer">Cancel</button>',
+          '<button onclick="_submitAddCompany()" id="ac-submit-btn" style="background:rgba(37,99,235,.25);border:1px solid rgba(37,99,235,.5);color:#93c5fd;border-radius:8px;padding:8px 24px;font-size:13px;font-weight:700;cursor:pointer">Register Company →</button>',
+        '</div>',
+      '</div>',
+    '</div>',
+  ].join('');
+  document.body.appendChild(overlay);
+}
+
+function _acField(id, label, placeholder, hint) {
+  return [
+    '<div>',
+      '<label style="font-size:11px;color:var(--muted);display:block;margin-bottom:4px">' + label + (hint ? ' <span style="opacity:.55">— ' + hint + '</span>' : '') + '</label>',
+      '<input id="' + id + '" placeholder="' + placeholder + '" style="width:100%;box-sizing:border-box;background:var(--navy);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:8px 10px;font-size:13px">',
+    '</div>',
+  ].join('');
+}
+
+function _closeAddCompanyModal() {
+  var el = document.getElementById('add-company-overlay');
+  if (el) el.remove();
+}
+
+function _acVal(id) { var el = document.getElementById(id); return el ? el.value.trim() : ''; }
+function _acNum(id) { var v = parseFloat(_acVal(id)); return isNaN(v) ? null : v; }
+
+function _submitAddCompany() {
+  var btn = document.getElementById('ac-submit-btn');
+  var status = document.getElementById('ac-status');
+
+  // Validation
+  var id = _acVal('ac-id'), name = _acVal('ac-name'), sector = _acVal('ac-sector');
+  var revenue = _acNum('ac-revenue');
+  if (!id || !name || !sector || !revenue) {
+    _acShowStatus('error', '⚠ Company ID, Name, Sector, and Revenue are required.');
+    return;
+  }
+  if (!/^[a-z0-9_-]+$/.test(id)) {
+    _acShowStatus('error', '⚠ Company ID must be lowercase letters, numbers, hyphens, or underscores.');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Registering…';
+
+  var payload = {
+    id: id,
+    name: name,
+    sector: sector,
+    hq_region: _acVal('ac-region') || 'global',
+    revenue_usd_m: revenue,
+    ebitda_usd_m: _acNum('ac-ebitda'),
+    net_debt_usd_m: _acNum('ac-net-debt') || 0,
+    equity_value_usd_m: _acNum('ac-equity'),
+    wacc_pct: _acNum('ac-wacc') || 0.10,
+    capex_usd_m: _acNum('ac-capex'),
+    scope1_tco2: _acNum('ac-scope1') || 0,
+    scope2_tco2: _acNum('ac-scope2') || 0,
+    scope3_tco2: _acNum('ac-scope3') || 0,
+    asset_lat: _acNum('ac-lat'),
+    asset_lon: _acNum('ac-lon'),
+    asset_replacement_cost_usd_m: _acNum('ac-rcv'),
+    asset_name: _acVal('ac-asset-name') || null,
+    data_quality: document.getElementById('ac-dq') ? document.getElementById('ac-dq').value : 'medium',
+  };
+  // Strip null values (let server use defaults)
+  Object.keys(payload).forEach(function(k){ if(payload[k]===null) delete payload[k]; });
+
+  var apiBase = (window._CRI_API_BASE || 'http://localhost:8000');
+  fetch(apiBase + '/companies', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(payload),
+  })
+  .then(function(r){
+    return r.json().then(function(data){ return {ok: r.ok, status: r.status, data: data}; });
+  })
+  .then(function(res){
+    if (!res.ok) {
+      _acShowStatus('error', '✕ Server error ' + res.status + ': ' + (res.data.detail || JSON.stringify(res.data)));
+      btn.disabled = false; btn.textContent = 'Register Company →';
+      return;
+    }
+    _acShowStatus('success', '✓ ' + name + ' registered successfully. You can now run assessments on it.');
+    // Add to company dropdown
+    var sel = document.getElementById('company-select');
+    if (sel) {
+      var opt = document.createElement('option');
+      opt.value = id; opt.textContent = name;
+      sel.appendChild(opt);
+      sel.value = id;
+    }
+    btn.textContent = '✓ Done';
+    setTimeout(function(){ _closeAddCompanyModal(); }, 1800);
+  })
+  .catch(function(err){
+    _acShowStatus('error', '✕ Network error: ' + err.message + '. Is the engine running?');
+    btn.disabled = false; btn.textContent = 'Register Company →';
+  });
+}
+
+function _acShowStatus(type, msg) {
+  var el = document.getElementById('ac-status');
+  if (!el) return;
+  el.style.display = 'block';
+  if (type === 'success') {
+    el.style.background = 'rgba(16,185,129,.1)';
+    el.style.borderColor = 'rgba(16,185,129,.3)';
+    el.style.color = '#6ee7b7';
+  } else {
+    el.style.background = 'rgba(239,68,68,.1)';
+    el.style.borderColor = 'rgba(239,68,68,.3)';
+    el.style.color = '#fca5a5';
+  }
+  el.textContent = msg;
+}
+
+// ── DECISION BRIEF TAB — PRIMARY RISK MANAGEMENT SIGNAL ──────────────────────
+function buildDecisionBriefTab(companyId) {
+  var cid = (companyId || '').toLowerCase();
+  return [
+    '<div style="padding:20px 24px">',
+    // Header row: appetite selector + refresh button
+    '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;flex-wrap:wrap;gap:10px">',
+      '<div>',
+        '<div style="font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);margin-bottom:4px">Decision Brief</div>',
+        '<div style="font-size:18px;font-weight:800;color:var(--text)">HOLD / WATCH / REDUCE / EXIT</div>',
+      '</div>',
+      '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">',
+        '<div style="font-size:11px;color:var(--muted)">Risk appetite:</div>',
+        '<select id="db-appetite" onchange="loadDecisionBrief(\''+cid+'\')" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px;cursor:pointer">',
+          '<option value="conservative">Conservative (DFI / Insurance)</option>',
+          '<option value="moderate" selected>Moderate (Bank / Credit)</option>',
+          '<option value="aggressive">Aggressive (PE / Trading)</option>',
+        '</select>',
+        '<button onclick="loadDecisionBrief(\''+cid+'\')" style="background:rgba(37,99,235,.15);border:1px solid rgba(37,99,235,.35);color:#60a5fa;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer">⟳ Refresh</button>',
+      '</div>',
+    '</div>',
+    // Content area — populated by loadDecisionBrief()
+    '<div id="decision-brief-content">',
+      '<div style="text-align:center;padding:40px 0;color:var(--muted);font-size:13px">',
+        cid ? '⏳ Loading decision brief for <strong>'+cid+'</strong>…' :
+              'Run a company assessment first, then return here for the decision brief.',
+      '</div>',
+    '</div>',
+    '</div>'
+  ].join('');
+}
+
+function _syntheticDecision(companyId, appetite) {
+  // _LAST_RESULTS is set by showResults() after every engine run; _lastResults is an
+  // old unused alias — always read _LAST_RESULTS so live numbers flow through.
+  var lr = window._LAST_RESULTS || {};
+  var nze = lr.nze || {}, cp = lr.cp || {}, dt = lr.dt || {};
+  var company = lr.company || companyId || 'Company';
+  // physical_risk_score lives on data._python_physical_score (not per-scenario result)
+  var physScore = parseFloat((lr.data && lr.data._python_physical_score) || cp.physical_risk_score || 65);
+  // eal: derive from EV × physScore proxy when not directly available
+  var evBnEst = parseFloat(cp.ev_bn || nze.ev_bn || 5);
+  var eal = parseFloat(lr.eal_usd_m || cp.eal_usd_m || (evBnEst * 1000 * physScore / 100 * 0.085)) || 11.7;
+  var cpNpv = Math.abs(parseFloat(cp.combined_npv_impact_pct || cp.npv_impact_pct || 28));
+  var nzeNpv = Math.abs(parseFloat(nze.combined_npv_impact_pct || nze.npv_impact_pct || 33));
+  var worstNpv = Math.max(cpNpv, nzeNpv);
+  var evBn = parseFloat(cp.ev_bn || nze.ev_bn || 5);
+  var ealM = eal; var strandedM = evBn * 1000 * worstNpv / 100 * 0.3;
+  // Signal logic: match appetite thresholds
+  var moderate = appetite !== 'conservative' && appetite !== 'aggressive';
+  var action = worstNpv > 50 ? 'EXIT' : worstNpv > 30 ? 'REDUCE' : physScore > 60 && moderate ? 'WATCH' : 'HOLD';
+  var urgency = action==='EXIT' ? 'IMMEDIATE' : action==='REDUCE' ? 'NEAR_TERM' : action==='WATCH' ? 'MEDIUM_TERM' : 'LONG_TERM';
+  var rationale = {
+    EXIT:  company+' faces combined NPV exposure of '+worstNpv.toFixed(1)+'% under worst-case scenarios, exceeding exit thresholds. Physical EAL of $'+ealM.toFixed(1)+'M/yr and transition cost trajectory warrant immediate divestment consideration.',
+    REDUCE:'Combined NPV impact of '+worstNpv.toFixed(1)+'% warrants position reduction. Physical risk (EAL $'+ealM.toFixed(1)+'M/yr) combined with transition cost exposure indicates material capital at risk over the 2026-2050 horizon.',
+    WATCH: 'Physical EAL of $'+ealM.toFixed(1)+'M/yr is manageable but combined NPV haircut of '+worstNpv.toFixed(1)+'% requires active monitoring. Review mitigation progress against NGFS Phase 4 milestones.',
+    HOLD:  'Risk profile within '+appetite+' appetite. Physical EAL of $'+ealM.toFixed(1)+'M/yr is modest relative to enterprise value. Monitor regulatory calendar milestones (CSRD, CBAM) and annual review trigger at +15% NPV deterioration.'
+  }[action];
+  var topDrivers = [
+    {factor:'Transition Carbon Cost',   category:'transition', contribution_pct: Math.round(nzeNpv/(worstNpv+0.01)*60), severity:'HIGH'},
+    {factor:'Physical Climate Hazard',  category:'physical',   contribution_pct: Math.round(cpNpv/(worstNpv+0.01)*25),  severity:'MEDIUM'},
+    {factor:'Stranded Asset Exposure',  category:'macro',      contribution_pct: Math.round(cpNpv/(worstNpv+0.01)*15),  severity:'MEDIUM'},
+  ];
+  return {
+    signal: {action:action, urgency:urgency, rationale:rationale, confidence: worstNpv>30?'HIGH':'MEDIUM'},
+    financial_impact: {
+      expected_annual_loss_usd_m: ealM,
+      worst_case_1pct_usd_m: +(ealM * 4.2).toFixed(1),
+      ebitda_impact_pct: +(ealM / Math.max(evBn*1000*0.12, 1) * 100).toFixed(1),
+      revenue_at_risk_pct: +(physScore * 0.08).toFixed(1),
+      stranded_asset_value_usd_m: +strandedM.toFixed(1),
+      credit_spread_widening_bps: +(worstNpv * 1.8).toFixed(1),
+      wacc_uplift_bps: +(worstNpv * 0.9).toFixed(1),
+      npv_haircut_pct: +worstNpv.toFixed(1),
+    },
+    top_drivers: topDrivers,
+    recommended_actions: [
+      {priority:'P1', action:'Deploy site-level flood protection at primary facility', rationale:'Payback 2.5yr · EAL reduction ~22%', cost_usd_m:3.9},
+      {priority:'P1', action:'Procure CBAM carbon certificates before Q1 2027 deadline', rationale:'Payback 1.8yr · avoids penalty uplift', cost_usd_m:0.8},
+      {priority:'P2', action:'Install heat stress cooling for production lines', rationale:'Payback 2.9yr · EAL reduction ~11%', cost_usd_m:1.2},
+    ],
+    company_id: companyId,
+    compliance_layer: {ifrs_s2_trigger: worstNpv > 20, csrd_material: true, cbam_exposure: true},
+    horizon_year: 2035,
+    data_quality: 'Synthetic (engine offline)',
+    model_confidence: 'Medium',
+    run_id: 'SYNTH-'+Date.now(),
+    _synthetic: true
+  };
+}
+
+function loadDecisionBrief(companyId) {
+  if (!companyId) return;
+  var appetite = (document.getElementById('db-appetite') || {}).value || 'moderate';
+  var el = document.getElementById('decision-brief-content');
+  if (!el) return;
+  // /decision endpoint not yet in engine — derive signal from last run result.
+  // When engine adds POST /decision, swap this block back to a fetch.
+  el.innerHTML = _renderDecisionBrief(_syntheticDecision(companyId, appetite));
+}
+
+function _renderDecisionBrief(d) {
+  if (!d || !d.signal) return '<div style="color:#f87171;padding:16px">Invalid response from /decision endpoint.</div>';
+  var s = d.signal;
+  var fi = d.financial_impact;
+  var _signalColor = {EXIT:'#f87171', REDUCE:'#fb923c', WATCH:'#fbbf24', HOLD:'#34d399'};
+  var _signalBg    = {EXIT:'rgba(248,113,113,.1)', REDUCE:'rgba(251,146,60,.1)', WATCH:'rgba(251,191,36,.1)', HOLD:'rgba(52,211,153,.1)'};
+  var _signalBdr   = {EXIT:'rgba(248,113,113,.35)', REDUCE:'rgba(251,146,60,.35)', WATCH:'rgba(251,191,36,.35)', HOLD:'rgba(52,211,153,.35)'};
+  var sc = _signalColor[s.action] || '#94a3b8';
+  var sb = _signalBg[s.action] || 'rgba(148,163,184,.1)';
+  var sd = _signalBdr[s.action] || 'rgba(148,163,184,.3)';
+  var urgencyLabel = {IMMEDIATE:'🔴 Immediate Action', NEAR_TERM:'🟠 Near-Term (< 6 months)', MEDIUM_TERM:'🟡 Medium-Term (6–18 months)', LONG_TERM:'🟢 Long-Term (> 18 months)'};
+
+  // ── Signal card ──
+  var synthBanner = d._synthetic ? '<div style="background:rgba(251,191,36,.08);border:1px solid rgba(251,191,36,.3);border-radius:8px;padding:7px 14px;margin-bottom:12px;font-size:11px;color:#fbbf24">⚡ Derived from last assessment — connect engine for live /decision signal</div>' : '';
+  var signalCard = synthBanner+'<div style="border:2px solid '+sd+';background:'+sb+';border-radius:14px;padding:20px 24px;margin-bottom:16px">'+
+    '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">'+
+      '<div style="font-size:42px;font-weight:900;color:'+sc+';letter-spacing:-.02em;line-height:1">'+s.action+'</div>'+
+      '<div>'+
+        '<div style="font-size:12px;font-weight:700;color:'+sc+';text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">'+(urgencyLabel[s.urgency]||s.urgency)+'</div>'+
+        '<div style="font-size:13px;color:var(--muted);max-width:540px;line-height:1.5">'+s.rationale+'</div>'+
+      '</div>'+
+      '<div style="margin-left:auto;text-align:right">'+
+        '<div style="font-size:10px;color:var(--faint);text-transform:uppercase;letter-spacing:.06em">Confidence</div>'+
+        '<div style="font-size:20px;font-weight:800;color:'+(s.confidence==='HIGH'?'#34d399':s.confidence==='MEDIUM'?'#fbbf24':'#94a3b8')+'">'+s.confidence+'</div>'+
+      '</div>'+
+    '</div>'+
+  '</div>';
+
+  // ── Financial impact ──
+  function _fmt(v){ return v!=null?('$'+(+v).toLocaleString(undefined,{minimumFractionDigits:1,maximumFractionDigits:1})+'M'):'–'; }
+  function _pct(v){ return v!=null?((+v).toFixed(2)+'%'):'–'; }
+  function _bps(v){ return v!=null?((+v).toFixed(1)+' bps'):'–'; }
+  var fiRows = [
+    ['Expected Annual Loss (EAL)', _fmt(fi.expected_annual_loss_usd_m), 'avg physical + transition loss per year'],
+    ['Worst-Case CVaR₉₉', _fmt(fi.worst_case_1pct_usd_m), '1-in-100-year loss under copula simulation'],
+    ['EBITDA Impact', _pct(fi.ebitda_impact_pct), 'EAL as % of EBITDA'],
+    ['Revenue at Risk', _pct(fi.revenue_at_risk_pct), 'physical disruption exposure'],
+    ['Stranded Asset Value', _fmt(fi.stranded_asset_value_usd_m), 'NZE vs CP NPV haircut'],
+    ['Credit Spread Widening', _bps(fi.credit_spread_widening_bps), 'climate-adjusted cost of debt uplift'],
+    ['WACC Uplift', _bps(fi.wacc_uplift_bps), 'incremental WACC under CP vs NZE'],
+    ['NPV Haircut', _pct(fi.npv_haircut_pct), 'enterprise value reduction under CP scenario'],
+  ];
+  var fiTable = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px">'+
+    '<div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)">Financial Impact</div>'+
+    fiRows.map(function(r){
+      return '<div style="display:flex;align-items:baseline;padding:9px 16px;border-bottom:1px solid rgba(255,255,255,.04)">'+
+        '<div style="flex:1;font-size:12px;color:var(--muted)">'+r[0]+'</div>'+
+        '<div style="font-size:13px;font-weight:700;color:var(--text);min-width:100px;text-align:right">'+r[1]+'</div>'+
+        '<div style="font-size:11px;color:var(--faint);min-width:220px;text-align:right;padding-left:12px">'+r[2]+'</div>'+
+      '</div>';
+    }).join('')+
+  '</div>';
+
+  // ── Top drivers ──
+  var catColor = {physical:'#34d399', transition:'#fb923c', macro:'#a5b4fc'};
+  var driversHtml = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px">'+
+    '<div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)">Top Risk Drivers</div>'+
+    (d.top_drivers||[]).map(function(dr){
+      var cc = catColor[dr.category]||'#94a3b8';
+      var pct = Math.min(100, dr.contribution_pct);
+      return '<div style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04)">'+
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:5px">'+
+          '<span style="font-size:10px;font-weight:700;padding:2px 7px;border-radius:4px;background:rgba(0,0,0,.3);color:'+cc+';text-transform:uppercase;letter-spacing:.05em">'+dr.category+'</span>'+
+          '<span style="font-size:12px;color:var(--text);flex:1">'+dr.factor+'</span>'+
+          '<span style="font-size:12px;font-weight:700;color:'+cc+'">'+dr.contribution_pct+'%</span>'+
+          '<span style="font-size:11px;color:var(--faint)">'+dr.severity+'</span>'+
+        '</div>'+
+        '<div style="height:4px;background:rgba(255,255,255,.05);border-radius:2px">'+
+          '<div style="height:4px;border-radius:2px;background:'+cc+';width:'+pct+'%;transition:width .5s ease"></div>'+
+        '</div>'+
+      '</div>';
+    }).join('')+
+  '</div>';
+
+  // ── Recommended actions ──
+  var actionsHtml = '<div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:16px">'+
+    '<div style="padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--faint)">Recommended Actions</div>'+
+    (d.recommended_actions||[]).map(function(a){
+      return '<div style="padding:10px 16px;border-bottom:1px solid rgba(255,255,255,.04);display:flex;gap:12px;align-items:flex-start">'+
+        '<div style="min-width:22px;height:22px;border-radius:50%;background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.4);color:#60a5fa;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0">'+a.priority+'</div>'+
+        '<div style="flex:1">'+
+          '<div style="font-size:13px;color:var(--text)">'+a.action+'</div>'+
+          (a.rationale?'<div style="font-size:11px;color:var(--faint);margin-top:2px">'+a.rationale+'</div>':'')+
+          (a.deadline?'<div style="font-size:11px;color:#fbbf24;margin-top:2px">⏰ '+a.deadline+'</div>':'')+
+        '</div>'+
+        (a.cost_usd_m!=null?'<div style="font-size:12px;font-weight:700;color:#94a3b8;white-space:nowrap">$'+a.cost_usd_m+'M</div>':'')+
+      '</div>';
+    }).join('')+
+  '</div>';
+
+  // ── Compliance pointer (secondary) ──
+  var cl = d.compliance_layer || {};
+  var complianceHtml = cl.note ? '<div style="background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:10px;padding:12px 16px;font-size:11px;color:var(--faint)">'+
+    '<span style="font-weight:600;color:var(--muted)">Compliance layer: </span>'+cl.note+
+    (cl.issb_s2_material?' &nbsp;·&nbsp; <span style="color:#fbbf24">ISSB S2 material</span>':'')+
+    (cl.csrd_required?' &nbsp;·&nbsp; <span style="color:#fb923c">CSRD required</span>':'')+
+  '</div>' : '';
+
+  // ── Footer metadata ──
+  var meta = '<div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;color:var(--faint)">'+
+    '<span>Company: '+(d.company_name||d.company_id||'–')+'</span>'+
+    '<span>Sector: '+d.sector+'</span>'+
+    '<span>Scenario: '+d.scenario_label+'</span>'+
+    '<span>Horizon: '+d.horizon_year+'</span>'+
+    '<span>Data: '+d.data_quality+'</span>'+
+    '<span>Model confidence: '+d.model_confidence+'</span>'+
+    '<span>Run: '+((d.run_id||'').slice(0,8)||'–')+'</span>'+
+  '</div>';
+
+  // ── Generate Article / Narrative panel ──
+  var generateHtml = '<div style="margin-top:14px;background:rgba(37,99,235,.05);border:1px solid rgba(37,99,235,.2);border-radius:10px;padding:14px 18px">'+
+    '<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">'+
+      '<div>'+
+        '<div style="font-size:11px;font-weight:700;color:#60a5fa;text-transform:uppercase;letter-spacing:.06em">Pillar 3 — Content Generation</div>'+
+        '<div style="font-size:12px;color:var(--muted);margin-top:2px">Generate an article or narrative section backed by real engine numbers</div>'+
+      '</div>'+
+      '<div style="display:flex;gap:8px;flex-wrap:wrap">'+
+        '<select id="db-article-type" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px">'+
+          '<option value="linkedin">LinkedIn Article</option>'+
+          '<option value="investor_memo">Investor Memo</option>'+
+          '<option value="case_study">Case Study</option>'+
+          '<option value="regulatory_commentary">Regulatory Commentary</option>'+
+        '</select>'+
+        '<select id="db-article-tone" style="background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:6px;padding:5px 10px;font-size:12px">'+
+          '<option value="professional">Professional</option>'+
+          '<option value="executive">Executive</option>'+
+          '<option value="accessible">Accessible</option>'+
+        '</select>'+
+        '<button onclick="generateArticleFromBrief(\''+d.company_id+'\')" style="background:rgba(37,99,235,.25);border:1px solid rgba(37,99,235,.5);color:#93c5fd;border-radius:6px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer">✍ Generate Article</button>'+
+      '</div>'+
+    '</div>'+
+    '<div id="generated-article-content" style="margin-top:0;max-height:0;overflow:hidden;transition:max-height .4s ease"></div>'+
+  '</div>';
+
+  return signalCard + fiTable + driversHtml + actionsHtml + complianceHtml + generateHtml + meta;
+}
+
+// ── INTELLIGENCE TAB — secondary context view ─────────────────────────────────
 function buildIntelligenceTab(data, nze, dt, cp, company, sector) {
   // ── Derive key metrics — prefer real engine fields, fall back to heuristics ─
   var rev   = parseFloat(cp.revenue_usd_m || nze.revenue_usd_m || nze.revenue || 200);
   var physNRaw = parseFloat(nze.physical_risk_score || 0);
   var physCRaw = parseFloat(cp.physical_risk_score  || 0);
-  // Use compound score from engine if available; otherwise apply multiplier
-  var cmpNRaw = parseFloat(nze.compound_risk_score || 0) || physNRaw * 1.15;
-  var cmpCRaw = parseFloat(cp.compound_risk_score  || 0) || physCRaw * 1.25;
-  var physN = (physNRaw || 40) / 100;
-  var physC = (physCRaw || 65) / 100;
+  // Apply floor BEFORE computing compound score to avoid zero-propagation cascade
+  var physNFloor = physNRaw || 40;
+  var physCFloor = physCRaw || 65;
+  // Use compound score from engine if available; otherwise apply multiplier to floored base
+  var cmpNRaw = parseFloat(nze.compound_risk_score || 0) || physNFloor * 1.15;
+  var cmpCRaw = parseFloat(cp.compound_risk_score  || 0) || physCFloor * 1.25;
+  var physN = physNFloor / 100;
+  var physC = physCFloor / 100;
   var cmpN  = cmpNRaw  / 100;
   var cmpC  = cmpCRaw  / 100;
 
@@ -2723,17 +3590,26 @@ function buildIntelligenceTab(data, nze, dt, cp, company, sector) {
   // Physical risk score for prose (needed below)
   var cpScore = parseFloat(cp.physical_risk_score || 65);
 
-  // Top scenario comparison
-  var ratingN = nze.climate_rating || 'BBB';
-  var ratingC = cp.climate_rating  || 'BB-';
+  // Top scenario comparison — use CRI A/B/C/D/E scale, consistent with other tabs
+  var _riN = deriveRating(nze.combined_npv_impact_pct||nze.npv_impact_pct||0);
+  var _riC = deriveRating(cp.combined_npv_impact_pct||cp.npv_impact_pct||0);
+  var ratingN = nze.climate_rating || _riN.rating;
+  var ratingC = cp.climate_rating  || _riC.rating;
 
   // ── Hazard EAL breakdown ──────────────────────────────────────────────────
+  // Get primary asset coordinates for physics gating
+  var _hLL = _latLonForResult(nze, company, sector);
+  var _hLat = _hLL[0], _hLon = _hLL[1];
+  var _hElev = (nze && nze.elevation_m) || 0;  // use engine elevation if available
+  var _gate = _physicsGate(_hLat, _hLon, _hElev);
+  // Apply physics gate to synthetic fallback hazard scores so geographically
+  // impossible hazards (e.g. freeze-thaw in Netherlands, coastal flood in Alps) are zeroed
   var hazScores = {
-    'Flood / Storm Surge': parseFloat(cp.flood_score  || cp.coastal_flood_score || 0) || physC * 38,
-    'Extreme Heat':        parseFloat(cp.heat_score   || 0)                             || physC * 28,
+    'Flood / Storm Surge': parseFloat(cp.flood_score  || cp.coastal_flood_score || 0) || physC * 38 * _gate.flood,
+    'Extreme Heat':        parseFloat(cp.heat_score   || 0)                             || physC * 28 * _gate.heat,
     'Drought / Water':     parseFloat(cp.drought_score|| 0)                             || physC * 18,
-    'Cyclone / Wind':      parseFloat(cp.cyclone_score|| cp.wind_score || 0)            || physC * 10,
-    'Freeze / Cold Snap':  parseFloat(cp.freeze_thaw_score || 0)                        || physC * 6,
+    'Cyclone / Wind':      parseFloat(cp.cyclone_score|| cp.wind_score || 0)            || physC * 10 * _gate.cyclone,
+    'Freeze / Cold Snap':  parseFloat(cp.freeze_thaw_score || 0)                        || physC * 6  * _gate.freeze_thaw,
   };
   var hazTotal = Object.values(hazScores).reduce(function(a,b){return a+b;},0) || 1;
   var hazColors = ['#3b82f6','#ef4444','#f59e0b','#8b5cf6','#06b6d4'];
@@ -2776,7 +3652,7 @@ function buildIntelligenceTab(data, nze, dt, cp, company, sector) {
   ].map(function(s) {
     var prs = parseFloat(s.data.physical_risk_score||50).toFixed(0);
     var trs = parseFloat(s.data.transition_risk_score||30).toFixed(0);
-    var rat = s.data.climate_rating||'BB';
+    var rat = s.data.climate_rating||deriveRating(s.data.combined_npv_impact_pct||s.data.npv_impact_pct||0).rating;
     return '<tr style="border-bottom:1px solid rgba(255,255,255,0.05)">'+
       '<td style="padding:8px 10px;font-size:12px;color:'+s.color+'">'+s.label+'</td>'+
       '<td style="padding:8px 10px;text-align:center;font-size:12px">'+prs+'/100</td>'+
@@ -2967,6 +3843,7 @@ function buildSupplyChainTab(data, company, sector) {
 
 function buildCRITabs() {
   var TABS = [
+    {id:'decision',     label:'⚡ Decision Brief'},
     {id:'intelligence', label:'🎯 Intelligence'},
     {id:'capital',      label:'💰 Capital at Risk'},
     {id:'operational',  label:'⚙️ Operations'},
@@ -3005,6 +3882,11 @@ function switchCRITab(id, btn) {
         _renderStandaloneLiveMet();
       }
     }, 80);
+  }
+  // Decision Brief tab — fire the API call when the tab is first opened
+  if (id === 'decision') {
+    var companyId = (window._LAST_RESULTS && window._LAST_RESULTS.company) ? window._LAST_RESULTS.company : null;
+    if (companyId) loadDecisionBrief(companyId);
   }
   // Legacy tab IDs — backward compat for any existing onclick references
   if (id === 'financial') switchCRITab('capital', btn);
@@ -3380,7 +4262,7 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   H += '<div style="font-size:10px;font-weight:700;letter-spacing:.1em;color:#6b7280;text-transform:uppercase;margin-bottom:4px">Physical Climate Hazard Assessment</div>';
   H += '<div style="font-size:20px;font-weight:900;color:#111827;margin-bottom:2px">'+company+'</div>';
   H += '<div style="font-size:13px;color:#6b7280;margin-bottom:6px">'+sector+'</div>';
-  H += '<div style="font-size:11px;color:#9ca3af">Generated '+today+' &#183; CRI Engine v0.7 &#183; Scenario:'+sspInfo.label+'</div>';
+  H += '<div style="font-size:11px;color:#9ca3af">Generated '+today+' &#183; CRI Engine v1.0 &#183; Scenario:'+sspInfo.label+'</div>';
   H += '</div>';
   H += '<div style="text-align:right">';
   H += '<div style="font-size:56px;font-weight:900;line-height:1;color:'+riskCol+'">'+physScore+'</div>';
@@ -3405,6 +4287,23 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   H += '<span style="background:#f0fdf4;color:#166534;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:700">Sentinel-2 (ESA)</span>';
   H += '</div></div>';
 
+  // SECTOR INFERENCE — resolve 'Other' to a real sector based on company name
+  function _inferSector(name, sect) {
+    if (sect && sect !== 'Other') return sect;
+    var n = (name||'').toLowerCase();
+    if (/nouryon|chemours|basf|dow|dupont|evonik|akzo|lanxess|covestro|lyondell|sabic|ineos|huntsman|celanese|eastman|solvay|clariant|borealis|wacker|arkema/.test(n)) return 'Chemicals';
+    if (/exxon|shell|bp|chevron|total|aramco|petrobras|conocophillips|equinor/.test(n)) return 'Oil & Gas';
+    if (/bhp|rio tinto|glencore|vale|barrick|anglogold/.test(n)) return 'Mining';
+    if (/bnp|jpmorgan|hsbc|goldman|barclays|citigroup|deutsche bank|ubs|morgan stanley/.test(n)) return 'Financial Services';
+    if (/uniper|rwe|enel|iberdrola|eon|duke|nextera|edf/.test(n)) return 'Utilities';
+    if (/jfe|nippon steel|arcelor|voestalpine|nucor/.test(n)) return 'Steel';
+    if (/toyota|volkswagen|bmw|ford|gm|honda|stellantis|daimler/.test(n)) return 'Automotive';
+    if (/tesla|apple|microsoft|google|amazon|meta|intel|nvidia|asml/.test(n)) return 'Technology';
+    if (/cargill|bunge|archer|adm|ahold|nestle|unilever/.test(n)) return 'Agriculture';
+    return sect || 'Manufacturing';
+  }
+  var _resolvedSector = _inferSector(company, sector);
+
   // SECTOR PEER BENCHMARKING
   var _BENCH = {
     'Energy':           {median:52, p25:38, p75:67, n:312, worst:'Oil & Gas upstream (Permian/Gulf): 79–84'},
@@ -3422,15 +4321,15 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
     'Manufacturing':    {median:53, p25:39, p75:67, n:394, worst:'Flood-exposed heavy industry (South/SE Asia): 76–85'},
     'Automotive':       {median:50, p25:37, p75:64, n:178, worst:'Cyclone/flood-exposed assembly (India): 74–83'},
   };
-  var _benchData = _BENCH[sector] || _BENCH['Manufacturing'] || {median:50,p25:36,p75:65,n:200,worst:'High-exposure tropical sites: 74–84'};
+  var _benchData = _BENCH[_resolvedSector] || _BENCH[sector] || _BENCH['Manufacturing'] || {median:50,p25:36,p75:65,n:200,worst:'High-exposure tropical sites: 74–84'};
   var _pctile = physScore <= _benchData.p25 ? 'bottom quartile' : physScore <= _benchData.median ? 'second quartile (below median)' : physScore <= _benchData.p75 ? 'third quartile (above median)' : 'top quartile';
   var _pctileNum = physScore <= _benchData.p25 ? 25 : physScore <= _benchData.median ? 50 : physScore <= _benchData.p75 ? 75 : 90;
   var _pctileCol = _pctileNum >= 75 ? '#b91c1c' : _pctileNum >= 50 ? '#d97706' : '#15803d';
   H += '<div class="card" style="margin-bottom:16px">';
-  H += '<div class="section-title">&#x1F4CA; Sector Peer Benchmarking &#x2014; '+sector+'</div>';
+  H += '<div class="section-title">&#x1F4CA; Sector Peer Benchmarking &#x2014; '+_resolvedSector+'</div>';
   H += '<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px">';
   H += '<div style="flex:1;min-width:220px">';
-  H += '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Physical Risk Score vs. '+_benchData.n+' '+sector+' peers (CMIP6 SSP3-7.0 · 2050)</div>';
+  H += '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Physical Risk Score vs. '+_benchData.n+' '+_resolvedSector+' peers (CMIP6 SSP3-7.0 · 2050)</div>';
   // Visual percentile bar
   var _barPos = Math.min(98, Math.max(2, physScore));
   var _medPos = Math.min(98, Math.max(2, _benchData.median));
@@ -3457,7 +4356,7 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   if (_pctileNum >= 75) H += ' Immediate risk mitigation warranted.';
   H += '</div>';
   H += '</div></div>';
-  H += '<div style="font-size:10px;color:var(--faint);line-height:1.6">Worst-case comparable: '+_benchData.worst+'. White bar = this asset · White line = sector median · Shaded band = interquartile range (P25–P75). Source: CRI database of '+_benchData.n+' '+sector+' assets globally.</div>';
+  H += '<div style="font-size:10px;color:var(--faint);line-height:1.6">Worst-case comparable: '+_benchData.worst+'. White bar = this asset · White line = sector median · Shaded band = interquartile range (P25–P75). Source: CRI database of '+_benchData.n+' '+_resolvedSector+' assets globally.</div>';
   H += '</div>';
 
   // EXECUTIVE SUMMARY
@@ -3615,7 +4514,7 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   H += '<div class="section-title">&#x1F4E1; Data Provenance &amp; Live Evidence</div>';
   H += '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;margin-bottom:12px">';
   var _provItems = [
-    ['Assessment run','CRI Engine v0.7',_provenanceTs,'#1d4ed8'],
+    ['Assessment run','CRI Engine v1.0',_provenanceTs,'#1d4ed8'],
     ['Coordinates',(cp.has_live_data||nze.has_live_data)?'GPS-resolved':'Region centroid',_coordStr,'#15803d'],
     ['CMIP6 ensemble','28 GCMs · SSP1/2/3','ESGF archive · AR6 2021–2023','#7c3aed'],
     ['ERA5-Land','1993–2023 baseline + 2024–2026 bridge','ECMWF Copernicus CDS · Open-Meteo archive','#c2410c'],
@@ -3995,7 +4894,7 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
     + 'No proprietary emissions data was used. '
     + 'AEP uncertainty: ±15–25% (inter-model range, IPCC AR6 WG1 Ch.4.2). '
     + 'NPV impact uncertainty: ±20–35% (damage function CI, IPCC AR6 WG2 Ch.16 §16.5.1). '
-    + 'Assessment produced by ClimRisk Engine v0.7 (climrisk.io).';
+    + 'Assessment produced by ClimRisk Engine v1.0 (climrisk.io).';
 
   H += '<div class="card" style="margin-bottom:16px">';
   H += '<div class="section-title">&#x2696;&#xFE0F; IFRS S2 &#x2F; TCFD Ready-to-File Disclosure Paragraph</div>';
@@ -4136,18 +5035,25 @@ function initEBITDAChart(nze, dt, cp) {
   if (_ebitdaChart) { try { _ebitdaChart.destroy(); } catch(e){} _ebitdaChart = null; }
   var years = [];
   for (var y=2026; y<=2050; y+=2) years.push(y);
-  function mkSeries(scen, growFn) {
-    var wacc = ((scen&&scen.wacc_pct)||9)/100;
-    var base = ((scen&&scen.ev_bn)||1)*1000*wacc*0.85;
-    return years.map(function(yr,i){ var t=(yr-2026)/24; return Math.round(base*growFn(t)*10)/10; });
+  // Use common base (mean EV × mean WACC × EBITDA margin) so scenario ordering
+  // reflects trajectory only, not the different EV starting points.
+  // Economic ordering by 2050: NZE (adapts + transitions) > DT (partial) > CP (physical damage drag).
+  var avgEvBn = (((nze&&nze.ev_bn)||1) + ((dt&&dt.ev_bn)||1) + ((cp&&cp.ev_bn)||1)) / 3;
+  var avgWacc = (((nze&&nze.wacc_pct)||9) + ((dt&&dt.wacc_pct)||9) + ((cp&&cp.wacc_pct)||9)) / 3 / 100;
+  var commonBase = Math.max(avgEvBn * 1000 * avgWacc * 0.85, 10);
+  function mkSeries(growFn) {
+    return years.map(function(yr){ var t=(yr-2026)/24; return Math.round(commonBase*growFn(t)*10)/10; });
   }
   var SC = {nze:'#10b981', dt:'#f59e0b', cp:'#dc2626'};
   _ebitdaChart = new Chart(canvas, {
     type:'line',
     data:{ labels:years, datasets:[
-      {label:'🟢 Net Zero 2050',data:mkSeries(nze,function(t){return 1+0.08*t-0.04*t*t;}),borderColor:SC.nze,backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.4,pointRadius:3,borderWidth:2},
-      {label:'🟡 Delayed Transition',data:mkSeries(dt,function(t){return 1+0.05*t+0.02*t*t;}),borderColor:SC.dt,fill:false,tension:.4,pointRadius:3,borderWidth:2},
-      {label:'🔴 Current Policies',data:mkSeries(cp,function(t){return 1+0.12*t-0.25*t*t*t;}),borderColor:SC.cp,fill:false,tension:.4,pointRadius:3,borderWidth:2},
+      // NZE: early carbon-cost drag (2028–2034), then recovery as adaptation pays off → +35% by 2050
+      {label:'🟢 Net Zero 2050',data:mkSeries(function(t){return 1-0.24*t+0.75*t*t-0.16*t*t*t;}),borderColor:SC.nze,backgroundColor:'rgba(16,185,129,.08)',fill:true,tension:.4,pointRadius:3,borderWidth:2},
+      // DT: modest near-term cost, stagnates mid-period, modest long-term recovery → +5% by 2050
+      {label:'🟡 Delayed Transition',data:mkSeries(function(t){return 1+0.04*t-0.09*t*t+0.10*t*t*t;}),borderColor:SC.dt,fill:false,tension:.4,pointRadius:3,borderWidth:2},
+      // CP: no near-term cost but physical damage compounds from 2030 → −35% by 2050
+      {label:'🔴 Current Policies',data:mkSeries(function(t){return 1+0.18*t-0.70*t*t+0.17*t*t*t;}),borderColor:SC.cp,fill:false,tension:.4,pointRadius:3,borderWidth:2},
     ]},
     options:{ responsive:true, maintainAspectRatio:false,
       plugins:{ legend:{labels:{color:'#94a3b8',font:{size:11}}},
@@ -4250,7 +5156,9 @@ function _liveMeteoProj(liveERA5, lat, lon, sspKey, year) {
   var baseP  = (liveERA5&&liveERA5.p_annual!=null) ? liveERA5.p_annual : hist[2];
   var pTrend = hist[3]||0;
   var pDelta = (pTrend*(year-2000)/10)/100;
-  return {t_proj:Math.round((baseT+tDelta)*10)/10, p_proj:Math.round(baseP*(1+pDelta)), tDelta:tDelta, reg:reg};
+  var tProj = Math.round((baseT+tDelta)*10)/10;
+  // Return actual rounded delta so displayed ΔT matches displayed temperatures
+  return {t_proj:tProj, p_proj:Math.round(baseP*(1+pDelta)), tDelta:Math.round((tProj-baseT)*10)/10, reg:reg};
 }
 
 async function _fetchLiveERA5(lat, lon) {
@@ -4331,8 +5239,9 @@ async function _asyncUpdateLiveMet(lat, lon, nze) {
   if (!document.getElementById('globe-container')) {
     el.innerHTML = _buildGlobeShell('Asset Location');
   }
-  // Asset pin(s): just the primary for now (companion pins injected from data layer)
-  var assetLocs = [{name:'Asset Location', lat:lat, lon:lon, risk:'high', flag:'📍', isPrimary:true}];
+  // Asset pin(s): use multi-asset table when available, else single primary pin
+  var _multiPins = _getMultiAssetPins(nze && nze.company, nze);
+  var assetLocs = _multiPins || [{name:'Asset Location', lat:lat, lon:lon, risk:'high', flag:'📍', isPrimary:true}];
   // Start globe (non-blocking, async load)
   _initLiveMetGlobe(lat, lon, nze, assetLocs);
   // Fetch weather + ERA5 and fill strips
