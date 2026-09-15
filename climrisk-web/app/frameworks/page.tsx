@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Frameworks",
-  description: "CSRD Art.29a, IFRS S2, TCFD, EU Taxonomy, BRSR, SBTi. One CRI engine output. Every major disclosure framework covered.",
+  description: "CSRD Art.29a, IFRS S2, TCFD, SFDR, EU Taxonomy, PCAF, TNFD, BRSR, SBTi. One CRI engine output. Every major disclosure framework covered.",
 };
 
 const FRAMEWORKS = [
@@ -27,9 +27,27 @@ const FRAMEWORKS = [
   },
   {
     code: "EU Taxonomy",
-    jurisdiction: "EU · SFDR",
+    jurisdiction: "EU · Regulation 2020/852",
     coverage: "DNSH",
     outputs: ["DNSH per environmental objective", "Asset-level alignment", "Substantial contribution check"],
+  },
+  {
+    code: "SFDR",
+    jurisdiction: "EU · RTS Annex I",
+    coverage: "Full",
+    outputs: ["All 18 PAI indicators", "Article 29 disclosure pack", "Principal adverse impact statement"],
+  },
+  {
+    code: "TNFD",
+    jurisdiction: "Global · voluntary",
+    coverage: "LEAP",
+    outputs: ["Nature risk score by asset", "KBA / protected area proximity", "ENCORE sector dependency flags"],
+  },
+  {
+    code: "PCAF",
+    jurisdiction: "Global · financed emissions",
+    coverage: "Full",
+    outputs: ["Financed emissions across 6 asset classes", "Data quality scoring", "Attribution factor breakdown"],
   },
   {
     code: "SEBI / BRSR",

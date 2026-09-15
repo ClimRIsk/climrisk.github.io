@@ -74,6 +74,33 @@ const PRACTICES = [
   },
 ];
 
+const ENGINE_CAPABILITIES = [
+  {
+    title: "Regulatory Compliance Suite",
+    body: "Full SFDR PAI reporting across all 18 indicators, EU Taxonomy alignment across the six environmental objectives, and PCAF financed emissions, structured to drop straight into an Article 29 or SFDR RTS filing.",
+  },
+  {
+    title: "Historical Event Stress Tests",
+    body: "Replay Hurricane Harvey, the 2021 European floods, Australia's Black Summer, the Texas freeze, and nine other named events against any position in your book.",
+  },
+  {
+    title: "Sea Level Rise Exposure",
+    body: "IPCC AR6 sea level rise projections across SSP1 through SSP5, with coastal inundation probability at 2030, 2050, and 2100, adjusted for regional subsidence.",
+  },
+  {
+    title: "Nature & Biodiversity Risk",
+    body: "Built on the TNFD LEAP framework. Proximity to Key Biodiversity Areas and protected land, layered with ENCORE sector dependency data, resolves to a nature risk score and the disclosure flags that follow from it.",
+  },
+  {
+    title: "Portfolio Benchmark Comparison",
+    body: "Active climate VaR measured against MSCI World, MSCI EM, MSCI Europe, and the S&P 500, alongside a sector tilt table and a concentration read using the Herfindahl-Hirschman Index.",
+  },
+  {
+    title: "JRC Flood Depth Modelling",
+    body: "Point-level flood expected annual loss, calculated from the European Commission's JRC LISFLOOD-FP hydraulic rasters and the Huizinga 2017 depth-damage curves.",
+  },
+];
+
 export default function CapabilitiesPage() {
   return (
     <div className="pt-40 pb-32 px-6">
@@ -110,6 +137,28 @@ export default function CapabilitiesPage() {
             </div>
           </Reveal>
         ))}
+      </div>
+
+      {/* Engine capabilities */}
+      <div className="max-w-5xl mx-auto mt-32 pt-16 border-t border-white/8">
+        <Reveal>
+          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">What the Engine Covers</p>
+          <h2 className="heading-lg grad-text mb-4">Six capabilities behind every engagement.</h2>
+          <p className="text-zinc-400 leading-relaxed max-w-2xl mb-12">
+            These sit underneath all three practices above. They are the modules our advisory teams
+            actually run when a mandate calls for them, not a features list written for a sales page.
+          </p>
+        </Reveal>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+          {ENGINE_CAPABILITIES.map((c, i) => (
+            <Reveal key={c.title} delayMs={i * 60}>
+              <div className="panel p-6 h-full">
+                <h3 className="text-sm font-semibold text-white mb-2">{c.title}</h3>
+                <p className="text-xs text-zinc-500 leading-relaxed">{c.body}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
       </div>
 
       {/* Client engagement flow */}
