@@ -68,11 +68,12 @@ export default function Home() {
             CRI ENGINE v0.5 · NGFS PHASE 4 · CMIP6
           </div>
           <h1 className="hero-drift animation-delay-200 heading-xl grad-text mb-6">
-            A Quantitative Advisory Firm<br />for a <span className="grad-gold">Repricing World.</span>
+            Institutional Climate Risk,<br />Built for <span className="grad-gold">Advisory and Asset Management.</span>
           </h1>
           <p className="hero-drift animation-delay-400 text-lg text-zinc-400 max-w-2xl leading-relaxed mb-10">
-            We translate peer-reviewed climate science into asset-level financial exposure —
-            Capital-at-Risk, EBITDA compression, and audit-ready disclosure under IFRS&nbsp;S2, TCFD, and CSRD.
+            We translate peer-reviewed climate science into asset-level financial exposure: Capital-at-Risk,
+            EBITDA compression, and audit-ready disclosure under TCFD, SFDR, EU Taxonomy, PCAF, TNFD, IFRS&nbsp;S2,
+            and Basel&nbsp;III. Advisory-grade intelligence, not a dashboard you have to figure out yourself.
           </p>
           <div className="hero-drift animation-delay-600 flex flex-wrap items-center gap-4">
             <Link href="/contact" className="btn-primary">
@@ -93,6 +94,11 @@ export default function Home() {
               <span>WRI Aqueduct</span>
               <span>Copernicus</span>
               <span>TCFD</span>
+              <span>SFDR</span>
+              <span>EU Taxonomy</span>
+              <span>PCAF</span>
+              <span>TNFD</span>
+              <span>Basel III</span>
             </div>
           </div>
         </div>

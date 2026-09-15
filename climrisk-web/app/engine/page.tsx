@@ -44,8 +44,19 @@ const SECTIONS = [
     ],
   },
   {
-    id: "transparency",
+    id: "api-surface",
     tag: "04",
+    title: "API Surface",
+    body: "Every capability above is reachable through a REST API, so the engine can sit inside your own deal workflow or reporting pipeline instead of living as a standalone tool you have to open separately.",
+    points: [
+      { t: "Regulatory Endpoints", d: "POST /regulatory/sfdr-pai, POST /regulatory/eu-taxonomy, and POST /regulatory/pcaf return the SFDR PAI pack, EU Taxonomy alignment, and PCAF financed emissions for a given portfolio." },
+      { t: "Stress & Physical Endpoints", d: "POST /stress/event replays a named historical event against a position, GET /stress/event/catalogue lists what's available, and POST /physical/slr and POST /physical/biodiversity return sea level rise exposure and TNFD nature risk scores." },
+      { t: "Portfolio Endpoints", d: "POST /portfolio/benchmark compares active climate VaR against a chosen index, and POST /portfolio/counterparty returns concentration and climate VaR broken out by counterparty." },
+    ],
+  },
+  {
+    id: "transparency",
+    tag: "05",
     title: "Methodological Transparency",
     body: "Every number the engine produces is traceable to a named hazard layer, a named scenario, and a named financial assumption. Nothing is a black box: we defend the CRI score and every input beneath it in front of a client's own quantitative or risk team, on request.",
     points: [
