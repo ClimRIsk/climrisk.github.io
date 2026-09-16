@@ -119,7 +119,10 @@ export default function EnginePage() {
       <div className="max-w-5xl mx-auto mt-32 text-center pt-16 border-t border-white/8">
         <Reveal>
           <h2 className="heading-lg grad-text mb-4">See how we map 10,000 assets in under 5 minutes.</h2>
-          <Link href="/contact" className="btn-primary mt-4 inline-flex">Book a Technical Demo</Link>
+          <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
+            <Link href="/contact" className="btn-primary">Book a Technical Demo</Link>
+            <Link href="/methodology" className="btn-ghost">Read the full methodology</Link>
+          </div>
         </Reveal>
       </div>
     </div>

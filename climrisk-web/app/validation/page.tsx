@@ -58,7 +58,7 @@ export default function ValidationPage() {
           </div>
           <div className="flex flex-wrap gap-4">
             <Link href="/contact" className="btn-primary">Request validation report →</Link>
-            <Link href="/research" className="btn-ghost">See methodology</Link>
+            <Link href="/methodology" className="btn-ghost">See full methodology</Link>
           </div>
         </div>
         <div className="grid grid-cols-2 gap-4">

@@ -10,6 +10,7 @@ const LINKS = {
     { label: "Geospatial Pipeline",       href: "/engine#pipeline" },
     { label: "Financial Translation",     href: "/engine#financial-translation" },
     { label: "Methodological Transparency", href: "/engine#transparency" },
+    { label: "Full Methodology",          href: "/methodology" },
   ],
   Frameworks: [
     { label: "IFRS S2",   href: "/frameworks#ifrs-s2" },
