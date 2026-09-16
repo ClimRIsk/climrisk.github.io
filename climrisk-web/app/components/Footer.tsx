@@ -19,10 +19,10 @@ const LINKS = {
     { label: "SEBI/BRSR", href: "/frameworks#brsr" },
   ],
   Firm: [
-    { label: "The Firm",              href: "/company" },
-    { label: "Use Cases by Sector",   href: "/use-cases" },
-    { label: "Intelligence & Research", href: "/research" },
-    { label: "Engage the Firm",       href: "/contact" },
+    { label: "About",               href: "/company" },
+    { label: "Industries",          href: "/use-cases" },
+    { label: "Research",            href: "/research" },
+    { label: "Book a Demo",         href: "/contact" },
   ],
 };
 

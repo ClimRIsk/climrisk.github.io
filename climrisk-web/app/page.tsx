@@ -69,19 +69,19 @@ export default function Home() {
             CRI ENGINE v0.5 · NGFS PHASE 4 · CMIP6
           </div>
           <h1 className="hero-drift animation-delay-200 heading-xl grad-text mb-6">
-            Institutional Climate Risk,<br />Built for <span className="grad-gold">Advisory and Asset Management.</span>
+            Command Your <span className="grad-gold">Climate Exposure.</span>
           </h1>
           <p className="hero-drift animation-delay-400 text-lg text-zinc-400 max-w-2xl leading-relaxed mb-10">
-            We translate peer-reviewed climate science into asset-level financial exposure: Capital-at-Risk,
-            EBITDA compression, and audit-ready disclosure under TCFD, SFDR, EU Taxonomy, PCAF, TNFD, IFRS&nbsp;S2,
-            and Basel&nbsp;III. Advisory-grade intelligence, not a dashboard you have to figure out yourself.
+            The unified risk engine for institutional portfolios. We translate live climate hazards and
+            forward-looking projections into asset-level financial exposure: Capital-at-Risk, EBITDA compression,
+            and audit-ready disclosure under TCFD, SFDR, EU Taxonomy, PCAF, TNFD, IFRS&nbsp;S2, and Basel&nbsp;III.
           </p>
           <div className="hero-drift animation-delay-600 flex flex-wrap items-center gap-4">
             <Link href="/contact" className="btn-primary">
-              Book a Technical Demo
+              Book a Demo
             </Link>
-            <Link href="/engine" className="btn-ghost">
-              See the Engine
+            <Link href="https://climrisk.io/app.html" target="_blank" className="btn-ghost">
+              Launch Platform ↗
             </Link>
           </div>
 

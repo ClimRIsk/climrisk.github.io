@@ -5,11 +5,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const NAV_LINKS = [
-  { label: "Capabilities", href: "/capabilities" },
-  { label: "The Engine",   href: "/engine" },
-  { label: "Use Cases",    href: "/use-cases" },
-  { label: "Intelligence", href: "/research" },
-  { label: "The Firm",     href: "/company" },
+  { label: "Products",    href: "/capabilities" },
+  { label: "Industries",  href: "/use-cases" },
+  { label: "Methodology", href: "/methodology" },
+  { label: "Research",    href: "/research" },
+  { label: "About",       href: "/company" },
 ];
 
 export default function Nav() {
@@ -60,14 +60,14 @@ export default function Nav() {
             href="/contact"
             className="text-sm text-zinc-400 hover:text-white transition-colors duration-300 px-3 py-1.5"
           >
-            Engage the Firm
+            Book a Demo
           </Link>
           <Link
             href="https://climrisk.io/app.html"
             target="_blank"
             className="btn-primary text-sm px-4 py-2"
           >
-            Access Platform
+            Launch Platform
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
               <path d="M5 12h14M12 5l7 7-7 7"/>
             </svg>
@@ -114,7 +114,7 @@ export default function Nav() {
             onClick={() => setMenuOpen(false)}
             className="px-3 py-2.5 rounded-md text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/5"
           >
-            Engage the Firm
+            Book a Demo
           </Link>
           <div className="pt-3 border-t border-white/8 mt-2">
             <Link
@@ -123,7 +123,7 @@ export default function Nav() {
               onClick={() => setMenuOpen(false)}
               className="btn-primary w-full justify-center text-sm"
             >
-              Access Platform →
+              Launch Platform →
             </Link>
           </div>
         </div>
