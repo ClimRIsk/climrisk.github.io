@@ -2,6 +2,7 @@ import Link from "next/link";
 import Reveal from "./components/Reveal";
 import CounterUp from "./components/CounterUp";
 import GlobeBackground from "./components/GlobeBackground";
+import IsometricShowcase from "./components/IsometricShowcase";
 
 const MANDATES = [
   {
@@ -104,6 +105,23 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Trust banner */}
+      <section className="px-6 py-10 border-b border-white/8">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-center text-xs uppercase tracking-widest text-zinc-600 font-mono mb-6">
+            Assets & Emissions Modelled For
+          </p>
+          <div className="trust-strip flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-sm font-semibold text-zinc-300">
+            <span>Maritime Terminals</span>
+            <span>Energy Infrastructure</span>
+            <span>Light Manufacturing</span>
+            <span>Real Estate Portfolios</span>
+            <span>Mining & Extraction</span>
+            <span>Agricultural Assets</span>
+          </div>
+        </div>
+      </section>
+
       {/* Stats strip */}
       <section className="px-6 py-16 border-y border-white/8">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -152,25 +170,24 @@ export default function Home() {
 
       {/* Infrastructure teaser */}
       <section className="px-6 py-24 border-t border-white/8">
-        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-16 items-center">
+        <div className="max-w-6xl mx-auto">
           <Reveal>
             <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Under the Hood</p>
-            <h2 className="heading-lg grad-text mb-6">The CRI Engine</h2>
-            <p className="text-zinc-400 leading-relaxed mb-8">
+            <h2 className="heading-lg grad-text mb-6 max-w-2xl">The CRI Engine, at a glance.</h2>
+            <p className="text-zinc-400 leading-relaxed mb-12 max-w-2xl">
               Every conclusion we deliver traces back to a geospatial pipeline built on IPCC AR6 hazard
-              matrices and NGFS Phase 4 scenarios — asset coordinates in, Capital-at-Risk out, with full
-              methodological transparency at every step.
+              matrices and NGFS Phase 4 scenarios. Asset coordinates in, Capital-at-Risk out, with full
+              methodological transparency at every step. This is a look at three of the modules underneath.
             </p>
+          </Reveal>
+          <Reveal delayMs={100}>
+            <IsometricShowcase />
+          </Reveal>
+          <div className="mt-8">
             <Link href="/engine" className="btn-ghost">
               Read the technical whitepaper
             </Link>
-          </Reveal>
-          <Reveal delayMs={120}>
-            <div className="panel h-72 flex items-center justify-center relative overflow-hidden">
-              <div className="scan-line" style={{ top: "20%" }} />
-              <span className="loading-mono">GEOSPATIAL_ENGINE · SEE /engine FOR LIVE RENDER</span>
-            </div>
-          </Reveal>
+          </div>
         </div>
       </section>
 
