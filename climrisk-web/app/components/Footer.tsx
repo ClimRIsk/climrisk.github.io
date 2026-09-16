@@ -20,6 +20,7 @@ const LINKS = {
   ],
   Firm: [
     { label: "The Firm",              href: "/company" },
+    { label: "Use Cases by Sector",   href: "/use-cases" },
     { label: "Intelligence & Research", href: "/research" },
     { label: "Engage the Firm",       href: "/contact" },
   ],
