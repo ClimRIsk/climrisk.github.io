@@ -142,22 +142,18 @@ def submit_inquiry(request: InquiryRequest) -> InquiryResponse:
     nothing is lost even when email delivery isn't configured or fails.
     """
     lines = [
-        f"Engagement Type: {request.engagement_type}",
-        f"Institution Type: {request.institution_type}",
-        f"Assets Under Consideration: {request.asset_range}",
-        f"Primary Regulatory Driver: {request.regulatory_driver}",
-        f"Timeline: {request.timeline}",
-        "",
-        f"Name: {request.name}",
-        f"Institution: {request.institution}",
-        f"Email: {request.email}",
+        f"Name: {request.first_name} {request.last_name}",
+        f"Work Email: {request.work_email}",
+        f"Company: {request.company}",
+        f"Primary Function: {request.primary_function}",
+        f"Primary Objective: {request.primary_objective}",
         "",
         "Notes:",
         request.notes or "(none)",
     ]
     body_text = "\n".join(lines)
 
-    logger.info("New engagement inquiry received:\n%s", body_text)
+    logger.info("New demo request received:\n%s", body_text)
 
     if not RESEND_API_KEY:
         logger.warning("RESEND_API_KEY is not set — inquiry was logged but no email was sent.")
@@ -173,8 +169,8 @@ def submit_inquiry(request: InquiryRequest) -> InquiryResponse:
             json={
                 "from": f"ClimRisk Website <{INQUIRY_FROM_EMAIL}>",
                 "to": [INQUIRY_NOTIFY_EMAIL],
-                "reply_to": request.email,
-                "subject": f"Engagement Inquiry — {request.engagement_type}",
+                "reply_to": request.work_email,
+                "subject": f"Demo Request — {request.company} ({request.primary_objective})",
                 "text": body_text,
             },
             timeout=10,

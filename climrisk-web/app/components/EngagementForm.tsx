@@ -1,32 +1,29 @@
 "use client";
 
 import { useState, FormEvent } from "react";
+import Link from "next/link";
 
 const INQUIRY_ENDPOINT = "https://climrisk-github-io.onrender.com/inquiry";
 
-const ENGAGEMENT_TYPES = [
-  "Technical Demo",
-  "Regulatory Advisory (CSRD / IFRS S2 / TCFD)",
-  "Carbon Auditing & Data Assurance",
-  "Physical & Transition Stress Testing",
-  "Partnership / Data Provider",
-  "Media & Academic Inquiry",
+const FREE_EMAIL_DOMAINS = [
+  "gmail.com", "yahoo.com", "outlook.com", "hotmail.com", "icloud.com",
+  "aol.com", "proton.me", "protonmail.com", "live.com", "msn.com",
 ];
 
-const INSTITUTION_TYPES = [
-  "Bank / Financial Institution",
-  "Asset Manager / Institutional Investor",
-  "Industrial Corporate",
-  "Insurer / Reinsurer",
-  "Government / NGO",
+const FUNCTIONS = [
+  "Risk & Compliance",
+  "Sustainability / ESG",
+  "Investment & Portfolio Management",
+  "Operations & Supply Chain",
   "Other",
 ];
 
-const ASSET_RANGES = ["Under 50 assets", "50 – 500 assets", "500 – 5,000 assets", "5,000+ assets"];
-
-const REGULATORY_DRIVERS = ["CSRD", "IFRS S2", "TCFD", "SEBI / BRSR", "Internal risk mandate", "Not yet determined"];
-
-const TIMELINES = ["Immediate", "This quarter", "Next quarter", "Exploratory"];
+const OBJECTIVES = [
+  "Regulatory Disclosure (CSRD, IFRS S2, TCFD)",
+  "Portfolio Stress-Testing (NGFS Scenarios)",
+  "Operational Disruption & CapEx Modeling",
+  "Asset / Supply Chain Mapping",
+];
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -43,21 +40,34 @@ const inputClass = selectClass;
 
 export default function EngagementForm() {
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [emailError, setEmailError] = useState("");
+
+  function validateWorkEmail(email: string): boolean {
+    const domain = email.split("@")[1]?.toLowerCase().trim();
+    if (!domain) return true; // let the native `required`/`type=email` catch malformed input
+    if (FREE_EMAIL_DOMAINS.includes(domain)) {
+      setEmailError("Please use your work email, not a personal address, so we can route you correctly.");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  }
 
   async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const form = e.currentTarget;
     const fd = new FormData(form);
+    const workEmail = String(fd.get("workEmail") || "");
+
+    if (!validateWorkEmail(workEmail)) return;
 
     const payload = {
-      engagement_type: String(fd.get("engagementType") || ""),
-      institution_type: String(fd.get("institutionType") || ""),
-      asset_range: String(fd.get("assetRange") || ""),
-      regulatory_driver: String(fd.get("regulatoryDriver") || ""),
-      timeline: String(fd.get("timeline") || ""),
-      name: String(fd.get("name") || ""),
-      institution: String(fd.get("institution") || ""),
-      email: String(fd.get("email") || ""),
+      first_name: String(fd.get("firstName") || ""),
+      last_name: String(fd.get("lastName") || ""),
+      work_email: workEmail,
+      company: String(fd.get("company") || ""),
+      primary_function: String(fd.get("primaryFunction") || ""),
+      primary_objective: String(fd.get("primaryObjective") || ""),
       notes: String(fd.get("notes") || ""),
     };
 
@@ -71,63 +81,74 @@ export default function EngagementForm() {
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       setStatus("sent");
       form.reset();
-    } catch (err) {
+    } catch {
       setStatus("error");
     }
   }
 
+  if (status === "sent") {
+    return (
+      <div className="panel p-8">
+        <p className="text-xs uppercase tracking-widest text-terminal font-mono mb-4">Request Received</p>
+        <h3 className="text-white font-semibold text-lg mb-3">We've got it. What happens next:</h3>
+        <p className="text-sm text-zinc-400 leading-relaxed mb-6">
+          Someone from the team will reach out to your work email to schedule a 30-minute walkthrough
+          tailored to what you selected. If you'd rather grab a slot yourself, this is where a scheduling
+          link goes once one is connected. For now, reach out directly if you'd like to move faster.
+        </p>
+        <div className="border-t border-white/8 pt-6">
+          <p className="text-xs text-zinc-500 mb-3">While you wait, the methodology behind the engine:</p>
+          <Link href="/methodology" className="text-sm text-gold-200 hover:text-gold-300 transition-colors inline-flex items-center gap-1.5">
+            Read the full methodology
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M7 17 17 7M7 7h10v10"/>
+            </svg>
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="panel p-8">
-      <p className="text-xs uppercase tracking-widest text-zinc-500 font-mono mb-6">Inquiry Parameters</p>
+      <p className="text-xs uppercase tracking-widest text-zinc-500 font-mono mb-6">Request Access</p>
       <form onSubmit={handleSubmit} className="space-y-5">
-        <Field label="Engagement Type">
-          <select name="engagementType" required className={selectClass} defaultValue="">
-            <option value="" disabled>Select an engagement type</option>
-            {ENGAGEMENT_TYPES.map((o) => <option key={o} value={o}>{o}</option>)}
+        <div className="grid sm:grid-cols-2 gap-5">
+          <Field label="First Name">
+            <input name="firstName" type="text" required className={inputClass} />
+          </Field>
+          <Field label="Last Name">
+            <input name="lastName" type="text" required className={inputClass} />
+          </Field>
+        </div>
+
+        <Field label="Work Email">
+          <input
+            name="workEmail"
+            type="email"
+            required
+            className={inputClass}
+            onBlur={(e) => validateWorkEmail(e.target.value)}
+          />
+          {emailError && <p className="text-xs text-red-400 mt-2">{emailError}</p>}
+        </Field>
+
+        <Field label="Company Name">
+          <input name="company" type="text" required className={inputClass} />
+        </Field>
+
+        <Field label="Primary Function">
+          <select name="primaryFunction" required className={selectClass} defaultValue="">
+            <option value="" disabled>Select one</option>
+            {FUNCTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
         </Field>
 
-        <div className="grid sm:grid-cols-2 gap-5">
-          <Field label="Institution Type">
-            <select name="institutionType" required className={selectClass} defaultValue="">
-              <option value="" disabled>Select one</option>
-              {INSTITUTION_TYPES.map((o) => <option key={o} value={o}>{o}</option>)}
-            </select>
-          </Field>
-          <Field label="Assets Under Consideration">
-            <select name="assetRange" required className={selectClass} defaultValue="">
-              <option value="" disabled>Select a range</option>
-              {ASSET_RANGES.map((o) => <option key={o} value={o}>{o}</option>)}
-            </select>
-          </Field>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-5">
-          <Field label="Primary Regulatory Driver">
-            <select name="regulatoryDriver" required className={selectClass} defaultValue="">
-              <option value="" disabled>Select one</option>
-              {REGULATORY_DRIVERS.map((o) => <option key={o} value={o}>{o}</option>)}
-            </select>
-          </Field>
-          <Field label="Timeline">
-            <select name="timeline" required className={selectClass} defaultValue="">
-              <option value="" disabled>Select one</option>
-              {TIMELINES.map((o) => <option key={o} value={o}>{o}</option>)}
-            </select>
-          </Field>
-        </div>
-
-        <div className="grid sm:grid-cols-2 gap-5">
-          <Field label="Name">
-            <input name="name" type="text" required className={inputClass} />
-          </Field>
-          <Field label="Institution">
-            <input name="institution" type="text" required className={inputClass} />
-          </Field>
-        </div>
-
-        <Field label="Email">
-          <input name="email" type="email" required className={inputClass} />
+        <Field label="Primary Objective">
+          <select name="primaryObjective" required className={selectClass} defaultValue="">
+            <option value="" disabled>Select one</option>
+            {OBJECTIVES.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
         </Field>
 
         <Field label="Notes (optional)">
@@ -135,21 +156,17 @@ export default function EngagementForm() {
         </Field>
 
         <button type="submit" className="btn-primary w-full justify-center" disabled={status === "sending"}>
-          {status === "sending" ? "Submitting…" : "Submit Inquiry / Request NDA"}
+          {status === "sending" ? "Submitting…" : "Request Access"}
         </button>
 
         <p className="text-xs text-zinc-600 leading-relaxed">
-          Your inquiry is sent directly to the ClimRisk team — nothing opens in your own mail client.
+          Your request goes straight to the ClimRisk team, work email required so we know who we're
+          talking to.
         </p>
 
-        {status === "sent" && (
-          <p className="text-xs text-terminal font-mono">
-            Inquiry received. We&apos;ll be in touch shortly.
-          </p>
-        )}
         {status === "error" && (
           <p className="text-xs text-red-400 font-mono">
-            Something went wrong submitting your inquiry. Please email{" "}
+            Something went wrong submitting your request. Please email{" "}
             <a href="mailto:shri@climrisk.io" className="underline">shri@climrisk.io</a> directly.
           </p>
         )}

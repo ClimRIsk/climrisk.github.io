@@ -91,16 +91,14 @@ class RunRequest(BaseModel):
 
 
 class InquiryRequest(BaseModel):
-    """Engagement inquiry submitted from the marketing site's /contact form."""
+    """Demo request submitted from the marketing site's /contact form."""
 
-    engagement_type: str
-    institution_type: str
-    asset_range: str
-    regulatory_driver: str
-    timeline: str
-    name: str
-    institution: str
-    email: str
+    first_name: str
+    last_name: str
+    work_email: str
+    company: str
+    primary_function: str
+    primary_objective: str
     notes: Optional[str] = ""
 
 
