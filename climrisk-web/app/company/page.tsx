@@ -46,16 +46,20 @@ export default function CompanyPage() {
             <div>
               <h2 className="heading-md text-white mb-4">From the Ground to the Ledger</h2>
               <p className="text-zinc-400 leading-relaxed mb-4">
-                The CRI Engine didn't start as a software idea. It started with a geology background and
-                years of hands-on carbon accounting and sustainability work inside heavy industry, where
-                the gap between academic climate models and strict financial reporting mandates is not
-                theoretical. It's a spreadsheet that doesn't reconcile.
+                The CRI Engine didn't start as a software idea. It started inside the complex realities of
+                heavy industry and large-scale environmental management, running ISO 14067 clinker
+                production assessments and managing large greenhouse gas inventories, while overseeing an
+                87-hectare post-mining ecological restoration. That's where the gap between academic
+                climate models and strict financial reporting mandates stopped being theoretical. It became
+                a spreadsheet that doesn't reconcile.
               </p>
               <p className="text-zinc-400 leading-relaxed">
                 Corporate sustainability and risk teams are stuck between the two: climate science that
                 speaks in degrees and probabilities, and disclosure regimes that demand a number in
-                dollars, defensible to an auditor. ClimRisk exists to close that specific gap, not to be
-                another dashboard sitting on top of data nobody has reconciled.
+                dollars, defensible to an auditor, with no way to translate physical vulnerabilities into
+                audit-ready data assurance without the process fragmenting across hundreds of isolated
+                spreadsheets. ClimRisk exists to close that specific gap: dynamic life cycle assessments
+                and consolidated financial risk metrics through one mathematically rigorous platform.
               </p>
             </div>
           </div>
@@ -96,15 +100,19 @@ export default function CompanyPage() {
                   </a>
                 </h3>
                 <p className="text-zinc-400 leading-relaxed mb-4">
-                  Shrinivash designed the CRI Engine at the intersection of earth science and corporate
-                  carbon auditing. He holds an MSc in Urban Environment, Sustainability & Climate Change
-                  from Erasmus University Rotterdam and an MSc in Geology from Manipal University, and is
-                  an ISO 14067 Accredited Carbon Footprint Auditor.
+                  Shrinivash designed the CRI Engine by combining on-the-ground geological expertise with
+                  rigorous corporate carbon auditing. He holds an MSc in Urban Environment, Sustainability
+                  & Climate Change from Erasmus University Rotterdam and an MSc in Geology from Manipal
+                  University, and is an ISO 14067 Accredited Carbon Footprint Auditor. Prior to founding
+                  ClimRisk, he served as a Geologist and Sustainability Lead in heavy building materials,
+                  managing complex emissions inventories and the 87-hectare post-mining restoration
+                  referenced above.
                 </p>
                 <p className="text-zinc-400 leading-relaxed">
-                  His work extends into urban climate resilience as Climate Data & Geospatial Lead for
-                  INHAF's ClimACT-Chennai Initiative, building the Python data pipelines and QGIS spatial
-                  models behind that programme. That combination, geology, carbon auditing, and applied
+                  His work extends into urban climate resilience as Project Lead for climate change
+                  initiatives at INHAF, driving inclusive urban master planning and green infrastructure
+                  projects, including the Python data pipelines and QGIS spatial models behind the
+                  ClimACT-Chennai Initiative. That combination, geology, carbon auditing, and applied
                   geospatial work, is the background the ClimRisk platform is built on top of.
                 </p>
               </div>
