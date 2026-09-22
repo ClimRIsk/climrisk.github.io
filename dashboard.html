@@ -715,7 +715,7 @@ function _physNpvPct(years, wacc) {
 
 async function _runPythonScoped(cid, company, sector) {
   var resp = await fetch(ENGINE_URL+'/runs/scoped', {
-    method:'POST', headers:{'Content-Type':'application/json'},
+    method:'POST', headers: _apiHdr('application/json'),
     body: JSON.stringify({company_id:cid, scope:'full_cri'}),
     signal: AbortSignal.timeout(45000)
   });
@@ -781,6 +781,16 @@ document.addEventListener('DOMContentLoaded', function(){
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 var _auth  = sessionStorage.getItem('cri_auth')  || '';
 var _email = sessionStorage.getItem('cri_email') || 'user@example.com';
+
+// Helper: build fetch headers with API key if we have one
+// _auth (from app.html login, e.g. 'CRI2026') doubles as the API key
+// sent to the Render backend as X-API-Key.
+function _apiHdr(contentType) {
+  var h = {};
+  if (contentType) h['Content-Type'] = contentType;
+  if (_auth && _auth !== '') h['X-API-Key'] = _auth;
+  return h;
+}
 function logout() { sessionStorage.clear(); window.location.href = 'app.html'; }
 (function(){
   var nav = document.getElementById('nav-email');
@@ -867,7 +877,7 @@ function loadEngineCompanies() {
       var ratingPromises = companies.map(function(c){
         return fetch(ENGINE_URL + '/ratings', {
           method: 'POST',
-          headers: {'Content-Type':'application/json'},
+          headers: _apiHdr('application/json'),
           body: JSON.stringify({company_id: c.id, tier: 'free'}),
           signal: AbortSignal.timeout(20000)
         }).then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; });
@@ -1034,12 +1044,37 @@ async function launchAssessment() {
         return;
       }
     }
-    // Company not in engine seed list — fall back to demo mode with sector estimates
+    // Company not in engine seed list — call /agent/assess which works for any company name
+    // (fuzzy match + sector fallback + ML scoring). Only fall to demo if engine is down.
+    try {
+      var agResp = await fetch(ENGINE_URL + '/agent/assess', {
+        method: 'POST',
+        headers: _apiHdr('application/json'),
+        body: JSON.stringify({
+          company_name: company,
+          sector_hint: (sector||'Other').toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_'),
+          assessment_scope: 'standard'
+        }),
+        signal: AbortSignal.timeout(60000)
+      });
+      if (!agResp.ok) {
+        var agErrBody = await agResp.json().catch(function(){ return {}; });
+        throw new Error((agErrBody.detail && agErrBody.detail.error) || ('Engine ' + agResp.status));
+      }
+      var agData = await agResp.json();
+      var adapted = _agentToResults(agData, company, sector);
+      saveResultToAssessment(assessId, adapted, company, sector, 0);
+      showResults(adapted, company, sector, 0);
+      return;
+    } catch(agErr) {
+      console.warn('/agent/assess failed, falling to demo mode:', agErr.message);
+    }
+    // Engine unreachable — fall back to sector-estimated results
     _MEM_STORE = getAssessments().map(function(a){
       return a.id===assessId ? Object.assign({},a,{status:'complete'}) : a;
     });
     renderAssessments();
-    _runDemoMode(company, sector, 'Company not in engine database — showing sector-estimated results. Upload an Excel file for engine-computed analysis.');
+    _runDemoMode(company, sector, 'Engine temporarily unavailable — showing sector-estimated results while server wakes up.');
     return;
   }
 
@@ -1050,7 +1085,7 @@ async function launchAssessment() {
     fd.append('scenarios', 'Net Zero 2050,Delayed Transition,Current Policies');
 
     var resp = await fetch(ENGINE_URL + '/runs/file', {
-      method: 'POST', body: fd,
+      method: 'POST', headers: _apiHdr(), body: fd,
       signal: AbortSignal.timeout(60000)
     });
     if (!resp.ok) {
@@ -2321,6 +2356,64 @@ function showEngineError(msg, company, sector, assessId) {
 }
 
 // ── DEMO MODE — rich sector-estimated output when engine is unavailable ────────
+// ── /agent/assess → showResults() ADAPTER ────────────────────────────────────
+// Converts the AssessmentData JSON from POST /agent/assess into the format
+// expected by showResults() which was built for /runs/scoped output.
+function _agentToResults(d, company, sector) {
+  var physScore  = (d.physical  && d.physical.score  != null) ? d.physical.score  : 0;
+  var transScore = (d.transition && d.transition.score != null) ? d.transition.score : 0;
+
+  // NPV impact estimates from scores (0-100 scale):
+  //   Physical:    always negative, proportional to physical score
+  //   Transition:  negative; NZE has highest carbon price → biggest cost;
+  //                Current Policies has lowest → smallest cost
+  var ph    = -(physScore  / 100) * 18;   // up to -18% physical drag
+  var trNze = -(transScore / 100) * 25;   // NZE: highest transition cost
+  var trDT  = -(transScore / 100) * 17;   // Delayed Transition
+  var trCP  = -(transScore / 100) *  8;   // Current Policies: lowest cost
+
+  function mkScen(name, scores, ssp, gmst, tr) {
+    // Use final ML trajectory score (%) as a proxy for relative EV position
+    var latestPct = 1.0;
+    if (scores && scores.length) latestPct = scores[scores.length-1].value / 100;
+    var ev = Math.max(0.2, latestPct * 8.0); // rough EV proxy in $B
+    return {
+      company: company, scenario: name,
+      ev_bn:    Math.round(ev * 10) / 10,
+      equity_bn: Math.round(ev * 0.65 * 10) / 10,
+      share_price: Math.round(ev * 0.65 * 1000 / 50 * 100) / 100,
+      wacc_pct: 9.0,
+      npv_impact_pct:          Math.round(tr  * 10) / 10,
+      physical_npv_impact_pct: Math.round(ph  * 10) / 10,
+      combined_npv_impact_pct: Math.round((tr + ph) * 10) / 10,
+      hazard_scores: {}, ssp_id: ssp, gmst_2050: gmst,
+      data_sources: ['CRI Engine', 'NGFS Phase 4', 'IPCC AR6'],
+      sector: sector
+    };
+  }
+
+  var results = [
+    mkScen('Net Zero 2050',      d.nze_scores,     'SSP1-2.6', 0.85, trNze),
+    mkScen('Delayed Transition', d.delayed_scores, 'SSP2-4.5', 1.35, trDT),
+    mkScen('Current Policies',   d.cp_scores,      'SSP3-7.0', 1.70, trCP)
+  ];
+
+  return {
+    source_file: 'agent_assess', companies_processed: 1,
+    scenarios_run: ['Net Zero 2050','Delayed Transition','Current Policies'],
+    total_duration_s: 0, errors: [], results: results,
+    _python_rating:           d.cri_rating       || null,
+    _python_rating_label:     d.cri_rating_label || null,
+    _python_summary:          d.summary          || '',
+    _python_physical_score:   physScore,
+    _python_physical_label:   (d.physical   && d.physical.label)   || null,
+    _python_transition_score: transScore,
+    _python_transition_label: (d.transition && d.transition.label) || null,
+    _python_composite:        d.composite_score  || null,
+    _agent_data: d   // full data preserved (scope 1/2/3, commitment, ITR, quotes)
+  };
+}
+
 function _runDemoMode(company, sector, errMsg) {
   var SECTOR_PARAMS = {
     'Steel':              {rev:2200, scope1:320000, scope2:48000,  renew:8,  decap:6,  build:1996, ffe:0.3, mat:'reinforced concrete', def:'partial flood barrier', bak:'Generator only'},
@@ -2361,7 +2454,8 @@ function saveResultToAssessment(id, data, company, sector, duration) {
   var idx = list.findIndex(function(a){return a.id===id;});
   if (idx >= 0) {
     list[idx].status = 'complete';
-    list[idx].rating = ri.rating;
+    // Prefer the Python engine's CRI rating if available; fall back to derived
+    list[idx].rating = data._python_rating || ri.rating;
     list[idx].engineData = data;
     list[idx].duration = duration;
     _MEM_STORE = list;

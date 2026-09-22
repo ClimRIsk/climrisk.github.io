@@ -63,14 +63,25 @@ The output is a structured JSON payload (and now a 4-page PDF report) containing
 
 ---
 
-## Pricing Model (proposed)
+## Pricing Model — Enterprise Licensing (NOT monthly SaaS)
 
-| Tier | Price | What's included |
+ClimRisk licenses the engine to institutions under annual contracts, like Bloomberg Terminal.
+Long-term commitment is the goal — not month-to-month churn. Two or three clients at the
+right price point = sustainable revenue.
+
+| License Tier | Annual Fee | What's included |
 |---|---|---|
-| **Analyst** | $500/mo | 100 company assessments/mo, CRI rating + pillar labels, API access |
-| **Professional** | $2,000/mo | 500 assessments, full scores + ML trajectory + TCFD/ISSB/CSRD reports, PDF download |
-| **Enterprise** | $8,000–$25,000/mo | Unlimited assessments, on-premise Docker, custom scenarios, Supabase portfolio storage, dedicated SLA |
-| **One-time report** | $299 | Single company PDF — for consultants or due diligence |
+| **Analyst License** | £20,000/yr | Up to 100 company assessments/yr, CRI rating + scenario reports, API access, 1 user seat |
+| **Professional License** | £60,000/yr | 500 assessments/yr, full ML trajectory + TCFD/ISSB/CSRD/PDF reports, 5 user seats |
+| **Enterprise License** | £150,000–£300,000/yr | Unlimited assessments, on-premise Docker deployment, custom NGFS scenarios, portfolio monitoring, dedicated SLA, annual calibration update, 20+ seats |
+| **One-time Due Diligence Report** | £500/report | Single company 4-page PDF — for law firms, consultants, credit committees |
+
+**Why licensing, not SaaS:**
+- Regulated financial institutions prefer known annual costs and multi-year contracts
+- On-premise Docker option is only viable as a licensed product
+- Annual commitment = real revenue signal + client lock-in
+- 3-year enterprise contracts (£450K+ over term) create meaningful recurring revenue
+- Matches how Bloomberg, MSCI, and FactSet sell data to institutions
 
 ---
 
