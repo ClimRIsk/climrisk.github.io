@@ -24,3 +24,7 @@ scipy>=1.12
 #   torch>=2.2  --index-url https://download.pytorch.org/whl/cpu
 scikit-learn>=1.4
 xgboost>=2.0
+joblib>=1.3         # model serialisation — fast cold-starts after training
+
+# PDF client report generation
+reportlab>=4.1

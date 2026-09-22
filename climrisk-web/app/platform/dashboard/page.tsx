@@ -256,35 +256,36 @@ export default function DashboardPage() {
     loadDemo();
   }, [loadDemo]);
 
+  const API_KEY = process.env.NEXT_PUBLIC_API_KEY ?? "";
+
   const runAssessment = async () => {
     if (!company.trim()) return;
     setLoading(true);
     setError(null);
     try {
-      // Submit job
+      // POST to /agent/assess — synchronous endpoint returns AssessmentData directly.
+      // The API key is optional; when CRI_API_KEYS is unset on the server, auth is skipped.
+      const headers: Record<string, string> = { "Content-Type": "application/json" };
+      if (API_KEY) headers["X-API-Key"] = API_KEY;
+
       const res = await fetch(`${API_BASE}/agent/assess`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ company_name: company, sector_hint: sector, assessment_scope: "standard" }),
       });
-      if (!res.ok) throw new Error(`API error: ${res.status}`);
-      const { job_id } = await res.json();
 
-      // Poll until complete
-      let attempts = 0;
-      while (attempts < 60) {
-        await new Promise((r) => setTimeout(r, 2000));
-        const pollRes = await fetch(`${API_BASE}/agent/jobs/${job_id}`);
-        const job = await pollRes.json();
-        if (job.status === "completed" && job.result) {
-          setData(job.result);
-          setUsedDemo(false);
-          break;
-        }
-        if (job.status === "failed") throw new Error(job.error ?? "Job failed");
-        attempts++;
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}));
+        throw new Error(
+          errBody?.detail?.error ?? errBody?.detail ?? `API error ${res.status}`
+        );
       }
-      if (attempts >= 60) throw new Error("Assessment timed out after 2 minutes");
+
+      const result = await res.json();
+
+      // The /agent/assess endpoint returns AssessmentData directly (no job polling).
+      setData(result);
+      setUsedDemo(false);
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
