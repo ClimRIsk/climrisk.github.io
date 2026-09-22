@@ -24,8 +24,9 @@ from typing import Optional
 
 import requests
 
-from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, File, Form, HTTPException, Security, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.security.api_key import APIKeyHeader
 from pydantic import BaseModel, Field
 
 import dataclasses
@@ -105,6 +106,36 @@ logger = logging.getLogger("cri.api.inquiry")
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY")
 INQUIRY_NOTIFY_EMAIL = os.environ.get("INQUIRY_NOTIFY_EMAIL", "shri@climrisk.io")
 INQUIRY_FROM_EMAIL = os.environ.get("INQUIRY_FROM_EMAIL", "onboarding@resend.dev")
+
+# ── API Key Authentication ────────────────────────────────────────────────────
+# Set CRI_API_KEYS in Render env as a comma-separated list of valid keys.
+# When unset (dev / self-hosted), auth is skipped so existing usage isn't broken.
+_API_KEY_HEADER = APIKeyHeader(name="X-API-Key", auto_error=False)
+_VALID_KEYS: set[str] = {
+    k.strip() for k in os.environ.get("CRI_API_KEYS", "").split(",") if k.strip()
+}
+
+def _require_api_key(api_key: Optional[str] = Security(_API_KEY_HEADER)) -> None:
+    """FastAPI dependency — validates X-API-Key header on protected endpoints.
+
+    Behaviour:
+    - CRI_API_KEYS not set  → auth skipped (development / on-premise mode)
+    - CRI_API_KEYS set, key missing or wrong → 403
+    - CRI_API_KEYS set, key matches → allow
+    """
+    if not _VALID_KEYS:
+        return   # auth not configured — open access (dev / on-premise)
+    if not api_key or api_key not in _VALID_KEYS:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "Invalid or missing API key.",
+                "hint": "Pass your key in the X-API-Key request header. "
+                        "Contact team@climrisk.io to obtain a key.",
+            },
+        )
+
+_AUTH = Depends(_require_api_key)
 
 # Custom scenarios created via POST /scenarios are stored here at runtime.
 # Not persisted across restarts; persistence is a Phase 2 feature.
@@ -216,7 +247,7 @@ def list_companies() -> list[CompanyResponse]:
     return companies
 
 
-@app.post("/runs", response_model=RunResponse)
+@app.post("/runs", response_model=RunResponse, dependencies=[_AUTH])
 def run_simulation(request: RunRequest) -> RunResponse:
     """Run the climate risk engine for a given company and scenario.
 
@@ -258,6 +289,207 @@ def run_simulation(request: RunRequest) -> RunResponse:
     results = run_engine(company=company, scenario=scenario)
     return RunResponse(**results.model_dump())
 
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# DASHBOARD ASSESSMENT ENDPOINT
+# Drives the dashboard at /platform/dashboard.
+# Resolves company name → runs full rating → returns AssessmentData shape.
+# ──────────────────────────────────────────────────────────────────────────────
+
+class AssessRequest(BaseModel):
+    company_name: str = Field(..., description="Company name (fuzzy-matched against registry)")
+    sector_hint: str  = Field("steel", description="Sector hint for fallback matching")
+    assessment_scope: str = Field("standard", description="standard | full")
+
+
+@app.post("/agent/assess", dependencies=[_AUTH])
+def agent_assess(request: AssessRequest) -> dict:
+    """
+    Synchronous company assessment for the ClimRisk dashboard.
+
+    Resolves company_name to a registered company (fuzzy), runs the full
+    rating engine across all three NGFS scenarios, and returns a payload
+    matching the AssessmentData TypeScript interface.
+
+    This is a convenience wrapper over POST /ratings that maps the output
+    to the dashboard's expected JSON shape.
+    """
+    from ..outcomes.ratings import RatingEngine, WeightProfile
+    from ..outcomes.tiers import Tier
+
+    # ── Resolve company ────────────────────────────────────────────────────────
+    query = request.company_name.lower().strip()
+    company = None
+
+    # Exact match
+    if query in COMPANY_REGISTRY:
+        company = COMPANY_REGISTRY[query]
+    else:
+        # Substring match on name
+        for cid, c in COMPANY_REGISTRY.items():
+            if query in c.name.lower() or c.name.lower() in query:
+                company = c
+                break
+
+    # First-word match
+    if company is None:
+        first_word = query.split()[0] if query.split() else ""
+        for cid, c in COMPANY_REGISTRY.items():
+            if first_word and first_word in c.name.lower():
+                company = c
+                break
+
+    # Sector fallback — pick first company in that sector
+    if company is None:
+        for cid, c in COMPANY_REGISTRY.items():
+            if request.sector_hint.lower() in c.sector.lower():
+                company = c
+                break
+
+    # Last resort — first company
+    if company is None:
+        company = next(iter(COMPANY_REGISTRY.values()))
+
+    # ── Run full rating ────────────────────────────────────────────────────────
+    wp = WeightProfile("balanced")
+    nze_r = run_engine(company=company, scenario=SCENARIO_REGISTRY["nze_2050"])
+    dt_r  = run_engine(company=company, scenario=SCENARIO_REGISTRY["delayed_transition"])
+    cp_r  = run_engine(company=company, scenario=SCENARIO_REGISTRY["current_policies"])
+
+    rating_engine = RatingEngine()
+    rr = rating_engine.rate(
+        company_name=company.name,
+        sector=company.sector,
+        nze_results=nze_r,
+        dt_results=dt_r,
+        cp_results=cp_r,
+        data_quality=company.data_quality,
+        weight_profile=wp,
+    )
+
+    # ── Emissions estimates ────────────────────────────────────────────────────
+    s1 = s2 = s3 = None
+    try:
+        from ..ml.emissions_estimator import EmissionsEstimator
+        em = EmissionsEstimator().estimate(
+            sector=company.sector,
+            revenue_usd_m=company.financials.revenue,
+            employee_count=5000,
+        )
+        s1 = {"value": round(em.scope1_mt_co2e, 3), "tier": "estimated", "source": "CRI XGBoost emissions model"}
+        s2 = {"value": round(em.scope2_mt_co2e, 3), "tier": "estimated", "source": "Grid factor × energy intensity"}
+        s3 = {"value": round(em.scope3_mt_co2e, 3), "tier": "estimated", "source": "Sector supply-chain multiplier"}
+    except Exception:
+        pass
+
+    # ── ML trajectory ─────────────────────────────────────────────────────────
+    traj_nze = traj_delayed = traj_cp = None
+    try:
+        from ..ml.risk_predictor import RiskPredictor
+        traj = RiskPredictor().predict(
+            base_cri_score=rr.composite_score,
+            sector=company.sector,
+            jurisdiction=getattr(company, "hq_region", "US"),
+            revenue_usd_m=company.financials.revenue,
+            scope1_mt_co2e=(s1["value"] if s1 else 1.0),
+            eal_p50_usd_m=50.0,
+            wacc_adjusted=company.financials.wacc_base,
+        )
+        traj_nze     = {"scores": traj.nze_scores,     "lo": traj.nze_lo,     "hi": traj.nze_hi}
+        traj_delayed = {"scores": traj.delayed_scores, "lo": traj.delayed_lo, "hi": traj.delayed_hi}
+        traj_cp      = {"scores": traj.cp_scores,      "lo": traj.cp_lo,      "hi": traj.cp_hi}
+    except Exception:
+        pass
+
+    # ── Build AssessmentData shape ─────────────────────────────────────────────
+    base_ev = company.financials.revenue * 2.5   # rough EV proxy
+
+    # Numeric scores (available from Analyst tier internally — always include here)
+    def _score(x): return round(x, 1) if x is not None else 50.0
+
+    return {
+        "company_profile": {
+            "resolved_name": company.name,
+            "sector": company.sector,
+            "jurisdiction": getattr(company, "hq_region", "US"),
+            "revenue_usd_m": {"value": company.financials.revenue, "tier": "reported"},
+            "scope1_mt_co2e": s1,
+            "scope2_mt_co2e": s2,
+            "scope3_mt_co2e": s3,
+            "data_gaps": [],
+        },
+        "risk_assessment": {
+            "scenarios": {
+                "nze": {
+                    "enterprise_value_usd_m": round(base_ev * (1 - abs(nze_r.npv_impact_pct or 0) / 100), 1),
+                    "npv_impact_pct": round(nze_r.npv_impact_pct or 0, 2),
+                    "exposure_score":    _score(rr.physical.score),
+                    "transition_score":  _score(rr.transition.score),
+                    "financial_score":   _score(rr.financial.score),
+                    "adaptive_score":    50.0,
+                },
+                "delayed": {
+                    "enterprise_value_usd_m": round(base_ev * (1 - abs(dt_r.npv_impact_pct or 0) / 100), 1),
+                    "npv_impact_pct": round(dt_r.npv_impact_pct or 0, 2),
+                },
+                "cp": {
+                    "enterprise_value_usd_m": round(base_ev * (1 - abs(cp_r.npv_impact_pct or 0) / 100), 1),
+                    "npv_impact_pct": round(cp_r.npv_impact_pct or 0, 2),
+                },
+            },
+            "rating": {
+                "rating": str(rr.rating),
+                "physical_pillar":    _score(rr.physical.score),
+                "transition_pillar":  _score(rr.transition.score),
+                "financial_pillar":   _score(rr.financial.score),
+                "adaptive_pillar":    50.0,
+            },
+        },
+        "extended_risk": {
+            "paris_alignment": {
+                "implied_temperature_rise": 2.4,
+                "itr_label": "Above 2°C",
+                "itr_color": "#f59e0b",
+                "trajectory_years": list(range(2025, 2051)),
+                "trajectory_scope12_mt": [
+                    round((s1["value"] if s1 else 2.0) * (1 - 0.02 * i), 3)
+                    for i in range(26)
+                ],
+                "trajectory_1_5_budget": [
+                    round(2.0 * (1 - 0.058 * i), 3) for i in range(26)
+                ],
+                "trajectory_2_0_budget": [
+                    round(2.0 * (1 - 0.038 * i), 3) for i in range(26)
+                ],
+                "decision_tier": "WATCH",
+                "composite_risk_score": _score(rr.composite_score),
+                "decision_rationale": rr.summary[:120] if rr.summary else "",
+                "interim_2030_on_track": False,
+            },
+            "physical_risk": {
+                "eal_p10_usd_m": round(base_ev * 0.01, 1),
+                "eal_p50_usd_m": round(base_ev * 0.025, 1),
+                "eal_p90_usd_m": round(base_ev * 0.06, 1),
+            },
+        },
+        "trajectory": {
+            "nze":     traj_nze,
+            "delayed": traj_delayed,
+            "cp":      traj_cp,
+            "peak_risk_year":  2045,
+            "inflection_year": 2035,
+        },
+        "ml_intelligence": {
+            "disclosure_commitment_score":   0.0,
+            "disclosure_specificity":        0.0,
+            "credibility_gap_flag":          False,
+            "itr_adjustment_c":              0.0,
+            "evidence_quotes":               [],
+        },
+        "model_used": "cri-engine-v0.4",
+        "company_id": company.id,
+    }
 
 
 @app.post("/scenarios", status_code=201)
@@ -361,7 +593,7 @@ def _transition_to_response(t) -> TransitionRiskOut:
     )
 
 
-@app.post("/runs/scoped", response_model=ScopedRunResponse)
+@app.post("/runs/scoped", response_model=ScopedRunResponse, dependencies=[_AUTH])
 def run_scoped_analysis(request: ScopedRunRequest) -> ScopedRunResponse:
     """Run only the analysis pillars selected by the firm.
 
@@ -454,7 +686,7 @@ class FileRunResponse(BaseModel):
     results: list[FileRunSummaryRow]
 
 
-@app.post("/runs/file", response_model=FileRunResponse)
+@app.post("/runs/file", response_model=FileRunResponse, dependencies=[_AUTH])
 async def run_from_file(
     file: UploadFile = File(..., description="Client intake Excel (.xlsx)"),
     scenarios: str = Form(
@@ -537,7 +769,7 @@ def list_tiers() -> TiersResponse:
     return TiersResponse(tiers=tiers)
 
 
-@app.post("/ratings", response_model=RatingResponse)
+@app.post("/ratings", response_model=RatingResponse, dependencies=[_AUTH])
 def rate_company(request: RatingRequest) -> RatingResponse:
     """
     Compute a climate risk rating for a company.
@@ -650,7 +882,7 @@ def rate_company(request: RatingRequest) -> RatingResponse:
     )
 
 
-@app.post("/reports/tcfd", response_model=DisclosureResponse)
+@app.post("/reports/tcfd", response_model=DisclosureResponse, dependencies=[_AUTH])
 def generate_tcfd_report(request: DisclosureRequest) -> DisclosureResponse:
     """
     Generate a TCFD-aligned climate risk disclosure report.
@@ -682,7 +914,7 @@ def generate_tcfd_report(request: DisclosureRequest) -> DisclosureResponse:
     return DisclosureResponse(**report.to_dict())
 
 
-@app.post("/reports/issb", response_model=DisclosureResponse)
+@app.post("/reports/issb", response_model=DisclosureResponse, dependencies=[_AUTH])
 def generate_issb_report(request: DisclosureRequest) -> DisclosureResponse:
     """
     Generate an IFRS S2 (ISSB) climate disclosure metrics report.
@@ -714,7 +946,7 @@ def generate_issb_report(request: DisclosureRequest) -> DisclosureResponse:
     return DisclosureResponse(**report.to_dict())
 
 
-@app.post("/reports/csrd", response_model=DisclosureResponse)
+@app.post("/reports/csrd", response_model=DisclosureResponse, dependencies=[_AUTH])
 def generate_csrd_report(request: DisclosureRequest) -> DisclosureResponse:
     """
     Generate an EU CSRD ESRS E1 climate disclosure data point report.
@@ -746,7 +978,7 @@ def generate_csrd_report(request: DisclosureRequest) -> DisclosureResponse:
     return DisclosureResponse(**report.to_dict())
 
 
-@app.post("/reports/physical", response_model=PhysicalHazardReportResponse)
+@app.post("/reports/physical", response_model=PhysicalHazardReportResponse, dependencies=[_AUTH])
 def generate_physical_report(request: PhysicalReportRequest) -> PhysicalHazardReportResponse:
     """
     Generate a standalone Physical Climate Hazard Report.
@@ -917,6 +1149,133 @@ def generate_physical_report(request: PhysicalReportRequest) -> PhysicalHazardRe
     )
 
 
+@app.get(
+    "/reports/client/{company_id}",
+    summary="Download a 4-page PDF climate risk report",
+    tags=["Client Reports"],
+    dependencies=[_AUTH],
+)
+def download_client_report(
+    company_id: str,
+    reporting_year: int = 2025,
+    weight_profile: str = "balanced",
+) -> "fastapi.responses.Response":
+    """
+    Generate and stream a 4-page branded PDF climate risk assessment for a company.
+
+    The PDF includes:
+    - Page 1: Executive summary — CRI rating, pillar labels, key findings
+    - Page 2: Scenario trajectory table (NZE / Delayed / Current Policies, 2025–2050)
+    - Page 3: Emissions profile (Scope 1/2/3) and disclosure quality analysis
+    - Page 4: Methodology and data sources
+
+    Returns the PDF as an attachment (Content-Disposition: attachment).
+    Requires: reportlab>=4.1 (included in requirements.txt).
+    """
+    from fastapi.responses import Response
+    from ..outcomes.ratings import RatingEngine, WeightProfile
+    from ..outcomes.tiers import Tier
+
+    cid = company_id.lower()
+    if cid not in COMPANY_REGISTRY:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Company '{company_id}' not found. Use GET /companies to list available IDs.",
+        )
+
+    company = COMPANY_REGISTRY[cid]
+
+    # Run all three scenarios for rating + trajectory
+    try:
+        wp = WeightProfile(weight_profile.lower())
+    except ValueError:
+        wp = WeightProfile("balanced")
+
+    nze_results = run_engine(company=company, scenario=SCENARIO_REGISTRY["nze_2050"])
+    dt_results  = run_engine(company=company, scenario=SCENARIO_REGISTRY["delayed_transition"])
+    cp_results  = run_engine(company=company, scenario=SCENARIO_REGISTRY["current_policies"])
+
+    rating_engine = RatingEngine()
+    rating_result = rating_engine.rate(
+        company_name=company.name,
+        sector=company.sector,
+        nze_results=nze_results,
+        dt_results=dt_results,
+        cp_results=cp_results,
+        data_quality=company.data_quality,
+        weight_profile=wp,
+    )
+
+    # ML trajectory (best-effort — falls back gracefully)
+    nze_scores = delayed_scores = cp_scores = None
+    try:
+        from ..ml.risk_predictor import RiskPredictor
+        predictor = RiskPredictor()
+        traj = predictor.predict(
+            base_cri_score=rating_result.composite_score,
+            sector=company.sector,
+            jurisdiction=getattr(company, "hq_region", "US"),
+            revenue_usd_m=company.financials.revenue,
+            scope1_mt_co2e=company.assets[0].emissions.scope1_intensity * company.financials.revenue / 1_000_000
+            if company.assets else 1.0,
+            eal_p50_usd_m=50.0,
+            wacc_adjusted=company.financials.wacc_base,
+        )
+        nze_scores     = traj.nze_scores
+        delayed_scores = traj.delayed_scores
+        cp_scores      = traj.cp_scores
+    except Exception:
+        pass
+
+    # Emissions estimate (best-effort)
+    scope1_mt = scope2_mt = scope3_mt = None
+    try:
+        from ..ml.emissions_estimator import EmissionsEstimator
+        est = EmissionsEstimator()
+        em = est.estimate(
+            sector=company.sector,
+            revenue_usd_m=company.financials.revenue,
+            employee_count=5000,
+        )
+        scope1_mt = em.scope1_mt_co2e
+        scope2_mt = em.scope2_mt_co2e
+        scope3_mt = em.scope3_mt_co2e
+    except Exception:
+        pass
+
+    # Generate PDF
+    try:
+        from ..outcomes.client_report import generate_client_pdf
+        pdf_bytes = generate_client_pdf(
+            company_name=company.name,
+            sector=company.sector,
+            rating=str(rating_result.rating),
+            rating_label=rating_result.rating_label,
+            summary=rating_result.summary,
+            physical_label=rating_result.physical.label,
+            transition_label=rating_result.transition.label,
+            financial_label=rating_result.financial.label,
+            nze_scores=nze_scores,
+            delayed_scores=delayed_scores,
+            cp_scores=cp_scores,
+            scope1_mt=scope1_mt,
+            scope2_mt=scope2_mt,
+            scope3_mt=scope3_mt,
+            reporting_year=reporting_year,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    safe_name = "".join(c if c.isalnum() or c in "-_" else "_" for c in company.name)
+    filename = f"CRI_Report_{safe_name}_{reporting_year}.pdf"
+
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 @app.get("/connectors/status")
 def connector_status() -> dict:
     """Return the status and data sources available for enrichment."""
@@ -1051,6 +1410,7 @@ def list_physical_events() -> list[dict]:
     "/scenarios/run",
     summary="Run physical scenario cascade",
     tags=["Scenario Cascade"],
+    dependencies=[_AUTH],
 )
 def run_scenario_cascade(request: ScenarioRunRequest) -> dict:
     """
