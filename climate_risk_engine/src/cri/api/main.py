@@ -19,6 +19,7 @@ except ImportError:
 import logging
 import os
 import tempfile
+from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Optional
 
@@ -30,6 +31,8 @@ from fastapi.security.api_key import APIKeyHeader
 from pydantic import BaseModel, Field
 
 import dataclasses
+
+from .agents import router as agents_router, _run_monitoring_cycle, _load_watchlist
 
 from ..data.companies_seed import all_seed as get_all_companies
 from ..engine.orchestrator import run as run_engine
@@ -73,11 +76,44 @@ from .schemas import (
 )
 
 
+# ── Daily monitoring scheduler ────────────────────────────────────────────────
+# Runs every day at 08:00 UTC — re-assesses watchlist companies and sends
+# email alerts when risk scores shift by more than ALERT_THRESHOLD points.
+def _start_scheduler() -> None:
+    try:
+        from apscheduler.schedulers.asyncio import AsyncIOScheduler
+        import asyncio
+
+        async def _daily_monitor() -> None:
+            wl = _load_watchlist()
+            if wl:
+                await _run_monitoring_cycle(wl)
+
+        sched = AsyncIOScheduler(timezone="UTC")
+        sched.add_job(_daily_monitor, "cron", hour=8, minute=0, id="daily_monitor")
+        sched.start()
+        logging.getLogger("cri.api.scheduler").info("Daily monitoring scheduler started (08:00 UTC)")
+    except ImportError:
+        logging.getLogger("cri.api.scheduler").warning(
+            "apscheduler not installed — daily monitoring disabled. "
+            "Run: pip install apscheduler"
+        )
+    except Exception as exc:
+        logging.getLogger("cri.api.scheduler").error("Scheduler failed to start: %s", exc)
+
+
+@asynccontextmanager
+async def _lifespan(app: FastAPI):
+    _start_scheduler()
+    yield
+
+
 # Initialize FastAPI app
 app = FastAPI(
     title="Climate Risk Intelligence API",
     description="REST API for climate financial risk modelling",
     version="0.3.0",
+    lifespan=_lifespan,
 )
 
 # Add CORS middleware (allow all origins for dev)
@@ -88,6 +124,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# ── Agentic AI routes ─────────────────────────────────────────────────────────
+app.include_router(agents_router)
 
 # Build registries
 SCENARIO_REGISTRY = {
@@ -162,6 +201,87 @@ def _build_custom_scenario(params: CustomScenarioParams, scenario_id: str = 'cus
 def health() -> HealthResponse:
     """Health check endpoint."""
     return HealthResponse(status="ok", version="0.3.0")
+
+
+# ── License tier metadata keyed by API key ────────────────────────────────────
+# In production, replace with a Supabase table lookup.
+# Add a row here for each client when you issue their license.
+_LICENSE_TIERS: dict[str, dict] = {
+    "CRI2026": {
+        "tier": "professional",
+        "company": "ClimRisk Demo",
+        "features": [
+            "assessments", "ratings", "tcfd", "issb", "csrd",
+            "pdf_reports", "scenarios", "agent_assess", "portfolio"
+        ],
+        "max_assessments": 500,
+        "seats": 5,
+        "expires": "2027-12-31",
+        "valid": True,
+    },
+}
+
+@app.get("/license/validate")
+def validate_license(
+    api_key: Optional[str] = Security(_API_KEY_HEADER),
+) -> dict:
+    """Returns license tier and features for the provided API key.
+
+    Called by ClimRisk Desktop on startup to determine what features to unlock.
+    Public endpoint (no _AUTH dependency) so the desktop can validate before
+    the user is "inside" the app.
+
+    - No key supplied          → free / unauthenticated
+    - Key matches _LICENSE_TIERS → return that tier
+    - Key in _VALID_KEYS but not in tier map → analyst (default paid tier)
+    - CRI_API_KEYS not set at all (open access mode) → professional (dev/on-premise)
+    - Invalid key              → 403
+    """
+    if not api_key:
+        return {
+            "tier": "free",
+            "features": ["assessments"],
+            "max_assessments": 5,
+            "seats": 1,
+            "valid": False,
+            "message": "Supply X-API-Key header to activate a license.",
+        }
+
+    # Open access mode (CRI_API_KEYS not configured — dev / self-hosted)
+    if not _VALID_KEYS:
+        meta = _LICENSE_TIERS.get(api_key)
+        if meta:
+            return meta
+        # Unknown key in open mode → grant professional for on-premise installs
+        return {
+            "tier": "professional",
+            "features": [
+                "assessments", "ratings", "tcfd", "issb", "csrd",
+                "pdf_reports", "scenarios", "agent_assess"
+            ],
+            "max_assessments": 500,
+            "seats": 5,
+            "valid": True,
+            "message": "Open access mode — all Professional features enabled.",
+        }
+
+    # Keys are configured — must match
+    if api_key not in _VALID_KEYS:
+        raise HTTPException(
+            status_code=403,
+            detail={"error": "Invalid license key.", "valid": False,
+                    "hint": "Contact hello@climrisk.io to obtain a valid key."},
+        )
+
+    # Return tier metadata for this key (default to Analyst if not in map)
+    meta = _LICENSE_TIERS.get(api_key, {
+        "tier": "analyst",
+        "features": ["assessments", "ratings"],
+        "max_assessments": 100,
+        "seats": 1,
+        "valid": True,
+    })
+    return meta
 
 
 @app.post("/inquiry", response_model=InquiryResponse)

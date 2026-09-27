@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ClimRisk Desktop — Download</title>
+<meta name="description" content="Download ClimRisk Desktop — the native climate financial risk platform for institutional investors, asset managers, and banks.">
+
+<!-- Match site fonts/styles -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#05070d;--navy2:#0c101c;--navy3:#121726;--navy4:#1a2035;
+  --blue:#2563eb;--blue2:#1d4ed8;--teal:#06b6d4;--green:#10b981;
+  --text:#f1f5f9;--muted:#94a3b8;--faint:#64748b;
+  --border:#1e293b;--border2:rgba(255,255,255,.08);
+  --amber:#f59e0b;--red:#f43f5e;
+  --radius:14px;
+}
+html{scroll-behavior:smooth}
+body{
+  background:var(--navy);color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── Nav ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  background:rgba(5,7,13,.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 40px;height:64px;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-icon{
+  width:36px;height:36px;
+  background:linear-gradient(135deg,#10b981,#06b6d4,#2563eb);
+  border-radius:9px;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:800;color:#fff;
+}
+.nav-name{font-size:17px;font-weight:800;color:var(--text)}
+.nav-name span{color:#2563eb}
+.nav-links{display:flex;gap:28px;list-style:none}
+.nav-links a{
+  font-size:13px;font-weight:500;color:var(--muted);
+  text-decoration:none;transition:color .15s;
+}
+.nav-links a:hover{color:var(--text)}
+.nav-cta{
+  padding:8px 20px;border-radius:8px;
+  background:var(--blue);color:#fff;
+  font-size:13px;font-weight:600;text-decoration:none;
+  transition:background .15s;
+}
+.nav-cta:hover{background:var(--blue2)}
+
+/* ── Hero ── */
+.hero{
+  padding:140px 40px 80px;text-align:center;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% -10%, rgba(37,99,235,.15) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 40% at 80% 60%, rgba(6,182,212,.06) 0%, transparent 60%);
+  position:relative;
+}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:7px;
+  background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);
+  border-radius:20px;padding:5px 14px;
+  font-size:12px;font-weight:600;color:#34d399;
+  margin-bottom:24px;
+}
+.hero-badge::before{
+  content:'';width:7px;height:7px;border-radius:50%;
+  background:#10b981;box-shadow:0 0 8px #10b981;
+}
+.hero h1{
+  font-size:clamp(38px,5vw,62px);font-weight:900;
+  line-height:1.08;letter-spacing:-.03em;
+  margin-bottom:20px;
+}
+.hero h1 span{
+  background:linear-gradient(135deg,#2563eb,#06b6d4);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.hero p{
+  font-size:18px;color:var(--muted);max-width:580px;
+  margin:0 auto 40px;line-height:1.7;
+}
+
+/* ── Download buttons ── */
+.dl-buttons{
+  display:flex;flex-wrap:wrap;gap:12px;
+  justify-content:center;margin-bottom:18px;
+}
+.dl-btn{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 24px;border-radius:12px;
+  border:1px solid var(--border2);
+  background:rgba(255,255,255,.05);
+  color:var(--text);text-decoration:none;
+  font-size:14px;font-weight:600;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+}
+.dl-btn:hover{
+  background:rgba(255,255,255,.09);border-color:rgba(37,99,235,.4);
+  transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.4);
+}
+.dl-btn.primary{
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  border-color:transparent;
+  box-shadow:0 0 28px rgba(37,99,235,.4);
+}
+.dl-btn.primary:hover{
+  background:linear-gradient(135deg,#3b82f6,#2563eb);
+  box-shadow:0 0 40px rgba(37,99,235,.6);
+}
+.dl-btn-os{font-size:11px;color:var(--faint);margin-top:2px;font-weight:400}
+.dl-btn svg{flex-shrink:0;opacity:.85}
+.dl-note{
+  font-size:12px;color:var(--faint);text-align:center;
+}
+.dl-note a{color:var(--teal,#06b6d4);text-decoration:none}
+.dl-note a:hover{text-decoration:underline}
+
+/* ── OS detection badge ── */
+.detected-badge{
+  display:inline-block;
+  background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);
+  border-radius:6px;padding:2px 9px;
+  font-size:11px;font-weight:600;color:#67e8f9;
+  margin-left:8px;
+}
+
+/* ── Section shared ── */
+.section{padding:80px 40px;max-width:1100px;margin:0 auto}
+.section-label{
+  font-size:11px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--teal);
+  margin-bottom:12px;text-align:center;
+}
+.section-title{
+  font-size:clamp(28px,3.5vw,42px);font-weight:800;
+  letter-spacing:-.02em;text-align:center;margin-bottom:14px;
+}
+.section-sub{
+  font-size:16px;color:var(--muted);text-align:center;
+  max-width:560px;margin:0 auto 56px;line-height:1.7;
+}
+hr.divider{border:none;border-top:1px solid var(--border);margin:0}
+
+/* ── Steps ── */
+.steps{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:8px;margin-bottom:16px;
+}
+.step{
+  background:var(--navy2);border:1px solid var(--border);border-radius:var(--radius);
+  padding:28px 24px;position:relative;
+}
+.step-num{
+  width:36px;height:36px;border-radius:50%;
+  background:linear-gradient(135deg,rgba(37,99,235,.3),rgba(6,182,212,.2));
+  border:1px solid rgba(37,99,235,.3);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:800;
+  color:#60a5fa;margin-bottom:16px;
+}
+.step h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.step p{font-size:13px;color:var(--muted);line-height:1.6}
+.step code{
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  background:rgba(255,255,255,.06);border-radius:4px;padding:1px 5px;
+  color:#93c5fd;
+}
+
+/* ── Requirements box ── */
+.req-box{
+  background:rgba(37,99,235,.06);border:1px solid rgba(37,99,235,.15);
+  border-radius:var(--radius);padding:20px 24px;
+  display:flex;gap:32px;flex-wrap:wrap;
+  margin-bottom:40px;
+}
+.req-item{font-size:13px;color:var(--muted)}
+.req-item strong{color:var(--text);display:block;margin-bottom:2px}
+
+/* ── Tier table ── */
+.tier-table-wrap{overflow-x:auto}
+.tier-table{
+  width:100%;border-collapse:collapse;
+  font-size:14px;
+}
+.tier-table th{
+  background:var(--navy2);padding:14px 20px;
+  text-align:left;font-size:12px;font-weight:600;
+  letter-spacing:.06em;text-transform:uppercase;
+  color:var(--faint);border-bottom:1px solid var(--border);
+}
+.tier-table td{
+  padding:14px 20px;border-bottom:1px solid rgba(30,41,59,.7);
+  vertical-align:top;
+}
+.tier-table tr:last-child td{border-bottom:none}
+.tier-table tr:hover td{background:rgba(255,255,255,.02)}
+.tier-name{font-weight:700;color:var(--text)}
+.tier-price{
+  font-family:'JetBrains Mono',monospace;font-weight:700;
+  color:#60a5fa;font-size:15px;
+}
+.tier-price small{font-size:11px;color:var(--faint);font-weight:400}
+.feature-list{list-style:none;display:flex;flex-direction:column;gap:4px}
+.feature-list li{font-size:13px;color:var(--muted)}
+.feature-list li::before{content:'✓ ';color:#10b981;font-weight:700}
+.badge-best{
+  display:inline-block;
+  background:rgba(37,99,235,.2);border:1px solid rgba(37,99,235,.4);
+  border-radius:4px;padding:1px 7px;
+  font-size:10px;font-weight:700;color:#93c5fd;
+  text-transform:uppercase;letter-spacing:.05em;
+  margin-left:8px;vertical-align:middle;
+}
+
+/* ── Features grid ── */
+.features-grid{
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));
+  gap:1px;background:var(--border);border-radius:var(--radius);overflow:hidden;
+  border:1px solid var(--border);
+}
+.feature-card{
+  background:var(--navy2);padding:28px 24px;
+}
+.feature-card .icon{
+  width:44px;height:44px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;margin-bottom:16px;
+}
+.feature-card h3{font-size:15px;font-weight:700;margin-bottom:8px}
+.feature-card p{font-size:13px;color:var(--muted);line-height:1.65}
+
+/* ── CTA band ── */
+.cta-band{
+  background:linear-gradient(135deg,rgba(37,99,235,.12),rgba(6,182,212,.08));
+  border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+  padding:64px 40px;text-align:center;
+}
+.cta-band h2{font-size:36px;font-weight:800;margin-bottom:12px;letter-spacing:-.02em}
+.cta-band p{font-size:16px;color:var(--muted);margin-bottom:32px}
+.cta-group{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.btn-primary{
+  padding:14px 28px;border-radius:10px;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff;font-size:14px;font-weight:700;text-decoration:none;
+  border:none;cursor:pointer;
+  box-shadow:0 0 24px rgba(37,99,235,.4);
+  transition:all .2s;
+}
+.btn-primary:hover{
+  background:linear-gradient(135deg,#3b82f6,#2563eb);
+  box-shadow:0 0 36px rgba(37,99,235,.6);
+  transform:translateY(-1px);
+}
+.btn-outline{
+  padding:14px 28px;border-radius:10px;
+  background:rgba(255,255,255,.05);
+  border:1px solid var(--border2);
+  color:var(--text);font-size:14px;font-weight:600;text-decoration:none;
+  transition:all .2s;
+}
+.btn-outline:hover{background:rgba(255,255,255,.09);transform:translateY(-1px)}
+
+/* ── Footer ── */
+footer{
+  padding:40px;display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:16px;
+  border-top:1px solid var(--border);
+  font-size:13px;color:var(--faint);
+}
+footer a{color:var(--faint);text-decoration:none}
+footer a:hover{color:var(--text)}
+.footer-links{display:flex;gap:20px}
+
+/* ── Responsive ── */
+@media(max-width:700px){
+  nav{padding:0 20px}
+  .nav-links{display:none}
+  .hero{padding:100px 20px 60px}
+  .section{padding:60px 20px}
+  .dl-buttons{flex-direction:column;align-items:center}
+  .req-box{gap:16px}
+  footer{padding:30px 20px}
+}
+</style>
+</head>
+<body>
+
+<!-- Nav -->
+<nav>
+  <a class="nav-logo" href="https://climrisk.io">
+    <div class="nav-icon">CR</div>
+    <div class="nav-name">Clim<span>Risk</span></div>
+  </a>
+  <ul class="nav-links">
+    <li><a href="https://climrisk.io">Home</a></li>
+    <li><a href="https://climrisk.io/dashboard.html?auth=CRI2026">Dashboard</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="mailto:hello@climrisk.io">Contact</a></li>
+  </ul>
+  <a class="nav-cta" href="mailto:hello@climrisk.io?subject=License%20Inquiry">Request License</a>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="hero-badge">v1.0 — Now Available</div>
+  <h1>ClimRisk <span>Desktop</span><br>for Institutional Teams</h1>
+  <p>A native desktop application that puts climate financial risk modelling directly on your analyst's workstation — no browser, no login wall, always on.</p>
+
+  <!-- Download buttons — JS will highlight the right one -->
+  <div class="dl-buttons">
+    <a class="dl-btn primary" id="btn-mac" href="#" onclick="return dlClick('mac')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/></svg>
+      <div>
+        <div>Download for Mac</div>
+        <div class="dl-btn-os">macOS 12+ · Universal (M1/Intel)</div>
+      </div>
+    </a>
+    <a class="dl-btn" id="btn-win" href="#" onclick="return dlClick('win')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M3 12V6.75l6-1.32v6.57H3zm17 0V4.6l-10 1.76v5.64H20zM3 13h6v6.43L3 18.17V13zm10 0h7v5.57l-7 1.23V13z"/></svg>
+      <div>
+        <div>Download for Windows</div>
+        <div class="dl-btn-os">Windows 10/11 · x64</div>
+      </div>
+    </a>
+    <a class="dl-btn" id="btn-linux" href="#" onclick="return dlClick('linux')">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+      <div>
+        <div>Download for Linux</div>
+        <div class="dl-btn-os">AppImage · x64</div>
+      </div>
+    </a>
+  </div>
+  <p class="dl-note">
+    Requires a ClimRisk license key.
+    <a href="mailto:hello@climrisk.io?subject=License%20Inquiry&body=Hello%2C%20I%27d%20like%20to%20purchase%20a%20ClimRisk%20Desktop%20license.%0A%0AOrganisation%3A%20%0ATeam%20size%3A%20%0AUse%20case%3A%20">Request a license →</a>
+    &nbsp;·&nbsp;
+    <a href="mailto:hello@climrisk.io?subject=Trial%20Request">Request a free trial →</a>
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- Install steps -->
+<section class="section">
+  <div class="section-label">Getting started</div>
+  <h2 class="section-title">Up and running in 3 steps</h2>
+  <p class="section-sub">No server setup. No browser extension. Just download, install, and enter your license key.</p>
+
+  <!-- System requirements -->
+  <div class="req-box">
+    <div class="req-item"><strong>macOS</strong>macOS 12 Monterey or later<br>Universal binary (Apple Silicon + Intel)</div>
+    <div class="req-item"><strong>Windows</strong>Windows 10 / 11 (64-bit)<br>NSIS installer, no admin rights needed</div>
+    <div class="req-item"><strong>Linux</strong>Ubuntu 20.04+ / Fedora 36+<br>AppImage — no installation required</div>
+    <div class="req-item"><strong>Network</strong>Internet connection for live assessments<br>Works offline with last-cached tier</div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <h3>Download & install</h3>
+      <p>Click the button for your operating system above. macOS: open the <code>.dmg</code> and drag ClimRisk to Applications. Windows: run the <code>.exe</code> installer. Linux: make the <code>.AppImage</code> executable and double-click.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <h3>Enter your license key</h3>
+      <p>On first launch, you'll see the activation screen. Paste the license key from your purchase confirmation email. Click <strong>Activate License</strong>. The app validates against ClimRisk servers and unlocks your tier's features.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <h3>Run your first assessment</h3>
+      <p>The dashboard loads automatically. Type any public company name in the <strong>New Assessment</strong> field. The engine scores physical risk, transition risk, and generates 3-scenario NPV impact projections in under 60 seconds.</p>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <h3>Auto-updates</h3>
+      <p>ClimRisk Desktop checks for updates silently in the background. When a new version is available, a prompt appears. Click <strong>Restart & Update</strong> — the latest models and NGFS scenarios install automatically.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Feature highlights -->
+<section class="section">
+  <div class="section-label">Why Desktop</div>
+  <h2 class="section-title">Built for institutional workflows</h2>
+  <p class="section-sub">A native app means deeper integration with your workstation — file dialogs, PDF export, no browser tabs, no re-authentication.</p>
+
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="icon" style="background:rgba(37,99,235,.15)">🏛️</div>
+      <h3>Any public company</h3>
+      <p>Assess any listed company worldwide using the <code>/agent/assess</code> ML engine — not limited to a pre-seeded list. Powered by NGFS Phase 4 and IPCC AR6 data.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon" style="background:rgba(16,185,129,.15)">📊</div>
+      <h3>Three NGFS scenarios</h3>
+      <p>Net Zero 2050, Delayed Transition, and Current Policies — with sector-specific physical and transition NPV impact projections under SSP1-2.6 through SSP3-7.0.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon" style="background:rgba(6,182,212,.15)">📄</div>
+      <h3>TCFD / ISSB / CSRD reports</h3>
+      <p>Generate audit-ready 4-page PDF reports aligned to TCFD, ISSB S2, and CSRD Article 19a — export directly from the desktop app via native file dialogs.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon" style="background:rgba(245,158,11,.15)">📂</div>
+      <h3>Bulk Excel upload</h3>
+      <p>Drop a portfolio spreadsheet and assess your entire holding book in one go. Batch results are collated into a unified dashboard view.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon" style="background:rgba(139,92,246,.15)">🔐</div>
+      <h3>License-controlled access</h3>
+      <p>Seat-limited license keys. IT teams can deploy to multiple workstations under a single Enterprise contract — fully offline-capable once the key is validated.</p>
+    </div>
+    <div class="feature-card">
+      <div class="icon" style="background:rgba(244,63,94,.15)">🔄</div>
+      <h3>Silent auto-update</h3>
+      <p>Model updates, new NGFS calibrations, and regulatory report template changes push to every desktop automatically — no manual downloads, no version drift.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- Pricing / tiers -->
+<section class="section" id="pricing">
+  <div class="section-label">Licensing</div>
+  <h2 class="section-title">Enterprise license tiers</h2>
+  <p class="section-sub">Annual contracts, invoiced in GBP or USD. No per-assessment fees. No cloud subscriptions. You own the access.</p>
+
+  <div class="tier-table-wrap">
+    <table class="tier-table">
+      <thead>
+        <tr>
+          <th>Tier</th>
+          <th>Annual Fee</th>
+          <th>Assessments</th>
+          <th>Seats</th>
+          <th>Included</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="tier-name">Analyst</span></td>
+          <td><span class="tier-price">£20,000 <small>/yr</small></span></td>
+          <td>100</td>
+          <td>1</td>
+          <td>
+            <ul class="feature-list">
+              <li>CRI Rating + Scenario Reports</li>
+              <li>API access</li>
+              <li>Email support</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td>
+            <span class="tier-name">Professional</span>
+            <span class="badge-best">Most Popular</span>
+          </td>
+          <td><span class="tier-price">£60,000 <small>/yr</small></span></td>
+          <td>500</td>
+          <td>5</td>
+          <td>
+            <ul class="feature-list">
+              <li>Everything in Analyst</li>
+              <li>Full ML trajectory engine</li>
+              <li>TCFD / ISSB / CSRD PDF reports</li>
+              <li>Bulk portfolio upload</li>
+              <li>Priority support</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="tier-name">Enterprise</span></td>
+          <td><span class="tier-price">£150,000+ <small>/yr</small></span></td>
+          <td>Unlimited</td>
+          <td>20+</td>
+          <td>
+            <ul class="feature-list">
+              <li>Everything in Professional</li>
+              <li>On-premise Docker deployment</li>
+              <li>Custom NGFS scenarios</li>
+              <li>Portfolio monitoring dashboard</li>
+              <li>Dedicated SLA + annual calibration</li>
+              <li>Bespoke integration support</li>
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <td><span class="tier-name">One-off Report</span></td>
+          <td><span class="tier-price">£500 <small>/report</small></span></td>
+          <td>1</td>
+          <td>—</td>
+          <td>
+            <ul class="feature-list">
+              <li>Single company 4-page PDF</li>
+              <li>TCFD-aligned, 3 scenarios</li>
+              <li>Delivered within 24 hours</li>
+            </ul>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p style="margin-top:20px;font-size:13px;color:var(--faint);text-align:center">
+    All tiers include the ClimRisk Desktop app installer for macOS, Windows, and Linux.<br>
+    Contracts are annual. Volume discounts available for portfolio managers covering 5+ institutions.<br>
+    Contact <a href="mailto:hello@climrisk.io" style="color:#06b6d4;text-decoration:none">hello@climrisk.io</a> for a quote.
+  </p>
+</section>
+
+<hr class="divider">
+
+<!-- CTA -->
+<section class="cta-band">
+  <h2>Ready to assess your portfolio?</h2>
+  <p>Get your institution's license key and have analysts running assessments today.</p>
+  <div class="cta-group">
+    <a class="btn-primary" href="mailto:hello@climrisk.io?subject=ClimRisk%20Desktop%20License%20Inquiry&body=Hi%20ClimRisk%20team%2C%0A%0AI%27d%20like%20to%20enquire%20about%20licensing%20ClimRisk%20Desktop.%0A%0AOrganisation%3A%20%0ARole%3A%20%0ATeam%20size%2Fseats%20needed%3A%20%0AUse%20case%3A%20%0A%0AThank%20you">
+      Request a License
+    </a>
+    <a class="btn-outline" href="mailto:hello@climrisk.io?subject=14-Day%20Trial%20Request&body=Hi%20ClimRisk%2C%0A%0AI%27d%20like%20to%20try%20ClimRisk%20Desktop%20for%2014%20days.%0A%0AOrganisation%3A%20%0ARole%3A%20%0A%0AThank%20you">
+      Request a 14-day Trial
+    </a>
+    <a class="btn-outline" href="https://climrisk.io/dashboard.html?auth=CRI2026">
+      Try the Web Dashboard →
+    </a>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer>
+  <div>© 2026 ClimRisk Intelligence Ltd. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="https://climrisk.io">Home</a>
+    <a href="mailto:hello@climrisk.io">Contact</a>
+    <a href="https://climrisk.io/dashboard.html?auth=CRI2026">Dashboard</a>
+    <a href="https://climrisk-github-io.onrender.com/docs">API Docs</a>
+  </div>
+</footer>
+
+<script>
+// ── OS Detection ──────────────────────────────────────────────────────────────
+(function() {
+  var ua = navigator.userAgent;
+  var isMac    = /Mac/i.test(ua) && !/iPhone|iPad/.test(ua);
+  var isWin    = /Windows/i.test(ua);
+  var isLinux  = /Linux/i.test(ua) && !/(Android|iPhone|iPad)/.test(ua);
+
+  var primaryId = isMac ? 'btn-mac' : isWin ? 'btn-win' : isLinux ? 'btn-linux' : null;
+
+  if (primaryId) {
+    // Make detected button primary
+    ['btn-mac','btn-win','btn-linux'].forEach(function(id) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      if (id === primaryId) {
+        el.classList.add('primary');
+        // Add OS label
+        var label = isMac ? 'macOS detected' : isWin ? 'Windows detected' : 'Linux detected';
+        el.querySelector('div').innerHTML =
+          el.querySelector('div').innerHTML +
+          '<div class="dl-btn-os" style="margin-top:3px"><span class="detected-badge">' + label + '</span></div>';
+      } else {
+        el.classList.remove('primary');
+      }
+    });
+  }
+})();
+
+// ── Download click handler ────────────────────────────────────────────────────
+// Points to GitHub Releases. Update URLs when builds are published.
+var RELEASE_BASE = 'https://github.com/ClimRIsk/climrisk-desktop-releases/releases/latest/download/';
+var DOWNLOAD_URLS = {
+  mac:   RELEASE_BASE + 'ClimRisk-1.0.0-universal.dmg',
+  win:   RELEASE_BASE + 'ClimRisk-Setup-1.0.0.exe',
+  linux: RELEASE_BASE + 'ClimRisk-1.0.0.AppImage'
+};
+
+function dlClick(os) {
+  var url = DOWNLOAD_URLS[os];
+  // Temporarily show a "coming soon" notice if release not yet published
+  var btn = document.getElementById('btn-' + os);
+  var orig = btn.innerHTML;
+  btn.innerHTML = '<div style="text-align:center;padding:0 8px">⚡ Preparing your download…<br><small style="color:var(--faint);font-weight:400">If it doesn\'t start, <a href="mailto:hello@climrisk.io?subject=Download%20Request%20(' + os + ')" style="color:#06b6d4">email us</a> for a direct link.</small></div>';
+  setTimeout(function() { btn.innerHTML = orig; }, 4000);
+
+  // Attempt download (will 404 until GitHub release is published — that's fine)
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = '';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  return false;
+}
+</script>
+</body>
+</html>

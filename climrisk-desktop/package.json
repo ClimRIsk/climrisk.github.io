@@ -1,0 +1,89 @@
+{
+  "name": "climrisk-desktop",
+  "version": "1.0.0",
+  "description": "ClimRisk Intelligence — Climate Financial Risk Desktop Platform",
+  "main": "main.js",
+  "author": {
+    "name": "ClimRisk Intelligence",
+    "email": "platform@climrisk.io"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --mac --win --linux",
+    "pack": "electron-builder --dir",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0",
+    "electron-updater": "^6.1.7"
+  },
+  "devDependencies": {
+    "electron": "^28.2.0",
+    "electron-builder": "^24.9.1"
+  },
+  "build": {
+    "appId": "io.climrisk.desktop",
+    "productName": "ClimRisk",
+    "copyright": "Copyright © 2026 ClimRisk Intelligence",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer/**/*",
+      "assets/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "icon": "assets/icon.icns",
+      "darkModeSupport": true,
+      "target": [
+        { "target": "dmg", "arch": ["universal"] },
+        { "target": "zip", "arch": ["universal"] }
+      ],
+      "minimumSystemVersion": "12.0",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "assets/entitlements.mac.plist",
+      "entitlementsInherit": "assets/entitlements.mac.plist"
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "publisherName": "ClimRisk Intelligence"
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "category": "Finance",
+      "target": [{ "target": "AppImage", "arch": ["x64"] }]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "installerIcon": "assets/icon.ico",
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "menuCategory": "ClimRisk"
+    },
+    "dmg": {
+      "title": "ClimRisk ${version}",
+      "background": "assets/dmg-background.png",
+      "window": { "width": 540, "height": 380 }
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "ClimRIsk",
+      "repo": "climrisk-desktop-releases",
+      "private": false
+    }
+  }
+}

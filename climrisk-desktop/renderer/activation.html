@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy"
+      content="default-src 'self' https://fonts.googleapis.com https://fonts.gstatic.com;
+               script-src 'self' 'unsafe-inline';
+               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+               connect-src 'self' https://climrisk-github-io.onrender.com https://climrisk.io;">
+<title>ClimRisk — Activate License</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --navy:#05070d;--navy2:#0c101c;--navy3:#121726;
+  --blue:#2563eb;--blue2:#1d4ed8;--teal:#06b6d4;--green:#10b981;
+  --text:#f1f5f9;--muted:#94a3b8;--faint:#64748b;
+  --border:#1e293b;--red:#f43f5e;--amber:#f59e0b;
+}
+html,body{
+  height:100%;
+  background:var(--navy);
+  color:var(--text);
+  font-family:'Inter',system-ui,sans-serif;
+  overflow:hidden;
+  /* macOS titlebar drag region */
+  -webkit-app-region: drag;
+}
+/* Allow interaction inside the card */
+.card, input, button, a { -webkit-app-region: no-drag; }
+
+.bg-glow {
+  position:fixed;inset:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 50% at 30% 20%, rgba(37,99,235,.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 60% at 75% 80%, rgba(6,182,212,.08) 0%, transparent 70%);
+}
+
+.layout{
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;height:100%;gap:0;
+  position:relative;z-index:1;
+}
+
+/* ── Logo ── */
+.logo-wrap{display:flex;align-items:center;gap:12px;margin-bottom:36px}
+.logo-icon{
+  width:52px;height:52px;
+  background:linear-gradient(135deg,#10b981 0%,#06b6d4 50%,#2563eb 100%);
+  border-radius:14px;display:flex;align-items:center;justify-content:center;
+  font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:800;
+  color:#fff;letter-spacing:-1px;
+  box-shadow:0 0 32px rgba(37,99,235,.35);
+}
+.logo-text{display:flex;flex-direction:column}
+.logo-name{font-size:26px;font-weight:800;color:var(--text);letter-spacing:-.02em}
+.logo-name span{color:#2563eb}
+.logo-sub{font-size:12px;color:var(--muted);margin-top:2px;letter-spacing:.04em}
+
+/* ── Card ── */
+.card{
+  background:rgba(12,16,28,.85);
+  backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:20px;padding:40px 44px;
+  width:440px;
+  box-shadow:0 32px 80px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03);
+}
+
+.card-title{
+  font-size:20px;font-weight:800;color:var(--text);
+  margin-bottom:6px;text-align:center;
+}
+.card-sub{
+  font-size:13px;color:var(--muted);text-align:center;
+  margin-bottom:32px;line-height:1.6;
+}
+
+/* ── Form ── */
+label{
+  display:block;font-size:11px;font-weight:600;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:7px;
+}
+.input-wrap{position:relative;margin-bottom:6px}
+input[type=text]{
+  width:100%;background:rgba(255,255,255,.04);
+  border:1px solid var(--border);border-radius:10px;
+  padding:13px 16px;font-size:15px;font-weight:600;
+  font-family:'JetBrains Mono',monospace;letter-spacing:.06em;
+  color:var(--text);outline:none;transition:border-color .2s,box-shadow .2s;
+}
+input[type=text]::placeholder{font-weight:400;color:var(--faint);letter-spacing:.02em}
+input[type=text]:focus{
+  border-color:rgba(37,99,235,.6);
+  box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+input.error{border-color:rgba(244,63,94,.6)}
+.hint{font-size:11px;color:var(--faint);margin-bottom:24px;line-height:1.5}
+.hint a{color:var(--teal);cursor:pointer;text-decoration:none}
+.hint a:hover{text-decoration:underline}
+
+.btn-activate{
+  width:100%;padding:14px;border:none;border-radius:10px;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff;font-size:15px;font-weight:700;cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 0 24px rgba(37,99,235,.4);
+  margin-bottom:16px;
+}
+.btn-activate:hover:not(:disabled){
+  background:linear-gradient(135deg,#3b82f6,#2563eb);
+  box-shadow:0 0 32px rgba(37,99,235,.6);
+  transform:translateY(-1px);
+}
+.btn-activate:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+/* ── Status messages ── */
+.msg{
+  display:none;text-align:center;font-size:12px;padding:10px 14px;
+  border-radius:8px;margin-bottom:14px;line-height:1.5;
+}
+.msg.error{
+  display:block;
+  background:rgba(244,63,94,.1);border:1px solid rgba(244,63,94,.3);color:#fda4af;
+}
+.msg.success{
+  display:block;
+  background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);color:#6ee7b7;
+}
+.msg.loading{
+  display:block;
+  background:rgba(37,99,235,.08);border:1px solid rgba(37,99,235,.2);color:#93c5fd;
+}
+
+/* ── Divider ── */
+.divider{
+  display:flex;align-items:center;gap:12px;
+  font-size:11px;color:var(--faint);margin-bottom:16px;
+}
+.divider::before,.divider::after{
+  content:'';flex:1;height:1px;background:var(--border);
+}
+
+/* ── Trial link ── */
+.trial-row{text-align:center;font-size:12px;color:var(--muted)}
+.trial-row a{color:#60a5fa;cursor:pointer;font-weight:600;text-decoration:none}
+.trial-row a:hover{text-decoration:underline}
+
+/* ── Tier badges ── */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:28px}
+.tier{
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:10px;padding:12px 10px;text-align:center;cursor:pointer;
+  transition:all .2s;
+}
+.tier:hover{border-color:rgba(37,99,235,.4);background:rgba(37,99,235,.06)}
+.tier-name{font-size:11px;font-weight:700;color:var(--text);margin-bottom:3px}
+.tier-price{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--blue);font-weight:700}
+.tier-note{font-size:9px;color:var(--faint);margin-top:3px}
+
+/* ── Spinner ── */
+@keyframes spin{to{transform:rotate(360deg)}}
+.spinner{
+  display:inline-block;width:14px;height:14px;
+  border:2px solid rgba(255,255,255,.25);border-top-color:#fff;
+  border-radius:50%;animation:spin .7s linear infinite;
+  vertical-align:middle;margin-right:7px;
+}
+</style>
+</head>
+<body>
+<div class="bg-glow"></div>
+<div class="layout">
+
+  <!-- Logo -->
+  <div class="logo-wrap">
+    <div class="logo-icon">CR</div>
+    <div class="logo-text">
+      <div class="logo-name">Clim<span>Risk</span></div>
+      <div class="logo-sub">CLIMATE FINANCIAL RISK PLATFORM</div>
+    </div>
+  </div>
+
+  <!-- Activation card -->
+  <div class="card">
+    <div class="card-title">Activate Your License</div>
+    <div class="card-sub">Enter the license key provided in your purchase confirmation email, or contact <a onclick="openSupport()" style="color:#06b6d4;cursor:pointer">support@climrisk.io</a> for assistance.</div>
+
+    <!-- Status message -->
+    <div class="msg" id="msg"></div>
+
+    <!-- License key input -->
+    <label for="key-input">License Key</label>
+    <div class="input-wrap">
+      <input type="text" id="key-input"
+        placeholder="CRIX-XXXX-XXXX-XXXX"
+        autocomplete="off" autocorrect="off"
+        spellcheck="false" maxlength="60"
+        onkeydown="if(event.key==='Enter')activate()">
+    </div>
+    <div class="hint">Your key is in your purchase email. Keep it confidential —
+      it controls feature access for your organisation.<br>
+      Purchasing a license? <a onclick="openPricing()">View plans →</a>
+    </div>
+
+    <button class="btn-activate" id="btn-activate" onclick="activate()">
+      Activate License
+    </button>
+
+    <div class="divider">or</div>
+
+    <!-- Tier overview for purchase decisions -->
+    <div class="tiers">
+      <div class="tier" onclick="openPricing()">
+        <div class="tier-name">Analyst</div>
+        <div class="tier-price">£20K/yr</div>
+        <div class="tier-note">100 assessments</div>
+      </div>
+      <div class="tier" onclick="openPricing()">
+        <div class="tier-name">Professional</div>
+        <div class="tier-price">£60K/yr</div>
+        <div class="tier-note">500 · PDF + TCFD</div>
+      </div>
+      <div class="tier" onclick="openPricing()">
+        <div class="tier-name">Enterprise</div>
+        <div class="tier-price">£150K+/yr</div>
+        <div class="tier-note">Unlimited · on-premise</div>
+      </div>
+    </div>
+
+    <div class="trial-row">
+      Need a demo key? <a onclick="requestDemo()">Request a 14-day trial →</a>
+    </div>
+  </div>
+
+</div>
+
+<script>
+// ── Check if we already have a license stored ─────────────────────────────────
+(async function() {
+  if (!window.electronAPI) return;  // not in Electron (e.g. browser preview)
+  const lic = await window.electronAPI.getLicense();
+  if (lic && lic.key) {
+    // Pre-fill the key
+    document.getElementById('key-input').value = lic.key;
+  }
+})();
+
+// ── Activate ──────────────────────────────────────────────────────────────────
+async function activate() {
+  const key = document.getElementById('key-input').value.trim().toUpperCase();
+  if (!key) {
+    showMsg('Please enter your license key.', 'error');
+    document.getElementById('key-input').focus();
+    return;
+  }
+
+  const btn = document.getElementById('btn-activate');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Validating…';
+  showMsg('Connecting to license server…', 'loading');
+
+  if (!window.electronAPI) {
+    // Running in browser (dev/preview mode)
+    setTimeout(() => {
+      showMsg('✓ Demo mode — would redirect to dashboard.', 'success');
+      btn.disabled = false;
+      btn.textContent = 'Activate License';
+    }, 1200);
+    return;
+  }
+
+  const result = await window.electronAPI.activateLicense(key);
+
+  btn.disabled = false;
+  btn.textContent = 'Activate License';
+
+  if (result.success) {
+    const tier = result.data && result.data.tier ? result.data.tier : 'analyst';
+    const tierLabel = { analyst:'Analyst', professional:'Professional', enterprise:'Enterprise' }[tier] || tier;
+    showMsg(`✓ License activated — ${tierLabel} plan. Loading dashboard…`, 'success');
+    // Main process handles the navigation to dashboard.html
+  } else {
+    showMsg(result.error || 'Invalid license key. Please check your purchase email.', 'error');
+    document.getElementById('key-input').classList.add('error');
+    document.getElementById('key-input').addEventListener('input', () => {
+      document.getElementById('key-input').classList.remove('error');
+    }, { once: true });
+  }
+}
+
+function showMsg(text, type) {
+  const el = document.getElementById('msg');
+  el.textContent = text;
+  el.className = 'msg ' + type;
+}
+
+function openPricing() {
+  if (window.electronAPI) {
+    // Would call shell.openExternal via IPC — for now just log
+    console.log('open pricing');
+  } else {
+    window.open('https://climrisk.io/pricing', '_blank');
+  }
+}
+
+function openSupport() {
+  window.open('mailto:support@climrisk.io', '_blank');
+}
+
+function requestDemo() {
+  window.open('mailto:hello@climrisk.io?subject=Demo%20License%20Request&body=Hi%20ClimRisk%20team%2C%0A%0AI%27d%20like%20to%20request%20a%2014-day%20trial%20license%20for%20ClimRisk%20Desktop.%0A%0AOrganisation%3A%20%0ARole%3A%20%0A%0AThank%20you', '_blank');
+}
+</script>
+</body>
+</html>

@@ -6497,5 +6497,426 @@ function buildCBAMPanel(data, nze, dt, cp, company, sector) {
   return H;
 }
 </script>
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CLIMRISK AI — Agentic chat panel + watchlist manager
+     Injected at bottom of dashboard.html
+     ═══════════════════════════════════════════════════════════════════════ -->
+<style>
+/* ── Chat button ── */
+#crai-btn {
+  position:fixed; bottom:28px; right:28px; z-index:9000;
+  width:56px; height:56px; border-radius:50%;
+  background:linear-gradient(135deg,#2563eb,#06b6d4);
+  border:none; cursor:pointer;
+  box-shadow:0 4px 24px rgba(37,99,235,.5);
+  display:flex; align-items:center; justify-content:center;
+  transition:transform .2s, box-shadow .2s;
+}
+#crai-btn:hover { transform:scale(1.1); box-shadow:0 6px 32px rgba(37,99,235,.7); }
+#crai-btn svg { width:26px; height:26px; fill:#fff; }
+#crai-badge {
+  position:absolute; top:-4px; right:-4px;
+  width:16px; height:16px; border-radius:50%;
+  background:#10b981; border:2px solid #05070d;
+  font-size:8px; font-weight:800; color:#fff;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* ── Chat panel ── */
+#crai-panel {
+  position:fixed; bottom:96px; right:24px; z-index:9001;
+  width:400px; max-height:580px;
+  background:#0c101c; border:1px solid rgba(255,255,255,.08);
+  border-radius:18px; overflow:hidden;
+  box-shadow:0 24px 80px rgba(0,0,0,.7);
+  display:none; flex-direction:column;
+  font-family:'Inter',system-ui,sans-serif;
+}
+#crai-panel.open { display:flex; }
+
+/* Panel header */
+#crai-header {
+  padding:14px 18px; display:flex; align-items:center; gap:10px;
+  background:rgba(37,99,235,.12); border-bottom:1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+}
+.crai-logo {
+  width:32px; height:32px; border-radius:8px;
+  background:linear-gradient(135deg,#10b981,#2563eb);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:800; color:#fff;
+}
+.crai-title { font-size:14px; font-weight:700; color:#f1f5f9; flex:1; }
+.crai-subtitle { font-size:11px; color:#64748b; }
+#crai-close {
+  background:none; border:none; cursor:pointer;
+  color:#64748b; font-size:18px; padding:4px; line-height:1;
+  transition:color .15s;
+}
+#crai-close:hover { color:#f1f5f9; }
+
+/* Tab bar */
+#crai-tabs {
+  display:flex; border-bottom:1px solid rgba(255,255,255,.06);
+  flex-shrink:0;
+}
+.crai-tab {
+  flex:1; padding:9px; text-align:center;
+  font-size:11px; font-weight:600; color:#64748b;
+  cursor:pointer; transition:all .15s;
+  border-bottom:2px solid transparent;
+}
+.crai-tab:hover { color:#94a3b8; }
+.crai-tab.active { color:#60a5fa; border-bottom-color:#2563eb; }
+
+/* Messages area */
+#crai-messages {
+  flex:1; overflow-y:auto; padding:14px; display:flex;
+  flex-direction:column; gap:10px; min-height:0;
+}
+#crai-messages::-webkit-scrollbar { width:4px; }
+#crai-messages::-webkit-scrollbar-track { background:transparent; }
+#crai-messages::-webkit-scrollbar-thumb { background:#1e293b; border-radius:4px; }
+
+.crai-msg {
+  max-width:85%; border-radius:12px;
+  padding:10px 14px; font-size:13px; line-height:1.6;
+}
+.crai-msg.user {
+  align-self:flex-end;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  color:#fff; border-bottom-right-radius:4px;
+}
+.crai-msg.ai {
+  align-self:flex-start;
+  background:#121726; border:1px solid rgba(255,255,255,.06);
+  color:#e2e8f0; border-bottom-left-radius:4px;
+  white-space:pre-wrap;
+}
+.crai-msg.thinking {
+  align-self:flex-start;
+  background:#121726; border:1px solid rgba(255,255,255,.06);
+  color:#64748b; font-style:italic; font-size:12px;
+}
+.crai-typing { display:flex; gap:4px; align-items:center; }
+.crai-typing span {
+  width:6px; height:6px; border-radius:50%; background:#2563eb;
+  animation:crai-bounce .9s infinite;
+}
+.crai-typing span:nth-child(2) { animation-delay:.15s; }
+.crai-typing span:nth-child(3) { animation-delay:.3s; }
+@keyframes crai-bounce { 0%,60%,100%{transform:translateY(0)} 30%{transform:translateY(-5px)} }
+
+/* Suggestion chips */
+#crai-chips {
+  display:flex; flex-wrap:wrap; gap:6px;
+  padding:8px 14px 0; flex-shrink:0;
+}
+.crai-chip {
+  background:rgba(37,99,235,.1); border:1px solid rgba(37,99,235,.25);
+  border-radius:20px; padding:4px 10px;
+  font-size:11px; color:#93c5fd; cursor:pointer; transition:all .15s;
+}
+.crai-chip:hover { background:rgba(37,99,235,.2); }
+
+/* Input row */
+#crai-input-row {
+  display:flex; gap:8px; padding:12px 14px;
+  border-top:1px solid rgba(255,255,255,.06); flex-shrink:0;
+}
+#crai-input {
+  flex:1; background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08); border-radius:10px;
+  padding:9px 12px; font-size:13px; color:#f1f5f9;
+  outline:none; resize:none; font-family:inherit;
+  max-height:80px; min-height:36px; transition:border-color .15s;
+}
+#crai-input:focus { border-color:rgba(37,99,235,.5); }
+#crai-send {
+  width:36px; height:36px; border-radius:9px; border:none;
+  background:linear-gradient(135deg,#2563eb,#1d4ed8);
+  cursor:pointer; display:flex; align-items:center; justify-content:center;
+  transition:all .15s; flex-shrink:0; align-self:flex-end;
+}
+#crai-send:disabled { opacity:.4; cursor:not-allowed; }
+#crai-send:not(:disabled):hover { transform:scale(1.07); }
+#crai-send svg { width:16px; height:16px; fill:#fff; }
+
+/* ── Watchlist tab ── */
+#crai-watchlist-tab { display:none; flex-direction:column; }
+#crai-watchlist-tab.show { display:flex; }
+#crai-wl-list { flex:1; overflow-y:auto; padding:12px 14px; min-height:120px; }
+.crai-wl-item {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 10px; border-radius:8px;
+  background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05);
+  margin-bottom:6px; font-size:13px;
+}
+.crai-wl-name { color:#e2e8f0; font-weight:600; }
+.crai-wl-meta { font-size:11px; color:#64748b; }
+.crai-wl-del {
+  background:none; border:none; cursor:pointer; color:#64748b;
+  font-size:16px; padding:2px 6px; transition:color .15s;
+}
+.crai-wl-del:hover { color:#f43f5e; }
+#crai-wl-add-row {
+  display:flex; gap:6px; padding:10px 14px;
+  border-top:1px solid rgba(255,255,255,.06);
+}
+#crai-wl-input {
+  flex:1; background:rgba(255,255,255,.05);
+  border:1px solid rgba(255,255,255,.08); border-radius:8px;
+  padding:8px 10px; font-size:12px; color:#f1f5f9; outline:none;
+  transition:border-color .15s;
+}
+#crai-wl-input:focus { border-color:rgba(37,99,235,.4); }
+#crai-wl-add {
+  padding:8px 14px; border-radius:8px; border:none;
+  background:#2563eb; color:#fff; font-size:12px; font-weight:600;
+  cursor:pointer; transition:background .15s;
+}
+#crai-wl-add:hover { background:#1d4ed8; }
+#crai-wl-monitor {
+  margin:0 14px 10px; padding:8px; border-radius:8px; border:none;
+  background:rgba(16,185,129,.12); border:1px solid rgba(16,185,129,.25);
+  color:#34d399; font-size:12px; font-weight:600; cursor:pointer;
+  transition:all .15s; width:calc(100% - 28px);
+}
+#crai-wl-monitor:hover { background:rgba(16,185,129,.2); }
+</style>
+
+<!-- Chat button -->
+<button id="crai-btn" onclick="craiToggle()" title="ClimRisk AI">
+  <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+  <div id="crai-badge">AI</div>
+</button>
+
+<!-- Chat panel -->
+<div id="crai-panel">
+  <!-- Header -->
+  <div id="crai-header">
+    <div class="crai-logo">CR</div>
+    <div style="flex:1">
+      <div class="crai-title">ClimRisk AI</div>
+      <div class="crai-subtitle">Powered by Groq · llama-3.3-70b</div>
+    </div>
+    <button id="crai-close" onclick="craiToggle()">✕</button>
+  </div>
+
+  <!-- Tabs -->
+  <div id="crai-tabs">
+    <div class="crai-tab active" onclick="craiTab('chat')">💬 Chat</div>
+    <div class="crai-tab" onclick="craiTab('watchlist')">👁 Watchlist</div>
+  </div>
+
+  <!-- CHAT TAB -->
+  <div id="crai-chat-tab" style="display:flex;flex-direction:column;flex:1;min-height:0;">
+    <!-- Suggestion chips -->
+    <div id="crai-chips">
+      <div class="crai-chip" onclick="craiSend('Assess Shell plc')">Assess Shell</div>
+      <div class="crai-chip" onclick="craiSend('Compare BP, Shell, and TotalEnergies climate risk')">Compare oil majors</div>
+      <div class="crai-chip" onclick="craiSend('Which companies in my watchlist have the highest transition risk?')">Watchlist risk</div>
+      <div class="crai-chip" onclick="craiSend('What is NGFS Net Zero 2050 scenario?')">Explain NGFS</div>
+    </div>
+
+    <!-- Messages -->
+    <div id="crai-messages">
+      <div class="crai-msg ai">👋 Hi! I'm ClimRisk AI. I can assess any public company's climate risk, compare portfolios, and answer TCFD / ISSB / CSRD questions. What would you like to analyse?</div>
+    </div>
+
+    <!-- Input -->
+    <div id="crai-input-row">
+      <textarea id="crai-input" placeholder="Ask anything about climate risk…" rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();craiSend()}"
+        oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,80)+'px'"></textarea>
+      <button id="crai-send" onclick="craiSend()">
+        <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+      </button>
+    </div>
+  </div>
+
+  <!-- WATCHLIST TAB -->
+  <div id="crai-watchlist-tab" style="display:none;flex-direction:column;flex:1;min-height:0;">
+    <div id="crai-wl-list" style="flex:1;overflow-y:auto;padding:12px 14px;">
+      <div style="color:#64748b;font-size:13px;text-align:center;padding:20px 0">Loading watchlist…</div>
+    </div>
+    <button id="crai-wl-monitor" onclick="craiMonitorNow()">⚡ Run monitoring check now</button>
+    <div id="crai-wl-add-row">
+      <input id="crai-wl-input" placeholder="Add company (e.g. Unilever)" onkeydown="if(event.key==='Enter')craiWlAdd()">
+      <button id="crai-wl-add" onclick="craiWlAdd()">+ Watch</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ClimRisk AI panel ──────────────────────────────────────────────────────────
+(function() {
+  var _open      = false;
+  var _loading   = false;
+  var _convId    = 'crai_' + Date.now();
+  var _ENGINE    = (typeof ENGINE_URL !== 'undefined' ? ENGINE_URL : 'https://climrisk-github-io.onrender.com');
+  var _apiKey    = (typeof _auth !== 'undefined' ? _auth : '') || sessionStorage.getItem('cri_auth') || '';
+
+  window.craiToggle = function() {
+    _open = !_open;
+    document.getElementById('crai-panel').className = _open ? 'open' : '';
+    if (_open && document.getElementById('crai-chat-tab').style.display !== 'none') {
+      setTimeout(function() { document.getElementById('crai-input').focus(); }, 100);
+    }
+  };
+
+  window.craiTab = function(tab) {
+    document.querySelectorAll('.crai-tab').forEach(function(t) { t.classList.remove('active'); });
+    event.target.classList.add('active');
+
+    document.getElementById('crai-chat-tab').style.display     = tab === 'chat' ? 'flex' : 'none';
+    document.getElementById('crai-watchlist-tab').style.display = tab === 'watchlist' ? 'flex' : 'none';
+
+    if (tab === 'watchlist') craiLoadWatchlist();
+  };
+
+  // ── Chat ─────────────────────────────────────────────────────────────────────
+  window.craiSend = function(text) {
+    var inp = document.getElementById('crai-input');
+    var msg = text || inp.value.trim();
+    if (!msg || _loading) return;
+    inp.value = '';
+    inp.style.height = 'auto';
+    _addMsg(msg, 'user');
+    _think();
+    _loading = true;
+    document.getElementById('crai-send').disabled = true;
+    document.getElementById('crai-chips').style.display = 'none';
+
+    fetch(_ENGINE + '/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': _apiKey },
+      body: JSON.stringify({ message: msg, conversation_id: _convId }),
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      _removeThinking();
+      if (d.reply) {
+        _addMsg(d.reply, 'ai');
+      } else if (d.detail && d.detail.hint) {
+        _addMsg('⚠️ AI not configured: ' + d.detail.hint, 'ai');
+      } else {
+        _addMsg('Something went wrong. Please try again.', 'ai');
+      }
+    })
+    .catch(function(err) {
+      _removeThinking();
+      _addMsg('⚠️ Could not reach ClimRisk AI. Is the engine running?', 'ai');
+    })
+    .finally(function() {
+      _loading = false;
+      document.getElementById('crai-send').disabled = false;
+    });
+  };
+
+  function _addMsg(text, role) {
+    var el = document.createElement('div');
+    el.className = 'crai-msg ' + role;
+    el.textContent = text;
+    var msgs = document.getElementById('crai-messages');
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function _think() {
+    var el = document.createElement('div');
+    el.className = 'crai-msg thinking';
+    el.id = 'crai-thinking';
+    el.innerHTML = '<div class="crai-typing"><span></span><span></span><span></span></div>';
+    var msgs = document.getElementById('crai-messages');
+    msgs.appendChild(el);
+    msgs.scrollTop = msgs.scrollHeight;
+  }
+
+  function _removeThinking() {
+    var el = document.getElementById('crai-thinking');
+    if (el) el.remove();
+  }
+
+  // ── Watchlist ─────────────────────────────────────────────────────────────────
+  window.craiLoadWatchlist = function() {
+    var el = document.getElementById('crai-wl-list');
+    el.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:20px">Loading…</div>';
+
+    fetch(_ENGINE + '/watchlist', { headers: { 'X-API-Key': _apiKey } })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      var wl = (d.watchlist || []);
+      if (!wl.length) {
+        el.innerHTML = '<div style="color:#64748b;font-size:13px;text-align:center;padding:20px">No companies on watchlist yet.<br>Add one below to start monitoring.</div>';
+        return;
+      }
+      el.innerHTML = '';
+      wl.forEach(function(item) {
+        var score = item.last_score || {};
+        var row = document.createElement('div');
+        row.className = 'crai-wl-item';
+        row.innerHTML =
+          '<div><div class="crai-wl-name">' + _esc(item.company_name) + '</div>' +
+          '<div class="crai-wl-meta">' +
+            (score.cri_rating ? 'Rating: ' + score.cri_rating + ' · Score: ' + (score.composite_score || '—') : 'Not yet assessed') +
+            (score.checked_at ? ' · ' + score.checked_at.substr(0,10) : '') +
+          '</div></div>' +
+          '<button class="crai-wl-del" onclick="craiWlRemove(\'' + _esc(item.company_name) + '\')">×</button>';
+        el.appendChild(row);
+      });
+    })
+    .catch(function() {
+      el.innerHTML = '<div style="color:#f43f5e;font-size:13px;padding:16px">Failed to load watchlist.</div>';
+    });
+  };
+
+  window.craiWlAdd = function() {
+    var inp = document.getElementById('crai-wl-input');
+    var name = inp.value.trim();
+    if (!name) return;
+    inp.value = '';
+    fetch(_ENGINE + '/watchlist/add', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': _apiKey },
+      body: JSON.stringify({ company_name: name }),
+    })
+    .then(function() { craiLoadWatchlist(); })
+    .catch(function() { alert('Failed to add to watchlist.'); });
+  };
+
+  window.craiWlRemove = function(name) {
+    fetch(_ENGINE + '/watchlist/' + encodeURIComponent(name), {
+      method: 'DELETE', headers: { 'X-API-Key': _apiKey },
+    })
+    .then(function() { craiLoadWatchlist(); });
+  };
+
+  window.craiMonitorNow = function() {
+    var btn = document.getElementById('crai-wl-monitor');
+    btn.textContent = '⏳ Running…'; btn.disabled = true;
+    fetch(_ENGINE + '/watchlist/monitor', {
+      method: 'POST', headers: { 'X-API-Key': _apiKey },
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+      btn.textContent = '✓ Done — check email for alerts';
+      setTimeout(function() {
+        btn.textContent = '⚡ Run monitoring check now';
+        btn.disabled = false;
+        craiLoadWatchlist();
+      }, 3000);
+    })
+    .catch(function() {
+      btn.textContent = '⚡ Run monitoring check now';
+      btn.disabled = false;
+    });
+  };
+
+  function _esc(s) { return String(s).replace(/[&<>"']/g, function(c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+})();
+</script>
 </body>
 </html>
