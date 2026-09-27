@@ -177,7 +177,10 @@ export default function Home() {
             <p className="text-zinc-400 leading-relaxed mb-12 max-w-2xl">
               Every conclusion we deliver traces back to a geospatial pipeline built on IPCC AR6 hazard
               matrices and NGFS Phase 4 scenarios. Asset coordinates in, Capital-at-Risk out, with full
-              methodological transparency at every step. This is a look at three of the modules underneath.
+              methodological transparency at every step. The same engine also forecasts where that score
+              moves through 2050, scans a company's own disclosures for the gap between claims and capex,
+              and can work through an entire watchlist unattended. This is a look at three of the modules
+              underneath.
             </p>
           </Reveal>
           <Reveal delayMs={100}>

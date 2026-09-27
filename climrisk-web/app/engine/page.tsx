@@ -55,8 +55,19 @@ const SECTIONS = [
     ],
   },
   {
-    id: "transparency",
+    id: "ml-agentic",
     tag: "05",
+    title: "ML & Agentic Intelligence",
+    body: "Every score also carries a forward view. A gradient-boosted trajectory model, trained on NGFS Phase 4 pathways and decades of disaster-loss data, forecasts a company's CRI score out to 2050 under all three scenarios, with confidence bands rather than a single static number. Where emissions reporting is missing or stale, an XGBoost model trained on over 14,000 verified CDP disclosures fills the gap with a confidence-scored estimate instead of a flat sector average. A ClimateBERT-based scanner then reads the company's own disclosures for commitment specificity, flagging the gap between what's claimed and what's backed by capex. And a tool-calling AI agent, wired directly to the engine itself, can research a company from public financials and news, run the full assessment, or work through an entire watchlist unattended and deliver the results by email.",
+    points: [
+      { t: "Predictive CRI Trajectories", d: "A GradientBoostingRegressor forecasts the 0-100 CRI score for every year to 2050 across NZE, Delayed Transition, and Current Policies, with confidence bands rather than a point estimate." },
+      { t: "AI-Filled Emissions & Disclosure Scoring", d: "An XGBoost model imputes missing Scope 1/2/3 data against verified CDP disclosures, while a ClimateBERT scanner flags the gap between a company's stated commitments and its actual capex." },
+      { t: "Autonomous Portfolio Agents", d: "Research, full assessment, watchlist monitoring, and batch analysis across an entire portfolio, run unattended and delivered by email or through a conversational interface." },
+    ],
+  },
+  {
+    id: "transparency",
+    tag: "06",
     title: "Methodological Transparency",
     body: "Every number the engine produces is traceable to a named hazard layer, a named scenario, and a named financial assumption. Nothing is a black box: we defend the CRI score and every input beneath it in front of a client's own quantitative or risk team, on request.",
     points: [

@@ -99,6 +99,14 @@ const ENGINE_CAPABILITIES = [
     title: "JRC Flood Depth Modelling",
     body: "Point-level flood expected annual loss, calculated from the European Commission's JRC LISFLOOD-FP hydraulic rasters and the Huizinga 2017 depth-damage curves.",
   },
+  {
+    title: "Predictive Risk Trajectories",
+    body: "A gradient-boosted forecasting model, trained on NGFS Phase 4 pathways and decades of disaster-loss data, projects a company's CRI score out to 2050 across all three scenarios, with confidence bands attached.",
+  },
+  {
+    title: "AI Research & Monitoring Agent",
+    body: "A tool-calling agent can research a company from public financials and news, run a full assessment, monitor a watchlist for material rating changes, or work through an entire portfolio unattended.",
+  },
 ];
 
 export default function CapabilitiesPage() {
@@ -143,7 +151,7 @@ export default function CapabilitiesPage() {
       <div className="max-w-5xl mx-auto mt-32 pt-16 border-t border-white/8">
         <Reveal>
           <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">What the Engine Covers</p>
-          <h2 className="heading-lg grad-text mb-4">Six capabilities behind every engagement.</h2>
+          <h2 className="heading-lg grad-text mb-4">Eight capabilities behind every engagement.</h2>
           <p className="text-zinc-400 leading-relaxed max-w-2xl mb-12">
             These sit underneath all three practices above. They are the modules our advisory teams
             actually run when a mandate calls for them, not a features list written for a sales page.

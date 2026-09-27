@@ -82,6 +82,14 @@ const DATA_GROUPS = [
       { name: "CRI Engine v0.5", detail: "26 hazards modelled, validated against IPCC AR6 WG1 and WG2, IFRS S2 ready." },
     ],
   },
+  {
+    group: "ML & Predictive Layer",
+    items: [
+      { name: "CRI Trajectory Model", detail: "GradientBoostingRegressor trained on NGFS Phase 4 pathways and decades of disaster-loss data, forecasting the CRI score to 2050 with confidence bands." },
+      { name: "ClimateBERT Disclosure Scanner", detail: "Four Hugging Face ClimateBERT classifiers score a company's own disclosures for climate relevance, sentiment, and net-zero commitment specificity." },
+      { name: "XGBoost Emissions Estimator", detail: "Trained on 14,000+ verified CDP disclosures, imputes missing Scope 1/2/3 data with confidence intervals instead of a flat sector average." },
+    ],
+  },
 ];
 
 export default function MethodologyPage() {
