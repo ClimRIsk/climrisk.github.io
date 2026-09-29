@@ -393,6 +393,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="openBatchUploadModal();return false"><span class="sb-icon"><i class="ph ph-upload-simple"></i></span>Batch Upload <span class="sb-badge" style="background:rgba(37,99,235,.3);color:#93c5fd">P2</span></a>
   <a class="sb-item" href="#" onclick="switchCRITab('decision',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-lightning"></i></span>Decision Brief <span class="sb-badge green">P1</span></a>
   <div class="sb-section">Deep Analysis</div>
+  <a class="sb-item" href="#" onclick="openAssetIntel();return false"><span class="sb-icon"><i class="ph ph-mountains"></i></span>Asset Intelligence 3D <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
   <a class="sb-item" href="#" onclick="switchCRITab('physical',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-wave"></i></span>Physical Risk (25 Hz)</a>
   <a class="sb-item" href="#" onclick="switchCRITab('financial',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-trend-up"></i></span>Financial / EBITDA</a>
   <a class="sb-item" href="#" onclick="switchCRITab('livemet',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-cloud-sun"></i></span>Live Met (climrisk.io)</a>
@@ -428,6 +429,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
       <p>What decision are you making? ClimRisk translates climate science into the numbers your business runs on — expected annual loss, insurance gap, disruption days, stranded asset date, supply chain exposure — so you make better capital decisions, not just better disclosures.</p>
       <div class="hero-actions">
         <button class="btn-hero-p" onclick="openNewAssessment()"><i class="ph ph-lightning" style="margin-right:6px"></i>Analyse an Asset</button>
+        <button class="btn-hero-p" onclick="openAssetIntel()" style="background:linear-gradient(135deg,#0ea5e9,#10b981)"><i class="ph ph-mountains" style="margin-right:6px"></i>Site Intelligence 3D</button>
         <button class="btn-hero-o" onclick="document.getElementById('m-file-btn').click()"><i class="ph ph-upload-simple" style="margin-right:6px"></i>Upload Financials</button>
       </div>
     </div>
@@ -780,7 +782,11 @@ document.addEventListener('DOMContentLoaded', function(){
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 var _auth  = sessionStorage.getItem('cri_auth')  || '';
-var _email = sessionStorage.getItem('cri_email') || 'user@example.com';
+// Check both localStorage (set by Electron preload) and sessionStorage (set by web login)
+var _email = localStorage.getItem('cri_user_email')
+          || sessionStorage.getItem('cri_email')
+          || sessionStorage.getItem('cri_user_email')
+          || 'user@climrisk.io';
 
 // Helper: build fetch headers with API key if we have one
 // _auth (from app.html login, e.g. 'CRI2026') doubles as the API key
@@ -3210,6 +3216,45 @@ function _renderBatchResults(d) {
 }
 
 // ── ADD COMPANY MODAL ─────────────────────────────────────────────────────────
+// ── ASSET INTELLIGENCE 3D ────────────────────────────────────────────────────
+// Opens the engine-hosted site analysis (ENGINE_URL/asset/dashboard) full-screen:
+// 10 m terrain + Sentinel-2 imagery + Sentinel-1 radar flood history + WorldCover.
+// Served by the engine, so engine updates show up without rebuilding the app.
+// Optional args prefill (and auto-run) a site: openAssetIntel(23.759, 90.399, 'Dhaka plant', 'industrial')
+function openAssetIntel(lat, lon, name, type) {
+  var old = document.getElementById('asset-intel-overlay'); if (old) old.remove();
+  var p = new URLSearchParams({ embedded: '1' });
+  if (_auth) p.set('key', _auth);
+  if (lat != null && lon != null) { p.set('lat', lat); p.set('lon', lon); p.set('auto', '1'); }
+  if (name) p.set('name', name);
+  if (type) p.set('type', type);
+  var overlay = document.createElement('div');
+  overlay.id = 'asset-intel-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#070b14;z-index:10000;display:flex;flex-direction:column';
+  overlay.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--navy2)">' +
+      '<i class="ph ph-mountains" style="color:#38bdf8;font-size:18px"></i>' +
+      '<div style="font-weight:800;color:var(--text)">Asset Intelligence 3D</div>' +
+      '<div style="font-size:11px;color:var(--faint)">10 m terrain · Sentinel-2 · Sentinel-1 radar · ESA WorldCover</div>' +
+      '<button id="asset-intel-close" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer">Close ✕</button>' +
+    '</div>' +
+    '<div style="position:relative;flex:1">' +
+      '<div id="asset-intel-wait" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:13px;text-align:center;line-height:1.8">' +
+        'Connecting to the ClimRisk engine…<br><span style="font-size:11px">First load can take up to a minute if the server was asleep.</span></div>' +
+      '<iframe id="asset-intel-frame" title="Asset Intelligence 3D" style="position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .3s" ' +
+        'src="' + ENGINE_URL + '/asset/dashboard#' + p.toString() + '"></iframe>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  var frame = document.getElementById('asset-intel-frame');
+  frame.onload = function () { frame.style.opacity = '1'; var w = document.getElementById('asset-intel-wait'); if (w) w.remove(); };
+  function close() { overlay.remove(); document.removeEventListener('keydown', onKey); window.removeEventListener('message', onMsg); }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+  function onMsg(e) { if (e.source === frame.contentWindow && e.data && e.data.type === 'climrisk:close-asset-intel') close(); }
+  document.getElementById('asset-intel-close').onclick = close;
+  document.addEventListener('keydown', onKey);
+  window.addEventListener('message', onMsg);
+}
+
 function openAddCompanyModal() {
   var overlay = document.createElement('div');
   overlay.id = 'add-company-overlay';
