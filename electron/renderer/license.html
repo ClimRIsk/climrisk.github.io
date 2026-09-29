@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'unsafe-inline'; script-src 'self' 'unsafe-inline';">
+  <title>ClimRisk Intelligence — Activation</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #0a0f1e;
+      color: #e2e8f0;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      user-select: none;
+      -webkit-app-region: drag;
+    }
+
+    .card {
+      background: linear-gradient(145deg, #0f1729 0%, #111827 100%);
+      border: 1px solid rgba(99, 179, 237, 0.15);
+      border-radius: 16px;
+      padding: 48px 52px;
+      width: 460px;
+      box-shadow: 0 32px 64px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+      -webkit-app-region: no-drag;
+    }
+
+    /* Logo / brand */
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 36px;
+    }
+
+    .logo-icon {
+      width: 42px;
+      height: 42px;
+      background: linear-gradient(135deg, #3b82f6 0%, #06b6d4 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      flex-shrink: 0;
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #f1f5f9;
+      letter-spacing: -0.3px;
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: #64748b;
+      margin-top: 1px;
+    }
+
+    /* Heading */
+    h2 {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f1f5f9;
+      margin-bottom: 8px;
+    }
+
+    .subtitle {
+      font-size: 14px;
+      color: #64748b;
+      margin-bottom: 32px;
+      line-height: 1.5;
+    }
+
+    /* Input */
+    .field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 8px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1.5px solid rgba(100, 116, 139, 0.3);
+      border-radius: 10px;
+      padding: 14px 16px;
+      font-size: 15px;
+      color: #f1f5f9;
+      font-family: 'SF Mono', 'Menlo', monospace;
+      letter-spacing: 1px;
+      transition: border-color 0.2s;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+    }
+
+    input[type="text"]::placeholder {
+      color: #334155;
+      letter-spacing: 0;
+      font-family: -apple-system, sans-serif;
+    }
+
+    /* CTA button */
+    .btn-activate {
+      width: 100%;
+      margin-top: 20px;
+      padding: 14px;
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      border: none;
+      border-radius: 10px;
+      color: #fff;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.15s, transform 0.1s;
+      letter-spacing: 0.2px;
+    }
+
+    .btn-activate:hover:not(:disabled) { opacity: 0.9; }
+    .btn-activate:active:not(:disabled) { transform: scale(0.98); }
+    .btn-activate:disabled { opacity: 0.45; cursor: default; }
+
+    /* Status / error */
+    .status {
+      margin-top: 16px;
+      font-size: 13px;
+      min-height: 20px;
+      text-align: center;
+      transition: color 0.2s;
+    }
+
+    .status.checking { color: #64748b; }
+    .status.error    { color: #f87171; }
+    .status.success  { color: #34d399; }
+
+    /* Spinner */
+    .spinner {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Footer links */
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(100, 116, 139, 0.12);
+    }
+
+    .footer a {
+      font-size: 12px;
+      color: #475569;
+      text-decoration: none;
+      cursor: pointer;
+      transition: color 0.15s;
+    }
+
+    .footer a:hover { color: #94a3b8; }
+
+    /* Drag region for the frameless window */
+    .drag-bar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 28px;
+      -webkit-app-region: drag;
+    }
+  </style>
+</head>
+<body>
+  <div class="drag-bar"></div>
+
+  <div class="card">
+    <div class="brand">
+      <div class="logo-icon">🌍</div>
+      <div class="brand-text">
+        <h1>ClimRisk Intelligence</h1>
+        <p>Enterprise Climate Financial Risk Platform</p>
+      </div>
+    </div>
+
+    <h2>Activate your licence</h2>
+    <p class="subtitle">
+      Enter the licence key from your confirmation email to unlock the full platform.
+      Your key is bound to this device.
+    </p>
+
+    <div class="field">
+      <label>Licence Key</label>
+      <div class="input-wrap">
+        <input
+          type="text"
+          id="licenseInput"
+          placeholder="e.g. CRI2026 or CRI-XXXX-XXXX"
+          autocomplete="off"
+          spellcheck="false"
+        />
+      </div>
+    </div>
+
+    <button class="btn-activate" id="activateBtn">Activate</button>
+
+    <div class="status" id="status"></div>
+
+    <div class="footer">
+      <a id="buyLink">Don't have a key? Get one →</a>
+      <a id="docsLink">Documentation</a>
+    </div>
+  </div>
+
+  <script>
+    const input  = document.getElementById('licenseInput');
+    const btn    = document.getElementById('activateBtn');
+    const status = document.getElementById('status');
+
+    // Pre-fill if a key was previously stored (e.g. expired)
+    (async () => {
+      const info = await window.climrisk.getLicenseInfo();
+      if (info && info.key) input.value = info.key;
+    })();
+
+    function setStatus(msg, cls) {
+      status.textContent = msg;
+      status.className   = 'status ' + (cls || '');
+    }
+
+    async function activate() {
+      const key = input.value.trim().toUpperCase();
+      if (!key) { setStatus('Please enter a licence key.', 'error'); return; }
+
+      btn.disabled = true;
+      status.innerHTML = '<span class="spinner"></span>Validating…';
+      status.className = 'status checking';
+
+      try {
+        const result = await window.climrisk.validateAndSaveLicense(key);
+        if (result.valid) {
+          setStatus(`✓ Activated — ${result.tier} (${result.email})`, 'success');
+          setTimeout(() => window.climrisk.openDashboard(), 900);
+        } else {
+          setStatus(result.error || 'Invalid or expired licence key.', 'error');
+          btn.disabled = false;
+        }
+      } catch (err) {
+        setStatus('Could not reach the licence server. Check your connection.', 'error');
+        btn.disabled = false;
+      }
+    }
+
+    btn.addEventListener('click', activate);
+    input.addEventListener('keydown', (e) => { if (e.key === 'Enter') activate(); });
+
+    document.getElementById('buyLink').addEventListener('click', () =>
+      window.climrisk.openExternal('https://climrisk.io/pricing')
+    );
+    document.getElementById('docsLink').addEventListener('click', () =>
+      window.climrisk.openExternal('https://climrisk.io/docs')
+    );
+  </script>
+</body>
+</html>

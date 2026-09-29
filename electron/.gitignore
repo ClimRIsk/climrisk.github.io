@@ -1,0 +1,6 @@
+# Installed packages and build output — rebuilt with `npm install` / `npm run build:mac`
+node_modules/
+dist/
+*.dmg
+*.blockmap
+.DS_Store

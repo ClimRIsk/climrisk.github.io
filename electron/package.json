@@ -1,0 +1,113 @@
+{
+  "name": "climrisk-desktop",
+  "productName": "ClimRisk Intelligence",
+  "version": "1.0.0",
+  "description": "Enterprise Climate Financial Risk Intelligence Platform",
+  "main": "main.js",
+  "author": {
+    "name": "ClimRisk Intelligence Ltd",
+    "email": "platform@climrisk.io"
+  },
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "start:dev": "ELECTRON_IS_DEV=1 electron . --inspect",
+    "build:mac": "electron-builder --mac",
+    "build:mac:x64": "electron-builder --mac --x64",
+    "build:mac:arm64": "electron-builder --mac --arm64",
+    "build:win": "electron-builder --win --x64",
+    "build:linux": "electron-builder --linux",
+    "build:all": "electron-builder --mac --win --linux",
+    "pack": "electron-builder --dir"
+  },
+  "dependencies": {
+    "electron-store": "^8.1.0"
+  },
+  "devDependencies": {
+    "electron": "^28.3.3",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "io.climrisk.desktop",
+    "productName": "ClimRisk Intelligence",
+    "copyright": "Copyright \u00a9 2026 ClimRisk Intelligence Ltd",
+    "directories": {
+      "output": "dist",
+      "buildResources": "assets"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "engine.js",
+      "renderer/**/*",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../dashboard.html",
+        "to": "dashboard.html"
+      },
+      {
+        "from": "../app.html",
+        "to": "app.html"
+      },
+      {
+        "from": "setup-local-engine.sh",
+        "to": "setup-local-engine.sh"
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "icon": "assets/icon.icns",
+      "hardenedRuntime": false,
+      "gatekeeperAssess": false,
+      "identity": null,
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "universal"
+          ]
+        }
+      ]
+    },
+    "win": {
+      "icon": "assets/icon.ico",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "requestedExecutionLevel": "asInvoker"
+    },
+    "linux": {
+      "icon": "assets/icon.png",
+      "category": "Finance",
+      "target": [
+        "AppImage",
+        "deb"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ClimRisk Intelligence",
+      "installerSidebar": "assets/installer-sidebar.bmp"
+    }
+  },
+  "allowScripts": {
+    "electron@28.3.3": true
+  }
+}
