@@ -394,6 +394,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="switchCRITab('decision',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-lightning"></i></span>Decision Brief <span class="sb-badge green">P1</span></a>
   <div class="sb-section">Deep Analysis</div>
   <a class="sb-item" href="#" onclick="openAssetIntel();return false"><span class="sb-icon"><i class="ph ph-mountains"></i></span>Asset Intelligence 3D <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
+  <a class="sb-item" href="#" onclick="openAssetIntel(null,null,null,null,{mode:'company'});return false"><span class="sb-icon"><i class="ph ph-globe-hemisphere-east"></i></span>Company Asset Map <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
   <a class="sb-item" href="#" onclick="switchCRITab('physical',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-wave"></i></span>Physical Risk (25 Hz)</a>
   <a class="sb-item" href="#" onclick="switchCRITab('financial',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-trend-up"></i></span>Financial / EBITDA</a>
   <a class="sb-item" href="#" onclick="switchCRITab('livemet',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-cloud-sun"></i></span>Live Met (climrisk.io)</a>
@@ -3221,9 +3222,10 @@ function _renderBatchResults(d) {
 // 10 m terrain + Sentinel-2 imagery + Sentinel-1 radar flood history + WorldCover.
 // Served by the engine, so engine updates show up without rebuilding the app.
 // Optional args prefill (and auto-run) a site: openAssetIntel(23.759, 90.399, 'Dhaka plant', 'industrial')
-function openAssetIntel(lat, lon, name, type) {
+function openAssetIntel(lat, lon, name, type, extra) {
   var old = document.getElementById('asset-intel-overlay'); if (old) old.remove();
   var p = new URLSearchParams({ embedded: '1' });
+  if (extra) Object.keys(extra).forEach(function (k) { if (extra[k] != null) p.set(k, extra[k]); });
   if (_auth) p.set('key', _auth);
   if (lat != null && lon != null) { p.set('lat', lat); p.set('lon', lon); p.set('auto', '1'); }
   if (name) p.set('name', name);
