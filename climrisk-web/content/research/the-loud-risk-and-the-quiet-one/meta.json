@@ -4,38 +4,124 @@
   "kicker": "Physical & Transition Risk · Japan · September 2026",
   "title": "The Loud Risk and the Quiet One: Typhoon Dujuan, the Super El Niño and Japan's Power Coast",
   "detail": "Typhoon Dujuan broke Tokyo's rainfall records. For the power plants that ring Tokyo Bay, our engine finds the bigger financial exposure is not the storm.",
-  "status": "draft",
+  "status": "published",
   "date": "2026-09-30",
   "author": "Shrinivash D Kannan",
   "cover": "/research/the-loud-risk-and-the-quiet-one/cover.png",
   "sources": [
-    {"title": "The Watchers — Typhoon Dujuan leaves 12 dead and 3 missing (citing FDMA Report No. 13, MLIT, JMA, Kanagawa Prefecture), 24 Sep 2026", "url": "https://watchers.news/2026/09/24/typhoon-dujuan-leaves-12-dead-and-3-missing-record-rain-floods-and-landslides-hit-japan/"},
-    {"title": "FDMA — Typhoon No. 25 damage and fire-service response, Report No. 13 (Japanese)", "url": "https://www.fdma.go.jp/disaster/info/items/c39576e6e4bfa220713442913b7554481b6345b4.pdf"},
-    {"title": "JMA — Oshima historical rainfall rankings", "url": "https://www.data.jma.go.jp/stats/etrn/view/rank_s.php?block_no=47675&day=&month=&prec_no=44&view=np0&year="},
-    {"title": "MLIT Kanto Regional Development Bureau — emergency restoration of Inbanuma embankments (Japanese)", "url": "https://www.ktr.mlit.go.jp/kisha/kyoku_s_kisha_00578.pdf"},
-    {"title": "Center for Disaster Philanthropy — Weekly disaster update, 21 Sep 2026 (citing BBC)", "url": "https://disasterphilanthropy.org/blog/what-were-watching-weekly-disaster-update-september-21-2026/"},
-    {"title": "Bloomberg via Insurance Journal — El Niño and Heat Fuel Destructive Storms Across Pacific Ocean, 21 Sep 2026", "url": "https://www.insurancejournal.com/news/international/2026/09/21/886199.htm"},
-    {"title": "Maersk — East Asia typhoon season: Update 1, 9 Sep 2026", "url": "https://www.maersk.com/news/articles/2026/09/09/east-asia-typhoon-season-shipping-updates"},
-    {"title": "NOAA Climate Prediction Center — ENSO Diagnostic Discussion, 10 Sep 2026", "url": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml"},
-    {"title": "NOAA Climate Prediction Center — Oceanic Niño Index (ONI)", "url": "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"},
-    {"title": "NOAA NCEI — IBTrACS v04r01", "url": "https://www.ncei.noaa.gov/products/international-best-track-archive"},
-    {"title": "Eberenz, Lüthi & Bresch (2021), Regional tropical cyclone impact functions for globally consistent risk assessments, NHESS 21:393", "url": "https://doi.org/10.5194/nhess-21-393-2021"},
-    {"title": "World Bank Carbon Pricing Dashboard (data release May 2026)", "url": "https://carbonpricingdashboard.worldbank.org/"},
-    {"title": "NGFS Phase 5 scenarios via IIASA Scenario Explorer", "url": "https://data.ene.iiasa.ac.at/ngfs/"},
-    {"title": "Copernicus Sentinel-1 RTC via Microsoft Planetary Computer", "url": "https://planetarycomputer.microsoft.com/dataset/sentinel-1-rtc"},
-    {"title": "Climate TRACE — asset ownership and emissions", "url": "https://climatetrace.org/"},
-    {"title": "JRC CEMS-GloFAS global river flood hazard maps", "url": "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/CEMS-GLOFAS/flood_hazard/"},
-    {"title": "Deltares Global Flood Maps (coastal)", "url": "https://planetarycomputer.microsoft.com/dataset/deltares-floods"},
-    {"title": "Scussolini et al. (2016), FLOPROS: an evolving global database of flood protection standards, NHESS 16:1049", "url": "https://doi.org/10.5194/nhess-16-1049-2016"}
+    {
+      "title": "The Watchers — Typhoon Dujuan leaves 12 dead and 3 missing (citing FDMA Report No. 13, MLIT, JMA, Kanagawa Prefecture), 24 Sep 2026",
+      "url": "https://watchers.news/2026/09/24/typhoon-dujuan-leaves-12-dead-and-3-missing-record-rain-floods-and-landslides-hit-japan/"
+    },
+    {
+      "title": "FDMA — Typhoon No. 25 damage and fire-service response, Report No. 13 (Japanese)",
+      "url": "https://www.fdma.go.jp/disaster/info/items/c39576e6e4bfa220713442913b7554481b6345b4.pdf"
+    },
+    {
+      "title": "JMA — Oshima historical rainfall rankings",
+      "url": "https://www.data.jma.go.jp/stats/etrn/view/rank_s.php?block_no=47675&day=&month=&prec_no=44&view=np0&year="
+    },
+    {
+      "title": "MLIT Kanto Regional Development Bureau — emergency restoration of Inbanuma embankments (Japanese)",
+      "url": "https://www.ktr.mlit.go.jp/kisha/kyoku_s_kisha_00578.pdf"
+    },
+    {
+      "title": "Center for Disaster Philanthropy — Weekly disaster update, 21 Sep 2026 (citing BBC)",
+      "url": "https://disasterphilanthropy.org/blog/what-were-watching-weekly-disaster-update-september-21-2026/"
+    },
+    {
+      "title": "Bloomberg via Insurance Journal — El Niño and Heat Fuel Destructive Storms Across Pacific Ocean, 21 Sep 2026",
+      "url": "https://www.insurancejournal.com/news/international/2026/09/21/886199.htm"
+    },
+    {
+      "title": "Maersk — East Asia typhoon season: Update 1, 9 Sep 2026",
+      "url": "https://www.maersk.com/news/articles/2026/09/09/east-asia-typhoon-season-shipping-updates"
+    },
+    {
+      "title": "NOAA Climate Prediction Center — ENSO Diagnostic Discussion, 10 Sep 2026",
+      "url": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.shtml"
+    },
+    {
+      "title": "NOAA Climate Prediction Center — Oceanic Niño Index (ONI)",
+      "url": "https://www.cpc.ncep.noaa.gov/data/indices/oni.ascii.txt"
+    },
+    {
+      "title": "NOAA NCEI — IBTrACS v04r01",
+      "url": "https://www.ncei.noaa.gov/products/international-best-track-archive"
+    },
+    {
+      "title": "Eberenz, Lüthi & Bresch (2021), Regional tropical cyclone impact functions for globally consistent risk assessments, NHESS 21:393",
+      "url": "https://doi.org/10.5194/nhess-21-393-2021"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard (data release May 2026)",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios via IIASA Scenario Explorer",
+      "url": "https://data.ene.iiasa.ac.at/ngfs/"
+    },
+    {
+      "title": "Copernicus Sentinel-1 RTC via Microsoft Planetary Computer",
+      "url": "https://planetarycomputer.microsoft.com/dataset/sentinel-1-rtc"
+    },
+    {
+      "title": "Climate TRACE — asset ownership and emissions",
+      "url": "https://climatetrace.org/"
+    },
+    {
+      "title": "JRC CEMS-GloFAS global river flood hazard maps",
+      "url": "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/CEMS-GLOFAS/flood_hazard/"
+    },
+    {
+      "title": "Deltares Global Flood Maps (coastal)",
+      "url": "https://planetarycomputer.microsoft.com/dataset/deltares-floods"
+    },
+    {
+      "title": "Scussolini et al. (2016), FLOPROS: an evolving global database of flood protection standards, NHESS 16:1049",
+      "url": "https://doi.org/10.5194/nhess-16-1049-2016"
+    }
   ],
   "images": [
-    {"file": "cover.png", "kind": "satellite", "source": "Copernicus Sentinel-1 RTC, 24 Sep 2026 (Microsoft Planetary Computer), processed by ClimRisk"},
-    {"file": "radar_inbanuma.png", "kind": "satellite", "source": "Copernicus Sentinel-1 RTC, 12–19 Sep and 24 Sep 2026; ESA WorldCover water mask; processed by ClimRisk"},
-    {"file": "sat_before.png", "kind": "satellite", "source": "Copernicus Sentinel-2 L2A, 25 Jul 2026 (AWS Earth Search)"},
-    {"file": "chart_oni.png", "kind": "chart", "source": "NOAA CPC Oceanic Niño Index"},
-    {"file": "map_jera.png", "kind": "map", "source": "Climate TRACE v6 ownership & emissions; ClimRisk IBTrACS/Holland cyclone model; Natural Earth 1:10m"},
-    {"file": "chart_tokyo_bay_storms.png", "kind": "chart", "source": "NOAA IBTrACS v04r01; ClimRisk Holland wind-field model"},
-    {"file": "chart_scenarios.png", "kind": "chart", "source": "ClimRisk engine Risk Analyst; NGFS Phase 5; World Bank carbon pricing"},
-    {"file": "infographic.png", "kind": "infographic", "source": "JMA, FDMA, NOAA CPC, Hong Kong Observatory (via Bloomberg), Copernicus Sentinel-1, ClimRisk engine"}
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Copernicus Sentinel-1 RTC, 24 Sep 2026 (Microsoft Planetary Computer), processed by ClimRisk"
+    },
+    {
+      "file": "radar_inbanuma.png",
+      "kind": "satellite",
+      "source": "Copernicus Sentinel-1 RTC, 12–19 Sep and 24 Sep 2026; ESA WorldCover water mask; processed by ClimRisk"
+    },
+    {
+      "file": "sat_before.png",
+      "kind": "satellite",
+      "source": "Copernicus Sentinel-2 L2A, 25 Jul 2026 (AWS Earth Search)"
+    },
+    {
+      "file": "chart_oni.png",
+      "kind": "chart",
+      "source": "NOAA CPC Oceanic Niño Index"
+    },
+    {
+      "file": "map_jera.png",
+      "kind": "map",
+      "source": "Climate TRACE v6 ownership & emissions; ClimRisk IBTrACS/Holland cyclone model; Natural Earth 1:10m"
+    },
+    {
+      "file": "chart_tokyo_bay_storms.png",
+      "kind": "chart",
+      "source": "NOAA IBTrACS v04r01; ClimRisk Holland wind-field model"
+    },
+    {
+      "file": "chart_scenarios.png",
+      "kind": "chart",
+      "source": "ClimRisk engine Risk Analyst; NGFS Phase 5; World Bank carbon pricing"
+    },
+    {
+      "file": "infographic.png",
+      "kind": "infographic",
+      "source": "JMA, FDMA, NOAA CPC, Hong Kong Observatory (via Bloomberg), Copernicus Sentinel-1, ClimRisk engine"
+    }
   ]
 }
