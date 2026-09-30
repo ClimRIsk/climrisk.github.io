@@ -4,6 +4,7 @@ import CounterUp from "./components/CounterUp";
 import GlobeBackground from "./components/GlobeBackground";
 import IsometricShowcase from "./components/IsometricShowcase";
 import LiveAssessWidget from "./components/LiveAssessWidget";
+import { allArticles } from "../lib/research";
 
 const MANDATES = [
   {
@@ -26,28 +27,11 @@ const MANDATES = [
   },
 ];
 
-const INTELLIGENCE = [
-  {
-    kicker: "Flagship Study",
-    title: "We Ran 21 Global Industries Through Every Climate Scenario",
-    detail: "Break-even carbon prices from $27/t (coal power) to $82/t (oil refining) — the full sector-by-sector exposure map.",
-    href: "/research",
-  },
-  {
-    kicker: "Physical Risk · South & SE Asia",
-    title: "The Supply Chain Tax",
-    detail: "A heat dome over South and Southeast Asia and its direct line to landed cost.",
-    href: "/research",
-  },
-  {
-    kicker: "Physical Risk · South Asia · Agricultural Finance",
-    title: "The Monsoon, Repriced",
-    detail: "What a shifting monsoon does to agricultural credit books across South Asia.",
-    href: "/research",
-  },
-];
-
 export default function Home() {
+  const latestResearch = allArticles()
+    .filter((a) => a.status !== "in-progress")
+    .slice(0, 3);
+
   return (
     <>
       {/* Hero */}
@@ -226,9 +210,9 @@ export default function Home() {
           </div>
         </Reveal>
         <div className="grid md:grid-cols-3 gap-6">
-          {INTELLIGENCE.map((a, i) => (
-            <Reveal key={a.title} delayMs={i * 120}>
-              <Link href={a.href} className="panel panel-hover block p-7 h-full">
+          {latestResearch.map((a, i) => (
+            <Reveal key={a.slug} delayMs={i * 120}>
+              <Link href={a.href ?? `/research/${a.slug}`} className="panel panel-hover block p-7 h-full">
                 <p className="text-xs font-mono text-zinc-600 mb-3">{a.kicker}</p>
                 <h3 className="text-white font-semibold leading-snug mb-3">{a.title}</h3>
                 <p className="text-sm text-zinc-500 leading-relaxed">{a.detail}</p>
