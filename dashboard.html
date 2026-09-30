@@ -650,7 +650,9 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
 // ENGINE_URL: HuggingFace Spaces deployment. Update the space slug below if the space is renamed.
 // Format: https://{hf-username}-{space-name}.hf.space
 // Fallback: if offline, all runs use the built-in JS synthetic engine automatically.
-const ENGINE_URL = (window.CLIMRISK_ENGINE_URL) || 'https://climrisk-github-io.onrender.com';
+// Desktop app: always the local engine (preload sets it). Never fall back to a hosted server there.
+const _IS_DESKTOP = /Electron/i.test(navigator.userAgent);
+const ENGINE_URL = (window.CLIMRISK_ENGINE_URL) || (_IS_DESKTOP ? 'http://127.0.0.1:9' : 'https://climrisk-github-io.onrender.com');
 
 // ── PYTHON ENGINE: PRE-WARM · KEEP-ALIVE · COMPANY MATCHING ─────────────────
 var _engineStatus     = 'warming';  // 'warming' | 'ready' | 'offline'
@@ -3243,7 +3245,7 @@ function openAssetIntel(lat, lon, name, type, extra) {
     '</div>' +
     '<div style="position:relative;flex:1">' +
       '<div id="asset-intel-wait" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:13px;text-align:center;line-height:1.8">' +
-        'Connecting to the ClimRisk engine…<br><span style="font-size:11px">First load can take up to a minute if the server was asleep.</span></div>' +
+        'Connecting to the local ClimRisk engine…<br><span style="font-size:11px">If this does not load, the engine is not running — see ~/.climrisk/logs/engine.log</span></div>' +
       '<iframe id="asset-intel-frame" title="Asset Intelligence 3D" style="position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .3s" ' +
         'src="' + ENGINE_URL + '/asset/dashboard#' + p.toString() + '"></iframe>' +
     '</div>';
@@ -6803,7 +6805,7 @@ function buildCBAMPanel(data, nze, dt, cp, company, sector) {
   var _open      = false;
   var _loading   = false;
   var _convId    = 'crai_' + Date.now();
-  var _ENGINE    = (typeof ENGINE_URL !== 'undefined' ? ENGINE_URL : 'https://climrisk-github-io.onrender.com');
+  var _ENGINE    = (typeof ENGINE_URL !== 'undefined' ? ENGINE_URL : (/Electron/i.test(navigator.userAgent) ? 'http://127.0.0.1:9' : 'https://climrisk-github-io.onrender.com'));
   var _apiKey    = (typeof _auth !== 'undefined' ? _auth : '') || sessionStorage.getItem('cri_auth') || '';
 
   window.craiToggle = function() {

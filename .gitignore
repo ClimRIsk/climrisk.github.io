@@ -47,3 +47,7 @@ out/
 
 # Climate engine cache
 climate_risk_engine/src/cri/.cache/
+
+# Research Desk: working kits (LinkedIn/Substack) and agent planning state stay local
+Research Desk/
+climrisk-web/content/research/_desk/

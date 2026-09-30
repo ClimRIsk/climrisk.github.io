@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Reveal from "../components/Reveal";
-import { BRIEFS, type Brief } from "./data";
+import type { Brief } from "./data";
+import { allArticles, type Article } from "../../lib/research";
 
 export const metadata: Metadata = {
   title: "Research",
@@ -9,11 +10,15 @@ export const metadata: Metadata = {
     "Flagship whitepapers, regulatory briefs, and applied case studies from the ClimRisk research desk, covering physical and transition risk translated into financial terms.",
 };
 
-function CardBody({ b }: { b: Brief }) {
+function CardBody({ b }: { b: Article }) {
   const inProgress = b.status === "in-progress";
   return (
     <>
-      <p className="text-xs font-mono text-zinc-600 mb-3 uppercase tracking-wide">{b.kicker}</p>
+      <p className="text-xs font-mono text-zinc-600 mb-3 uppercase tracking-wide">
+        {b.kicker}
+        {b.date ? <span className="text-zinc-700"> · {new Date(b.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" })}</span> : null}
+        {b.readingMinutes ? <span className="text-zinc-700"> · {b.readingMinutes} min read</span> : null}
+      </p>
       <h2 className="text-white font-semibold leading-snug mb-3">{b.title}</h2>
       <p className="text-sm text-zinc-500 leading-relaxed">{b.detail}</p>
       {inProgress ? (
@@ -32,7 +37,7 @@ function CardBody({ b }: { b: Brief }) {
   );
 }
 
-function BriefCard({ b, delayMs }: { b: Brief; delayMs: number }) {
+function BriefCard({ b, delayMs }: { b: Article; delayMs: number }) {
   const inProgress = b.status === "in-progress";
 
   if (inProgress) {
@@ -79,6 +84,7 @@ const TIERS: { key: Brief["tier"]; label: string; description: string }[] = [
 ];
 
 export default function ResearchPage() {
+  const ARTICLES = allArticles();
   return (
     <div className="pt-40 pb-32 px-6">
       <div className="max-w-4xl mx-auto mb-16">
@@ -94,7 +100,7 @@ export default function ResearchPage() {
 
       <div className="max-w-5xl mx-auto space-y-20">
         {TIERS.map((tier) => {
-          const items = BRIEFS.filter((b) => b.tier === tier.key);
+          const items = ARTICLES.filter((b) => b.tier === tier.key);
           if (items.length === 0) return null;
           return (
             <div key={tier.key}>
