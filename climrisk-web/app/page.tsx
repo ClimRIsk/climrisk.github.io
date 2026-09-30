@@ -3,6 +3,7 @@ import Reveal from "./components/Reveal";
 import CounterUp from "./components/CounterUp";
 import GlobeBackground from "./components/GlobeBackground";
 import IsometricShowcase from "./components/IsometricShowcase";
+import LiveAssessWidget from "./components/LiveAssessWidget";
 
 const MANDATES = [
   {
@@ -102,6 +103,25 @@ export default function Home() {
               <span>Basel III</span>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Live assessment */}
+      <section className="px-6 py-20 border-b border-white/8">
+        <div className="max-w-4xl mx-auto text-center mb-10">
+          <Reveal>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Live, Not a Mockup</p>
+            <h2 className="heading-lg grad-text mb-4">Assess a real company, right now.</h2>
+            <p className="text-zinc-400 leading-relaxed max-w-2xl mx-auto">
+              This runs the actual CRI Engine against your input, the same rating, pillar scores, and
+              2025-2050 forecast trajectory that goes into a client report. No sample data, no canned demo.
+            </p>
+          </Reveal>
+        </div>
+        <div className="max-w-3xl mx-auto">
+          <Reveal delayMs={100}>
+            <LiveAssessWidget />
+          </Reveal>
         </div>
       </section>
 
