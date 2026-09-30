@@ -51,3 +51,31 @@ climate_risk_engine/src/cri/.cache/
 # Research Desk: working kits (LinkedIn/Substack) and agent planning state stay local
 Research Desk/
 climrisk-web/content/research/_desk/
+
+# Private business documents — never publish (removed from history 2026-09-30)
+/Shrinivash_CV.docx
+/Shrinivash_CV.pdf
+/ClimRisk_StartupVisa_Letter.docx
+/IQ_Startup_Visa_Email_ClimRisk.docx
+/ClimRisk_BusinessFinland_Letter.docx
+/ClimRisk_Finland_Pitch.pdf
+/ClimRisk_Finland_Pitch.pptx
+/ClimRisk_Investor_Pitch.pdf
+/ClimRisk_Investor_Pitch.pptx
+/ClimRisk_Investor_Pitch_75k.pptx
+/ClimRisk_Rockstart_Pitch.pdf
+/ClimRisk_Rockstart_Pitch.pptx
+/ClimRisk_Morelli_Updated_v2.pptx
+/ClimRisk_Acquisition_Deck.pptx
+/ClimRisk_Prospect_List.xlsx
+/ClimRisk_DPA_v1.0.docx
+/Meridian_Resources_CRI_Data.xlsx
+/CRI\ Methodology.pdf
+/CRI_Methodology_Morelli_v0.3.docx
+/CRI_Methodology_Morelli_v0.3.pdf
+/CRI_Validation_Study_v1.0.docx
+.~lock.*
+ClimRisk_Investor_Pitch_75k.pptx
+*.bundle
+/Shrinivash_CV*
+/meridian_climrisk_report.html
