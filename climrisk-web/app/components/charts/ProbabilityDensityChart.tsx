@@ -29,7 +29,7 @@
  *
  * Data sources (audit)
  * ────────────────────
- * CMIP6 flood multipliers: NASA NEX-GDDP-CMIP6 (34 GCMs) — NGFS Phase 4
+ * CMIP6-scaled flood multipliers (engine _CMIP6_HAZARD_MULTIPLIER)
  * Gumbel parameterisation: WRI Aqueduct 4.0 / IPCC AR6 Ch.11
  * Return period compression: physical_risk.py _CMIP6_HAZARD_MULTIPLIER[flood]
  */
@@ -395,7 +395,7 @@ export default function ProbabilityDensityChart({
 
       {/* Attribution */}
       <div className="mt-1 text-[9px] font-mono text-white/20">
-        Gumbel EVD · CMIP6 (34 GCMs) · NGFS Phase 4 · WRI Aqueduct 4.0 · IPCC AR6 Ch.11
+        Gumbel EVD · CMIP6-scaled flood multipliers · IPCC AR6 Ch.11
       </div>
     </div>
   );

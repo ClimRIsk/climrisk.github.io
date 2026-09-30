@@ -5,21 +5,21 @@ import Reveal from "../components/Reveal";
 export const metadata: Metadata = {
   title: "Methodology",
   description:
-    "How the CRI Engine turns IPCC AR6 hazard data into audit-ready financial exposure: the seven-step pipeline, the data architecture behind it, the DCF and VaR math, and the frameworks it satisfies.",
+    "How the CRI Engine turns observed and projected hazard data into financial exposure: the seven-step pipeline, the data architecture behind it, the DCF and VaR math, and the frameworks it satisfies.",
 };
 
 const PIPELINE = [
   {
     n: "01",
     title: "Climate Hazard Quantification",
-    body: "26 hazards across four SSP emission scenarios, drawn from CMIP6, NGFS Phase 4, and IPCC AR6, resolved to a 0.1° grid.",
-    tag: "NASA · CMIP6 · ERA5",
+    body: "Site-level flood depths (JRC river, Deltares coastal with sea-level rise), cyclone wind from NOAA IBTrACS tracks since 1980, WRI Aqueduct 4.0 water risk, plus 25 parametric hazard functions scaled by IPCC AR6 warming and CMIP6 projections.",
+    tag: "JRC · Deltares · IBTrACS · CMIP6",
   },
   {
     n: "02",
     title: "Asset-Level Exposure Mapping",
-    body: "A GIS lat/lon resolver maps each asset to its precise hazard cell, integrating WRI Aqueduct, SRTM elevation, and NASA land use data.",
-    tag: "GIS · Aqueduct · SRTM",
+    body: "Each asset's coordinates are read against the hazard maps, local flood defences (FLOPROS), 10 m terrain, Sentinel-1 radar and Sentinel-2 imagery, and ESA WorldCover land cover.",
+    tag: "GIS · FLOPROS · Sentinel · WorldCover",
   },
   {
     n: "03",
@@ -50,7 +50,7 @@ const PIPELINE = [
   {
     n: "07",
     title: "Audit-Ready Report Output",
-    body: "IFRS S2, TCFD, and CSRD-aligned reports with IPCC AR6 citations, peer benchmarking, and confidence intervals attached to every figure.",
+    body: "IFRS S2, TCFD, CSRD and SEBI BRSR-aligned reports with named sources, Monte Carlo ranges on loss figures, and the model's caveats stated alongside.",
     tag: "IFRS S2 · TCFD · CSRD",
   },
 ];
@@ -59,35 +59,45 @@ const DATA_GROUPS = [
   {
     group: "Physical Climate Models",
     items: [
-      { name: "CMIP6", detail: "34 GCMs, SSP1-2.6 through SSP5-8.5, horizon to 2100." },
-      { name: "ERA5 Reanalysis", detail: "0.25° hourly resolution, 1940 to present, 300+ variables." },
+      { name: "CMIP6 HighResMIP", detail: "Coordinate-level temperature and precipitation change (MRI-AGCM3-2-S with fallbacks) via the Open-Meteo climate API." },
+      { name: "NOAA IBTrACS · JRC · Deltares", detail: "Cyclone tracks since 1980; river flood depth maps (10–500-year); coastal flood depths 2018 and 2050 with sea-level rise." },
     ],
   },
   {
     group: "Earth Observation",
     items: [
-      { name: "NASA Earth Observing System", detail: "0.1° × 0.1° resolution, updated daily. LULC, MODIS, GRACE." },
-      { name: "WRI Aqueduct", detail: "Watershed-level water risk across 13 indicator layers." },
+      { name: "Copernicus Sentinel-1 / Sentinel-2 · ESA WorldCover", detail: "10 m radar flood history, optical imagery and land cover at each site. NASA POWER and FIRMS for weather and active fires." },
+      { name: "WRI Aqueduct 4.0", detail: "13 water-risk indicators for 68,506 basin × admin-1 units, with projections to 2030, 2050 and 2080." },
     ],
   },
   {
     group: "Financial Transition Scenarios",
     items: [
-      { name: "NGFS Phase 4", detail: "6 scenario pathways, referenced by 80+ central banks and supervisors." },
+      { name: "NGFS Phase 5", detail: "7 scenario pathways from 3 models (GCAM, MESSAGEix-GLOBIOM, REMIND-MAgPIE), with carbon prices, sector activity and grid intensity." },
+      { name: "World Bank Carbon Pricing Dashboard", detail: "94 carbon taxes and trading systems, matched to each asset's jurisdiction and sector." },
+    ],
+  },
+  {
+    group: "Carbon Accounting Factors",
+    items: [
+      { name: "UK DESNZ GHG Conversion Factors 2026", detail: "Fuels, vehicles, refrigerants, travel, freight, waste, water, materials and well-to-tank — CH4 and N2O restated to IPCC AR6." },
+      { name: "US EPA eGRID2023 · Green-e 2025 · AIB 2025", detail: "Grid factors by eGRID subregion and European country; US and European residual mixes for market-based Scope 2." },
+      { name: "US EPA USEEIO v1.3", detail: "Spend-based supply-chain factors for 1,016 industries (2022 USD), deflated with US CPI." },
     ],
   },
   {
     group: "The Engine",
     items: [
-      { name: "CRI Engine v0.5", detail: "26 hazards modelled, validated against IPCC AR6 WG1 and WG2, IFRS S2 ready." },
+      { name: "CRI Engine", detail: "Tested against measured cyclone winds, FEMA flood claims and EPA-reported emissions — results, including the weak ones, on the Validation page." },
+      { name: "Product Carbon Footprint (LCA)", detail: "ISO 14067-aligned cradle-to-gate footprints with IPCC 2006, GCCA, Ember and DESNZ 2025 factors, uncertainty bands and an EU CBAM view." },
     ],
   },
   {
     group: "ML & Predictive Layer",
     items: [
-      { name: "CRI Trajectory Model", detail: "GradientBoostingRegressor trained on NGFS Phase 4 pathways and decades of disaster-loss data, forecasting the CRI score to 2050 with confidence bands." },
+      { name: "CRI Trajectory Model", detail: "Gradient-boosted surrogate trained on 50,000 simulated company-years calibrated to NGFS pathways and EM-DAT losses, forecasting the CRI score to 2050 with confidence bands." },
       { name: "ClimateBERT Disclosure Scanner", detail: "Four Hugging Face ClimateBERT classifiers score a company's own disclosures for climate relevance, sentiment, and net-zero commitment specificity." },
-      { name: "XGBoost Emissions Estimator", detail: "Trained on 14,000+ verified CDP disclosures, imputes missing Scope 1/2/3 data with confidence intervals instead of a flat sector average." },
+      { name: "Emissions Estimator", detail: "Trained on EPA GHGRP observed emissions matched to company revenue; used only where reported or facility-level emissions are missing, and labelled as an estimate." },
     ],
   },
 ];

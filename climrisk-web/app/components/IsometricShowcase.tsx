@@ -8,7 +8,7 @@ const TABS = [
   {
     id: "hazard",
     title: "High-Resolution Hazard Mapping",
-    body: "Isolate physical climate threats across 26 hazard types. Drill down to a 0.1° resolution grid to quantify exposure for any global asset coordinate.",
+    body: "Isolate physical climate threats at any asset coordinate: river and coastal flood depths, cyclone wind, water stress, and 25 parametric hazard functions, with Sentinel satellite evidence at the site.",
     accent: "#00F0FF",
   },
   {
@@ -89,7 +89,7 @@ export default function IsometricShowcase() {
         <div key={tab.id} className="iso-card">
           {active === 0 && (
             <>
-              <p className="iso-card-label">0.1° Grid · 26 Hazard Types</p>
+              <p className="iso-card-label">Site-level · Flood · Cyclone · Water</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, fontSize: "0.78rem" }}>
                   <span style={{ width: 8, height: 8, borderRadius: 9999, background: "#00F0FF", boxShadow: "0 0 6px #00F0FF" }} />

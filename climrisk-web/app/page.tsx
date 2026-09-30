@@ -10,13 +10,13 @@ const MANDATES = [
   {
     tag: "01",
     title: "Carbon Auditing & Data Assurance",
-    body: "Algorithmic imputation and unified data consolidation that turn fragmented emissions records into audit-ready baselines.",
+    body: "Activity data turned into a GHG Protocol / ISO 14064-1 inventory — Scope 1, 2 and all 15 Scope 3 categories — with an assurance pack that traces every tonne to its evidence.",
     href: "/capabilities#carbon-auditing",
   },
   {
     tag: "02",
     title: "Dynamic Life Cycle Assessments",
-    body: "Asset-level hazard mapping and operational degradation modelling, translated directly into financial terms.",
+    body: "Cradle-to-gate product carbon footprints (ISO 14067-aligned) for cement, steel, aluminium, ammonia or any product, with uncertainty bands, an EU CBAM cost view and 2050 grid pathways.",
     href: "/capabilities#lca",
   },
   {
@@ -51,7 +51,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto relative" style={{ zIndex: 2 }}>
           <div className="hero-drift inline-flex items-center gap-2 text-xs font-mono text-gold-200 border border-white/8 rounded-full px-3 py-1.5 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-terminal" />
-            CRI ENGINE v0.5 · NGFS PHASE 4 · CMIP6
+            CRI ENGINE · NGFS PHASE 5 · IPCC AR6
           </div>
           <h1 className="hero-drift animation-delay-200 heading-xl grad-text mb-6">
             Command Your <span className="grad-gold">Climate Exposure.</span>
@@ -95,10 +95,11 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center mb-10">
           <Reveal>
             <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Live, Not a Mockup</p>
-            <h2 className="heading-lg grad-text mb-4">Assess a real company, right now.</h2>
+            <h2 className="heading-lg grad-text mb-4">Analyse a real company, right now.</h2>
             <p className="text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-              This runs the actual CRI Engine against your input, the same rating, pillar scores, and
-              2025-2050 forecast trajectory that goes into a client report. No sample data, no canned demo.
+              Type a company with industrial sites. The engine finds its mapped facilities, reads flood maps and
+              cyclone tracks at the largest ones, applies the carbon prices in force there, and prices the loss to
+              2050 under each NGFS scenario. No sample data, no canned demo.
             </p>
           </Reveal>
         </div>
@@ -130,10 +131,10 @@ export default function Home() {
       <section className="px-6 py-16 border-y border-white/8">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
           {[
-            { value: 21, suffix: "", label: "Industries stress-tested" },
-            { value: 25, suffix: "+", label: "Physical hazard types" },
-            { value: 4, suffix: "", label: "NGFS scenario pathways" },
-            { value: 92, suffix: "%", label: "Model confidence, audited" },
+            { value: 18, suffix: "", label: "Commodities modelled" },
+            { value: 25, suffix: "", label: "Parametric hazard functions" },
+            { value: 7, suffix: "", label: "NGFS Phase 5 scenarios" },
+            { value: 94, suffix: "", label: "Carbon-pricing instruments mapped" },
           ].map((s) => (
             <Reveal key={s.label}>
               <div className="text-center md:text-left">
@@ -180,7 +181,7 @@ export default function Home() {
             <h2 className="heading-lg grad-text mb-6 max-w-2xl">The CRI Engine, at a glance.</h2>
             <p className="text-zinc-400 leading-relaxed mb-12 max-w-2xl">
               Every conclusion we deliver traces back to a geospatial pipeline built on IPCC AR6 hazard
-              matrices and NGFS Phase 4 scenarios. Asset coordinates in, Capital-at-Risk out, with full
+              matrices and NGFS Phase 5 scenarios. Asset coordinates in, Capital-at-Risk out, with full
               methodological transparency at every step. The same engine also forecasts where that score
               moves through 2050, scans a company's own disclosures for the gap between claims and capex,
               and can work through an entire watchlist unattended. This is a look at three of the modules
@@ -225,7 +226,7 @@ export default function Home() {
       {/* Final close */}
       <section className="px-6 py-32 border-t border-white/8 text-center">
         <Reveal>
-          <h2 className="heading-lg grad-text mb-4">See how we map 10,000 assets in under 5 minutes.</h2>
+          <h2 className="heading-lg grad-text mb-4">See how we screen 10,000 assets in seconds.</h2>
           <p className="text-zinc-500 mb-10">Book a Technical Demo — no obligation, no boilerplate deck.</p>
           <Link href="/contact" className="btn-primary">Book a Technical Demo</Link>
         </Reveal>

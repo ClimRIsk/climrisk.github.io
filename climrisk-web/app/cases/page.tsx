@@ -3,51 +3,43 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Cases",
-  description: "CRI analysis applied to Heineken, Shell, diversified mining, and a European bank loan book.",
+  description: "Worked examples of the CRI Engine on Heineken and Shell, and illustrative workflows for a mining portfolio and a bank loan book.",
 };
 
 const CASES = [
   {
     company: "Heineken N.V.",
-    tag: "Beverages · Global",
-    headline: "Water stress is a balance sheet risk.",
-    stat: "−12.8% EV under NZE 2050",
-    detail: "47 breweries. 30%+ in high water stress basins. $42M physical loss per year by 2030. €26M EU ETS exposure. +185 bps WACC uplift. CRI rating: D.",
-    score: "68",
-    rating: "D",
+    tag: "Beverages · Global · worked example",
+    headline: "Transition cost outweighs physical loss by 2030.",
+    stat: "−16.9% EV under Net Zero 2050 vs Current Policies",
+    detail: "Company engine on a simplified four-site model: $43.6M carbon cost and $40.9M physical loss in 2030 under Net Zero 2050. Reproduce with `cri run --company heineken`.",
+    kind: "Public company · simplified asset set",
   },
   {
     company: "Shell plc",
-    tag: "Energy · Integrated",
-    headline: "Demand destruction hits before 2030.",
-    stat: "18% of reserves stranded under NZE",
-    detail: "Upstream portfolio segmented by break-even cost. High-cost assets stranded as oil demand peaks under NZE. $28B NPV at risk. WACC uplift +220 bps.",
-    score: "74",
-    rating: "D",
+    tag: "Energy · Integrated · worked example",
+    headline: "Demand destruction drives stranding.",
+    stat: "$75B cumulative stranded write-downs under Net Zero 2050",
+    detail: "Company engine on a simplified two-segment model: 2030 carbon cost $3.7B under Net Zero 2050, and enterprise value 73% below Current Policies. Reproduce with `cri run --company shell`.",
+    kind: "Public company · simplified asset set",
   },
   {
-    company: "Mining Portfolio",
-    tag: "Mining · Diversified",
+    company: "Diversified mining portfolio",
+    tag: "Mining · illustrative",
     headline: "Heat and water stress compound.",
-    stat: "−7% CAGR productivity under NZE",
-    detail: "12 open-pit mines. Joint probability analysis: WBGT heat stress and water scarcity. Productivity loss curves calibrated to IPCC AR6 regional projections.",
-    score: "61",
-    rating: "C",
+    stat: "Joint heat and water-stress screening",
+    detail: "A hypothetical 12-mine portfolio showing the workflow: WBGT heat stress and WRI Aqueduct 4.0 water stress per site, productivity loss curves scaled to IPCC AR6 regional warming.",
+    kind: "Illustrative — not a client portfolio",
   },
   {
-    company: "European Bank",
-    tag: "Banking · Loan book",
+    company: "European bank loan book",
+    tag: "Banking · illustrative",
     headline: "Borrower risk is your risk.",
-    stat: "+€42M ECL uplift by 2035",
-    detail: "35 corporate counterparties scored by CRI. 7 flagged D/E with loan maturity beyond 2035. ECL uplift quantified under NZE. BRSR and TCFD output generated.",
-    score: "44",
-    rating: "C",
+    stat: "Climate-adjusted PD / LGD and ECL",
+    detail: "A hypothetical book of corporate counterparties showing the workflow: counterparty climate scores, PD and LGD adjustments, ECL uplift under Net Zero 2050, and TCFD and BRSR output.",
+    kind: "Illustrative — not a client portfolio",
   },
 ];
-
-const RATING_COLOR: Record<string, string> = {
-  A: "text-green-400", B: "text-green-500", C: "text-yellow-400", D: "text-orange-400", E: "text-red-400",
-};
 
 export default function CasesPage() {
   return (
@@ -57,7 +49,8 @@ export default function CasesPage() {
           <span className="text-xs font-mono text-green-500 tracking-widest mb-4 block">Case studies</span>
           <h1 className="heading-xl text-white mb-5">The engine. Applied.</h1>
           <p className="text-slate-400 text-lg leading-relaxed">
-            Real portfolios. Real asset registries. Every number is reproducible.
+            Worked examples on public companies, re-run on the current engine, and illustrative
+            workflows on hypothetical books. None of these is a client engagement.
           </p>
         </div>
         <div className="grid md:grid-cols-2 gap-5 mb-12">
@@ -68,15 +61,11 @@ export default function CasesPage() {
                   <p className="text-xs font-mono text-slate-600 mb-1">{c.tag}</p>
                   <h2 className="text-white font-bold text-lg">{c.company}</h2>
                 </div>
-                <div className="text-right shrink-0 ml-4">
-                  <div className="text-xs text-slate-600 font-mono">CRI</div>
-                  <div className="text-2xl font-black text-white font-mono">{c.score}</div>
-                  <div className={`text-sm font-bold font-mono ${RATING_COLOR[c.rating]}`}>{c.rating}</div>
-                </div>
               </div>
               <p className="text-green-400 font-semibold text-sm mb-2">{c.headline}</p>
               <p className="text-xs font-mono text-slate-500 mb-3">{c.stat}</p>
-              <p className="text-slate-500 text-sm leading-relaxed">{c.detail}</p>
+              <p className="text-slate-500 text-sm leading-relaxed mb-3">{c.detail}</p>
+              <p className="text-[11px] font-mono text-slate-600">{c.kind}</p>
             </div>
           ))}
         </div>

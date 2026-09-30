@@ -15,11 +15,11 @@ const DNA = [
   },
   {
     label: "Scientific Standard",
-    body: "Built on peer-reviewed IPCC AR6 physical hazard data and NGFS Phase 4 transition scenarios. Nothing in the hazard layer is proprietary weather data of unknown provenance.",
+    body: "Built on peer-reviewed IPCC AR6 physical hazard data and NGFS Phase 5 transition scenarios. Nothing in the hazard layer is proprietary weather data of unknown provenance.",
   },
   {
     label: "Auditing Standard",
-    body: "Engineered around ISO 14067 carbon footprint methodology and dynamic Life Cycle Assessments, the same standard our own carbon auditing work is accredited against.",
+    body: "Product carbon footprints follow ISO 14067 methodology — cradle-to-gate, IPCC AR6 GWP100, biogenic carbon reported separately — with uncertainty bands and every exclusion stated.",
   },
 ];
 

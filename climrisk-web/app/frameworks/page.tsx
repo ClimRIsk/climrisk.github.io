@@ -3,15 +3,21 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Frameworks",
-  description: "CSRD Art.29a, IFRS S2, TCFD, SFDR, EU Taxonomy, PCAF, TNFD, BRSR, SBTi. One CRI engine output. Every major disclosure framework covered.",
+  description: "CSRD/ESRS, GHG Protocol and ISO 14064-1, IFRS S2, TCFD, SFDR, EU Taxonomy, PCAF, TNFD, SEBI BRSR and SBTi — the outputs the CRI Engine produces for each.",
 };
 
 const FRAMEWORKS = [
   {
-    code: "CSRD Art.29a",
-    jurisdiction: "EU · Mandatory 2026",
+    code: "CSRD / ESRS",
+    jurisdiction: "EU · ESRS E1 and ESRS 1",
+    coverage: "E1",
+    outputs: ["Double materiality IRO register (ESRS 1)", "E1-1 transition plan fields", "E1-6 Scope 1–3 inventory", "E1-7 carbon credits disclosure", "Physical loss cost by scenario"],
+  },
+  {
+    code: "GHG Protocol / ISO 14064-1",
+    jurisdiction: "Global · corporate inventories",
     coverage: "Full",
-    outputs: ["Physical loss cost (€/yr)", "DNSH assessment", "3-scenario narrative", "Financial materiality tables"],
+    outputs: ["Scope 1, 2 (location + market), 3 (15 categories)", "Consolidation & base-year recalculation", "Assurance pack with audit trail"],
   },
   {
     code: "IFRS S2",
@@ -41,7 +47,7 @@ const FRAMEWORKS = [
     code: "TNFD",
     jurisdiction: "Global · voluntary",
     coverage: "LEAP",
-    outputs: ["Nature risk score by asset", "KBA / protected area proximity", "ENCORE sector dependency flags"],
+    outputs: ["Nature risk score by asset", "Protected-area proximity (OpenStreetMap)", "ENCORE sector dependency flags"],
   },
   {
     code: "PCAF",
@@ -53,13 +59,13 @@ const FRAMEWORKS = [
     code: "SEBI / BRSR",
     jurisdiction: "India · Mandatory",
     coverage: "Core",
-    outputs: ["GHG intensity (tCO₂e / INR crore)", "Water stress by source", "Physical risk identification"],
+    outputs: ["GHG intensity (tCO₂e / INR crore)", "Principle 6 environment disclosures", "Physical and transition risk identification"],
   },
   {
     code: "SBTi",
     jurisdiction: "Global · voluntary",
     coverage: "Scope",
-    outputs: ["Scope 1 and 2 emissions pathway", "Deviation alerts vs target", "Net Zero alignment status"],
+    outputs: ["Target ambition vs SBTi minimum rates", "Deviation alerts vs target path", "Net-zero standard check"],
   },
 ];
 
@@ -70,7 +76,7 @@ export default function FrameworksPage() {
         <div className="max-w-2xl mb-14">
           <span className="text-xs font-mono text-green-500 tracking-widest mb-4 block">Frameworks</span>
           <h1 className="heading-xl text-white mb-5">
-            Every major framework.<br />One engine.
+            The major frameworks.<br />One engine.
           </h1>
           <p className="text-slate-400 text-lg leading-relaxed">
             Run the CRI analysis once. The engine generates the outputs each disclosure framework requires.

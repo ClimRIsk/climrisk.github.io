@@ -26,11 +26,11 @@ const SECTORS: {
     capabilities: [
       {
         title: "Loan Book Stress-Testing",
-        body: "Model portfolio-level asset impairment and stress-test lending exposure across 2030, 2040, and 2050. Simulate portfolio resilience under NGFS Phase 4 macro-financial scenarios.",
+        body: "Model portfolio-level asset impairment and stress-test lending exposure across 2030, 2040, and 2050. Simulate portfolio resilience under NGFS Phase 5 scenarios.",
       },
       {
         title: "High-Resolution Collateral Revaluation",
-        body: "Map credit exposure down to a 0.1° resolution grid. Reassess the physical vulnerability of real estate, agricultural, and industrial collateral against 26 distinct climate hazards, from coastal inundation to severe water stress.",
+        body: "Map credit exposure to each collateral's coordinates. Reassess the physical vulnerability of real estate, agricultural, and industrial collateral against river and coastal flood depths, cyclone wind, water stress and 25 further parametric hazards.",
       },
       {
         title: "Audit-Ready Regulatory Disclosures",
@@ -38,7 +38,7 @@ const SECTORS: {
       },
     ],
     metrics: [
-      { label: "Scenarios Modeled", value: "NGFS Phase 4 & IPCC AR6" },
+      { label: "Scenarios Modeled", value: "NGFS Phase 5 & IPCC AR6" },
       { label: "Credit Metrics Adjusted", value: "PD, LGD, VaR" },
       { label: "Output Format", value: "Single CSV & IFRS S2 Reports" },
     ],
@@ -54,7 +54,7 @@ const SECTORS: {
     capabilities: [
       {
         title: "Forward-Looking Loss Estimates",
-        body: "Quantify expected annual loss using CMIP6 projections and hazard layers resolved to 0.1°, not historical averages extrapolated forward.",
+        body: "Quantify expected annual loss from flood depth maps (with 2050 sea-level rise for the coast), cyclone track records and CMIP6 projections at each asset's coordinates.",
       },
       {
         title: "Policy Pricing & Deductibles",
@@ -95,7 +95,7 @@ const SECTORS: {
     ],
     metrics: [
       { label: "Valuation Metrics", value: "Climate-Adjusted EV, Stressed NPV, Adaptation ROI" },
-      { label: "Scenarios Assessed", value: "NGFS Phase 4 & IPCC AR6" },
+      { label: "Scenarios Assessed", value: "NGFS Phase 5 & IPCC AR6" },
       { label: "Output Format", value: "Single CSV & LP-Ready TCFD Disclosures" },
     ],
     visual: "waterfall",
@@ -114,7 +114,7 @@ const SECTORS: {
       },
       {
         title: "Asset-Level Hazard Resolution",
-        body: "GIS-integrated coordinate mapping assesses precise physical risk across sprawling industrial footprints, including ecological restoration zones and coastal export terminals, down to a 0.1° resolution.",
+        body: "GIS-integrated coordinate mapping assesses precise physical risk across sprawling industrial footprints, including ecological restoration zones and coastal export terminals, at each facility's coordinates.",
       },
       {
         title: "Unified Multi-Facility Data Consolidation",
@@ -138,7 +138,7 @@ const SECTORS: {
     capabilities: [
       {
         title: "Hyper-Local Asset Vulnerability",
-        body: "Resolve physical risk for commercial real estate, municipal utility grids, and coastal developments down to a 0.1° grid. Model flood depth, sea-level rise, and heat exposure at the exact property coordinate, ahead of the insurance renewal that would otherwise tell you first.",
+        body: "Resolve physical risk for commercial real estate, municipal utility grids, and coastal developments at each property's coordinates. Model flood depth, sea-level rise, and heat exposure at the exact property coordinate, ahead of the insurance renewal that would otherwise tell you first.",
       },
       {
         title: "Urban Master Planning & Green Infrastructure ROI",

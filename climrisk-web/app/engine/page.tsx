@@ -14,10 +14,10 @@ const SECTIONS = [
     id: "pipeline",
     tag: "01",
     title: "The Geospatial Pipeline",
-    body: "Every run starts from asset coordinates, not sector averages. Each facility is resolved against a GIS layer covering 25+ physical hazard types — heat stress, flooding, cyclone exposure, drought, sea-level rise, and water stress among them — sourced from WRI Aqueduct, Copernicus, and IPCC AR6 hazard matrices. The result is a facility-level hazard profile, not a country- or sector-level proxy.",
+    body: "Every run starts from asset coordinates, not sector averages. At site level the engine reads flood depths from the JRC river flood maps and Deltares coastal flood maps, cyclone wind from the NOAA IBTrACS track record, local flood defences from FLOPROS, water risk from the WRI Aqueduct 4.0 dataset (68,506 basin × admin-1 units), and Sentinel-1/2 satellite imagery. A further 25 parametric hazard functions (heat, drought, wildfire, sea-level rise and others) score regional exposure. The result is a facility-level hazard profile, not a country- or sector-level proxy.",
     points: [
-      { t: "Asset-Level Resolution", d: "Lat/lon GIS resolution against 25+ hazard layers, per facility." },
-      { t: "NGFS Phase 4 Scenarios", d: "Net Zero 2050, Delayed Transition, and Current Policies pathways, run in parallel." },
+      { t: "Asset-Level Resolution", d: "Flood depths, cyclone wind, defences and water risk read at each facility's coordinates." },
+      { t: "NGFS Phase 5 Scenarios", d: "Seven NGFS Phase 5 pathways (three models) for the Risk Analyst; the legacy CRI score runs Net Zero 2050, Delayed Transition and Current Policies." },
       { t: "Production Loss Modelling", d: "Hazard exposure is converted into a production loss percentage before it ever touches a financial statement." },
     ],
   },
@@ -51,17 +51,17 @@ const SECTIONS = [
     points: [
       { t: "Regulatory Endpoints", d: "POST /regulatory/sfdr-pai, POST /regulatory/eu-taxonomy, and POST /regulatory/pcaf return the SFDR PAI pack, EU Taxonomy alignment, and PCAF financed emissions for a given portfolio." },
       { t: "Stress & Physical Endpoints", d: "POST /stress/event replays a named historical event against a position, GET /stress/event/catalogue lists what's available, and POST /physical/slr and POST /physical/biodiversity return sea level rise exposure and TNFD nature risk scores." },
-      { t: "Portfolio Endpoints", d: "POST /portfolio/benchmark compares active climate VaR against a chosen index, and POST /portfolio/counterparty returns concentration and climate VaR broken out by counterparty." },
+      { t: "Portfolio & Carbon Endpoints", d: "POST /portfolio/benchmark, /portfolio/counterparty and /portfolio/export.csv for portfolios; POST /carbon/inventory (with an assurance-pack workbook), /lca/{product}, /transition-plan, /real-estate/assess, /materiality/assess and /carbon-markets/* for carbon accounting and disclosure." },
     ],
   },
   {
     id: "ml-agentic",
     tag: "05",
     title: "ML & Agentic Intelligence",
-    body: "Every score also carries a forward view. A gradient-boosted trajectory model, trained on NGFS Phase 4 pathways and decades of disaster-loss data, forecasts a company's CRI score out to 2050 under all three scenarios, with confidence bands rather than a single static number. Where emissions reporting is missing or stale, an XGBoost model trained on over 14,000 verified CDP disclosures fills the gap with a confidence-scored estimate instead of a flat sector average. A ClimateBERT-based scanner then reads the company's own disclosures for commitment specificity, flagging the gap between what's claimed and what's backed by capex. And a tool-calling AI agent, wired directly to the engine itself, can research a company from public financials and news, run the full assessment, or work through an entire watchlist unattended and deliver the results by email.",
+    body: "Every score also carries a forward view. A gradient-boosted surrogate model, trained on 50,000 simulated company-years whose parameters are calibrated to NGFS pathways and EM-DAT disaster losses, forecasts a company's CRI score out to 2050 under three scenarios, with confidence bands rather than a single static number. Where emissions reporting is missing, an estimator trained on observed facility emissions from the US EPA Greenhouse Gas Reporting Program, matched to parent-company revenue and evaluated on held-out companies, fills the gap with a confidence-scored estimate instead of a flat sector average. A ClimateBERT-based scanner then reads the company's own disclosures for commitment specificity, flagging the gap between what's claimed and what's backed by capex. And a tool-calling AI agent, wired directly to the engine itself, can research a company from public financials and news, run the full assessment, or work through an entire watchlist unattended and deliver the results by email.",
     points: [
-      { t: "Predictive CRI Trajectories", d: "A GradientBoostingRegressor forecasts the 0-100 CRI score for every year to 2050 across NZE, Delayed Transition, and Current Policies, with confidence bands rather than a point estimate." },
-      { t: "AI-Filled Emissions & Disclosure Scoring", d: "An XGBoost model imputes missing Scope 1/2/3 data against verified CDP disclosures, while a ClimateBERT scanner flags the gap between a company's stated commitments and its actual capex." },
+      { t: "Predictive CRI Trajectories", d: "A gradient-boosted surrogate forecasts the 0-100 CRI score for every year to 2050 across NZE, Delayed Transition and Current Policies, with confidence bands rather than a point estimate." },
+      { t: "AI-Filled Emissions & Disclosure Scoring", d: "An estimator trained on EPA GHGRP observed emissions imputes missing Scope 1/2, while a ClimateBERT scanner flags the gap between a company's stated commitments and its actual capex." },
       { t: "Autonomous Portfolio Agents", d: "Research, full assessment, watchlist monitoring, and batch analysis across an entire portfolio, run unattended and delivered by email or through a conversational interface." },
     ],
   },
@@ -129,7 +129,7 @@ export default function EnginePage() {
 
       <div className="max-w-5xl mx-auto mt-32 text-center pt-16 border-t border-white/8">
         <Reveal>
-          <h2 className="heading-lg grad-text mb-4">See how we map 10,000 assets in under 5 minutes.</h2>
+          <h2 className="heading-lg grad-text mb-4">See how we screen 10,000 assets in seconds.</h2>
           <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
             <Link href="/contact" className="btn-primary">Book a Technical Demo</Link>
             <Link href="/methodology" className="btn-ghost">Read the full methodology</Link>

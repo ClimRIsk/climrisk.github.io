@@ -5,153 +5,48 @@ import Link from "next/link";
 
 const ENGINE_BASE = "https://climrisk-github-io.onrender.com";
 
-const SECTORS = [
-  { v: "technology", l: "Technology" },
-  { v: "energy", l: "Energy" },
-  { v: "financials", l: "Financials" },
-  { v: "consumer_staples", l: "Consumer" },
-  { v: "industrials", l: "Industrials" },
-  { v: "materials", l: "Materials & Mining" },
-  { v: "real_estate", l: "Real Estate" },
-  { v: "agriculture", l: "Agriculture" },
-  { v: "utilities", l: "Utilities" },
-  { v: "other", l: "Other" },
-];
+const QUICK_TRIES = ["Shell", "BHP", "Tata Steel", "Holcim"];
 
-const QUICK_TRIES = [
-  { name: "Shell plc", sector: "energy" },
-  { name: "BHP Group Limited", sector: "materials" },
-  { name: "Tesco", sector: "consumer_staples" },
-];
+const SCEN_ORDER = ["Net Zero 2050", "Below 2°C", "Delayed transition", "NDCs", "Fragmented World", "Current Policies"];
 
-const RATING_COLOR: Record<string, string> = {
-  A: "#10B981",
-  B: "#84cc16",
-  C: "#f59e0b",
-  D: "#EF4444",
-  E: "#dc2626",
-};
-
-const RATING_LABEL: Record<string, string> = {
-  A: "Low Climate Risk",
-  B: "Moderate Climate Risk",
-  C: "Elevated Climate Risk",
-  D: "High Climate Risk",
-  E: "Critical Climate Risk",
-};
-
-function scoreColor(v: number): string {
-  if (v < 20) return "#10B981";
-  if (v < 40) return "#84cc16";
-  if (v < 60) return "#f59e0b";
-  if (v < 80) return "#EF4444";
-  return "#dc2626";
-}
-
-function PillarBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="flex justify-between text-xs mb-1.5">
-        <span className="text-zinc-400">{label}</span>
-        <span className="text-white font-mono">{value.toFixed(0)}</span>
-      </div>
-      <div className="h-1.5 rounded-full bg-white/8 overflow-hidden">
-        <div
-          className="h-full rounded-full transition-all duration-700"
-          style={{ width: `${Math.min(100, Math.max(2, value))}%`, background: scoreColor(value) }}
-        />
-      </div>
-    </div>
-  );
-}
-
-function TrajectoryChart({ trajectory }: { trajectory: any }) {
-  const years = trajectory?.nze?.scores ? Array.from({ length: 26 }, (_, i) => 2025 + i) : [];
-  if (!years.length) return null;
-
-  const toPoints = (arr: number[]) =>
-    arr.map((v, i) => `${(i / (arr.length - 1)) * 100},${100 - Math.min(100, Math.max(0, v))}`).join(" ");
-
-  return (
-    <div>
-      <p className="text-xs font-mono text-zinc-600 uppercase tracking-widest mb-3">
-        Predictive CRI Trajectory, 2025-2050
-      </p>
-      <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-32">
-        {trajectory.cp?.scores && (
-          <polyline points={toPoints(trajectory.cp.scores)} fill="none" stroke="#dc2626" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-        )}
-        {trajectory.delayed?.scores && (
-          <polyline points={toPoints(trajectory.delayed.scores)} fill="none" stroke="#f59e0b" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-        )}
-        {trajectory.nze?.scores && (
-          <polyline points={toPoints(trajectory.nze.scores)} fill="none" stroke="#10B981" strokeWidth="1.5" vectorEffect="non-scaling-stroke" />
-        )}
-      </svg>
-      <div className="flex justify-between text-[0.6rem] text-zinc-600 font-mono mt-1">
-        <span>2025</span>
-        <span>2050</span>
-      </div>
-      <div className="flex flex-wrap items-center gap-4 mt-4 text-xs">
-        <span className="flex items-center gap-1.5 text-zinc-500"><span className="w-2.5 h-0.5 bg-[#10B981] inline-block" /> Net Zero 2050</span>
-        <span className="flex items-center gap-1.5 text-zinc-500"><span className="w-2.5 h-0.5 bg-[#f59e0b] inline-block" /> Delayed Transition</span>
-        <span className="flex items-center gap-1.5 text-zinc-500"><span className="w-2.5 h-0.5 bg-[#dc2626] inline-block" /> Current Policies</span>
-      </div>
-    </div>
-  );
+function usd(v?: number | null): string {
+  if (v == null || !isFinite(v)) return "—";
+  const a = Math.abs(v);
+  if (a >= 1e9) return `$${(v / 1e9).toFixed(1)}bn`;
+  if (a >= 1e6) return `$${(v / 1e6).toFixed(0)}m`;
+  return `$${Math.round(v).toLocaleString()}`;
 }
 
 type Status = "idle" | "loading" | "slow" | "error" | "done";
 
 export default function LiveAssessWidget() {
   const [company, setCompany] = useState("");
-  const [sector, setSector] = useState("technology");
   const [status, setStatus] = useState<Status>("idle");
   const [errorMsg, setErrorMsg] = useState("");
   const [result, setResult] = useState<any>(null);
   const slowTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  async function runAssessment(nameOverride?: string, sectorOverride?: string) {
+  async function run(nameOverride?: string) {
     const name = (nameOverride ?? company).trim();
-    const sec = sectorOverride ?? sector;
-    if (!name) return;
-
+    if (name.length < 3) return;
     setCompany(name);
-    setSector(sec);
     setStatus("loading");
     setResult(null);
     setErrorMsg("");
-
     if (slowTimer.current) clearTimeout(slowTimer.current);
-    slowTimer.current = setTimeout(() => {
-      setStatus((s) => (s === "loading" ? "slow" : s));
-    }, 6000);
-
+    slowTimer.current = setTimeout(() => setStatus((s) => (s === "loading" ? "slow" : s)), 6000);
     const controller = new AbortController();
-    const abortTimer = setTimeout(() => controller.abort(), 55000);
-
+    const abortTimer = setTimeout(() => controller.abort(), 90000);
     try {
-      const res = await fetch(`${ENGINE_BASE}/agent/assess`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          company_name: name,
-          sector_hint: sec,
-          jurisdiction: "US",
-          revenue_usd_m: 5000,
-          assessment_scope: "standard",
-        }),
-        signal: controller.signal,
-      });
+      const res = await fetch(`${ENGINE_BASE}/public/company-risk?q=${encodeURIComponent(name)}`, { signal: controller.signal });
       if (!res.ok) throw new Error(`Engine returned HTTP ${res.status}`);
-      const data = await res.json();
-      setResult(data);
+      setResult(await res.json());
       setStatus("done");
     } catch (err: unknown) {
       const isAbort = err instanceof DOMException && err.name === "AbortError";
       setErrorMsg(
         isAbort
-          ? "The engine didn't respond in time. It's hosted on infrastructure that sleeps when idle, so the first request of the day can be slow. Try again in a moment."
+          ? "The engine didn't respond in time. It sleeps when idle, so the first request can be slow. Try again in a moment."
           : "Couldn't reach the engine just now. Try again, or book a demo and we'll run it live with you."
       );
       setStatus("error");
@@ -161,114 +56,92 @@ export default function LiveAssessWidget() {
     }
   }
 
-  const rating = result?.risk_assessment?.rating?.rating as string | undefined;
-  const isRegistry = result?.data_provenance?.source === "registry";
+  const scen = result?.scenarios_pv_loss_2026_2050_usd as Record<string, any> | undefined;
+  const maxLoss = scen ? Math.max(1, ...Object.values(scen).map((s: any) => s.p95 || 0)) : 1;
 
   return (
     <div className="panel p-6 md:p-8">
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          runAssessment();
-        }}
-        className="flex flex-col sm:flex-row gap-3"
-      >
+      <form onSubmit={(e) => { e.preventDefault(); run(); }} className="flex flex-col sm:flex-row gap-3">
         <input
           type="text"
           value={company}
           onChange={(e) => setCompany(e.target.value)}
-          placeholder="Type any company name, e.g. 'Nestle' or 'a regional cement plant'"
+          placeholder="Company name, e.g. 'Holcim' or 'Tata Steel'"
           className="flex-1 bg-white/5 border border-white/10 rounded-md px-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-gold-200/50"
         />
-        <select
-          value={sector}
-          onChange={(e) => setSector(e.target.value)}
-          className="bg-white/5 border border-white/10 rounded-md px-3 py-3 text-sm text-zinc-300 focus:outline-none focus:border-gold-200/50"
-        >
-          {SECTORS.map((s) => (
-            <option key={s.v} value={s.v} className="bg-[#0A0B0E]">
-              {s.l}
-            </option>
-          ))}
-        </select>
         <button type="submit" className="btn-primary justify-center whitespace-nowrap" disabled={status === "loading" || status === "slow"}>
-          {status === "loading" || status === "slow" ? "Assessing..." : "Assess"}
+          {status === "loading" || status === "slow" ? "Analysing..." : "Analyse"}
         </button>
       </form>
 
       <div className="flex flex-wrap items-center gap-2 mt-4">
         <span className="text-xs text-zinc-600">Try:</span>
         {QUICK_TRIES.map((q) => (
-          <button
-            key={q.name}
-            onClick={() => runAssessment(q.name, q.sector)}
-            className="text-xs text-zinc-400 hover:text-gold-200 border border-white/8 hover:border-gold-200/40 rounded-full px-3 py-1 transition-colors"
-            type="button"
-          >
-            {q.name}
+          <button key={q} onClick={() => run(q)} type="button"
+            className="text-xs text-zinc-400 hover:text-gold-200 border border-white/8 hover:border-gold-200/40 rounded-full px-3 py-1 transition-colors">
+            {q}
           </button>
         ))}
       </div>
 
       {status === "slow" && (
         <p className="text-xs text-zinc-500 mt-6 font-mono">
-          Still running. The engine sleeps when idle and can take up to a minute to wake up on its first request.
+          Reading flood maps and cyclone tracks for the company&apos;s largest sites. This takes 20–60 seconds the first time.
         </p>
       )}
+      {status === "error" && <p className="text-xs mt-6" style={{ color: "#EF4444" }}>{errorMsg}</p>}
 
-      {status === "error" && (
-        <p className="text-xs mt-6" style={{ color: "#EF4444" }}>{errorMsg}</p>
+      {status === "done" && result && !result.found && (
+        <div className="mt-8 pt-6 border-t border-white/8 text-sm text-zinc-400 leading-relaxed">
+          <p className="text-white mb-2">No mapped sites for &ldquo;{result.query}&rdquo;.</p>
+          <p>{result.note}</p>
+          <p className="mt-3">For other companies we run the analysis on your own asset list — <Link href="/contact" className="text-gold-200">book a run</Link>.</p>
+        </div>
       )}
 
-      {status === "done" && result && (
+      {status === "done" && result?.found && (
         <div className="mt-8 pt-8 border-t border-white/8">
-          <div className="flex flex-wrap items-center justify-between gap-4 mb-8">
-            <div>
-              <h3 className="text-white font-semibold text-lg">{result.company_profile?.resolved_name}</h3>
-              <p className="text-xs text-zinc-500 font-mono mt-1">
-                {result.company_profile?.sector} · {result.company_profile?.jurisdiction} ·{" "}
-                {isRegistry ? "Verified registry" : "Parametric estimate"}
-              </p>
-            </div>
-            {rating && (
-              <div className="flex items-center gap-3">
-                <span
-                  className="w-12 h-12 rounded-full flex items-center justify-center text-lg font-bold text-[#0A0B0E]"
-                  style={{ background: RATING_COLOR[rating] ?? "#84cc16" }}
-                >
-                  {rating}
-                </span>
-                <span className="text-sm text-zinc-400">{RATING_LABEL[rating] ?? ""}</span>
-              </div>
-            )}
-          </div>
-
-          <div className="grid sm:grid-cols-3 gap-6 mb-8">
-            <PillarBar label="Physical Risk" value={result.risk_assessment?.rating?.physical_pillar ?? 0} />
-            <PillarBar label="Transition Risk" value={result.risk_assessment?.rating?.transition_pillar ?? 0} />
-            <PillarBar label="Financial Risk" value={result.risk_assessment?.rating?.financial_pillar ?? 0} />
-          </div>
-
-          <TrajectoryChart trajectory={result.trajectory} />
-
-          {result.company_profile?.scope1_mt_co2e && (
-            <p className="text-xs text-zinc-500 mt-6">
-              Estimated Scope 1 / 2 / 3 emissions: {result.company_profile.scope1_mt_co2e.value} /{" "}
-              {result.company_profile.scope2_mt_co2e?.value ?? "–"} /{" "}
-              {result.company_profile.scope3_mt_co2e?.value ?? "–"} MtCO2e
-            </p>
-          )}
-
-          <p className="text-[0.65rem] text-zinc-700 mt-6 font-mono">
-            Live output from the CRI Engine. {result.data_provenance?.methodology}. Illustrative estimate, not
-            investment advice or an audit-ready disclosure figure.
+          <h3 className="text-white font-semibold text-lg">{result.matched}</h3>
+          <p className="text-xs text-zinc-500 font-mono mt-1 mb-6">
+            {result.n_assets} mapped sites · largest {result.flood_assessed_assets} read against flood maps · {result.elapsed_s}s
           </p>
-
-          <div className="mt-6">
-            <Link href="/contact" className="btn-ghost text-sm">
-              Get the full audit-ready report
-            </Link>
+          <div className="grid sm:grid-cols-3 gap-4 mb-8">
+            <div><div className="text-2xl font-bold text-white font-mono">{usd(result.portfolio_value_usd)}</div><div className="text-xs text-zinc-500 mt-1">estimated replacement value of mapped sites</div></div>
+            <div><div className="text-2xl font-bold text-white font-mono">{result.physical_aal_pct != null ? result.physical_aal_pct.toFixed(2) + "%" : "—"}</div><div className="text-xs text-zinc-500 mt-1">average annual physical damage ({usd(result.physical_aal_usd)}/yr)</div></div>
+            <div><div className="text-2xl font-bold text-white font-mono">{result.assets_under_carbon_price} / {result.n_assets}</div><div className="text-xs text-zinc-500 mt-1">sites under a carbon price today</div></div>
           </div>
+          {scen && (
+            <div className="mb-6">
+              <p className="text-xs font-mono text-zinc-600 uppercase tracking-widest mb-3">Present value of climate loss 2026–2050 · mean and 1-in-20</p>
+              {SCEN_ORDER.filter((k) => scen[k]).map((k) => (
+                <div key={k} className="flex items-center gap-3 text-xs mb-2">
+                  <span className="w-36 text-zinc-400 shrink-0">{k}</span>
+                  <div className="flex-1 h-2 bg-white/5 rounded relative">
+                    <div className="absolute h-2 rounded bg-gold-200/30" style={{ width: `${(scen[k].p95 / maxLoss) * 100}%` }} />
+                    <div className="absolute h-2 rounded bg-gold-200" style={{ width: `${(scen[k].mean / maxLoss) * 100}%` }} />
+                  </div>
+                  <span className="w-32 text-right font-mono text-white shrink-0">{usd(scen[k].mean)} · {usd(scen[k].p95)}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          <table className="w-full text-xs mb-4">
+            <thead><tr className="text-zinc-600 text-left"><th className="py-1">Largest sites</th><th>Country</th><th>Flood / cyclone</th><th className="text-right">Carbon price</th></tr></thead>
+            <tbody>
+              {result.top_assets.map((a: any) => (
+                <tr key={a.name} className="border-t border-white/5 text-zinc-400">
+                  <td className="py-1.5 text-zinc-300">{a.name}</td><td>{a.country}</td>
+                  <td>{[a.river, a.coast, a.cyclone].filter((x: string) => x && x !== "NEGLIGIBLE").join(" / ") || "negligible"}</td>
+                  <td className="text-right font-mono">{a.carbon_price_now ? `$${Math.round(a.carbon_price_now)}/t` : "none"}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p className="text-[0.65rem] text-zinc-600 mt-4 font-mono leading-relaxed">
+            Live output from the CRI Engine Risk Analyst: {result.sources?.join(" · ")}. {result.value_note} Screening
+            estimate — not investment advice or an audit-ready figure.
+          </p>
+          <div className="mt-6"><Link href="/contact" className="btn-ghost text-sm">Run it on your own asset list</Link></div>
         </div>
       )}
     </div>

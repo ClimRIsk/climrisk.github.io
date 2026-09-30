@@ -17,16 +17,16 @@ const PRACTICES = [
       "Fragmented, self-reported emissions data is the single largest liability in a climate risk book. We build the audit-ready baseline underneath it.",
     points: [
       {
-        title: "Algorithmic Imputation",
-        body: "Where primary data is missing or unreliable, we apply statistically defensible imputation methods rather than industry-average placeholders — every estimate is traceable to its method.",
+        title: "Inventory From Activity Data",
+        body: "Fuel, electricity, refrigerant, travel, freight, waste and spend records become a GHG Protocol / ISO 14064-1 inventory: Scope 1, Scope 2 both location- and market-based, and all 15 Scope 3 categories. Factors from UK DESNZ 2026, US EPA eGRID, the AIB and Green-e residual mixes and US EPA USEEIO.",
       },
       {
-        title: "Unified Data Consolidation",
-        body: "Scope 1, 2, and 3 records from disparate systems, subsidiaries, and reporting years are reconciled into a single, internally consistent dataset.",
+        title: "Consolidation & Base Year",
+        body: "Entities are consolidated by operational control, financial control or equity share; base-year recalculation is tested against the 5 % significance threshold; every Scope 3 category is either reported or excluded with a written reason.",
       },
       {
-        title: "Audit-Ready Baselines",
-        body: "The resulting baseline is structured to withstand external audit and regulatory review — not just internal reporting.",
+        title: "Assurance Pack",
+        body: "Each reported tonne traces back to its input, emission factor, working, evidence reference and data-quality score. The workbook lets an assurance provider re-perform every line — the ISO 14064-1 report content is generated with it.",
       },
     ],
   },
@@ -35,19 +35,19 @@ const PRACTICES = [
     tag: "Practice 02",
     title: "Dynamic Life Cycle Assessments (LCA)",
     intro:
-      "Static LCAs age the moment they're published. We build assessments that move with the hazard data and the balance sheet.",
+      "Cradle-to-gate product carbon footprints built from a plant's own data, and kept current as grids decarbonise and carbon border rules phase in.",
     points: [
       {
-        title: "Asset-Level Hazard Mapping",
-        body: "Physical hazard exposure is mapped to individual facilities and assets, not sector averages or country-level proxies.",
+        title: "ISO 14067-Aligned Footprints",
+        body: "Life-cycle stages A1–A3 per tonne — raw materials, inbound freight, process CO₂, fuel combustion, fuel supply chains and lifecycle grid electricity — using IPCC 2006, GCCA cement protocol, Ember and UK DESNZ 2025 factors, with biogenic CO₂ reported separately. Templates for cement and clinker, steel, aluminium and ammonia; any other product from a custom inventory.",
       },
       {
-        title: "Operational Degradation Modeling",
-        body: "We model how chronic and acute hazards degrade operational performance over time — output, uptime, input costs — asset by asset.",
+        title: "Uncertainty & Transparency",
+        body: "Every result carries a Monte Carlo P5–P95 band sized by data quality, a data-quality score, and a written list of what was excluded and why. Plant-specific inputs are required — nothing is silently filled with a default.",
       },
       {
-        title: "Financial Translation",
-        body: "Degradation pathways are converted directly into financial terms: EBITDA impact, capex requirements, and asset-level valuation adjustments.",
+        title: "Dynamic to 2050 & CBAM",
+        body: "The footprint is re-run for every year to 2050 as the grid decarbonises under each NGFS Phase 5 scenario, with an optional decarbonisation plan, and an EU CBAM view prices embedded emissions against the free-allocation phase-out.",
       },
     ],
   },
@@ -60,7 +60,7 @@ const PRACTICES = [
     points: [
       {
         title: "NGFS-Aligned Scenario Execution",
-        body: "Stress tests are run against the full NGFS Phase 4 scenario suite, not a single simplified pathway.",
+        body: "Stress tests are run against the NGFS Phase 5 scenario suite — seven pathways from three models — not a single simplified pathway.",
       },
       {
         title: "Credit Risk Translation (PD & LGD)",
@@ -81,7 +81,7 @@ const ENGINE_CAPABILITIES = [
   },
   {
     title: "Historical Event Stress Tests",
-    body: "Replay Hurricane Harvey, the 2021 European floods, Australia's Black Summer, the Texas freeze, and nine other named events against any position in your book.",
+    body: "Replay eight named events — Hurricane Harvey, the 2021 European floods, the 2022 Pakistan floods, Australia's Black Summer, the Camp Fire, the 2003 European heatwave, the 2021 Texas freeze and Typhoon Hagibis — against any position in your book.",
   },
   {
     title: "Sea Level Rise Exposure",
@@ -89,11 +89,11 @@ const ENGINE_CAPABILITIES = [
   },
   {
     title: "Nature & Biodiversity Risk",
-    body: "Built on the TNFD LEAP framework. Proximity to Key Biodiversity Areas and protected land, layered with ENCORE sector dependency data, resolves to a nature risk score and the disclosure flags that follow from it.",
+    body: "Built on the TNFD LEAP framework. Protected areas mapped in OpenStreetMap that contain the site or lie within 5 and 25 km, layered with ENCORE sector dependency data, resolve to a nature risk score and the disclosure flags that follow from it. (Key Biodiversity Areas and the WDPA need a separate licence.)",
   },
   {
     title: "Portfolio Benchmark Comparison",
-    body: "Active climate VaR measured against MSCI World, MSCI EM, MSCI Europe, and the S&P 500, alongside a sector tilt table and a concentration read using the Herfindahl-Hirschman Index.",
+    body: "Active climate VaR against any index, from its published sector weights, split into sector allocation and regional exposure — both sides measured with the same engine — alongside a sector tilt table and a Herfindahl-Hirschman concentration read.",
   },
   {
     title: "JRC Flood Depth Modelling",
@@ -101,7 +101,27 @@ const ENGINE_CAPABILITIES = [
   },
   {
     title: "Predictive Risk Trajectories",
-    body: "A gradient-boosted forecasting model, trained on NGFS Phase 4 pathways and decades of disaster-loss data, projects a company's CRI score out to 2050 across all three scenarios, with confidence bands attached.",
+    body: "A gradient-boosted surrogate model, trained on 50,000 simulated company-years calibrated to NGFS pathways and EM-DAT disaster losses, projects a company's CRI score out to 2050 across three scenarios, with confidence bands attached.",
+  },
+  {
+    title: "WRI Aqueduct 4.0 Water Risk",
+    body: "All 13 Aqueduct 4.0 indicators at any coordinate — water stress, depletion, variability, groundwater decline, riverine and coastal flood, drought and more — with industry-weighted overall risk and water stress projections to 2030, 2050 and 2080 under three scenarios.",
+  },
+  {
+    title: "Transition Plan Builder",
+    body: "Targets, decarbonisation levers, capex and opex become a year-by-year emissions path with a marginal abatement cost curve, the gap to target, avoided carbon cost under NGFS prices, and the ESRS E1-1 and UK TPT fields.",
+  },
+  {
+    title: "Real Estate Stranding",
+    body: "Energy-use and operational-carbon intensity per building, projected to 2050 as grids decarbonise and retrofits land, against the decarbonisation pathway you use (such as CRREM), with EPC and minimum-standard checks for the Netherlands, UK and France.",
+  },
+  {
+    title: "Double Materiality & Carbon Markets",
+    body: "A CSRD impacts-risks-opportunities register scored on ESRS 1 criteria, an EU ETS compliance position as CBAM phases out free allocation, and a carbon-credit screen against ICVCM, SBTi and EU claim rules.",
+  },
+  {
+    title: "SBTi Alignment Check",
+    body: "A company's absolute target tested against the SBTi minimum contraction rates (4.2 %/yr Scope 1+2, 2.5 %/yr Scope 3, 90 % by 2050), with deviation alerts when reported emissions drift above the path.",
   },
   {
     title: "AI Research & Monitoring Agent",

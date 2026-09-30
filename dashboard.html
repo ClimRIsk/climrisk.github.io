@@ -396,6 +396,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="openAssetIntel();return false"><span class="sb-icon"><i class="ph ph-mountains"></i></span>Asset Intelligence 3D <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
   <a class="sb-item" href="#" onclick="openAssetIntel(null,null,null,null,{mode:'company'});return false"><span class="sb-icon"><i class="ph ph-globe-hemisphere-east"></i></span>Company Asset Map <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
   <a class="sb-item" href="#" onclick="openAssetIntel(null,null,null,null,{mode:'company',analyst:'1'});return false" title="Physical risk → current policies → NGFS transition → loss distribution"><span class="sb-icon"><i class="ph ph-brain"></i></span>AI Risk Analyst <span class="sb-badge" style="background:rgba(167,139,250,.2);color:#c4b5fd">New</span></a>
+  <a class="sb-item" href="#" onclick="openEngineTool('carbon');return false" title="GHG inventory from activity data with an audit trail and assurance pack"><span class="sb-icon"><i class="ph ph-scales"></i></span>Carbon Accounting <span class="sb-badge" style="background:rgba(56,189,248,.2);color:#7dd3fc">GHG</span></a>
+  <a class="sb-item" href="#" onclick="openLCA();return false" title="Cradle-to-gate product carbon footprint: cement, steel, aluminium, ammonia or any product"><span class="sb-icon"><i class="ph ph-recycle"></i></span>Product Carbon Footprint <span class="sb-badge" style="background:rgba(56,189,248,.2);color:#7dd3fc">LCA</span></a>
+  <a class="sb-item" href="#" onclick="openEngineTool('plan');return false" title="Targets, decarbonisation levers, capex and emissions path (ESRS E1-1)"><span class="sb-icon"><i class="ph ph-path"></i></span>Transition Plan</a>
+  <a class="sb-item" href="#" onclick="openEngineTool('realestate');return false" title="Operational carbon, stranding year and EPC/MEPS checks for buildings"><span class="sb-icon"><i class="ph ph-buildings"></i></span>Real Estate</a>
+  <a class="sb-item" href="#" onclick="openEngineTool('materiality');return false" title="CSRD double materiality IRO register"><span class="sb-icon"><i class="ph ph-scales"></i></span>Double Materiality</a>
+  <a class="sb-item" href="#" onclick="openEngineTool('markets');return false" title="EU ETS compliance position and carbon-credit screen"><span class="sb-icon"><i class="ph ph-coins"></i></span>Carbon Markets</a>
   <a class="sb-item" href="#" onclick="switchCRITab('physical',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-wave"></i></span>Physical Risk (25 Hz)</a>
   <a class="sb-item" href="#" onclick="switchCRITab('financial',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-trend-up"></i></span>Financial / EBITDA</a>
   <a class="sb-item" href="#" onclick="switchCRITab('livemet',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-cloud-sun"></i></span>Live Met (climrisk.io)</a>
@@ -3259,6 +3265,46 @@ function openAssetIntel(lat, lon, name, type, extra) {
   document.addEventListener('keydown', onKey);
   window.addEventListener('message', onMsg);
 }
+
+// ── ENGINE WORKBENCHES (served by the local engine) ──────────────────────────
+// Carbon accounting, LCA, transition plan, real estate, double materiality, carbon markets.
+var _ENGINE_TOOLS = {
+  carbon:      {path: '/carbon/dashboard',          title: 'Carbon Accounting',          sub: 'GHG inventory · Scope 1, 2 (location + market), 3 · assurance pack', icon: 'ph-scales'},
+  lca:         {path: '/lca/dashboard',             title: 'Product Carbon Footprint (LCA)', sub: 'Cradle-to-gate · ISO 14067-aligned · CBAM view · NGFS grid pathways', icon: 'ph-recycle'},
+  plan:        {path: '/transition-plan/dashboard', title: 'Transition Plan',            sub: 'Targets → levers → capex → emissions path · ESRS E1-1 · TPT', icon: 'ph-path'},
+  realestate:  {path: '/real-estate/dashboard',     title: 'Real Estate Decarbonisation', sub: 'Operational carbon · stranding year · EPC / MEPS checks', icon: 'ph-buildings'},
+  materiality: {path: '/materiality/dashboard',     title: 'Double Materiality',         sub: 'CSRD IRO register · ESRS 1 ch.3', icon: 'ph-scales'},
+  markets:     {path: '/carbon-markets/dashboard',  title: 'Carbon Markets',             sub: 'EU ETS position · CBAM phase-out · carbon-credit screen', icon: 'ph-coins'}
+};
+function openEngineTool(key, query) {
+  var t = _ENGINE_TOOLS[key]; if (!t) return;
+  var old = document.getElementById('engine-tool-overlay'); if (old) old.remove();
+  var h = new URLSearchParams(); if (_auth) h.set('key', _auth);
+  var overlay = document.createElement('div');
+  overlay.id = 'engine-tool-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;background:#070b14;z-index:10000;display:flex;flex-direction:column';
+  overlay.innerHTML =
+    '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--navy2)">' +
+      '<i class="ph ' + t.icon + '" style="color:#38bdf8;font-size:18px"></i>' +
+      '<div style="font-weight:800;color:var(--text)">' + t.title + '</div>' +
+      '<div style="font-size:11px;color:var(--faint)">' + t.sub + '</div>' +
+      '<button id="engine-tool-close" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer">Close ✕</button>' +
+    '</div>' +
+    '<div style="position:relative;flex:1">' +
+      '<div id="engine-tool-wait" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:13px;text-align:center;line-height:1.8">' +
+        'Connecting to the local ClimRisk engine…<br><span style="font-size:11px">If this does not load, the engine is not running — see ~/.climrisk/logs/engine.log</span></div>' +
+      '<iframe id="engine-tool-frame" title="' + t.title + '" style="position:absolute;inset:0;width:100%;height:100%;border:0;opacity:0;transition:opacity .3s" ' +
+        'src="' + ENGINE_URL + t.path + (query ? '?' + query : '') + '#' + h.toString() + '"></iframe>' +
+    '</div>';
+  document.body.appendChild(overlay);
+  var frame = document.getElementById('engine-tool-frame');
+  frame.onload = function () { frame.style.opacity = '1'; var w = document.getElementById('engine-tool-wait'); if (w) w.remove(); };
+  function close() { overlay.remove(); document.removeEventListener('keydown', onKey); }
+  function onKey(e) { if (e.key === 'Escape') close(); }
+  document.getElementById('engine-tool-close').onclick = close;
+  document.addEventListener('keydown', onKey);
+}
+function openLCA(product) { openEngineTool('lca', product ? 'product=' + encodeURIComponent(product) : ''); }
 
 function openAddCompanyModal() {
   var overlay = document.createElement('div');

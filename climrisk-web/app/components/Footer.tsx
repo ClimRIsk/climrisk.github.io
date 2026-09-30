@@ -73,8 +73,8 @@ export default function Footer() {
             © 2026 ClimRisk B.V. · climrisk.io · shri@climrisk.io
           </p>
           <div className="flex items-center gap-6 text-xs text-zinc-600 font-mono">
-            <span>CRI ENGINE v0.5</span>
-            <span>NGFS PHASE 4</span>
+            <span>CRI ENGINE</span>
+            <span>NGFS PHASE 5</span>
             <span>IPCC AR6</span>
           </div>
         </div>
