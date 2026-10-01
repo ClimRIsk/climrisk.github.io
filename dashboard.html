@@ -410,8 +410,8 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="switchCRITab('loanbook',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-bank"></i></span>Loan Book</a>
   <div class="sb-section">Regulatory</div>
   <a class="sb-item" href="#" onclick="scrollToSection('automation');return false"><span class="sb-icon"><i class="ph ph-buildings"></i></span>CSRD Hub <span class="sb-badge" id="sb-csrd-urgency">!</span></a>
-  <a class="sb-item" href="#" onclick="scrollToSection('automation');return false"><span class="sb-icon"><i class="ph ph-flag"></i></span>CBAM Tracker</a>
-  <a class="sb-item" href="#" onclick="openNewAssessment();return false"><span class="sb-icon"><i class="ph ph-lightning"></i></span>MACC Engine</a>
+  <a class="sb-item" href="#" onclick="scrollToSection('automation');return false"><span class="sb-icon"><i class="ph ph-flag"></i></span>Regulatory Calendar</a>
+  <a class="sb-item" href="#" onclick="openEngineTool('plan');return false"><span class="sb-icon"><i class="ph ph-lightning"></i></span>MAC Curve</a>
   <div class="sb-foot">
     <a class="sb-item" onclick="exportToCsv();return false" href="#" style="font-size:11px"><span class="sb-icon"><i class="ph ph-download-simple"></i></span>Export Report (CSV)</a>
     <a class="sb-item" href="app.html" onclick="logout()" style="font-size:11px"><span class="sb-icon"><i class="ph ph-sign-out"></i></span>Sign out</a>
@@ -423,10 +423,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <!-- DEADLINE TICKER -->
   <div class="deadline-bar">
     <span class="dl-label"><i class="ph ph-calendar-check" style="margin-right:4px"></i>Regulatory Calendar</span>
-    <div class="dl-item"><span class="dl-badge" style="background:rgba(16,185,129,.15);color:#34d399;border:1px solid rgba(16,185,129,.3)">✓ LIVE</span>CBAM Full Enforcement — certificates required</div>
-    <div class="dl-item"><span class="dl-badge dl-urgent">URGENT</span>CSRD Phase 2 Report <span id="dl-csrd-days" style="color:var(--red);font-weight:700"></span></div>
-    <div class="dl-item"><span class="dl-badge dl-warn">31 Dec 2026</span>IFRS S2 First Disclosure <span id="dl-ifrs-days" style="color:var(--amber);font-weight:700"></span></div>
-    <div class="dl-item"><span class="dl-badge dl-ok">2027</span>CSRD Phase 3 SMEs</div>
+    <div id="dl-items" style="display:contents"></div>
   </div>
 
   <!-- HERO -->
@@ -438,13 +435,13 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
       <div class="hero-actions">
         <button class="btn-hero-p" onclick="openNewAssessment()"><i class="ph ph-lightning" style="margin-right:6px"></i>Analyse an Asset</button>
         <button class="btn-hero-p" onclick="openAssetIntel()" style="background:linear-gradient(135deg,#0ea5e9,#10b981)"><i class="ph ph-mountains" style="margin-right:6px"></i>Site Intelligence 3D</button>
-        <button class="btn-hero-o" onclick="document.getElementById('m-file-btn').click()"><i class="ph ph-upload-simple" style="margin-right:6px"></i>Upload Financials</button>
+        <button class="btn-hero-o" onclick="document.getElementById('m-file-btn').click()"><i class="ph ph-upload-simple" style="margin-right:6px"></i>Upload Asset List</button>
       </div>
     </div>
     <div class="hero-stats">
-      <div class="hstat"><div class="hstat-val" id="hs-assessed">0</div><div class="hstat-lbl">Companies Assessed</div></div>
-      <div class="hstat"><div class="hstat-val" id="hs-reports">0</div><div class="hstat-lbl">Reports Generated</div></div>
-      <div class="hstat"><div class="hstat-val" style="color:#f59e0b">3</div><div class="hstat-lbl">Active Alerts</div></div>
+      <div class="hstat"><div class="hstat-val" id="hs-assessed">0</div><div class="hstat-lbl">Analyses Saved</div></div>
+      <div class="hstat"><div class="hstat-val" id="hs-reports">0</div><div class="hstat-lbl">Completed</div></div>
+      <div class="hstat" title="Saved analyses with a HIGH hazard, or a mean present-value loss of 5% of value or more under delayed transition"><div class="hstat-val" id="hs-alerts" style="color:#f59e0b">0</div><div class="hstat-lbl">Active Alerts</div></div>
     </div>
   </div>
 
@@ -455,12 +452,10 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
     <div class="engine-step" id="loading-step">Sending data to ClimRisk Engine…</div>
     <div class="engine-progress"><div class="engine-progress-bar" id="loading-bar"></div></div>
     <div class="sat-badges" style="justify-content:center;margin-top:16px">
-      <span class="sat-badge">🛰 CMIP6</span>
-      <span class="sat-badge">🌤 ERA5</span>
-      <span class="sat-badge">🌊 WRI Aqueduct</span>
-      <span class="sat-badge">🔴 Sentinel-2</span>
-      <span class="sat-badge">🛸 NASA POWER</span>
-      <span class="sat-badge">📡 NGFS Phase 4</span>
+      <span class="sat-badge">Physical hazard</span>
+      <span class="sat-badge">Policies in force</span>
+      <span class="sat-badge">NGFS transition</span>
+      <span class="sat-badge">Loss distribution</span>
     </div>
   </div>
 
@@ -474,28 +469,28 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
     <div class="section-title">What do you need to know?</div>
     <div class="qa-grid">
       <a class="qa-card" onclick="openNewAssessment();return false" href="#">
-        <div class="qa-icon"><i class="ph ph-map-trifold" style="font-size:26px;color:#06b6d4"></i></div>
-        <div class="qa-title">Site &amp; Investment Decisions</div>
-        <div class="qa-desc">Compare locations on climate-adjusted NPV. Should you build in Chennai or Pune? Hosur or Mysore? The model quantifies the difference.</div>
-        <div class="qa-auto">OUTPUT: risk-adjusted capex comparison · stranded asset date</div>
-      </a>
-      <a class="qa-card" onclick="openNewAssessment();return false" href="#">
         <div class="qa-icon"><i class="ph ph-shield-warning" style="font-size:26px;color:#f59e0b"></i></div>
-        <div class="qa-title">Asset Risk Intelligence</div>
-        <div class="qa-desc">Expected annual loss in $M, insurance gap, disruption days per year, and the three investments that pay for themselves fastest.</div>
-        <div class="qa-auto">OUTPUT: EAL · insurance gap · payback-ranked mitigations</div>
+        <div class="qa-title">One Site</div>
+        <div class="qa-desc">Cyclone, river and coastal flood at the coordinates with local defences, carbon policy in force and NGFS transition paths, combined into a loss distribution with actions.</div>
+        <div class="qa-auto">OUTPUT: average annual damage · mean / p95 loss by scenario · actions</div>
       </a>
       <a class="qa-card" onclick="openNewAssessment();return false" href="#">
+        <div class="qa-icon"><i class="ph ph-factory" style="font-size:26px;color:#06b6d4"></i></div>
+        <div class="qa-title">A Company's Plants</div>
+        <div class="qa-desc">Search an owner in the global asset register (power, cement, steel, aluminium, refining, chemicals, mining) and run every registered plant as one portfolio.</div>
+        <div class="qa-auto">OUTPUT: portfolio loss distribution · per-site ranking · map</div>
+      </a>
+      <a class="qa-card" onclick="document.getElementById('m-file-btn').click();return false" href="#">
         <div class="qa-icon"><i class="ph ph-graph" style="font-size:26px;color:#10b981"></i></div>
-        <div class="qa-title">Supply Chain Vulnerability</div>
-        <div class="qa-desc">Map your supplier locations against 2035 water stress and flood projections. Know which upstream risks become your operational risk.</div>
-        <div class="qa-auto">OUTPUT: supplier risk rank · disruption probability · buffer sizing</div>
+        <div class="qa-title">Your Own Asset or Supplier List</div>
+        <div class="qa-desc">Upload sites as .xlsx or .csv (name, lat, lon, optional activity, emissions and value). Supplier sites work the same way.</div>
+        <div class="qa-auto">OUTPUT: portfolio loss distribution · skipped-row report</div>
       </a>
-      <a class="qa-card" onclick="openNewAssessment();return false" href="#">
-        <div class="qa-icon"><i class="ph ph-bank" style="font-size:26px;color:#a78bfa"></i></div>
-        <div class="qa-title">Portfolio &amp; Credit Stress</div>
-        <div class="qa-desc">Aggregate climate VaR across a loan book or asset portfolio. MC-CVaR via Gaussian copula, climate-adjusted PD/LGD, IFRS 9 ECL term structure.</div>
-        <div class="qa-auto">OUTPUT: portfolio CVaR · credit spread delta · ECL 5/10/30-yr</div>
+      <a class="qa-card" onclick="openEngineTool('plan');return false" href="#">
+        <div class="qa-icon"><i class="ph ph-path" style="font-size:26px;color:#a78bfa"></i></div>
+        <div class="qa-title">Transition Plan &amp; MAC Curve</div>
+        <div class="qa-desc">Targets, abatement levers, capex and the resulting emissions path, with a marginal abatement cost curve at the NGFS shadow price.</div>
+        <div class="qa-auto">OUTPUT: pathway vs target · MAC curve · ESRS E1-1 fields</div>
       </a>
     </div>
   </div>
@@ -507,22 +502,22 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
       <div class="stat-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--muted)">Companies assessed</span><i class="ph ph-buildings" style="font-size:18px;color:#2563eb;opacity:.7"></i></div>
         <div class="stat-val" id="st-companies">0</div>
-        <div class="stat-trend trend-up">↑ growing</div>
+        <div class="stat-trend" style="color:var(--muted)">saved on this computer</div>
       </div>
       <div class="stat-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--muted)">Assets modelled</span><i class="ph ph-map-pin" style="font-size:18px;color:#06b6d4;opacity:.7"></i></div>
         <div class="stat-val" id="st-assets">0</div>
-        <div class="stat-trend trend-up">↑ this quarter</div>
+        <div class="stat-trend" style="color:var(--muted)">across saved analyses</div>
       </div>
       <div class="stat-card">
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--muted)">Reports downloaded</span><i class="ph ph-file-pdf" style="font-size:18px;color:#10b981;opacity:.7"></i></div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--muted)">Analyses flagged</span><i class="ph ph-warning" style="font-size:18px;color:#f59e0b;opacity:.7"></i></div>
         <div class="stat-val" id="st-reports">0</div>
-        <div class="stat-trend" style="color:var(--muted)">ready to export</div>
+        <div class="stat-trend" style="color:var(--muted)">HIGH hazard or mean loss ≥ 5%</div>
       </div>
       <div class="stat-card">
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><span style="font-size:11px;color:var(--muted)">Upcoming deadlines</span><i class="ph ph-clock" style="font-size:18px;color:#f59e0b;opacity:.7"></i></div>
-        <div class="stat-val" style="color:var(--amber)">2</div>
-        <div class="stat-trend" style="color:var(--amber);font-size:10px">Next: 31 Dec 2026</div>
+        <div class="stat-val" id="st-deadlines" style="color:var(--amber)">—</div>
+        <div class="stat-trend" id="st-next-deadline" style="color:var(--amber);font-size:10px"></div>
       </div>
     </div>
   </div>
@@ -537,7 +532,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
       <div id="ass-empty" style="display:none;padding:32px;text-align:center;color:var(--faint);font-size:13px">No assessments yet — run your first analysis above.</div>
       <table class="ass-table" id="ass-table" style="display:none">
         <thead><tr>
-          <th>Company</th><th>Sector</th><th>Phys Score</th><th>Top Hazard</th>
+          <th>Analysis</th><th>Scope</th><th>Risk (delayed transition)</th><th>Top Hazard</th>
           <th>Date</th><th>Status</th><th></th>
         </tr></thead>
         <tbody id="ass-tbody"></tbody>
@@ -550,18 +545,17 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
     <div class="section-title">Automation &amp; Regulatory Calendar</div>
     <div class="auto-grid">
       <div class="auto-card">
-        <div class="auto-head"><div class="auto-title"><i class="ph ph-lightning" style="margin-right:6px;color:#f59e0b"></i>Automated Modules</div></div>
-        <div class="auto-item"><span class="check">✓</span><span style="flex:1">WRI Aqueduct physical hazard data (25 hazards)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
-        <div class="auto-item"><span class="check">✓</span><span style="flex:1">NGFS scenario carbon cost path (NZE + DT + CP)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
-        <div class="auto-item"><span class="check">✓</span><span style="flex:1">CBAM liability estimation (EU ETS forward price)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
-        <div class="auto-item"><span class="check">✓</span><span style="flex:1">MACC generation (sector-specific abatement levers)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
-        <div class="auto-item"><span class="check">✓</span><span style="flex:1">Sentinel-2 / Landsat satellite imagery (AWS COGs)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
-        <div class="auto-item"><span class="check">✓</span><span style="flex:1">Double materiality matrix (CSRD ESRS 1 compliant)</span><label class="toggle"><input type="checkbox" checked><span class="slider"></span></label></div>
-        <div class="auto-item"><span class="pend">○</span><span style="flex:1">Auto-email reports to stakeholders after completion</span><label class="toggle"><input type="checkbox"><span class="slider"></span></label></div>
-        <div class="auto-next">Manual effort required: uploading the company Excel file. Everything else runs automatically.</div>
+        <div class="auto-head"><div class="auto-title"><i class="ph ph-lightning" style="margin-right:6px;color:#f59e0b"></i>What each analysis runs</div></div>
+        <div class="auto-item"><span class="check">✓</span><span style="flex:1">Tropical cyclone: IBTrACS tracks + Holland wind field, 1-in-100 wind</span></div>
+        <div class="auto-item"><span class="check">✓</span><span style="flex:1">River and coastal flood depths with local defence standards (FLOPROS)</span></div>
+        <div class="auto-item"><span class="check">✓</span><span style="flex:1">Water stress context (WRI Aqueduct 4.0, not monetised)</span></div>
+        <div class="auto-item"><span class="check">✓</span><span style="flex:1">Carbon pricing instruments in force at the site</span></div>
+        <div class="auto-item"><span class="check">✓</span><span style="flex:1">NGFS scenario carbon prices and sector output paths</span></div>
+        <div class="auto-item"><span class="check">✓</span><span style="flex:1">Monte Carlo loss distribution (mean, p95, p99, expected shortfall)</span></div>
+        <div class="auto-next">Other workbenches in the sidebar: Carbon Accounting, Product Carbon Footprint, Transition Plan, Real Estate, Double Materiality, Carbon Markets.</div>
       </div>
       <div class="auto-card" id="automation">
-        <div class="auto-head"><div class="auto-title"><i class="ph ph-calendar" style="margin-right:6px;color:#06b6d4"></i>Regulatory Calendar</div><div style="font-size:11px;color:var(--amber);font-weight:600;font-family:'JetBrains Mono',monospace">3 upcoming</div></div>
+        <div class="auto-head"><div class="auto-title"><i class="ph ph-calendar" style="margin-right:6px;color:#06b6d4"></i>Regulatory Calendar</div><div id="reg-upcoming" style="font-size:11px;color:var(--amber);font-weight:600;font-family:'JetBrains Mono',monospace"></div></div>
         <div class="reg-list" id="reg-list"></div>
       </div>
     </div>
@@ -573,81 +567,62 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
 <!-- ASSESSMENT MODAL -->
 <div class="modal-overlay" id="modal-new">
   <div class="modal">
-    <div class="modal-title">🌡 Run Climate Risk Assessment</div>
-    <div class="modal-sub">Upload your company Excel file to run the full ClimRisk engine — physical hazard, NGFS scenarios, CBAM, and climate-adjusted valuation — results appear here in the dashboard.</div>
+    <div class="modal-title">🌡 New Risk Analysis</div>
+    <div class="modal-sub">Runs the Risk Analyst: site physical hazards (cyclone, river and coastal flood with local defences) → carbon policies in force → NGFS transition paths → Monte Carlo loss distribution and actions. Choose one of three inputs.</div>
 
-    <!-- FILE UPLOAD (primary path) -->
+    <!-- 1. COMPANY -->
+    <div class="form-field"><label>① Company <span style="color:var(--faint);font-size:10px">(searched in the global asset register — heavy industry: power, cement, steel, aluminium, refining, chemicals, mining)</span></label>
+      <input type="text" id="m-company" placeholder="e.g. Holcim, NTPC, ArcelorMittal" autocomplete="off"></div>
+    <div id="m-company-hint" style="font-size:11px;color:var(--faint);margin:-6px 0 10px;line-height:1.5"></div>
+
+    <div style="text-align:center;color:var(--faint);font-size:12px;margin:2px 0 10px">— or one site —</div>
+    <!-- 2. ONE SITE -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-field"><label>② Latitude</label><input type="number" id="m-lat" placeholder="e.g. 23.759" step="0.0001" min="-90" max="90"></div>
+      <div class="form-field"><label>Longitude</label><input type="number" id="m-lon" placeholder="e.g. 90.399" step="0.0001" min="-180" max="180"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-field"><label>Site name</label><input type="text" id="m-site-name" placeholder="e.g. Dhaka grinding plant"></div>
+      <div class="form-field"><label>Activity</label>
+        <select id="m-sector">
+          <option value="|">Unknown / not listed</option>
+          <option value="electricity-generation|coal">Coal power</option><option value="electricity-generation|gas">Gas power</option>
+          <option value="electricity-generation|oil">Oil power</option><option value="cement|integrated dry">Cement</option>
+          <option value="iron-and-steel|BF/BOF">Steel (BF-BOF)</option><option value="iron-and-steel|EAF">Steel (EAF)</option>
+          <option value="oil-and-gas-refining|Deep Conversion">Oil refining</option><option value="chemicals|ammonia">Ammonia / fertiliser</option>
+          <option value="aluminum|Smelting">Aluminium smelting</option><option value="coal-mining|Surface">Coal mining</option>
+          <option value="oil-and-gas-production|">Oil &amp; gas production</option><option value="other-manufacturing|manufacturing">Other manufacturing</option>
+          <option value="buildings|">Buildings / logistics</option>
+        </select></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div class="form-field"><label>Asset value (USD million)</label><input type="number" id="m-asset-value" placeholder="e.g. 250" min="0" step="0.1"></div>
+      <div class="form-field"><label>Scope 1 emissions (tCO&#x2082;e / yr)</label><input type="number" id="m-scope1" placeholder="e.g. 450000" min="0"></div>
+    </div>
+    <div style="font-size:10px;color:var(--faint);margin:-6px 0 6px;line-height:1.5">Without a value, money figures are zero; without emissions, carbon cost is not included. The Analyst says so in its result rather than guessing.</div>
+
+    <div style="text-align:center;color:var(--faint);font-size:12px;margin:8px 0 10px">— or your own asset list —</div>
+    <!-- 3. ASSET LIST -->
     <div class="file-drop" id="file-drop" onclick="document.getElementById('m-file-input').click()"
          ondragover="event.preventDefault();this.classList.add('drag')"
          ondragleave="this.classList.remove('drag')"
          ondrop="handleFileDrop(event)">
       <div class="file-drop-icon">📊</div>
-      <div class="file-drop-text" id="file-drop-text">Click to upload your company Excel file</div>
-      <div class="file-drop-sub">Drag &amp; drop supported · .xlsx format · <a onclick="event.stopPropagation();downloadTemplate()" style="color:var(--green);cursor:pointer">Download template</a></div>
-      <input type="file" id="m-file-input" accept=".xlsx" style="display:none" onchange="handleFileSelect(this)">
-      <!-- hidden upload trigger for hero button -->
-      <input type="file" id="m-file-btn" accept=".xlsx" style="display:none" onchange="handleFileSelect(this);openNewAssessment()">
+      <div class="file-drop-text" id="file-drop-text">③ Upload an asset list (.xlsx or .csv)</div>
+      <div class="file-drop-sub">Columns: name, lat, lon · optional sector, type, capacity, emissions_t, value_usd · <a onclick="event.stopPropagation();downloadTemplate()" style="color:var(--green);cursor:pointer">Download template</a></div>
+      <input type="file" id="m-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileSelect(this)">
+      <input type="file" id="m-file-btn" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileSelect(this);openNewAssessment()">
     </div>
 
-    <div style="text-align:center;color:var(--faint);font-size:12px;margin:-6px 0 12px">— or enter details manually —</div>
-
-    <div class="form-field"><label>Company name</label><input type="text" id="m-company" placeholder="e.g. Heineken N.V."></div>
-    <div class="form-field"><label>Sector</label>
-      <select id="m-sector">
-        <option value="">Select sector...</option>
-        <option>Food &amp; Beverage</option><option>Oil &amp; Gas</option><option>Mining</option>
-        <option>Chemicals</option><option>Cement &amp; Construction Materials</option>
-        <option>Steel &amp; Iron</option><option>Aluminium</option><option>Automotive</option>
-        <option>Utilities &amp; Power Generation</option><option>Real Estate</option>
-        <option>Agriculture &amp; Forestry</option><option>Financial Services</option>
-        <option>Technology</option><option>Retail &amp; Consumer</option>
-        <option>Transport &amp; Logistics</option><option>Healthcare</option><option>Other</option>
-      </select>
-    </div>
-    <div class="form-field"><label>Headquarters country</label><input type="text" id="m-country" placeholder="e.g. Netherlands"></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-      <div class="form-field"><label>Asset Latitude <span style="color:var(--faint);font-size:10px">(optional)</span></label><input type="number" id="m-lat" placeholder="e.g. 51.507" step="0.001" min="-90" max="90"></div>
-      <div class="form-field"><label>Asset Longitude <span style="color:var(--faint);font-size:10px">(optional)</span></label><input type="number" id="m-lon" placeholder="e.g. -0.128" step="0.001" min="-180" max="180"></div>
-    </div>
-    <div style="font-size:10px;color:var(--faint);margin:-6px 0 6px;line-height:1.5">Enter coordinates to map the exact asset location and pull 30-year ERA5 climate data for that site.</div>
-    <div class="form-field"><label>Annual revenue (USD million)</label><input type="number" id="m-rev" placeholder="e.g. 5000" min="0"></div>
-
-    <details style="margin:8px 0">
-      <summary style="cursor:pointer;font-size:12px;font-weight:600;color:var(--green);padding:6px 0;user-select:none">&#x1F3D7; Physical Vulnerability Attributes <span style="font-weight:400;color:var(--faint)">(optional — improves hazard precision)</span></summary>
-      <div style="margin-top:8px;padding:12px;background:var(--bg2);border-radius:8px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <div class="form-field"><label>Asset Replacement Value (USD M)</label><input type="number" id="m-asset-value" placeholder="e.g. 250" min="0" step="0.1"><div style="font-size:10px;color:var(--faint)">Used in EAL calculation</div></div>
-        <div class="form-field"><label>Construction Year</label><input type="number" id="m-build-year" placeholder="e.g. 1998" min="1850" max="2025"><div style="font-size:10px;color:var(--faint)">Pre-1980 = higher vulnerability</div></div>
-        <div class="form-field"><label>Asset Type</label><select id="m-asset-type"><option value="">-- Select --</option><option>Office / Commercial</option><option>Industrial / Manufacturing</option><option>Warehouse / Logistics</option><option>Data Centre</option><option>Agricultural / Farmland</option><option>Energy Infrastructure</option><option>Retail</option></select></div>
-        <div class="form-field"><label>Building Material</label><select id="m-material"><option value="">-- Select --</option><option>Reinforced Concrete (RC)</option><option>Structural Steel</option><option>Masonry / Brick</option><option>Wood Frame</option><option>Pre-fabricated / Light Steel</option></select></div>
-        <div class="form-field"><label>First-Floor Elevation (m above grade)</label><input type="number" id="m-ffe" placeholder="e.g. 0.5" min="0" max="10" step="0.1"><div style="font-size:10px;color:var(--faint)">&gt;0.6m reduces flood damage ~40%</div></div>
-        <div class="form-field"><label>Flood / Climate Defenses</label><select id="m-defenses"><option value="">-- Select --</option><option>None</option><option>Standard drainage only</option><option>Flood barriers / berms</option><option>Sea wall / levee</option><option>Full hardened perimeter</option></select></div>
-        <div class="form-field" style="grid-column:1/-1"><label>Backup / Resilience Systems</label><select id="m-backup"><option value="">-- Select --</option><option>None</option><option>Generator only</option><option>Redundant cooling</option><option>Generator + redundant cooling</option><option>Full N+1 redundancy</option></select></div>
-      </div>
-    </details>
-
-    <details style="margin:8px 0">
-      <summary style="cursor:pointer;font-size:12px;font-weight:600;color:#3b82f6;padding:6px 0;user-select:none">&#x1F4CA; Emissions &amp; Transition Data <span style="font-weight:400;color:var(--faint)">(optional — replaces sectoral proxy)</span></summary>
-      <div style="margin-top:8px;padding:12px;background:var(--bg2);border-radius:8px">
-        <div style="font-size:11px;color:var(--faint);margin-bottom:10px;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:8px 10px">&#x2139;&#xFE0F; Without these, transition risk uses NGFS Phase 4 public sectoral averages (IEA 2023) — same approach as MSCI and S&amp;P Global. Providing actual data improves precision from ±35% to ±15%.</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-          <div class="form-field"><label>Scope 1 Emissions (tCO&#x2082;e / yr)</label><input type="number" id="m-scope1" placeholder="e.g. 450000" min="0"></div>
-          <div class="form-field"><label>Scope 2 Emissions (tCO&#x2082;e / yr)</label><input type="number" id="m-scope2" placeholder="e.g. 180000" min="0"></div>
-          <div class="form-field"><label>% Revenue from High-Carbon Activities</label><input type="number" id="m-hicarb-pct" placeholder="e.g. 65" min="0" max="100"></div>
-          <div class="form-field"><label>Decarbonisation CapEx (% of total CapEx)</label><input type="number" id="m-decap-pct" placeholder="e.g. 12" min="0" max="100"></div>
-          <div class="form-field" style="grid-column:1/-1"><label>Energy Mix — % Renewable</label><input type="number" id="m-renew-pct" placeholder="e.g. 30" min="0" max="100"></div>
-        </div>
-      </div>
-    </details>
-
-    <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:12px 14px;font-size:12px;color:var(--muted)">
-      <strong style="color:var(--green)">Engine runs:</strong> CMIP6 physical hazard · ERA5 climate data · WRI Aqueduct · Sentinel-2 imagery · NGFS Phase 4 NZE/DT/CP scenarios · CBAM liability · climate-adjusted DCF. Results appear in this dashboard.
+    <div style="background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:var(--muted)">
+      Runs on the local ClimRisk engine. Results are saved under <strong>Recent Assessments</strong> and can be reopened without re-running.
       <div style="margin-top:8px;padding-top:8px;border-top:1px solid rgba(16,185,129,.15)">
         <span id="engine-status-badge" style="font-size:11px;color:var(--faint)"><span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:#f59e0b;margin-right:5px;vertical-align:middle;animation:pulse 1.5s infinite"></span>Warming up engine…</span>
       </div>
     </div>
     <div class="modal-foot">
       <button class="btn-cancel" onclick="closeModal()">Cancel</button>
-      <button class="btn-run" id="launch-btn" onclick="launchAssessment()">▶ Run Assessment</button>
+      <button class="btn-run" id="launch-btn" onclick="launchAssessment()">▶ Run Risk Analyst</button>
     </div>
   </div>
 </div>
@@ -690,8 +665,6 @@ function _pingEngine(attempt) {
     .then(function(r){ return r.json(); })
     .then(function(cs){
       _PYTHON_COMPANIES = cs;
-      // Refresh dashboard with real engine companies
-      loadEngineCompanies();
     })
     .catch(function(){
       if (attempt < 3) {
@@ -787,7 +760,6 @@ document.addEventListener('DOMContentLoaded', function(){
   }, 14*60*1000);
   // Render whatever is in localStorage first (instant), then fetch from engine
   renderAssessments();
-  loadEngineCompanies();
 });
 
 // ── AUTH ─────────────────────────────────────────────────────────────────────
@@ -846,7 +818,7 @@ function handleFileDrop(e) {
   e.preventDefault();
   document.getElementById('file-drop').classList.remove('drag');
   var file = e.dataTransfer.files[0];
-  if (file && file.name.endsWith('.xlsx')) {
+  if (file && /\.(xlsx|xls|csv)$/i.test(file.name)) {
     var dt = new DataTransfer();
     dt.items.add(file);
     document.getElementById('m-file-input').files = dt.files;
@@ -855,7 +827,14 @@ function handleFileDrop(e) {
 }
 
 function downloadTemplate() {
-  window.open(ENGINE_URL + '/template', '_blank');
+  // Asset-list template for /analyst/sites/upload. sector/type use the engine's activity codes.
+  var csv = 'name,lat,lon,sector,type,capacity,emissions_t,value_usd\n' +
+            'Example cement plant,23.7590,90.3990,cement,integrated dry,,850000,250000000\n' +
+            'Example warehouse,51.9244,4.4777,buildings,,,,40000000\n';
+  var a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'climrisk_asset_list_template.csv';
+  a.click();
 }
 
 // ── LOCAL STORAGE (with in-memory fallback for file:// and Safari restrictions) ──
@@ -869,7 +848,15 @@ function _lsGet() {
   try { var v = localStorage.getItem(STORAGE_KEY); return v ? JSON.parse(v) : null; } catch(e) { return null; }
 }
 function _lsSet(list) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); } catch(e) {}
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(list)); return; } catch(e) {}
+  // Storage full: keep the summaries, drop stored result data from the oldest analyses first.
+  var slim = list.slice();
+  for (var k = slim.length - 1; k >= 1; k--) {
+    if (slim[k].analyst && slim[k].analyst.data) slim[k] = Object.assign({}, slim[k], {analyst: Object.assign({}, slim[k].analyst, {data: null})});
+    else if (slim[k].engineData) slim[k] = Object.assign({}, slim[k], {engineData: null});
+    else continue;
+    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(slim)); return; } catch(e2) {}
+  }
 }
 
 function getAssessments() {
@@ -877,7 +864,7 @@ function getAssessments() {
   // Only restore user-run assessments from localStorage (no fake seed)
   var stored = _lsGet();
   if (stored && stored.length > 0) {
-    _MEM_STORE = stored.filter(function(a){ return a.status !== 'running'; });
+    _MEM_STORE = stored.filter(function(a){ return a.status !== 'running' && String(a.id).indexOf('eng-') !== 0; });
     return _MEM_STORE;
   }
   _MEM_STORE = [];
@@ -943,35 +930,43 @@ function renderAssessments() {
   var tbody = document.getElementById('ass-tbody');
   var empty = document.getElementById('ass-empty');
   var table = document.getElementById('ass-table');
-  var sbRpt = document.getElementById('sb-rpt-cnt');
   var done  = list.filter(function(a){ return a.status==='complete'; });
-  if (sbRpt) sbRpt.textContent = done.length;
-  var hs = document.getElementById('hs-assessed'); if (hs) hs.textContent = list.length;
-  var hr = document.getElementById('hs-reports');  if (hr) hr.textContent = done.length;
-  var stC = document.getElementById('st-companies'); if (stC) stC.textContent = list.length;
-  var stA = document.getElementById('st-assets');    if (stA) stA.textContent = list.reduce(function(s,a){ return s+(a.assets||1);},0);
-  var stR = document.getElementById('st-reports');   if (stR) stR.textContent = done.length;
+  var alerts = list.filter(function(a){ return a.analyst && a.analyst.summary && a.analyst.summary.alert; });
+  var setT = function(id, v){ var el = document.getElementById(id); if (el) el.textContent = v; };
+  setT('sb-rpt-cnt', done.length);
+  setT('hs-assessed', list.length);
+  setT('hs-reports', done.length);
+  setT('hs-alerts', alerts.length);
+  setT('st-companies', list.length);
+  setT('st-assets', list.reduce(function(s,a){ return s+(a.assets||1);},0));
+  setT('st-reports', alerts.length);
   if (!list.length) { if(empty) empty.style.display='block'; if(table) table.style.display='none'; return; }
   if (empty) empty.style.display='none';
   if (table) table.style.display='table';
-  var sc = function(s){ return s>=60?'score-high':s>=35?'score-med':'score-low'; };
-  var sl = function(s){ return s>=60?s+' HIGH':s>=35?s+' MED':s+' LOW'; };
+  var sevCls = {HIGH:'score-high', MODERATE:'score-med', LOW:'score-low', NEGLIGIBLE:'score-low'};
   tbody.innerHTML = list.slice(0,10).map(function(a){
-    var scHTML = !a.physScore ? '<span style="color:var(--faint)">—</span>'
-      : '<span class="score-badge '+sc(a.physScore)+'">'+sl(a.physScore)+'</span>';
-    var sHTML = a.status==='complete'
-      ? '<span class="status-dot dot-done"></span>Complete'
+    var sm = a.analyst && a.analyst.summary;
+    var flag;
+    if (sm) {
+      flag = '<span class="score-badge '+(sevCls[sm.worst]||'score-low')+'" title="Worst physical hazard severity">Hazard '+_escH(sm.worst||'LOW')+'</span>' +
+        (sm.meanPct != null ? '<div style="font-size:11px;color:'+(sm.meanPct>=5?'var(--amber)':'var(--muted)')+';margin-top:3px" title="Delayed transition scenario: mean and 95th-percentile present-value loss (physical + carbon cost) as % of value">Loss '+
+          sm.meanPct.toFixed(1)+'% of value · p95 '+(sm.p95Pct != null ? sm.p95Pct.toFixed(1) : '—')+'%</div>' : '');
+    } else if (a.physScore) {
+      flag = '<span class="score-badge '+(a.physScore>=60?'score-high':a.physScore>=35?'score-med':'score-low')+'">'+a.physScore+'</span> <span style="font-size:10px;color:var(--faint)">legacy</span>';
+    } else flag = '<span style="color:var(--faint)">—</span>';
+    var sHTML = a.status==='complete' ? '<span class="status-dot dot-done"></span>Complete'
       : a.status==='running' ? '<span class="status-dot dot-run"></span>Running…'
+      : a.status==='failed' ? '<span class="status-dot dot-pend"></span>Failed'
       : '<span class="status-dot dot-pend"></span>Pending';
-    var ratingHTML = a.rating ? ' <span style="font-weight:700;color:'+ratingColor(a.rating)+'">CRI-'+a.rating+'</span>' : '';
-    return '<tr><td><strong>'+a.company+'</strong>'+ratingHTML+'</td>'+
-      '<td style="color:var(--muted)">'+(a.sector||'—')+'</td>'+
-      '<td>'+scHTML+'</td>'+
-      '<td style="color:var(--muted);font-size:12px">'+(a.topHazard||'—')+'</td>'+
+    var canOpen = (a.analyst && (a.analyst.data || a.analyst.req)) || a.engineData;
+    return '<tr><td><strong>'+_escH(a.company)+'</strong></td>'+
+      '<td style="color:var(--muted)">'+_escH(a.sector||'—')+'</td>'+
+      '<td>'+flag+'</td>'+
+      '<td style="color:var(--muted);font-size:12px">'+_escH(a.topHazard||'—')+'</td>'+
       '<td style="color:var(--faint);font-size:12px">'+new Date(a.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</td>'+
       '<td style="font-size:12px;color:var(--muted)">'+sHTML+'</td>'+
       '<td><div class="ass-actions">'+
-        '<button class="btn-xs btn-xs-p" onclick="reOpenResults(\''+a.id+'\')">Open</button>'+
+        (canOpen ? '<button class="btn-xs btn-xs-p" onclick="reOpenResults(\''+a.id+'\')">Open</button>' : '')+
         '<button class="btn-xs btn-xs-o" onclick="deleteAssessment(\''+a.id+'\')">✕</button>'+
       '</div></td></tr>';
   }).join('');
@@ -985,140 +980,187 @@ function deleteAssessment(id) {
 
 function reOpenResults(id) {
   var a = getAssessments().find(function(x){ return x.id===id; });
-  if (a && a.engineData) showResults(a.engineData, a.company, a.sector, a.duration);
-  else { openNewAssessment(); document.getElementById('m-company').value = a ? (a.company||'') : ''; }
+  if (!a) return;
+  if (a.analyst && a.analyst.data) return _showStoredAnalyst(a);
+  if (a.analyst && a.analyst.req) {            // stored data was dropped for space: re-run the same request
+    var q = a.analyst.req;
+    if (q.keys) return _runCompanyKeys(q.keys, a.company);
+    if (q.lat != null) return openAssetIntel(q.lat, q.lon, q.name, 'industrial', {analyst:'1', sector:q.sector, atype:q.asset_type, value_usd:q.value_usd, emissions_t:q.emissions_t});
+    alert('The stored result for this uploaded list was removed to save space. Upload the list again to re-run it.');
+    return;
+  }
+  if (a.engineData) showResults(a.engineData, a.company, a.sector, a.duration);
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
 function openNewAssessment(mode) {
   document.getElementById('modal-new').classList.add('show');
-  if (mode) document.getElementById('m-company').placeholder = 'Company name for '+mode+' analysis';
+  var h = document.getElementById('m-company-hint'); if (h) h.textContent = '';
   setTimeout(function(){ document.getElementById('m-company').focus(); }, 100);
 }
 function closeModal() { document.getElementById('modal-new').classList.remove('show'); }
 document.getElementById('modal-new').addEventListener('click', function(e){ if (e.target===this) closeModal(); });
 
-// ── LAUNCH ASSESSMENT ─────────────────────────────────────────────────────────
+// ── NEW ANALYSIS → RISK ANALYST ───────────────────────────────────────────────
+// Three inputs, one engine path, no synthetic fallback:
+//   company  → asset register search → /analyst/company (portfolio of registered plants)
+//   lat/lon  → /analyst/asset (one site, with the activity, value and emissions given)
+//   file     → /analyst/sites/upload (the client's own asset list)
+// The analysis runs inside the engine's Risk Analyst view; each finished run is posted
+// back here (climrisk:analyst-result) and saved, so it can be reopened without recomputing.
+function _escH(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+
+async function _companySearch(q) {
+  var r = await fetch(ENGINE_URL + '/company/search?limit=20&q=' + encodeURIComponent(q), { headers: _apiHdr(), signal: AbortSignal.timeout(20000) });
+  if (!r.ok) throw new Error('engine ' + r.status);
+  return (await r.json()).results || [];
+}
+// Entities whose name contains the query as a word (e.g. all "Holcim …" subsidiaries).
+function _groupMatches(q, results) {
+  var esc = q.trim().toLowerCase().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  var re = new RegExp('(^|[^a-z0-9])' + esc + '([^a-z0-9]|$)', 'i');
+  var hits = results.filter(function (x) { return re.test(x.name); });
+  // The register offers a combined "All '<name>' entities" owner; it already covers every subsidiary.
+  var all = hits.filter(function (x) { return /^All '/.test(x.name); });
+  return all.length ? all.slice(0, 1) : hits;
+}
+function _runCompanyKeys(keys, label) {
+  closeModal();
+  openAssetIntel(null, null, null, null, { run_keys: keys.join('|'), company: label });
+}
+
 async function launchAssessment() {
   var company = document.getElementById('m-company').value.trim();
-  var sector  = document.getElementById('m-sector').value || 'Other';
-  var country = document.getElementById('m-country').value.trim();
-  var rev     = document.getElementById('m-rev').value;
-  var _latEl  = document.getElementById('m-lat');
-  var _lonEl  = document.getElementById('m-lon');
-  var userLat = _latEl && _latEl.value !== '' ? parseFloat(_latEl.value) : null;
-  var userLon = _lonEl && _lonEl.value !== '' ? parseFloat(_lonEl.value) : null;
-  var file    = _selectedFile;
-  var _g = function(id){ var el=document.getElementById(id); return el?el.value:null; };
-  var _vulnAttrs = {
-    asset_value_usd_m: parseFloat(_g('m-asset-value'))||null,
-    build_year: parseInt(_g('m-build-year'))||null,
-    asset_type: _g('m-asset-type')||'',
-    material: _g('m-material')||'',
-    ffe_m: _g('m-ffe')!==null&&_g('m-ffe')!==''?parseFloat(_g('m-ffe')):null,
-    defenses: _g('m-defenses')||'',
-    backup: _g('m-backup')||'',
-    scope1_tco2e: parseFloat(_g('m-scope1'))||null,
-    scope2_tco2e: parseFloat(_g('m-scope2'))||null,
-    hicarbon_pct: parseFloat(_g('m-hicarb-pct'))||null,
-    decap_pct: parseFloat(_g('m-decap-pct'))||null,
-    renew_pct: parseFloat(_g('m-renew-pct'))||null
-  };
+  var latS = document.getElementById('m-lat').value, lonS = document.getElementById('m-lon').value;
+  var file = _selectedFile;
+  var hint = document.getElementById('m-company-hint');
+  var btn = document.getElementById('launch-btn');
 
-  if (!file && !company) { document.getElementById('m-company').focus(); return; }
-  if (!company && file) company = file.name.replace(/\.[^.]+$/,'').replace(/[_\-\.]+/g,' ');
-
-  closeModal();
-  showLoading(company);
-
-  var assessId = 'a'+Date.now();
-  saveAssessment({ id:assessId, company:company, sector:sector, country:country,
-    date:new Date().toISOString(), status:'running', assets:1 });
-  renderAssessments();
-
-  if (!file) {
-    // Try Python engine for known companies first
-    var _cid = _matchCompanyId(company);
-    if (_cid) {
-      // Engine may still be waking up — try with long timeout regardless of status
-      try {
-        var _pyData = await _runPythonScoped(_cid, company, sector);
-        if (userLat !== null && userLon !== null) {
-          (_pyData.results||[]).forEach(function(r){ r.lat=userLat; r.lon=userLon; r.country=country||r.country; });
-        }
-        saveResultToAssessment(assessId, _pyData, company, sector, 0);
-        showResults(_pyData, company, sector, 0);
-        return;
-      } catch(_pyErr) {
-        console.warn('Python engine error:', _pyErr.message);
-        // Mark failed assessment and surface the error — don't silently fake it
-        _MEM_STORE = getAssessments().map(function(a){
-          return a.id===assessId ? Object.assign({},a,{status:'failed'}) : a;
-        });
-        renderAssessments();
-        alert('Engine error: ' + _pyErr.message + '\n\nThe Render engine may need a minute to wake up — try again shortly.');
-        return;
-      }
-    }
-    // Company not in engine seed list — call /agent/assess which works for any company name
-    // (fuzzy match + sector fallback + ML scoring). Only fall to demo if engine is down.
+  // ③ asset list
+  if (file) {
+    var label = company || file.name.replace(/\.[^.]+$/, '').replace(/[_\-.]+/g, ' ');
+    closeModal();
+    showLoading(label, ['Reading the asset list…', 'Fetching flood depths and defences for each site…',
+                        'Cyclone, river and coastal hazard per site…', 'Carbon policies and NGFS transition paths…',
+                        'Monte Carlo loss distribution across the portfolio…']);
     try {
-      var agResp = await fetch(ENGINE_URL + '/agent/assess', {
-        method: 'POST',
-        headers: _apiHdr('application/json'),
-        body: JSON.stringify({
-          company_name: company,
-          sector_hint: (sector||'Other').toLowerCase().replace(/[^a-z0-9]/g,'_').replace(/_+/g,'_'),
-          assessment_scope: 'standard'
-        }),
-        signal: AbortSignal.timeout(60000)
-      });
-      if (!agResp.ok) {
-        var agErrBody = await agResp.json().catch(function(){ return {}; });
-        throw new Error((agErrBody.detail && agErrBody.detail.error) || ('Engine ' + agResp.status));
-      }
-      var agData = await agResp.json();
-      var adapted = _agentToResults(agData, company, sector);
-      saveResultToAssessment(assessId, adapted, company, sector, 0);
-      showResults(adapted, company, sector, 0);
-      return;
-    } catch(agErr) {
-      console.warn('/agent/assess failed, falling to demo mode:', agErr.message);
+      var fd = new FormData(); fd.append('file', file, file.name); fd.append('label', label); fd.append('top_n', '30');
+      var resp = await fetch(ENGINE_URL + '/analyst/sites/upload', { method: 'POST', headers: _apiHdr(), body: fd, signal: AbortSignal.timeout(600000) });
+      var body = await resp.json().catch(function () { return {}; });
+      if (!resp.ok) throw new Error(body.detail || ('engine ' + resp.status));
+      hideLoading();
+      var skipped = (body.skipped_rows || []).length;
+      if (skipped) alert(skipped + ' row(s) skipped (missing or invalid coordinates): ' +
+        body.skipped_rows.slice(0, 5).map(function (r) { return 'row ' + r.row + ' ' + r.name; }).join(', ') + (skipped > 5 ? ' …' : ''));
+      var saved = _saveAnalyst({ kind: 'company', title: label, req: { upload: file.name }, data: body });
+      _showStoredAnalyst(saved);
+      _clearFile();
+    } catch (err) {
+      showEngineError(err.message, label);
     }
-    // Engine unreachable — fall back to sector-estimated results
-    _MEM_STORE = getAssessments().map(function(a){
-      return a.id===assessId ? Object.assign({},a,{status:'complete'}) : a;
-    });
-    renderAssessments();
-    _runDemoMode(company, sector, 'Engine temporarily unavailable — showing sector-estimated results while server wakes up.');
     return;
   }
 
-  // Run Python engine
-  try {
-    var fd = new FormData();
-    fd.append('file', file, file.name);
-    fd.append('scenarios', 'Net Zero 2050,Delayed Transition,Current Policies');
-
-    var resp = await fetch(ENGINE_URL + '/runs/file', {
-      method: 'POST', headers: _apiHdr(), body: fd,
-      signal: AbortSignal.timeout(60000)
-    });
-    if (!resp.ok) {
-      var errText = await resp.text().catch(function(){ return resp.status; });
-      throw new Error('Engine error ' + resp.status + ': ' + errText.slice(0,100));
+  // ② one site
+  if (latS !== '' || lonS !== '') {
+    var lat = parseFloat(latS), lon = parseFloat(lonS);
+    if (!isFinite(lat) || !isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180) {
+      hint.innerHTML = '<span style="color:var(--red)">Enter both latitude (−90…90) and longitude (−180…180).</span>'; return;
     }
-    var data = await resp.json();
-    if (userLat !== null && userLon !== null) {
-      (data.results||[]).forEach(function(r){ r.lat=userLat; r.lon=userLon; r.country=country||r.country; });
-    } else if (country) {
-      (data.results||[]).forEach(function(r){ if(!r.country) r.country=country; });
-    }
-    saveResultToAssessment(assessId, data, company, sector, data.total_duration_s);
-    showResults(data, company, sector, data.total_duration_s);
-  } catch(err) {
-    showEngineError(err.message, company, sector, assessId);
+    var sa = (document.getElementById('m-sector').value || '|').split('|');
+    var vM = parseFloat(document.getElementById('m-asset-value').value);
+    var em = parseFloat(document.getElementById('m-scope1').value);
+    var nm = document.getElementById('m-site-name').value.trim() || company || null;
+    closeModal();
+    openAssetIntel(lat, lon, nm, 'industrial', {
+      analyst: '1', sector: sa[0] || null, atype: sa[1] || null,
+      value_usd: isFinite(vM) && vM > 0 ? Math.round(vM * 1e6) : null,
+      emissions_t: isFinite(em) && em > 0 ? em : null });
+    return;
   }
+
+  // ① company
+  if (!company) { hint.innerHTML = '<span style="color:var(--red)">Enter a company, a site (lat/lon) or upload an asset list.</span>'; document.getElementById('m-company').focus(); return; }
+  hint.textContent = 'Searching the asset register…'; btn.disabled = true;
+  try {
+    var res = await _companySearch(company);
+    var group = _groupMatches(company, res);
+    if (group.length) {
+      _runCompanyKeys(group.map(function (x) { return x.key; }), company);
+      hint.textContent = '';
+      return;
+    }
+    // Nothing named like that: say so, offer the closest owners instead of guessing.
+    hint.innerHTML = '<b style="color:var(--amber)">“' + _escH(company) + '” is not in the asset register.</b> ' +
+      'The register covers owners of heavy-industry plants (Climate TRACE + EPA GHGRP). Enter one of its sites above, or upload an asset list.' +
+      (res.length ? '<div style="margin-top:6px">Closest owners: ' + res.slice(0, 5).map(function (x) {
+        return '<a href="#" style="color:var(--green)" onclick="_runCompanyKeys([' + _escH(JSON.stringify(x.key)) + '],' + _escH(JSON.stringify(x.name)) + ');return false">' +
+          _escH(x.name) + ' (' + x.n_assets + ')</a>'; }).join(' · ') + '</div>' : '');
+  } catch (err) {
+    hint.innerHTML = '<span style="color:var(--red)">Engine not reachable (' + _escH(err.message) + '). Check that the local engine is running — see ~/.climrisk/logs/engine.log.</span>';
+  } finally { btn.disabled = false; }
+}
+
+// ── SAVED ANALYSES ────────────────────────────────────────────────────────────
+function _analystSummary(kind, d) {
+  var rank = { NEGLIGIBLE: 0, LOW: 1, MODERATE: 2, HIGH: 3 };
+  var worst = 'LOW', top = null, sc, meanPct = null, p95Pct = null;
+  function pick(scs) { return scs && (scs['Delayed transition'] || scs[Object.keys(scs)[0]]); }
+  if (kind === 'company') {
+    var counts = {};
+    (d.assets || []).forEach(function (a) {
+      [['Cyclone', a.cyclone], ['River flood', a.river], ['Coastal flood', a.coast]].forEach(function (h) {
+        if ((rank[h[1]] || 0) > (rank[worst] || 0)) worst = h[1];
+        if (h[1] === 'HIGH') counts[h[0]] = (counts[h[0]] || 0) + 1;
+      });
+    });
+    var k = Object.keys(counts).sort(function (a, b) { return counts[b] - counts[a]; })[0];
+    top = k ? k + ' (' + counts[k] + ' HIGH)' : null;
+    sc = pick(d.scenarios);
+  } else {
+    var ph = d.physical || {}, fin = d.financial || {};
+    [['Cyclone', ph.cyclone], ['River flood', ph.river_flood], ['Coastal flood', ph.coastal_flood]].forEach(function (h) {
+      var s = h[1] && h[1].severity; if ((rank[s] || 0) > (rank[worst] || 0)) worst = s;
+    });
+    var by = (fin.physical || {}).by_hazard_aal_pct || {};
+    var hk = Object.keys(by).sort(function (a, b) { return by[b] - by[a]; })[0];
+    top = hk && by[hk] > 0 ? hk.replace(/_/g, ' ') + ' (' + by[hk].toFixed(2) + '%/yr)' : null;
+    sc = pick(fin.scenarios);
+  }
+  if (sc && sc.total_npv && sc.total_npv.pct_of_value) { meanPct = sc.total_npv.pct_of_value.mean; p95Pct = sc.total_npv.pct_of_value.p95; }
+  var alert = worst === 'HIGH' || (meanPct != null && meanPct >= 5);
+  return { worst: worst, topHazard: top, meanPct: meanPct, p95Pct: p95Pct, alert: alert,
+           assets: kind === 'company' ? (d.n_assets || 1) : 1 };
+}
+function _saveAnalyst(m) {
+  var sum = _analystSummary(m.kind, m.data);
+  var row = { id: m.assess_id || ('a' + Date.now()), company: m.title || 'Analysis',
+    sector: m.kind === 'company' ? (sum.assets + ' site' + (sum.assets === 1 ? '' : 's')) : 'Single site',
+    date: new Date().toISOString(), status: 'complete', assets: sum.assets, topHazard: sum.topHazard,
+    analyst: { kind: m.kind, req: m.req, data: m.data, summary: sum } };
+  var list = getAssessments().filter(function (a) { return a.id !== row.id; });
+  list.unshift(row);
+  _MEM_STORE = list.slice(0, 50);
+  _lsSet(_MEM_STORE);
+  renderAssessments();
+  return row;
+}
+var _analystPending = null;
+function _showStoredAnalyst(row) {
+  _analystPending = { type: 'climrisk:analyst-show', kind: row.analyst.kind, data: row.analyst.data, req: row.analyst.req, title: row.company };
+  openAssetIntel(null, null, null, null, { show: '1' });
+}
+window.addEventListener('message', function (e) {
+  var f = document.getElementById('asset-intel-frame');
+  if (!f || e.source !== f.contentWindow || !e.data) return;
+  if (e.data.type === 'climrisk:analyst-ready' && _analystPending) { f.contentWindow.postMessage(_analystPending, '*'); _analystPending = null; }
+  if (e.data.type === 'climrisk:analyst-result' && e.data.data) _saveAnalyst(e.data);
+});
+function _clearFile() {
+  _selectedFile = null;
+  ['m-file-input', 'm-file-btn'].forEach(function (id) { var el = document.getElementById(id); if (el) el.value = ''; });
+  var d = document.getElementById('file-drop'); if (d) d.classList.remove('file-selected');
+  var t = document.getElementById('file-drop-text'); if (t) t.textContent = '③ Upload an asset list (.xlsx or .csv)';
 }
 
 // ── SYNTHETIC FALLBACK (no file, manual entry only) ───────────────────────────
@@ -1354,7 +1396,7 @@ function makeSyntheticResult(company, sector, rev, vulnAttrs) {
 
 // ── LOADING STATE ──────────────────────────────────────────────────────────────
 var _loadInterval = null;
-function showLoading(company) {
+function showLoading(company, customSteps) {
   var el = document.getElementById('engine-loading');
   var rp = document.getElementById('results-panel');
   el.style.display = 'block';
@@ -1362,7 +1404,7 @@ function showLoading(company) {
   el.scrollIntoView({behavior:'smooth',block:'start'});
   document.getElementById('loading-company').textContent = 'Analysing ' + company + '…';
 
-  var steps = [
+  var steps = customSteps || [
     'Sending data to ClimRisk Engine…',
     'Warming up Render compute (first run ~60s)…',
     'Fetching WRI Aqueduct physical hazard layers…',
@@ -2359,16 +2401,14 @@ function buildDetailedReport(data, nze, dt, cp, company, sector) {
 
 function showEngineError(msg, company, sector, assessId) {
   hideLoading();
-  // Mark as complete (demo mode) rather than failed
   if (assessId) {
-    _MEM_STORE = getAssessments().map(function(a) {
-      return a.id === assessId ? Object.assign({}, a, {status: 'complete'}) : a;
-    });
+    _MEM_STORE = getAssessments().map(function(a) { return a.id === assessId ? Object.assign({}, a, {status: 'failed'}) : a; });
     _lsSet(_MEM_STORE);
     renderAssessments();
   }
-  // Auto-fallback to demo mode so demos always work regardless of cold-start
-  _runDemoMode(company, sector, msg);
+  // No sector-estimated stand-in: an error is shown as an error.
+  alert('The analysis for ' + (company || 'this input') + ' did not run: ' + msg +
+        '\n\nIf the engine is not running, see ~/.climrisk/logs/engine.log.');
 }
 
 // ── DEMO MODE — rich sector-estimated output when engine is unavailable ────────
@@ -2935,39 +2975,54 @@ function exportToCsv() {
   a.click();
 }
 
-// ── DEADLINE TICKER ───────────────────────────────────────────────────────────
-(function(){
-  var now = new Date();
-  function daysTo(iso){ return Math.ceil((new Date(iso)-now)/(864e5)); }
-  var csrdEl = document.getElementById('dl-csrd-days');
-  var ifrsEl = document.getElementById('dl-ifrs-days');
-  var csrdDays = daysTo('2026-12-31');
-  var ifrsDays = daysTo('2026-12-31');
-  if (csrdEl) csrdEl.textContent = csrdDays > 0 ? '('+csrdDays+'d)' : '(due)';
-  if (ifrsEl) ifrsEl.textContent = ifrsDays > 0 ? '('+ifrsDays+'d)' : '(due)';
-})();
-
 // ── REGULATORY CALENDAR ───────────────────────────────────────────────────────
+// Dates checked against the legal texts / regulators (sources in each entry). Entries with
+// no single calendar date (jurisdiction-dependent reporting) show the period, not a countdown.
 var REGULATIONS = [
-  {title:'CBAM Full Financial Obligation',date:'2026-01-01',desc:'EU importers must purchase certificates for embedded carbon at EU ETS price.',urgency:'red'},
-  {title:'CSRD Phase 2 Annual Report',date:'2026-12-31',desc:'Large EU companies must publish first CSRD-compliant sustainability report.',urgency:'amber'},
-  {title:'IFRS S2 Climate Disclosure',date:'2026-12-31',desc:'Physical and transition risk quantification required under ISSB standards.',urgency:'amber'},
-  {title:'DNB Climate Stress Test',date:'2026-06-30',desc:'Dutch National Bank mandatory climate risk stress test for supervised institutions.',urgency:'amber'},
-  {title:'CSRD Phase 3 — SMEs',date:'2027-12-31',desc:'CSRD extends to listed SMEs and non-EU companies with significant EU operations.',urgency:'green'}
+  {title:'CBAM: certificate sales open', date:'2027-02-01',
+   desc:'Authorised declarants can buy certificates for embedded emissions of 2026 imports (definitive regime applies since 1 Jan 2026).',
+   src:'Regulation (EU) 2023/956 as amended by (EU) 2025/2083'},
+  {title:'EU ETS: surrender for 2026 emissions', date:'2027-09-30',
+   desc:'Operators surrender allowances equal to verified 2026 emissions.', src:'Directive 2003/87/EC Art. 12'},
+  {title:'CBAM: first annual declaration and surrender', date:'2027-09-30',
+   desc:'Annual CBAM declaration for 2026 imports and surrender of certificates.', src:'Regulation (EU) 2025/2083'},
+  {title:'AASB S2 Group 3 starts', date:'2027-07-01',
+   desc:'Australian climate reporting applies to Group 3 entities for financial years starting on or after this date (Group 2 started 1 Jul 2026).',
+   src:'Corporations Act 2001 s.292A; AASB S2'},
+  {title:'CSRD: first reports for in-scope companies (Omnibus I)', date:'2028-01-01', period:'FY2027, reported in 2028',
+   desc:'Scope narrowed to >1,000 employees and >€450m turnover; wave 2 reports on FY2027 (stop-the-clock).',
+   src:'Directive (EU) 2025/794; Directive (EU) 2026/470'},
+  {title:'EU ETS2 (buildings, road transport) starts', date:'2028-01-01', period:'2028',
+   desc:'Start of allowance surrender under ETS2, delayed from 2027.', src:'Directive (EU) 2023/959, as amended'}
 ];
 (function(){
-  var list = document.getElementById('reg-list'); if (!list) return;
   var now = new Date();
-  list.innerHTML = REGULATIONS.map(function(r){
-    var d = new Date(r.date); var days = Math.ceil((d-now)/(1000*60*60*24));
-    var col = r.urgency==='red'?'var(--red)':r.urgency==='amber'?'var(--amber)':'var(--green)';
-    var dl  = days<0?'Passed':days===0?'Today':days+' days';
-    var dc  = days<90?'var(--red)':days<270?'var(--amber)':'var(--green)';
-    return '<div class="reg-item"><div class="reg-dot" style="background:'+col+'"></div>'+
-      '<div class="reg-content"><div class="reg-title">'+r.title+'</div>'+
-      '<div class="reg-meta">'+new Date(r.date).toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'})+' · '+r.desc.slice(0,80)+'…</div>'+
-      '<div class="reg-days" style="color:'+dc+'">'+dl+' remaining</div></div></div>';
+  var fmt = function(iso){ return new Date(iso).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'}); };
+  var up = REGULATIONS.filter(function(r){ return new Date(r.date) >= now; })
+                      .sort(function(a,b){ return new Date(a.date) - new Date(b.date); });
+  var days = function(r){ return Math.ceil((new Date(r.date) - now) / 864e5); };
+  var when = function(r){ return r.period || fmt(r.date); };
+  var bar = document.getElementById('dl-items');
+  if (bar) bar.innerHTML = up.slice(0, 4).map(function(r){
+    var d = days(r), cls = d < 90 ? 'dl-urgent' : d < 270 ? 'dl-warn' : 'dl-ok';
+    return '<div class="dl-item" title="'+_escH(r.src)+'"><span class="dl-badge '+cls+'">'+_escH(when(r))+'</span>'+_escH(r.title)+
+      (r.period ? '' : ' <span style="color:var(--muted)">('+d+'d)</span>')+'</div>';
   }).join('');
+  var list = document.getElementById('reg-list');
+  if (list) list.innerHTML = up.map(function(r){
+    var d = days(r), dc = d<90?'var(--red)':d<270?'var(--amber)':'var(--green)';
+    return '<div class="reg-item"><div class="reg-dot" style="background:'+dc+'"></div>'+
+      '<div class="reg-content"><div class="reg-title">'+_escH(r.title)+'</div>'+
+      '<div class="reg-meta">'+_escH(when(r))+' · '+_escH(r.desc)+'</div>'+
+      '<div class="reg-meta" style="font-size:10px;color:var(--faint)">Source: '+_escH(r.src)+'</div>'+
+      (r.period ? '' : '<div class="reg-days" style="color:'+dc+'">'+d+' days remaining</div>')+'</div></div>';
+  }).join('');
+  var in12 = up.filter(function(r){ return days(r) <= 365; });
+  var setT = function(id, v){ var el = document.getElementById(id); if (el) el.textContent = v; };
+  setT('reg-upcoming', up.length + ' upcoming');
+  setT('st-deadlines', in12.length);
+  setT('st-next-deadline', up.length ? 'Next: ' + when(up[0]) + ' · ' + up[0].title.split(':')[0] : '');
+  var badge = document.getElementById('sb-csrd-urgency'); if (badge) badge.remove();
 })();
 
 // ── CRI PANEL TABS ────────────────────────────────────────────────────────────
