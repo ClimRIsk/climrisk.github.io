@@ -3299,10 +3299,12 @@ function openEngineTool(key, query) {
   document.body.appendChild(overlay);
   var frame = document.getElementById('engine-tool-frame');
   frame.onload = function () { frame.style.opacity = '1'; var w = document.getElementById('engine-tool-wait'); if (w) w.remove(); };
-  function close() { overlay.remove(); document.removeEventListener('keydown', onKey); }
+  function close() { overlay.remove(); document.removeEventListener('keydown', onKey); window.removeEventListener('message', onMsg); }
   function onKey(e) { if (e.key === 'Escape') close(); }
+  function onMsg(e) { if (e.source === frame.contentWindow && e.data && e.data.type === 'climrisk:close-tool') close(); }
   document.getElementById('engine-tool-close').onclick = close;
   document.addEventListener('keydown', onKey);
+  window.addEventListener('message', onMsg);
 }
 function openLCA(product) { openEngineTool('lca', product ? 'product=' + encodeURIComponent(product) : ''); }
 
