@@ -600,6 +600,29 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
       <div class="form-field"><label>Scope 1 emissions (tCO&#x2082;e / yr)</label><input type="number" id="m-scope1" placeholder="e.g. 450000" min="0"></div>
     </div>
     <div style="font-size:10px;color:var(--faint);margin:-6px 0 6px;line-height:1.5">Without a value, money figures are zero; without emissions, carbon cost is not included. The Analyst says so in its result rather than guessing.</div>
+    <details id="m-fin-box" style="margin:0 0 10px;border:1px solid var(--border);border-radius:8px;padding:8px 12px">
+      <summary style="cursor:pointer;font-size:12px;color:var(--text);font-weight:600">Plant life, EU exports and company financials <span style="color:var(--faint);font-weight:400">(optional — adds EBITDA at risk, leverage, rating, covenants, impairment)</span></summary>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px">
+        <div class="form-field"><label>Commissioned (year)</label><input type="number" id="m-comm" placeholder="e.g. 1998" min="1850" max="2026"></div>
+        <div class="form-field"><label>Retirement / phase-out (year)</label><input type="number" id="m-ret" placeholder="optional" min="2026" max="2100"></div>
+        <div class="form-field"><label>Exported to the EU (%)</label><input type="number" id="m-eu" placeholder="CBAM products" min="0" max="100"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
+        <div class="form-field"><label>Revenue (USD m / yr)</label><input type="number" id="m-rev" min="0" step="0.1"></div>
+        <div class="form-field"><label>EBITDA (USD m)</label><input type="number" id="m-ebitda" step="0.1"></div>
+        <div class="form-field"><label>D&amp;A (USD m)</label><input type="number" id="m-da" min="0" step="0.1"></div>
+        <div class="form-field"><label>Interest expense (USD m)</label><input type="number" id="m-int" min="0" step="0.1"></div>
+        <div class="form-field"><label>Net debt (USD m)</label><input type="number" id="m-debt" step="0.1"></div>
+        <div class="form-field"><label>Carrying amount (USD m)</label><input type="number" id="m-book" min="0" step="0.1"></div>
+        <div class="form-field"><label>Tax rate (%)</label><input type="number" id="m-tax" min="0" max="60" placeholder="25"></div>
+        <div class="form-field"><label>Electricity bought (MWh/yr)</label><input type="number" id="m-mwh" min="0"></div>
+        <div class="form-field"><label>Fuel burned (GJ/yr) · fuel</label><div style="display:flex;gap:6px"><input type="number" id="m-fuelgj" min="0" style="flex:1"><select id="m-fuel" style="width:80px"><option value="">—</option><option>coal</option><option>gas</option><option>oil</option></select></div></div>
+        <div class="form-field"><label>Covenant: max net debt/EBITDA</label><input type="number" id="m-covlev" min="0" step="0.1"></div>
+        <div class="form-field"><label>Covenant: min EBITDA/interest</label><input type="number" id="m-covicr" min="0" step="0.1"></div>
+        <div class="form-field"><label>Sustaining capex (USD m/yr)</label><input type="number" id="m-sust" min="0" step="0.1"></div>
+      </div>
+      <div style="font-size:10px;color:var(--faint);line-height:1.5">Same perimeter as the emissions (this plant or business unit). <a onclick="fillExampleFinancials()" style="color:var(--green);cursor:pointer">Fill with an illustrative example</a> — made-up numbers for a demo, not a real company.</div>
+    </details>
 
     <div style="text-align:center;color:var(--faint);font-size:12px;margin:8px 0 10px">— or your own asset list —</div>
     <!-- 3. ASSET LIST -->
@@ -826,6 +849,36 @@ function handleFileDrop(e) {
   }
 }
 
+// Illustrative demo values (a made-up 1.0 Mt cement plant) — clearly not real data.
+function fillExampleFinancials() {
+  var v = {'m-comm':1998,'m-eu':20,'m-rev':300,'m-ebitda':75,'m-da':25,'m-int':12,'m-debt':150,'m-book':250,'m-tax':25,'m-mwh':150000,
+           'm-fuelgj':4000000,'m-covlev':3.5,'m-covicr':3,'m-sust':15,'m-asset-value':350,'m-scope1':850000};
+  Object.keys(v).forEach(function (k) { var e = document.getElementById(k); if (e) e.value = v[k]; });
+  document.getElementById('m-fuel').value = 'coal';
+  document.getElementById('m-sector').value = 'cement|integrated dry';
+  if (!document.getElementById('m-lat').value) { document.getElementById('m-lat').value = '23.759'; document.getElementById('m-lon').value = '90.399'; }
+  if (!document.getElementById('m-site-name').value) document.getElementById('m-site-name').value = 'Illustrative cement plant';
+  document.getElementById('m-fin-box').open = true;
+}
+// Read the optional plant-life / export / financial fields into the Risk Analyst request fields.
+function _readSiteOptions() {
+  function n(id) { var e = document.getElementById(id); var x = e ? parseFloat(e.value) : NaN; return isFinite(x) ? x : null; }
+  function m(id) { var x = n(id); return x == null ? null : x * 1e6; }
+  var o = {commissioned_year: n('m-comm'), retirement_year: n('m-ret'), export_share_eu: n('m-eu') == null ? null : Math.min(Math.max(n('m-eu') / 100, 0), 1)};
+  var f = {revenue_usd: m('m-rev'), ebitda_usd: m('m-ebitda'), da_usd: m('m-da'), interest_usd: m('m-int'), net_debt_usd: m('m-debt'),
+           book_value_usd: m('m-book'), tax_rate: n('m-tax') == null ? null : n('m-tax') / 100, electricity_mwh: n('m-mwh'),
+           fuel_gj: n('m-fuelgj'), sustaining_capex_usd: m('m-sust'), covenant_max_leverage: n('m-covlev'), covenant_min_icr: n('m-covicr')};
+  var fuel = document.getElementById('m-fuel').value; if (fuel) f.fuel = fuel;
+  Object.keys(f).forEach(function (k) { if (f[k] == null) delete f[k]; });
+  if (Object.keys(f).length) { if (f.revenue_usd == null || f.ebitda_usd == null) return {error: 'Financials need at least revenue and EBITDA.'}; o.financials = f; }
+  return o;
+}
+// Launch parameters for the engine panel (URL hash, never sent to a server).
+function _optionParams(q) {
+  return {fin: q.financials ? JSON.stringify(q.financials) : null, comm: q.commissioned_year, ret: q.retirement_year,
+          eu: q.export_share_eu, ab: q.abatement === false ? '0' : null};
+}
+
 function downloadTemplate() {
   // Asset-list template for /analyst/sites/upload. sector/type use the engine's activity codes.
   // Financial columns are optional (revenue_usd and ebitda_usd together): they add EBITDA at risk, leverage, rating and covenant results.
@@ -986,7 +1039,7 @@ function reOpenResults(id) {
   if (a.analyst && a.analyst.req) {            // stored data was dropped for space: re-run the same request
     var q = a.analyst.req;
     if (q.keys) return _runCompanyKeys(q.keys, a.company);
-    if (q.lat != null) return openAssetIntel(q.lat, q.lon, q.name, 'industrial', {analyst:'1', sector:q.sector, atype:q.asset_type, value_usd:q.value_usd, emissions_t:q.emissions_t});
+    if (q.lat != null) return openAssetIntel(q.lat, q.lon, q.name, 'industrial', Object.assign({analyst:'1', sector:q.sector, atype:q.asset_type, value_usd:q.value_usd, emissions_t:q.emissions_t}, _optionParams(q)));
     alert('The stored result for this uploaded list was removed to save space. Upload the list again to re-run it.');
     return;
   }
@@ -1072,11 +1125,13 @@ async function launchAssessment() {
     var vM = parseFloat(document.getElementById('m-asset-value').value);
     var em = parseFloat(document.getElementById('m-scope1').value);
     var nm = document.getElementById('m-site-name').value.trim() || company || null;
+    var opt = _readSiteOptions();
+    if (opt.error) { hint.innerHTML = '<span style="color:var(--red)">' + opt.error + '</span>'; return; }
     closeModal();
-    openAssetIntel(lat, lon, nm, 'industrial', {
+    openAssetIntel(lat, lon, nm, 'industrial', Object.assign({
       analyst: '1', sector: sa[0] || null, atype: sa[1] || null,
       value_usd: isFinite(vM) && vM > 0 ? Math.round(vM * 1e6) : null,
-      emissions_t: isFinite(em) && em > 0 ? em : null });
+      emissions_t: isFinite(em) && em > 0 ? em : null }, _optionParams(opt)));
     return;
   }
 
@@ -3301,8 +3356,8 @@ function openAssetIntel(lat, lon, name, type, extra) {
   overlay.innerHTML =
     '<div style="display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--navy2)">' +
       '<i class="ph ph-mountains" style="color:#38bdf8;font-size:18px"></i>' +
-      '<div style="font-weight:800;color:var(--text)">Asset Intelligence 3D</div>' +
-      '<div style="font-size:11px;color:var(--faint)">10 m terrain · Sentinel-2 · Sentinel-1 radar · ESA WorldCover</div>' +
+      '<div style="font-weight:800;color:var(--text)">' + (extra && extra.analyst ? 'Risk Analyst' : 'Asset Intelligence 3D') + '</div>' +
+      '<div style="font-size:11px;color:var(--faint)">' + (extra && extra.analyst ? 'Physical hazards · carbon policy · NGFS transition · abatement · earnings and credit · loss distribution' : '10 m terrain · Sentinel-2 · Sentinel-1 radar · ESA WorldCover') + '</div>' +
       '<button id="asset-intel-close" style="margin-left:auto;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:8px;padding:6px 12px;cursor:pointer">Close ✕</button>' +
     '</div>' +
     '<div style="position:relative;flex:1">' +
