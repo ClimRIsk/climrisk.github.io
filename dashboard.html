@@ -431,7 +431,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
     <div class="hero-left">
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;font-weight:700;letter-spacing:.12em;color:#2563eb;text-transform:uppercase;margin-bottom:8px">ClimRisk Platform · v1.0</div>
       <h1>Welcome back, <span id="welcome-msg" style="color:#60a5fa">user</span></h1>
-      <p>What decision are you making? ClimRisk translates climate science into the numbers your business runs on — expected annual loss, insurance gap, disruption days, stranded asset date, supply chain exposure — so you make better capital decisions, not just better disclosures.</p>
+      <p>What decision are you making? ClimRisk translates climate science into the numbers your business runs on — expected loss and the 1-in-20 outcome, carbon cost with and without abatement, stranded capital, and (with your financials) EBITDA at risk, leverage, covenant headroom and credit rating — so you make better capital decisions, not just better disclosures.</p>
       <div class="hero-actions">
         <button class="btn-hero-p" onclick="openNewAssessment()"><i class="ph ph-lightning" style="margin-right:6px"></i>Analyse an Asset</button>
         <button class="btn-hero-p" onclick="openAssetIntel()" style="background:linear-gradient(135deg,#0ea5e9,#10b981)"><i class="ph ph-mountains" style="margin-right:6px"></i>Site Intelligence 3D</button>
@@ -609,7 +609,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
          ondrop="handleFileDrop(event)">
       <div class="file-drop-icon">📊</div>
       <div class="file-drop-text" id="file-drop-text">③ Upload an asset list (.xlsx or .csv)</div>
-      <div class="file-drop-sub">Columns: name, lat, lon · optional sector, type, capacity, emissions_t, value_usd · <a onclick="event.stopPropagation();downloadTemplate()" style="color:var(--green);cursor:pointer">Download template</a></div>
+      <div class="file-drop-sub">Columns: name, lat, lon · optional sector, type, capacity, emissions_t, value_usd · financials (revenue_usd + ebitda_usd, with da_usd, interest_usd, net_debt_usd, book_value_usd…) · <a onclick="event.stopPropagation();downloadTemplate()" style="color:var(--green);cursor:pointer">Download template</a></div>
       <input type="file" id="m-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileSelect(this)">
       <input type="file" id="m-file-btn" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileSelect(this);openNewAssessment()">
     </div>
@@ -828,9 +828,10 @@ function handleFileDrop(e) {
 
 function downloadTemplate() {
   // Asset-list template for /analyst/sites/upload. sector/type use the engine's activity codes.
-  var csv = 'name,lat,lon,sector,type,capacity,emissions_t,value_usd\n' +
-            'Example cement plant,23.7590,90.3990,cement,integrated dry,,850000,250000000\n' +
-            'Example warehouse,51.9244,4.4777,buildings,,,,40000000\n';
+  // Financial columns are optional (revenue_usd and ebitda_usd together): they add EBITDA at risk, leverage, rating and covenant results.
+  var csv = 'name,lat,lon,sector,type,capacity,emissions_t,value_usd,revenue_usd,ebitda_usd,da_usd,interest_usd,net_debt_usd,book_value_usd,tax_rate,electricity_mwh,fuel,fuel_gj,sustaining_capex_usd,covenant_max_leverage,covenant_min_icr\n' +
+            'Example cement plant,23.7590,90.3990,cement,integrated dry,,850000,250000000,300000000,75000000,25000000,12000000,150000000,250000000,0.25,150000,coal,4000000,15000000,3.5,3\n' +
+            'Example warehouse,51.9244,4.4777,buildings,,,,40000000,,,,,,,,,,,,,\n';
   var a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
   a.download = 'climrisk_asset_list_template.csv';
