@@ -609,7 +609,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
          ondrop="handleFileDrop(event)">
       <div class="file-drop-icon">📊</div>
       <div class="file-drop-text" id="file-drop-text">③ Upload an asset list (.xlsx or .csv)</div>
-      <div class="file-drop-sub">Columns: name, lat, lon · optional sector, type, capacity, emissions_t, value_usd · financials (revenue_usd + ebitda_usd, with da_usd, interest_usd, net_debt_usd, book_value_usd…) · <a onclick="event.stopPropagation();downloadTemplate()" style="color:var(--green);cursor:pointer">Download template</a></div>
+      <div class="file-drop-sub">Columns: name, lat, lon · optional sector, type, capacity, emissions_t, value_usd · financials (revenue_usd + ebitda_usd, with da_usd, interest_usd, net_debt_usd, book_value_usd…) · commissioned_year, retirement_year, export_share_eu · <a onclick="event.stopPropagation();downloadTemplate()" style="color:var(--green);cursor:pointer">Download template</a></div>
       <input type="file" id="m-file-input" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileSelect(this)">
       <input type="file" id="m-file-btn" accept=".xlsx,.xls,.csv" style="display:none" onchange="handleFileSelect(this);openNewAssessment()">
     </div>
@@ -829,9 +829,9 @@ function handleFileDrop(e) {
 function downloadTemplate() {
   // Asset-list template for /analyst/sites/upload. sector/type use the engine's activity codes.
   // Financial columns are optional (revenue_usd and ebitda_usd together): they add EBITDA at risk, leverage, rating and covenant results.
-  var csv = 'name,lat,lon,sector,type,capacity,emissions_t,value_usd,revenue_usd,ebitda_usd,da_usd,interest_usd,net_debt_usd,book_value_usd,tax_rate,electricity_mwh,fuel,fuel_gj,sustaining_capex_usd,covenant_max_leverage,covenant_min_icr\n' +
-            'Example cement plant,23.7590,90.3990,cement,integrated dry,,850000,250000000,300000000,75000000,25000000,12000000,150000000,250000000,0.25,150000,coal,4000000,15000000,3.5,3\n' +
-            'Example warehouse,51.9244,4.4777,buildings,,,,40000000,,,,,,,,,,,,,\n';
+  var csv = 'name,lat,lon,sector,type,capacity,emissions_t,value_usd,revenue_usd,ebitda_usd,da_usd,interest_usd,net_debt_usd,book_value_usd,tax_rate,electricity_mwh,fuel,fuel_gj,sustaining_capex_usd,covenant_max_leverage,covenant_min_icr,commissioned_year,retirement_year,export_share_eu\n' +
+            'Example cement plant,23.7590,90.3990,cement,integrated dry,,850000,250000000,300000000,75000000,25000000,12000000,150000000,250000000,0.25,150000,coal,4000000,15000000,3.5,3,1998,,0.2\n' +
+            'Example warehouse,51.9244,4.4777,buildings,,,,40000000,,,,,,,,,,,,,,,,\n';
   var a = document.createElement('a');
   a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
   a.download = 'climrisk_asset_list_template.csv';
