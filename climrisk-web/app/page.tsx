@@ -213,10 +213,25 @@ export default function Home() {
         <div className="grid md:grid-cols-3 gap-6">
           {latestResearch.map((a, i) => (
             <Reveal key={a.slug} delayMs={i * 120}>
-              <Link href={a.href ?? `/research/${a.slug}`} className="panel panel-hover block p-7 h-full">
-                <p className="text-xs font-mono text-zinc-600 mb-3">{a.kicker}</p>
-                <h3 className="text-white font-semibold leading-snug mb-3">{a.title}</h3>
-                <p className="text-sm text-zinc-500 leading-relaxed">{a.detail}</p>
+              <Link href={a.href ?? `/research/${a.slug}`} className="panel panel-hover block h-full overflow-hidden">
+                {a.thumb ? (
+                  <div className="relative h-36 overflow-hidden">
+                    <img src={a.thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
+                    <div
+                      aria-hidden="true"
+                      className="absolute inset-0"
+                      style={{
+                        background:
+                          "linear-gradient(180deg, rgba(10,11,14,0.10) 0%, rgba(10,11,14,0.55) 60%, rgba(10,11,14,0.96) 100%)",
+                      }}
+                    />
+                  </div>
+                ) : null}
+                <div className={a.thumb ? "p-7 pt-5" : "p-7"}>
+                  <p className="text-xs font-mono text-zinc-600 mb-3">{a.kicker}</p>
+                  <h3 className="text-white font-semibold leading-snug mb-3">{a.title}</h3>
+                  <p className="text-sm text-zinc-500 leading-relaxed">{a.detail}</p>
+                </div>
               </Link>
             </Reveal>
           ))}
@@ -224,12 +239,30 @@ export default function Home() {
       </section>
 
       {/* Final close */}
-      <section className="px-6 py-32 border-t border-white/8 text-center">
-        <Reveal>
-          <h2 className="heading-lg grad-text mb-4">See how we screen 10,000 assets in seconds.</h2>
-          <p className="text-zinc-500 mb-10">Book a Technical Demo — no obligation, no boilerplate deck.</p>
-          <Link href="/contact" className="btn-primary">Book a Technical Demo</Link>
-        </Reveal>
+      <section className="relative overflow-hidden border-t border-white/8">
+        <img
+          src="/cta/alpine-valley.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(10,11,14,0.55) 0%, rgba(10,11,14,0.82) 55%, rgba(10,11,14,0.97) 100%)",
+          }}
+        />
+        <div className="relative px-6 py-32 text-center" style={{ zIndex: 2 }}>
+          <Reveal>
+            <h2 className="heading-lg grad-text mb-4">See how we screen 10,000 assets in seconds.</h2>
+            <p className="text-zinc-400 mb-10">Book a Technical Demo, no obligation and no boilerplate deck.</p>
+            <Link href="/contact" className="btn-primary">Book a Technical Demo</Link>
+          </Reveal>
+          <p className="text-[10px] font-mono text-zinc-600 mt-10">
+            Sentinel-2 L2A, Lauterbrunnen Valley, Swiss Alps (24 Jul 2026), via AWS Earth Search
+          </p>
+        </div>
       </section>
     </>
   );

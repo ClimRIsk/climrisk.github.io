@@ -2,5 +2,13 @@
   "status": "published",
   "date": "2026-08-13",
   "author": "Shrinivash D Kannan",
-  "cover": "/research/financial-anatomy-of-a-super-el-nino/cover.png"
+  "cover": "/research/financial-anatomy-of-a-super-el-nino/cover.png",
+  "thumb": "/research/financial-anatomy-of-a-super-el-nino/thumb.jpg",
+  "images": [
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2A_17PPK_20260105_0_L2A over Miraflores Locks, Panama Canal (5 Jan 2026), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
 }

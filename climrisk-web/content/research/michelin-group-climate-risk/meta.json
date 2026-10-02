@@ -2,5 +2,13 @@
   "status": "published",
   "date": "2026-07-15",
   "author": "Shrinivash D Kannan",
-  "cover": "/research/michelin-group-climate-risk/cover.png"
+  "cover": "/research/michelin-group-climate-risk/cover.png",
+  "thumb": "/research/michelin-group-climate-risk/thumb.jpg",
+  "images": [
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2C_47PNL_20260301_0_L2A over Rubber plantations, Surat Thani, Thailand (1 Mar 2026), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
 }

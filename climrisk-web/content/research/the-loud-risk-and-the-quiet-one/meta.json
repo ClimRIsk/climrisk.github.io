@@ -122,6 +122,12 @@
       "file": "infographic.png",
       "kind": "infographic",
       "source": "JMA, FDMA, NOAA CPC, Hong Kong Observatory (via Bloomberg), Copernicus Sentinel-1, ClimRisk engine"
+    },
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2B_54SVE_20260116_0_L2A over Sodegaura thermal power coast, Tokyo Bay, Japan (16 Jan 2026), via AWS Earth Search; processed by ClimRisk"
     }
-  ]
+  ],
+  "thumb": "/research/the-loud-risk-and-the-quiet-one/thumb.jpg"
 }

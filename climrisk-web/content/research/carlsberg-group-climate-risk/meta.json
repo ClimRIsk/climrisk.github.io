@@ -2,5 +2,13 @@
   "status": "published",
   "date": "2026-07-15",
   "author": "Shrinivash D Kannan",
-  "cover": "/research/carlsberg-group-climate-risk/cover.png"
+  "cover": "/research/carlsberg-group-climate-risk/cover.png",
+  "thumb": "/research/carlsberg-group-climate-risk/thumb.jpg",
+  "images": [
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2A_32UNG_20250321_0_L2A over Carlsberg Fredericia Breweries, Denmark (21 Mar 2025), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
 }

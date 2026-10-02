@@ -3,5 +3,13 @@
   "date": "2026-08-21",
   "author": "Shrinivash D Kannan",
   "cover": "/research/the-productivity-tax/cover.png",
-  "substack": "https://climriskresearch.substack.com/p/the-productivity-tax"
+  "substack": "https://climriskresearch.substack.com/p/the-productivity-tax",
+  "thumb": "/research/the-productivity-tax/thumb.jpg",
+  "images": [
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2C_43REK_20251025_0_L2A over Jaipur, Rajasthan, India (25 Oct 2025), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
 }

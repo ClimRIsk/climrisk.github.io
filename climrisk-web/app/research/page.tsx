@@ -10,6 +10,29 @@ export const metadata: Metadata = {
     "Flagship whitepapers, regulatory briefs, and applied case studies from the ClimRisk research desk, covering physical and transition risk translated into financial terms.",
 };
 
+function CardThumb({ b }: { b: Article }) {
+  if (!b.thumb) return null;
+  const badge = b.kicker.split("·")[0].trim();
+  return (
+    <div className="relative h-40 overflow-hidden">
+      <img src={b.thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(180deg, rgba(10,11,14,0.10) 0%, rgba(10,11,14,0.55) 60%, rgba(10,11,14,0.96) 100%)",
+        }}
+      />
+      {badge ? (
+        <span className="absolute top-3 left-3 text-[10px] font-mono uppercase tracking-wide text-gold-200 bg-black/50 backdrop-blur-sm border border-white/10 rounded-full px-2.5 py-1">
+          {badge}
+        </span>
+      ) : null}
+    </div>
+  );
+}
+
 function CardBody({ b }: { b: Article }) {
   const inProgress = b.status === "in-progress";
   return (
@@ -39,12 +62,16 @@ function CardBody({ b }: { b: Article }) {
 
 function BriefCard({ b, delayMs }: { b: Article; delayMs: number }) {
   const inProgress = b.status === "in-progress";
+  const textPad = b.thumb ? "p-7 pt-5" : "p-7";
 
   if (inProgress) {
     return (
       <Reveal delayMs={delayMs}>
-        <div className="panel p-7 h-full opacity-60 cursor-default">
-          <CardBody b={b} />
+        <div className="panel h-full opacity-60 cursor-default overflow-hidden">
+          <CardThumb b={b} />
+          <div className={textPad}>
+            <CardBody b={b} />
+          </div>
         </div>
       </Reveal>
     );
@@ -53,12 +80,18 @@ function BriefCard({ b, delayMs }: { b: Article; delayMs: number }) {
   return (
     <Reveal delayMs={delayMs}>
       {b.href ? (
-        <a href={b.href} target="_blank" rel="noopener noreferrer" className="panel panel-hover p-7 h-full block">
-          <CardBody b={b} />
+        <a href={b.href} target="_blank" rel="noopener noreferrer" className="panel panel-hover h-full block overflow-hidden">
+          <CardThumb b={b} />
+          <div className={textPad}>
+            <CardBody b={b} />
+          </div>
         </a>
       ) : (
-        <Link href={`/research/${b.slug}`} className="panel panel-hover p-7 h-full block">
-          <CardBody b={b} />
+        <Link href={`/research/${b.slug}`} className="panel panel-hover h-full block overflow-hidden">
+          <CardThumb b={b} />
+          <div className={textPad}>
+            <CardBody b={b} />
+          </div>
         </Link>
       )}
     </Reveal>

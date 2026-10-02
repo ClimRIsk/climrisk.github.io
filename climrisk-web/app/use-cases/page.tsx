@@ -15,9 +15,13 @@ const SECTORS: {
   capabilities: { title: string; body: string }[];
   metrics: { label: string; value: string }[];
   visual: "line-comparison" | "accumulation" | "waterfall" | "table-overlay" | "before-after";
+  image: string;
+  imageCaption: string;
 }[] = [
   {
     id: "banking",
+    image: "/sectors/banking/cover.jpg",
+    imageCaption: "Sentinel-2 L2A, Lower Manhattan financial district, New York (6 Oct 2025), via AWS Earth Search",
     navLabel: "Banking & Credit Risk",
     buyer: "Chief Risk Officers, Credit Committee Chairs, ESG Compliance Leads",
     hero: "Translate forward-looking physical climate hazards into precise credit risk metrics and audit-ready regulatory disclosures.",
@@ -46,6 +50,8 @@ const SECTORS: {
   },
   {
     id: "insurance",
+    image: "/sectors/insurance/cover.jpg",
+    imageCaption: "Sentinel-2 L2A, Houston ship channel and flood plain, Texas (3 Nov 2025), via AWS Earth Search",
     navLabel: "Insurance & Underwriting",
     buyer: "Chief Underwriting Officers, Actuaries, Reinsurance Structurers",
     hero: "Price forward-looking physical risk instead of underwriting against a rearview mirror.",
@@ -74,6 +80,8 @@ const SECTORS: {
   },
   {
     id: "asset-management",
+    image: "/sectors/asset-management/cover.jpg",
+    imageCaption: "Sentinel-2 L2A, Singapore financial district and port (25 Mar 2026), via AWS Earth Search",
     navLabel: "Asset Management & Private Equity",
     buyer: "Portfolio Managers, Investment Directors, ESG Analysts",
     hero: "Protect enterprise value, accelerate due diligence, and integrate physical climate risk directly into your Discounted Cash Flow models.",
@@ -102,6 +110,8 @@ const SECTORS: {
   },
   {
     id: "heavy-industry",
+    image: "/sectors/heavy-industry/cover.jpg",
+    imageCaption: "Sentinel-2 L2A, Jamnagar refinery complex, Gujarat, India (9 Jan 2026), via AWS Earth Search",
     navLabel: "Heavy Industry & Resources",
     buyer: "Chief Sustainability Officers, Operations Directors, Supply Chain Leads",
     hero: "Quantify climate-driven operational downtime, protect physical assets, and consolidate multi-facility emissions data into actionable financial metrics.",
@@ -130,6 +140,8 @@ const SECTORS: {
   },
   {
     id: "real-estate",
+    image: "/sectors/real-estate/cover.jpg",
+    imageCaption: "Sentinel-2 L2A, Palm Jumeirah, Dubai (22 May 2026), via AWS Earth Search",
     navLabel: "Real Estate & Infrastructure",
     buyer: "REIT Executives, Infrastructure Fund Managers",
     hero: "Safeguard the built environment, optimize urban master planning, and quantify the financial ROI of large-scale climate adaptation.",
@@ -191,12 +203,35 @@ export default function UseCasesPage() {
         </div>
       </div>
 
-      <div className="max-w-5xl mx-auto px-6">
-        <p className="text-xs uppercase tracking-widest text-zinc-600 font-mono mb-4">
-          Built for {sector.buyer}
+      <div className="relative h-72 md:h-80 overflow-hidden mb-10">
+        <img
+          key={sector.id}
+          src={sector.image}
+          alt=""
+          className="w-full h-full object-cover"
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(10,11,14,0.35) 0%, rgba(10,11,14,0.55) 40%, rgba(10,11,14,0.97) 100%)",
+          }}
+        />
+        <div className="absolute inset-0 flex flex-col justify-end px-6 pb-7">
+          <div className="max-w-5xl mx-auto w-full">
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">
+              Built for {sector.buyer}
+            </p>
+            <h2 className="heading-lg grad-text max-w-2xl">{sector.hero}</h2>
+          </div>
+        </div>
+        <p className="absolute bottom-2 right-4 text-[10px] font-mono text-zinc-600">
+          {sector.imageCaption}
         </p>
-        <h2 className="heading-lg grad-text mb-10 max-w-2xl">{sector.hero}</h2>
+      </div>
 
+      <div className="max-w-5xl mx-auto px-6">
         <div className="panel p-7 mb-10">
           <p className="text-xs uppercase tracking-widest text-zinc-500 font-mono mb-3">The Challenge</p>
           <p className="text-zinc-400 leading-relaxed">{sector.challenge}</p>

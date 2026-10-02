@@ -19,6 +19,7 @@ export type Article = Brief & {
   date?: string;          // ISO date of publication
   author?: string;
   cover?: string;         // /research/<slug>/cover.png
+  thumb?: string;         // /research/<slug>/thumb.jpg (satellite card thumbnail)
   substack?: string;      // canonical Substack URL, when cross-posted
   sources?: Source[];
   readingMinutes?: number;

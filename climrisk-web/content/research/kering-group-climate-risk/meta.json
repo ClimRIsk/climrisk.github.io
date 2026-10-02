@@ -2,5 +2,13 @@
   "status": "published",
   "date": "2026-07-20",
   "author": "Shrinivash D Kannan",
-  "cover": "/research/kering-group-climate-risk/cover.png"
+  "cover": "/research/kering-group-climate-risk/cover.png",
+  "thumb": "/research/kering-group-climate-risk/thumb.jpg",
+  "images": [
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2C_55HFB_20260908_0_L2A over Merino wool belt near Yass, New South Wales, Australia (8 Sep 2026), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
 }

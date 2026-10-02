@@ -2,5 +2,13 @@
   "status": "published",
   "date": "2026-07-15",
   "author": "Shrinivash D Kannan",
-  "cover": "/research/european-olive-oil-climate-risk/cover.png"
+  "cover": "/research/european-olive-oil-climate-risk/cover.png",
+  "thumb": "/research/european-olive-oil-climate-risk/thumb.jpg",
+  "images": [
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2A_30SVG_20260822_0_L2A over Olive groves, Jaen province, Andalusia, Spain (22 Aug 2026), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
 }

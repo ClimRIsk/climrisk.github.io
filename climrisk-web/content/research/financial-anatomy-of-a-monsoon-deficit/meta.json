@@ -1,5 +1,13 @@
 {
   "status": "published",
   "date": "2026-08-13",
-  "author": "Shrinivash D Kannan"
+  "author": "Shrinivash D Kannan",
+  "thumb": "/research/financial-anatomy-of-a-monsoon-deficit/thumb.jpg",
+  "images": [
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2B_43QCV_20250212_0_L2A over Western Ghats monsoon belt near Mahabaleshwar, India (12 Feb 2025), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
 }

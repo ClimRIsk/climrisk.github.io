@@ -3,5 +3,13 @@
   "date": "2026-08-24",
   "author": "Shrinivash D Kannan",
   "cover": "/research/the-supply-chain-tax/cover.png",
-  "substack": "https://climriskresearch.substack.com/p/the-supply-chain-tax"
+  "substack": "https://climriskresearch.substack.com/p/the-supply-chain-tax",
+  "thumb": "/research/the-supply-chain-tax/thumb.jpg",
+  "images": [
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2A_45QZG_20251108_0_L2A over Dhaka, Bangladesh (8 Nov 2025), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
 }
