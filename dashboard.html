@@ -398,6 +398,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="openAssetIntel(null,null,null,null,{mode:'company',analyst:'1'});return false" title="Physical risk → current policies → NGFS transition → loss distribution"><span class="sb-icon"><i class="ph ph-brain"></i></span>AI Risk Analyst <span class="sb-badge" style="background:rgba(167,139,250,.2);color:#c4b5fd">New</span></a>
   <a class="sb-item" href="#" onclick="openEngineTool('carbon');return false" title="GHG inventory from activity data with an audit trail and assurance pack"><span class="sb-icon"><i class="ph ph-scales"></i></span>Carbon Accounting <span class="sb-badge" style="background:rgba(56,189,248,.2);color:#7dd3fc">GHG</span></a>
   <a class="sb-item" href="#" onclick="openPhysicalReport();return false" title="Physical risk report by sector: site, hazard zones, construction year, what will go wrong, what to do"><span class="sb-icon"><i class="ph ph-cloud-lightning"></i></span>Physical Risk Report <span class="sb-badge" style="background:rgba(249,115,22,.2);color:#fdba74">REPORT</span></a>
+  <a class="sb-item" href="#" onclick="openAssetTwin();return false" title="3D model of a real site: replay floods and cyclone winds, see what fails and how to protect it"><span class="sb-icon"><i class="ph ph-cube"></i></span>Asset Twin 3D <span class="sb-badge" style="background:rgba(56,189,248,.2);color:#7dd3fc">3D</span></a>
   <a class="sb-item" href="#" onclick="openLCA();return false" title="Cradle-to-gate product carbon footprint: cement, steel, aluminium, ammonia or any product"><span class="sb-icon"><i class="ph ph-recycle"></i></span>Product Carbon Footprint <span class="sb-badge" style="background:rgba(56,189,248,.2);color:#7dd3fc">LCA</span></a>
   <a class="sb-item" href="#" onclick="openEngineTool('plan');return false" title="Targets, decarbonisation levers, capex and emissions path (ESRS E1-1)"><span class="sb-icon"><i class="ph ph-path"></i></span>Transition Plan</a>
   <a class="sb-item" href="#" onclick="openEngineTool('realestate');return false" title="Operational carbon, stranding year and EPC/MEPS checks for buildings"><span class="sb-icon"><i class="ph ph-buildings"></i></span>Real Estate</a>
@@ -3383,6 +3384,7 @@ function openAssetIntel(lat, lon, name, type, extra) {
 var _ENGINE_TOOLS = {
   carbon:      {path: '/carbon/dashboard',          title: 'Carbon Accounting',          sub: 'GHG inventory · Scope 1, 2 (location + market), 3 · assurance pack', icon: 'ph-scales'},
   physical:    {path: '/reports/physical-risk/dashboard', title: 'Physical Risk Report', sub: 'Site · hazard zones · construction year · what goes wrong · what to do — no financials', icon: 'ph-cloud-lightning'},
+  twin:        {path: '/asset-twin/dashboard', title: 'Asset Twin', sub: 'Real site in 3D · flood and cyclone replay · past events · protection overlay', icon: 'ph-cube'},
   lca:         {path: '/lca/dashboard',             title: 'Product Carbon Footprint (LCA)', sub: 'Cradle-to-gate to cradle-to-grave · ISO 14067 study report · CBAM view · NGFS grid pathways', icon: 'ph-recycle'},
   plan:        {path: '/transition-plan/dashboard', title: 'Transition Plan',            sub: 'Targets → levers → capex → emissions path · ESRS E1-1 · TPT', icon: 'ph-path'},
   realestate:  {path: '/real-estate/dashboard',     title: 'Real Estate Decarbonisation', sub: 'Operational carbon · stranding year · EPC / MEPS checks', icon: 'ph-buildings'},
@@ -3420,6 +3422,7 @@ function openEngineTool(key, query) {
   window.addEventListener('message', onMsg);
 }
 function openPhysicalReport(q) { openEngineTool('physical', q || ''); }
+function openAssetTwin(q) { openEngineTool('twin', q || ''); }
 function openLCA(product) { openEngineTool('lca', product ? 'product=' + encodeURIComponent(product) : ''); }
 
 function openAddCompanyModal() {
