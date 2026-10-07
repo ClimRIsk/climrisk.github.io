@@ -6918,7 +6918,7 @@ function buildCBAMPanel(data, nze, dt, cp, company, sector) {
     <div class="crai-logo">CR</div>
     <div style="flex:1">
       <div class="crai-title">ClimRisk AI</div>
-      <div class="crai-subtitle">Powered by Groq · llama-3.3-70b</div>
+      <div class="crai-subtitle">Resident agent · runs inside the engine · no API key</div>
     </div>
     <button id="crai-close" onclick="craiToggle()">✕</button>
   </div>
@@ -6933,15 +6933,15 @@ function buildCBAMPanel(data, nze, dt, cp, company, sector) {
   <div id="crai-chat-tab" style="display:flex;flex-direction:column;flex:1;min-height:0;">
     <!-- Suggestion chips -->
     <div id="crai-chips">
+      <div class="crai-chip" onclick="craiSend('What did you find while I was away?')">While I was away</div>
       <div class="crai-chip" onclick="craiSend('Assess Shell plc')">Assess Shell</div>
-      <div class="crai-chip" onclick="craiSend('Compare BP, Shell, and TotalEnergies climate risk')">Compare oil majors</div>
-      <div class="crai-chip" onclick="craiSend('Which companies in my watchlist have the highest transition risk?')">Watchlist risk</div>
-      <div class="crai-chip" onclick="craiSend('What is NGFS Net Zero 2050 scenario?')">Explain NGFS</div>
+      <div class="crai-chip" onclick="craiSend('Run the autopilot now')">Run autopilot now</div>
+      <div class="crai-chip" onclick="craiSend('Scan this week\'s events')">Scan hazards</div>
     </div>
 
     <!-- Messages -->
     <div id="crai-messages">
-      <div class="crai-msg ai">👋 Hi! I'm ClimRisk AI. I can assess any public company's climate risk, compare portfolios, and answer TCFD / ISSB / CSRD questions. What would you like to analyse?</div>
+      <div class="crai-msg ai">👋 Hi! I'm the ClimRisk resident agent. I work in the background while the app is open: scanning live hazards, re-running your watched sites in 3D, and drafting posts. Ask “what did you find while I was away?”, or tell me to assess a company, build a twin or write a report.</div>
     </div>
 
     <!-- Input -->
@@ -7008,31 +7008,82 @@ function buildCBAMPanel(data, nze, dt, cp, company, sector) {
     document.getElementById('crai-send').disabled = true;
     document.getElementById('crai-chips').style.display = 'none';
 
-    fetch(_ENGINE + '/chat', {
+    var sess = sessionStorage.getItem('crai_session') || ('s' + Math.random().toString(36).slice(2, 10)); sessionStorage.setItem('crai_session', sess);
+    fetch(_ENGINE + '/resident/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'X-API-Key': _apiKey },
-      body: JSON.stringify({ message: msg, conversation_id: _convId }),
+      body: JSON.stringify({ text: msg, session: sess }),
     })
-    .then(function(r) { return r.json(); })
-    .then(function(d) {
+    .then(function(r) { return r.json().then(function(j) { return { ok: r.ok, status: r.status, j: j }; }); })
+    .then(function(r) {
       _removeThinking();
-      if (d.reply) {
-        _addMsg(d.reply, 'ai');
-      } else if (d.detail && d.detail.hint) {
-        _addMsg('⚠️ AI not configured: ' + d.detail.hint, 'ai');
-      } else {
-        _addMsg('Something went wrong. Please try again.', 'ai');
-      }
+      var d = r.j;
+      if (!r.ok) { _addMsg(r.status === 403 ? 'The engine needs your API key — sign in again.' : 'The engine returned ' + r.status + '.', 'ai'); return; }
+      var el = _addRich(d.reply, d.blocks, d.actions);
+      if (d.job) { _think(); _pollJob(d.job, el); }
     })
     .catch(function(err) {
       _removeThinking();
-      _addMsg('⚠️ Could not reach ClimRisk AI. Is the engine running?', 'ai');
+      _addMsg('⚠️ Could not reach the engine. Is the app still starting?', 'ai');
     })
     .finally(function() {
       _loading = false;
       document.getElementById('crai-send').disabled = false;
     });
   };
+
+  function _pollJob(jid, el) {
+    var t = setInterval(function() {
+      fetch(_ENGINE + '/resident/job/' + jid, { headers: { 'X-API-Key': _apiKey } }).then(function(r) { return r.json(); }).then(function(j) {
+        if (j.status === 'running') return;
+        clearInterval(t); _removeThinking();
+        if (j.status === 'done') _addRich(j.reply || 'Done.', j.blocks, j.actions); else _addMsg('The job failed: ' + (j.error || j.status), 'ai');
+      });
+    }, 2500);
+  }
+
+  function _addRich(text, blocks, actions) {
+    var el = document.createElement('div'); el.className = 'crai-msg ai';
+    var h = '<div>' + _esc(text || '').replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>') + '</div>';
+    (blocks || []).forEach(function(b) {
+      if (b.type === 'list') h += '<ul style="margin:6px 0 0 16px;padding:0">' + b.items.map(function(i) { return '<li>' + _esc(i) + '</li>'; }).join('') + '</ul>';
+      else if (b.type === 'table') h += '<table style="border-collapse:collapse;margin-top:8px;font-size:11px;width:100%"><tr>' + b.head.map(function(c) { return '<th style="text-align:left;border-bottom:1px solid #334155;padding:3px 4px;color:#94a3b8">' + _esc(c) + '</th>'; }).join('') + '</tr>' + b.rows.map(function(r) { return '<tr>' + r.map(function(c) { return '<td style="border-bottom:1px solid #1e293b;padding:3px 4px">' + _esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>';
+      else if (b.type === 'note') h += '<div style="margin-top:6px;color:#94a3b8;font-size:11.5px">' + _esc(b.text) + '</div>';
+      else if (b.type === 'post') h += '<div style="margin-top:8px;border:1px solid #334155;border-radius:8px;padding:8px;font-size:12px;white-space:pre-wrap">' + _esc(b.text) + '</div>';
+    });
+    el.innerHTML = h;
+    (actions || []).forEach(function(a) {
+      var btn = document.createElement('span');
+      btn.textContent = a.label; btn.className = 'crai-chip'; btn.style.cssText = 'display:inline-block;margin:6px 6px 0 0;cursor:pointer';
+      btn.onclick = function() {
+        if (a.type === 'say') craiSend(a.text);
+        else if (a.type === 'intent') craiSend(a.text);
+        else if (a.type === 'open') window.open(_ENGINE + a.url + (a.url.indexOf('#') < 0 && _apiKey ? '#key=' + encodeURIComponent(_apiKey) : ''), '_blank');
+        else if (a.type === 'copy' && b_post(blocks)) { navigator.clipboard && navigator.clipboard.writeText(b_post(blocks).text); btn.textContent = 'Copied'; }
+        else if (a.type === 'publish') _addMsg('Publishing needs your explicit approval in the Agent page: open “ClimRisk Agent” in the sidebar.', 'ai');
+      };
+      el.appendChild(btn);
+    });
+    var msgs = document.getElementById('crai-messages'); msgs.appendChild(el); msgs.scrollTop = msgs.scrollHeight; return el;
+  }
+  function b_post(blocks) { return (blocks || []).filter(function(b) { return b.type === 'post'; })[0]; }
+
+  // ── autopilot inbox: what the agent did while the app was open ──
+  function _pullInbox() {
+    fetch(_ENGINE + '/resident/inbox?unread=true', { headers: { 'X-API-Key': _apiKey } }).then(function(r) { return r.ok ? r.json() : null; }).then(function(d) {
+      if (!d) return;
+      var b = document.getElementById('crai-badge'); if (b) { b.textContent = d.unread ? String(d.unread) : 'AI'; }
+      var st = d.status || {}; var sub = document.querySelector('.crai-subtitle');
+      if (sub && st.enabled) sub.textContent = 'Resident agent · autopilot on · ' + (st.last_run ? 'last cycle ' + Math.max(0, Math.round((Date.now() / 1000 - st.last_run) / 60)) + ' min ago' : 'first cycle starting') + (st.running ? ' · working…' : '');
+      if (d.unread && _open) {
+        d.items.slice().reverse().forEach(function(it) { _addRich('🛰 ' + it.title + '\n' + it.detail, it.blocks, it.actions); });
+        fetch(_ENGINE + '/resident/inbox/read', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-API-Key': _apiKey }, body: JSON.stringify({ ids: d.items.map(function(i) { return i.id; }) }) });
+      }
+    }).catch(function() {});
+  }
+  var _origToggle = window.craiToggle;
+  window.craiToggle = function() { _origToggle(); if (_open) _pullInbox(); };
+  setTimeout(_pullInbox, 4000); setInterval(_pullInbox, 60000);
 
   function _addMsg(text, role) {
     var el = document.createElement('div');

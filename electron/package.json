@@ -1,7 +1,7 @@
 {
   "name": "climrisk-desktop",
   "productName": "ClimRisk Intelligence",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Enterprise Climate Financial Risk Intelligence Platform",
   "main": "main.js",
   "author": {
