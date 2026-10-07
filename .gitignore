@@ -79,3 +79,8 @@ ClimRisk_Investor_Pitch_75k.pptx
 *.bundle
 /Shrinivash_CV*
 /meridian_climrisk_report.html
+mac-test/data-*/
+mac-test/run.log
+mac-test/*.log
+mac-test/e2e.json
+mac-test/DONE
