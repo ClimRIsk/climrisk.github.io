@@ -7050,6 +7050,8 @@ function buildCBAMPanel(data, nze, dt, cp, company, sector) {
       else if (b.type === 'table') h += '<table style="border-collapse:collapse;margin-top:8px;font-size:11px;width:100%"><tr>' + b.head.map(function(c) { return '<th style="text-align:left;border-bottom:1px solid #334155;padding:3px 4px;color:#94a3b8">' + _esc(c) + '</th>'; }).join('') + '</tr>' + b.rows.map(function(r) { return '<tr>' + r.map(function(c) { return '<td style="border-bottom:1px solid #1e293b;padding:3px 4px">' + _esc(c) + '</td>'; }).join('') + '</tr>'; }).join('') + '</table>';
       else if (b.type === 'note') h += '<div style="margin-top:6px;color:#94a3b8;font-size:11.5px">' + _esc(b.text) + '</div>';
       else if (b.type === 'post') h += '<div style="margin-top:8px;border:1px solid #334155;border-radius:8px;padding:8px;font-size:12px;white-space:pre-wrap">' + _esc(b.text) + '</div>';
+      else if (b.type === 'sources') h += '<div style="margin-top:6px;color:#94a3b8;font-size:11.5px"><b>Sources</b><br>' + b.items.map(function(s) { return '[' + s.n + '] <a href="' + _esc(s.url) + '" target="_blank" rel="noopener" style="color:#7cc4ff">' + _esc(s.title) + '</a> · learned ' + _esc(s.learned); }).join('<br>') + '</div>';
+      else if (b.type === 'files') h += '<div style="margin-top:8px">' + b.items.map(function(f) { return '<a href="' + _esc(_ENGINE + f.url) + '" target="_blank" rel="noopener" class="crai-chip" style="display:inline-block;margin:0 6px 6px 0;text-decoration:none">' + _esc(f.label) + '</a>'; }).join('') + '</div>';
     });
     el.innerHTML = h;
     (actions || []).forEach(function(a) {

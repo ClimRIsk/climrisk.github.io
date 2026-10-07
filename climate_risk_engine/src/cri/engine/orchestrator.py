@@ -236,6 +236,22 @@ def run_full(
         r.financial_score  = round(rating.financial.score, 2)
         r.adaptive_score   = round(adaptive, 2)
 
+    # Step 4: gather physical hazard provenance at full resolution (_depth=0).
+    # We use the NZE 2050 scenario as the reference (SSP1-2.6 = most conservative
+    # warming trajectory) so provenance reflects the best available data quality.
+    # The same provenance block is attached to all three RunResults — provenance
+    # is per-asset, not per-scenario.
+    try:
+        from ..operations.company import get_physical_provenance
+        provenance = get_physical_provenance(
+            company, _scen.NZE_2050, reference_year=2026
+        )
+        for r in (r_nze, r_dt, r_cp):
+            r.physical_hazard_detail = provenance
+    except Exception:
+        # Provenance is supplementary — never let it break a run
+        pass
+
     return FullRunResult(
         company_id=company.id,
         results={"nze": r_nze, "delayed": r_dt, "cp": r_cp},

@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CRI 3D Terrain Hazard Viewer</title>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#0f172a;color:#e2e8f0;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+  #header{padding:10px 16px;background:#1e293b;border-bottom:1px solid #334155;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+  #header h1{font-size:14px;font-weight:700;color:#f8fafc}
+  #header .subtitle{font-size:11px;color:#94a3b8}
+  #controls{padding:8px 16px;background:#1e293b;border-bottom:1px solid #334155;display:flex;gap:12px;align-items:center;flex-wrap:wrap;flex-shrink:0}
+  .ctrl-group{display:flex;align-items:center;gap:6px}
+  .ctrl-label{font-size:10px;color:#94a3b8;white-space:nowrap}
+  input[type=range]{width:90px;accent-color:#3b82f6}
+  select,input[type=number]{background:#0f172a;border:1px solid #334155;color:#e2e8f0;padding:3px 7px;border-radius:5px;font-size:11px}
+  #fetch-btn{background:#2563eb;color:#fff;border:none;padding:5px 14px;border-radius:5px;font-size:11px;font-weight:600;cursor:pointer}
+  #fetch-btn:hover{background:#1d4ed8}
+  #fetch-btn:disabled{background:#334155;cursor:not-allowed}
+  #canvas-wrap{flex:1;position:relative;overflow:hidden}
+  canvas{display:block;width:100%!important;height:100%!important}
+  #legend{position:absolute;bottom:12px;left:12px;background:rgba(15,23,42,.85);border:1px solid #334155;border-radius:8px;padding:8px 12px;font-size:11px;min-width:150px}
+  #legend h3{font-size:10px;font-weight:700;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px}
+  .leg-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+  .leg-swatch{width:14px;height:14px;border-radius:3px;flex-shrink:0}
+  #risk-panel{position:absolute;top:12px;right:12px;background:rgba(15,23,42,.92);border:1px solid #334155;border-radius:8px;padding:12px;font-size:11px;max-width:260px;max-height:calc(100% - 24px);overflow-y:auto}
+  #risk-panel h3{font-size:12px;font-weight:700;color:#f1f5f9;margin-bottom:8px}
+  .risk-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:8px}
+  .risk-label{color:#94a3b8;font-size:10px}
+  .risk-badge{padding:2px 8px;border-radius:4px;font-size:10px;font-weight:700}
+  .HIGH{background:#fef2f2;color:#b91c1c}
+  .MEDIUM{background:#fff7ed;color:#c2410c}
+  .LOW{background:#fefce8;color:#854d0e}
+  .NEGLIGIBLE{background:#f0fdf4;color:#166534}
+  .metric-val{font-weight:700;color:#e2e8f0}
+  .mechanism{background:#1e293b;border-radius:5px;padding:6px 8px;margin-bottom:4px;font-size:10px;color:#cbd5e1;line-height:1.5}
+  .action{background:#172554;border-left:3px solid #3b82f6;padding:5px 8px;margin-bottom:4px;font-size:10px;color:#bfdbfe;line-height:1.5}
+  #status{position:absolute;bottom:12px;right:12px;background:rgba(15,23,42,.85);border:1px solid #334155;border-radius:6px;padding:5px 10px;font-size:10px;color:#94a3b8}
+  #loading-overlay{position:absolute;inset:0;background:rgba(15,23,42,.8);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:10}
+  #loading-overlay.hidden{display:none}
+  .spinner{width:36px;height:36px;border:3px solid #334155;border-top-color:#3b82f6;border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #loading-msg{font-size:12px;color:#94a3b8}
+</style>
+</head>
+<body>
+
+<div id="header">
+  <div>
+    <h1>🏔 CRI Terrain Hazard Viewer</h1>
+    <div class="subtitle">SRTM 30m DEM · Slope analysis · Debris flow modelling · D8 flow accumulation</div>
+  </div>
+  <div style="font-size:10px;color:#475569">Data: NASA SRTM v3 via Open-Topo-Data · No API key required</div>
+</div>
+
+<div id="controls">
+  <div class="ctrl-group">
+    <span class="ctrl-label">Lat</span>
+    <input type="number" id="inp-lat" value="22.8046" step="0.0001" style="width:100px">
+    <span class="ctrl-label">Lon</span>
+    <input type="number" id="inp-lon" value="86.2029" step="0.0001" style="width:100px">
+    <span class="ctrl-label">Name</span>
+    <input type="text" id="inp-name" value="Jamshedpur Steel Plant" style="width:180px">
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Radius</span>
+    <select id="inp-radius">
+      <option value="2">2 km</option>
+      <option value="3" selected>3 km</option>
+      <option value="5">5 km</option>
+    </select>
+    <span class="ctrl-label">Spacing</span>
+    <select id="inp-spacing">
+      <option value="100">100 m</option>
+      <option value="200" selected>200 m</option>
+      <option value="300">300 m</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">View</span>
+    <select id="inp-layer">
+      <option value="slope">Slope angle</option>
+      <option value="elevation">Elevation</option>
+      <option value="tpi">TPI (position)</option>
+      <option value="flow">Flow paths</option>
+    </select>
+  </div>
+  <div class="ctrl-group">
+    <span class="ctrl-label">Exaggeration</span>
+    <input type="range" id="inp-exag" min="1" max="10" value="3" step="0.5">
+    <span id="exag-val" style="font-size:10px;color:#94a3b8;width:20px">3×</span>
+  </div>
+  <button id="fetch-btn" onclick="runAnalysis()">▶ Analyse Terrain</button>
+  <div class="ctrl-group" id="demo-presets">
+    <span class="ctrl-label">Presets:</span>
+    <select onchange="loadPreset(this.value)">
+      <option value="">— choose —</option>
+      <option value="22.8046,86.2029,Jamshedpur Steel Plant">Jamshedpur (slope)</option>
+      <option value="25.7741,-80.1842,PortMiami Terminal">PortMiami (flat coastal)</option>
+      <option value="51.5890,-3.8000,Port Talbot Steelworks">Port Talbot (coastal slope)</option>
+      <option value="33.6407,-84.4277,Atlanta ATL Hub">Atlanta ATL (piedmont)</option>
+      <option value="-27.7942,153.3023,Brisbane Slope Test">Mt Coot-tha (test slope)</option>
+    </select>
+  </div>
+</div>
+
+<div id="canvas-wrap">
+  <canvas id="c"></canvas>
+
+  <div id="loading-overlay">
+    <div class="spinner"></div>
+    <div id="loading-msg">Enter coordinates and click Analyse Terrain</div>
+  </div>
+
+  <div id="legend">
+    <h3 id="legend-title">Slope Angle</h3>
+    <div id="legend-rows"></div>
+  </div>
+
+  <div id="risk-panel" style="display:none"></div>
+  <div id="status"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+// ─── Global state ────────────────────────────────────────────────────────────
+var scene, camera, renderer, meshGroup;
+var isDragging=false, prevMouse={x:0,y:0};
+var rotX=0.6, rotY=0.3, zoom=1.0;
+var currentGrid=null, currentResult=null;
+var LAYER='slope';
+
+// ─── Three.js init ────────────────────────────────────────────────────────────
+function initThree(){
+  var wrap=document.getElementById('canvas-wrap');
+  var w=wrap.clientWidth, h=wrap.clientHeight;
+  renderer=new THREE.WebGLRenderer({canvas:document.getElementById('c'),antialias:true,alpha:true});
+  renderer.setSize(w,h);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setClearColor(0x0f172a,1);
+  scene=new THREE.Scene();
+  camera=new THREE.PerspectiveCamera(45,w/h,0.1,2000);
+  camera.position.set(0,200,400);
+  camera.lookAt(0,0,0);
+  scene.add(new THREE.AmbientLight(0xffffff,0.6));
+  var dl=new THREE.DirectionalLight(0xffffff,0.8);
+  dl.position.set(1,2,1).normalize();
+  scene.add(dl);
+  meshGroup=new THREE.Group();
+  scene.add(meshGroup);
+  animate();
+  // Mouse controls
+  var c=document.getElementById('c');
+  c.addEventListener('mousedown',function(e){isDragging=true;prevMouse={x:e.clientX,y:e.clientY};});
+  window.addEventListener('mouseup',function(){isDragging=false;});
+  window.addEventListener('mousemove',function(e){
+    if(!isDragging)return;
+    var dx=e.clientX-prevMouse.x, dy=e.clientY-prevMouse.y;
+    rotY+=dx*0.008; rotX+=dy*0.008;
+    rotX=Math.max(-1.4,Math.min(1.4,rotX));
+    prevMouse={x:e.clientX,y:e.clientY};
+    updateCamera();
+  });
+  c.addEventListener('wheel',function(e){
+    zoom*=(e.deltaY>0)?1.1:0.9;
+    zoom=Math.max(0.2,Math.min(5,zoom));
+    updateCamera();
+    e.preventDefault();
+  },{passive:false});
+  window.addEventListener('resize',function(){
+    var ww=wrap.clientWidth,wh=wrap.clientHeight;
+    renderer.setSize(ww,wh);
+    camera.aspect=ww/wh;
+    camera.updateProjectionMatrix();
+  });
+}
+function updateCamera(){
+  var r=300*zoom;
+  camera.position.x=r*Math.sin(rotY)*Math.cos(rotX);
+  camera.position.y=r*Math.sin(rotX);
+  camera.position.z=r*Math.cos(rotY)*Math.cos(rotX);
+  camera.lookAt(0,0,0);
+}
+function animate(){ requestAnimationFrame(animate); renderer.render(scene,camera); }
+
+// ─── Open-Topo-Data fetch ─────────────────────────────────────────────────────
+var _TOPO_API='https://api.opentopodata.org/v1/srtm30m';
+var _lastCall=0;
+
+function throttledFetch(url){
+  var now=Date.now(), wait=Math.max(0,1100-（now-_lastCall));
+  return new Promise(function(res,rej){
+    setTimeout(function(){
+      _lastCall=Date.now();
+      fetch(url).then(function(r){return r.json();}).then(res).catch(rej);
+    },wait);
+  });
+}
+
+async function fetchElevationGrid(lat,lon,radiusKm,spacingM){
+  var mPerDegLat=111132, mPerDegLon=111412*Math.cos(lat*Math.PI/180);
+  var dLat=spacingM/mPerDegLat, dLon=spacingM/mPerDegLon;
+  var n=Math.ceil(radiusKm*1000/spacingM);
+  var rows=2*n+1, cols=2*n+1;
+
+  // Build all (lat,lon) pairs
+  var locs=[];
+  for(var r=0;r<rows;r++){
+    for(var c=0;c<cols;c++){
+      locs.push({lat:lat+(n-r)*dLat, lon:lon+(c-n)*dLon, r:r, c:c});
+    }
+  }
+
+  // Batch into groups of 100
+  var elevations=Array.from({length:rows},function(){return Array(cols).fill(NaN);});
+  var batches=[];
+  for(var i=0;i<locs.length;i+=100) batches.push(locs.slice(i,i+100));
+
+  setLoading('Fetching SRTM elevation data… ('+batches.length+' API calls)');
+
+  for(var bi=0;bi<batches.length;bi++){
+    var batch=batches[bi];
+    setLoading('Fetching SRTM '+Math.round((bi/batches.length)*100)+'%… (batch '+(bi+1)+'/'+batches.length+')');
+    var locStr=batch.map(function(p){return p.lat.toFixed(5)+','+p.lon.toFixed(5);}).join('|');
+    var url=_TOPO_API+'?locations='+encodeURIComponent(locStr);
+    try{
+      var now=Date.now(), wait=Math.max(0,1150-（now-_lastCall));
+      if(wait>0) await new Promise(function(r){setTimeout(r,wait);});
+      _lastCall=Date.now();
+      var resp=await fetch(url);
+      var data=await resp.json();
+      var results=data.results||[];
+      for(var j=0;j<results.length;j++){
+        var p=batch[j], el=results[j].elevation;
+        if(el!=null&&el>-1000) elevations[p.r][p.c]=el;
+      }
+    }catch(e){
+      console.warn('Batch '+bi+' failed:',e);
+    }
+  }
+
+  return {rows:rows,cols:cols,ar:n,ac:n,cellM:spacingM,elevations:elevations};
+}
+
+// ─── Slope / TPI / Flow computation ──────────────────────────────────────────
+function computeSlope(dem,csM){
+  var R=dem.length,C=dem[0].length;
+  var out=Array.from({length:R},function(){return Array(C).fill(NaN);});
+  for(var r=1;r<R-1;r++){
+    for(var c=1;c<C-1;c++){
+      var z=dem[r][c]; if(isNaN(z)) continue;
+      function e(dr,dc){var v=dem[r+dr][c+dc];return isNaN(v)?z:v;}
+      var dx=(e(-1,1)+2*e(0,1)+e(1,1)-e(-1,-1)-2*e(0,-1)-e(1,-1))/(8*csM);
+      var dy=(e(1,-1)+2*e(1,0)+e(1,1)-e(-1,-1)-2*e(-1,0)-e(-1,1))/(8*csM);
+      out[r][c]=Math.atan(Math.sqrt(dx*dx+dy*dy))*180/Math.PI;
+    }
+  }
+  return out;
+}
+
+function computeTPI(dem,win){
+  var R=dem.length,C=dem[0].length;
+  var out=Array.from({length:R},function(){return Array(C).fill(NaN);});
+  for(var r=0;r<R;r++){
+    for(var c=0;c<C;c++){
+      var z=dem[r][c]; if(isNaN(z)) continue;
+      var vals=[];
+      for(var dr=-win;dr<=win;dr++){for(var dc=-win;dc<=win;dc++){
+        if(dr===0&&dc===0) continue;
+        var rr=r+dr,cc=c+dc;
+        if(rr>=0&&rr<R&&cc>=0&&cc<C&&!isNaN(dem[rr][cc])) vals.push(dem[rr][cc]);
+      }}
+      if(vals.length) out[r][c]=z-vals.reduce(function(a,b){return a+b;},0)/vals.length;
+    }
+  }
+  return out;
+}
+
+// D8 flow direction (simplified — find steepest descent neighbour)
+var D8=[{dr:0,dc:1},{dr:1,dc:1},{dr:1,dc:0},{dr:1,dc:-1},
+        {dr:0,dc:-1},{dr:-1,dc:-1},{dr:-1,dc:0},{dr:-1,dc:1}];
+
+function computeFlowDir(dem){
+  var R=dem.length,C=dem[0].length;
+  var fd=Array.from({length:R},function(){return Array(C).fill(-1);});
+  for(var r=1;r<R-1;r++){
+    for(var c=1;c<C-1;c++){
+      var z=dem[r][c]; if(isNaN(z)) continue;
+      var bestD=-1,bestDrop=0;
+      for(var d=0;d<8;d++){
+        var nz=dem[r+D8[d].dr][c+D8[d].dc];
+        if(!isNaN(nz)&&z-nz>bestDrop){bestDrop=z-nz;bestD=d;}
+      }
+      fd[r][c]=bestD;
+    }
+  }
+  return fd;
+}
+
+function upstreamCells(fd,ar,ac){
+  var R=fd.length,C=fd[0].length;
+  var visited=new Set(), stack=[ar+','+ac];
+  while(stack.length){
+    var key=stack.pop();
+    if(visited.has(key)) continue;
+    visited.add(key);
+    var parts=key.split(','), r=+parts[0], c=+parts[1];
+    // find cells that flow into (r,c)
+    for(var d=0;d<8;d++){
+      var pr=r-D8[d].dr, pc=c-D8[d].dc;
+      if(pr>=0&&pr<R&&pc>=0&&pc<C&&fd[pr][pc]===d){
+        stack.push(pr+','+pc);
+      }
+    }
+  }
+  return visited;
+}
+
+// ─── Risk scoring (mirrors Python analyzer) ───────────────────────────────────
+function scoreDebrisFlow(tp,tpiV,area,maxSlope,head,assetSlope){
+  if(tp==='footslope'||tp==='valley'||tp==='valley bottom'){
+    if(area>0.5&&maxSlope>25&&head>50) return 'HIGH';
+  }
+  if(area>1.0&&maxSlope>30) return 'HIGH';
+  if((area>0.2&&maxSlope>20)||(tpiV<-5&&head>30)) return 'MEDIUM';
+  if(assetSlope>15&&assetSlope<=25) return 'MEDIUM';
+  if(area<0.2||maxSlope<15) return 'LOW';
+  return 'LOW';
+}
+function scoreTerrainPos(tpiV,slope){
+  if(tpiV>10&&slope<6) return 'plateau/ridge';
+  if(tpiV>10) return 'ridge';
+  if(tpiV>3) return 'upper slope';
+  if(tpiV<-10&&slope<6) return 'valley bottom';
+  if(tpiV<-10) return 'valley';
+  if(tpiV<-3) return 'footslope';
+  if(slope<6) return 'flat';
+  return 'mid slope';
+}
+
+// ─── Colour maps ──────────────────────────────────────────────────────────────
+function slopeColor(deg){
+  // Green (<5) → Yellow-green (10) → Orange (20) → Red (30+)
+  if(isNaN(deg)) return {r:0.2,g:0.2,b:0.2};
+  var t=Math.min(1,deg/35);
+  return {
+    r:Math.min(1,t*2),
+    g:Math.max(0,1-Math.abs(t-0.3)*3),
+    b:Math.max(0,0.3-t*0.5)
+  };
+}
+function elevColor(z,zMin,zMax){
+  var t=(zMax>zMin)?Math.max(0,Math.min(1,(z-zMin)/(zMax-zMin))):0.5;
+  // Terrain palette: deep green → brown → white
+  if(t<0.4){var s=t/0.4;return{r:0.1+s*0.4,g:0.35+s*0.2,b:0.1};}
+  if(t<0.7){var s=(t-0.4)/0.3;return{r:0.5+s*0.3,g:0.55-s*0.2,b:0.1};}
+  var s=(t-0.7)/0.3;return{r:0.8+s*0.2,g:0.35+s*0.65,b:0.25+s*0.75};
+}
+function tpiColor(v){
+  if(isNaN(v)) return {r:0.2,g:0.2,b:0.2};
+  var t=Math.max(-1,Math.min(1,v/15));
+  if(t>0) return {r:0.15+t*0.6,g:0.2+t*0.3,b:0.1};    // positive = ridge = warm brown
+  return {r:0.1,g:0.15+(-t)*0.4,b:0.4+(-t)*0.5};        // negative = valley = cool blue
+}
+function flowColor(acc,maxAcc){
+  var t=Math.min(1,acc/(maxAcc*0.15+1));
+  return {r:0,g:0.3+t*0.5,b:0.6+t*0.4};
+}
+
+// ─── Build Three.js mesh from grid ───────────────────────────────────────────
+function buildMesh(grid,slopeG,tpiG,flowAcc,layer,exag){
+  // Clear old mesh
+  while(meshGroup.children.length) meshGroup.remove(meshGroup.children[0]);
+
+  var R=grid.rows,C=grid.cols,csM=grid.cellM;
+  var W=C-1,H=R-1;
+  var dem=grid.elevations;
+
+  // Find elevation range for colour mapping
+  var zVals=dem.flat().filter(function(v){return !isNaN(v);});
+  var zMin=Math.min.apply(null,zVals), zMax=Math.max.apply(null,zVals);
+  var assetZ=dem[grid.ar][grid.ac];
+
+  // Max flow accumulation for colour scaling
+  var maxAcc=flowAcc?Math.max.apply(null,flowAcc.flat().filter(function(v){return !isNaN(v);})):1;
+
+  // Geometry: (C-1)*(R-1) quads → 2 triangles each
+  var geo=new THREE.BufferGeometry();
+  var positions=[], colors=[], indices=[];
+  var scale=200/Math.max(W*csM,H*csM);  // normalise to ±100 units
+  var vertIdx=0;
+  var vertMap=Array.from({length:R},function(){return Array(C).fill(-1);});
+
+  for(var r=0;r<R;r++){
+    for(var c=0;c<C;c++){
+      var z=dem[r][c]; if(isNaN(z)) z=zMin;
+      var x=(c-C/2)*csM*scale;
+      var y_pos=(z-zMin)*exag*scale*(5/(zMax-zMin+1));
+      var zp=(R/2-r)*csM*scale;
+      positions.push(x,y_pos,zp);
+
+      // Colour by layer
+      var col;
+      if(layer==='slope'){
+        col=slopeColor(slopeG?slopeG[r][c]:NaN);
+      }else if(layer==='elevation'){
+        col=elevColor(z,zMin,zMax);
+      }else if(layer==='tpi'){
+        col=tpiColor(tpiG?tpiG[r][c]:NaN);
+      }else if(layer==='flow'){
+        var acc=flowAcc?flowAcc[r][c]:0;
+        col=flowColor(isNaN(acc)?0:acc,maxAcc);
+        // Blend with slight elevation tint
+        var ec=elevColor(z,zMin,zMax);
+        col={r:col.r*0.7+ec.r*0.3,g:col.g*0.7+ec.g*0.3,b:col.b*0.7+ec.b*0.3};
+      }else{
+        col={r:0.5,g:0.5,b:0.5};
+      }
+      colors.push(col.r,col.g,col.b);
+      vertMap[r][c]=vertIdx++;
+    }
+  }
+
+  // Triangulate
+  for(var r=0;r<R-1;r++){
+    for(var c=0;c<C-1;c++){
+      var a=vertMap[r][c],b=vertMap[r][c+1],d=vertMap[r+1][c],e2=vertMap[r+1][c+1];
+      if(a>=0&&b>=0&&d>=0) indices.push(a,b,d);
+      if(b>=0&&e2>=0&&d>=0) indices.push(b,e2,d);
+    }
+  }
+
+  geo.setIndex(indices);
+  geo.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+  geo.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+  geo.computeVertexNormals();
+
+  var mat=new THREE.MeshPhongMaterial({vertexColors:true,side:THREE.DoubleSide,shininess:20});
+  var mesh=new THREE.Mesh(geo,mat);
+  meshGroup.add(mesh);
+
+  // ── Asset marker (red cylinder) ───
+  var ar=grid.ar,ac=grid.ac;
+  var ax=(ac-C/2)*csM*scale;
+  var az2=(R/2-ar)*csM*scale;
+  var az_elev=dem[ar][ac]; if(isNaN(az_elev)) az_elev=zMin;
+  var ay=(az_elev-zMin)*exag*scale*(5/(zMax-zMin+1));
+  var cyl=new THREE.CylinderGeometry(2,2,30,12);
+  var cylMat=new THREE.MeshPhongMaterial({color:0xff2222});
+  var cylMesh=new THREE.Mesh(cyl,cylMat);
+  cylMesh.position.set(ax,ay+15,az2);
+  meshGroup.add(cylMesh);
+
+  // ── Upstream catchment highlight (white wireframe) ───
+  if(grid._upstream&&grid._upstream.size>0){
+    var upGeo=new THREE.BufferGeometry();
+    var upPos=[];
+    grid._upstream.forEach(function(key){
+      var parts=key.split(','),ur=+parts[0],uc=+parts[1];
+      if(ur>=0&&ur<R&&uc>=0&&uc<C){
+        var uz=dem[ur][uc]; if(isNaN(uz)) uz=zMin;
+        var ux=(uc-C/2)*csM*scale;
+        var uy=(uz-zMin)*exag*scale*(5/(zMax-zMin+1))+1.5;
+        var uzp=(R/2-ur)*csM*scale;
+        upPos.push(ux,uy,uzp);
+      }
+    });
+    if(upPos.length>0){
+      upGeo.setAttribute('position',new THREE.Float32BufferAttribute(upPos,3));
+      var upMat=new THREE.PointsMaterial({color:0x00aaff,size:3,transparent:true,opacity:0.7});
+      meshGroup.add(new THREE.Points(upGeo,upMat));
+    }
+  }
+
+  // ── Scale bar ───
+  var sbLen=Math.round(0.2*Math.max(W,H)*csM/100)*100;
+  var sbGeo=new THREE.BufferGeometry();
+  var sbStart=-(C/2)*csM*scale+10;
+  sbGeo.setAttribute('position',new THREE.Float32BufferAttribute([
+    sbStart,0,-(R/2)*csM*scale+10,
+    sbStart+sbLen*scale,0,-(R/2)*csM*scale+10
+  ],3));
+  meshGroup.add(new THREE.Line(sbGeo,new THREE.LineBasicMaterial({color:0xffffff})));
+
+  // Centre group
+  meshGroup.position.set(0,0,0);
+  var box=new THREE.Box3().setFromObject(meshGroup);
+  var ctr=box.getCenter(new THREE.Vector3());
+  meshGroup.position.set(-ctr.x,-ctr.y,-ctr.z);
+}
+
+// ─── Flow accumulation BFS ────────────────────────────────────────────────────
+function computeFlowAcc(fd,R,C){
+  // Simple accumulation: count of upstream cells (BFS from each cell's result)
+  var acc=Array.from({length:R},function(){return Array(C).fill(0);});
+  for(var r=0;r<R;r++){
+    for(var c=0;c<C;c++){
+      var d=fd[r][c]; if(d<0) continue;
+      var nr=r+D8[d].dr,nc=c+D8[d].dc;
+      if(nr>=0&&nr<R&&nc>=0&&nc<C) acc[nr][nc]++;
+    }
+  }
+  // Propagate (topological sort approximation — iterate multiple passes)
+  for(var pass=0;pass<Math.max(R,C);pass++){
+    var changed=false;
+    for(var r=0;r<R;r++){
+      for(var c=0;c<C;c++){
+        var d=fd[r][c]; if(d<0) continue;
+        var nr=r+D8[d].dr,nc=c+D8[d].dc;
+        if(nr>=0&&nr<R&&nc>=0&&nc<C){
+          var newVal=acc[nr][nc]+acc[r][c];
+          if(newVal>acc[nr][nc]){acc[nr][nc]=newVal;changed=true;}
+        }
+      }
+    }
+    if(!changed) break;
+  }
+  return acc;
+}
+
+// ─── Main analysis ────────────────────────────────────────────────────────────
+function setLoading(msg,show){
+  var ov=document.getElementById('loading-overlay');
+  ov.classList.toggle('hidden',show===false);
+  if(msg) document.getElementById('loading-msg').textContent=msg;
+}
+
+async function runAnalysis(){
+  var lat=+document.getElementById('inp-lat').value;
+  var lon=+document.getElementById('inp-lon').value;
+  var name=document.getElementById('inp-name').value||'Asset';
+  var radiusKm=+document.getElementById('inp-radius').value;
+  var spacingM=+document.getElementById('inp-spacing').value;
+  var exag=+document.getElementById('inp-exag').value;
+  LAYER=document.getElementById('inp-layer').value;
+
+  if(isNaN(lat)||isNaN(lon)){alert('Enter valid coordinates');return;}
+
+  document.getElementById('fetch-btn').disabled=true;
+  document.getElementById('risk-panel').style.display='none';
+  setLoading('Connecting to Open-Topo-Data (SRTM 30m)…');
+
+  try{
+    var grid=await fetchElevationGrid(lat,lon,radiusKm,spacingM);
+    setLoading('Computing slope, TPI, flow direction…');
+
+    var dem=grid.elevations;
+    var slopeG=computeSlope(dem,spacingM);
+    var tpiG=computeTPI(dem,5);
+    var flowDir=computeFlowDir(dem);
+
+    setLoading('Computing upstream catchment (D8 algorithm)…');
+    var upstream=upstreamCells(flowDir,grid.ar,grid.ac);
+    grid._upstream=upstream;
+
+    var flowAcc=computeFlowAcc(flowDir,grid.rows,grid.cols);
+
+    setLoading('Building 3D terrain mesh…');
+    buildMesh(grid,slopeG,tpiG,flowAcc,LAYER,exag);
+
+    // ── Compute risk metrics ──
+    var assetSlope=slopeG[grid.ar][grid.ac]||0;
+    var assetTPI=tpiG[grid.ar][grid.ac]||0;
+    var tp=scoreTerrainPos(assetTPI,assetSlope);
+    var area=upstream.size*(spacingM*spacingM)/1e6;  // km²
+
+    var upSlopes=[];
+    upstream.forEach(function(key){
+      var parts=key.split(','),r=+parts[0],c=+parts[1];
+      var sv=slopeG[r][c]; if(!isNaN(sv)) upSlopes.push(sv);
+    });
+    var maxSlope=upSlopes.length?Math.max.apply(null,upSlopes):0;
+    var meanSlope=upSlopes.length?upSlopes.reduce(function(a,b){return a+b;},0)/upSlopes.length:0;
+
+    // Elevation head
+    var assetElev=dem[grid.ar][grid.ac]||0;
+    var maxUp=assetElev;
+    upstream.forEach(function(key){
+      var parts=key.split(','),r=+parts[0],c=+parts[1];
+      var v=dem[r][c]; if(!isNaN(v)&&v>maxUp) maxUp=v;
+    });
+    var head=maxUp-assetElev;
+
+    var dfRisk=scoreDebrisFlow(tp,assetTPI,area,maxSlope,head,assetSlope);
+    var lsRisk=assetSlope>30?'HIGH':assetSlope>20?'MEDIUM':assetSlope>10?'LOW':'NEGLIGIBLE';
+    var flRisk=(tp==='valley bottom'||tp==='valley')&&area>1.0?'HIGH':
+               (assetTPI<-10&&area>0.3)?'MEDIUM':'LOW';
+
+    currentGrid=grid;
+    currentResult={lat,lon,name,tp,assetSlope,assetTPI,assetElev,area,maxSlope,meanSlope,head,dfRisk,lsRisk,flRisk};
+
+    renderRiskPanel(currentResult);
+    updateLegend(LAYER,slopeG);
+    setLoading('',false);
+    document.getElementById('status').textContent=
+      'Grid: '+grid.rows+'×'+grid.cols+' · Spacing: '+spacingM+'m · '+
+      'Asset elevation: '+Math.round(assetElev)+'m · '+
+      'Catchment: '+area.toFixed(2)+'km²';
+
+  }catch(e){
+    console.error(e);
+    setLoading('Error: '+e.message+'. Check console for details.');
+  }finally{
+    document.getElementById('fetch-btn').disabled=false;
+  }
+}
+
+function renderRiskPanel(r){
+  var panel=document.getElementById('risk-panel');
+  panel.style.display='block';
+  var badgeClass=function(v){return 'risk-badge '+v;};
+  panel.innerHTML=
+    '<h3>🏔 Terrain Risk: '+r.name+'</h3>'+
+    '<div class="risk-row"><span class="risk-label">Elevation</span><span class="metric-val">'+Math.round(r.assetElev)+' m ASL</span></div>'+
+    '<div class="risk-row"><span class="risk-label">Terrain position</span><span class="metric-val">'+r.tp+'</span></div>'+
+    '<div class="risk-row"><span class="risk-label">TPI</span><span class="metric-val">'+(r.assetTPI>=0?'+':'')+r.assetTPI.toFixed(1)+' m</span></div>'+
+    '<div class="risk-row"><span class="risk-label">Slope at asset</span><span class="metric-val">'+r.assetSlope.toFixed(1)+'°</span></div>'+
+    '<div class="risk-row"><span class="risk-label">Upslope area</span><span class="metric-val">'+r.area.toFixed(2)+' km²</span></div>'+
+    '<div class="risk-row"><span class="risk-label">Max upslope slope</span><span class="metric-val">'+r.maxSlope.toFixed(1)+'°</span></div>'+
+    '<div class="risk-row"><span class="risk-label">Elevation head</span><span class="metric-val">'+Math.round(r.head)+' m</span></div>'+
+    '<div style="border-top:1px solid #334155;margin:8px 0"></div>'+
+    '<div class="risk-row"><span class="risk-label">Debris flow risk</span><span class="'+badgeClass(r.dfRisk)+'">'+r.dfRisk+'</span></div>'+
+    '<div class="risk-row"><span class="risk-label">Landslide susceptibility</span><span class="'+badgeClass(r.lsRisk)+'">'+r.lsRisk+'</span></div>'+
+    '<div class="risk-row"><span class="risk-label">Flood exposure</span><span class="'+badgeClass(r.flRisk)+'">'+r.flRisk+'</span></div>'+
+    '<div style="border-top:1px solid #334155;margin:8px 0;font-size:10px;font-weight:700;color:#94a3b8">MECHANISMS</div>'+
+    mechanisms(r)+
+    '<div style="border-top:1px solid #334155;margin:8px 0;font-size:10px;font-weight:700;color:#94a3b8">RECOMMENDED ACTIONS</div>'+
+    actions(r)+
+    '<div style="margin-top:8px;font-size:9px;color:#475569;line-height:1.4">Data: NASA SRTM 30m via Open-Topo-Data. Terrain analysis is morphological proxy only — site-specific geotechnical study required to confirm risk.</div>';
+}
+
+function mechanisms(r){
+  var ms=[];
+  if(r.dfRisk==='HIGH'||r.dfRisk==='MEDIUM'){
+    if(r.maxSlope>25) ms.push('Steep source zone ('+r.maxSlope.toFixed(0)+'° max): saturated debris can mobilise in heavy rainfall or seismic events.');
+    if(r.area>0.2) ms.push('Upstream catchment '+r.area.toFixed(2)+' km² concentrates runoff toward asset location.');
+    if(r.head>30) ms.push('Elevation head '+Math.round(r.head)+'m — debris velocity at site could exceed 3–5 m/s.');
+    if(r.tp==='footslope') ms.push('Footslope position: natural deposition zone for downslope mass movements.');
+    if(r.tp.includes('valley')) ms.push('Valley position: both debris flows and floodwaters converge here.');
+  }
+  if(r.lsRisk==='HIGH'||r.lsRisk==='MEDIUM') ms.push('On-site slope '+r.assetSlope.toFixed(1)+'° may exceed threshold for shallow translational failure in saturated soils.');
+  if(!ms.length) ms.push('No significant terrain-driven mechanisms at this location.');
+  return ms.map(function(m){return '<div class="mechanism">'+m+'</div>';}).join('');
+}
+
+function actions(r){
+  var as=[];
+  if(r.dfRisk==='HIGH') as.push('Commission debris flow runout study (RAMMS / FLO-2D modelling).');
+  if(r.dfRisk==='HIGH') as.push('Design retention berm sized to 1-in-100yr flow volume upslope of critical structures.');
+  if(r.dfRisk==='HIGH'||r.dfRisk==='MEDIUM') as.push('Install real-time rainfall + displacement monitoring with automated shutdown thresholds.');
+  if(r.lsRisk==='HIGH'||r.lsRisk==='MEDIUM') as.push('Geotechnical stability assessment for on-site slopes and retained cuts/fills.');
+  if(r.flRisk==='HIGH'||r.flRisk==='MEDIUM') as.push('Assess drainage capacity for 1-in-50 and 1-in-100yr design storms.');
+  if(!as.length) as.push('No immediate terrain mitigation required. Include in routine site risk reviews.');
+  return as.map(function(a){return '<div class="action">→ '+a+'</div>';}).join('');
+}
+
+function updateLegend(layer,slopeG){
+  var title={slope:'Slope Angle',elevation:'Elevation',tpi:'Terrain Position (TPI)',flow:'D8 Flow Accumulation'}[layer]||layer;
+  document.getElementById('legend-title').textContent=title;
+  var rows='';
+  if(layer==='slope'){
+    rows=[['< 5°','#22c55e'],['5 – 15°','#a3e635'],['15 – 25°','#f59e0b'],['25 – 35°','#ef4444'],['> 35°','#7f1d1d']]
+      .map(function(p){return '<div class="leg-row"><div class="leg-swatch" style="background:'+p[1]+'"></div><span>'+p[0]+'</span></div>';}).join('');
+  }else if(layer==='tpi'){
+    rows=[['Ridge (+)','#7c4a1e'],['Upper slope','#a0733a'],['Mid slope / flat','#94a3b8'],['Footslope','#2563eb'],['Valley (-)','#1e3a8a']]
+      .map(function(p){return '<div class="leg-row"><div class="leg-swatch" style="background:'+p[1]+'"></div><span>'+p[0]+'</span></div>';}).join('');
+  }else if(layer==='flow'){
+    rows=[['Low accumulation','#1d4ed8'],['Medium','#059669'],['High (channel)','#10b981']]
+      .map(function(p){return '<div class="leg-row"><div class="leg-swatch" style="background:'+p[1]+'"></div><span>'+p[0]+'</span></div>';}).join('');
+  }else{
+    rows='<div style="font-size:10px;color:#64748b">Low → High elevation</div>';
+  }
+  rows+='<div class="leg-row" style="margin-top:6px"><div class="leg-swatch" style="background:#ff2222;border-radius:50%"></div><span>Asset location</span></div>';
+  rows+='<div class="leg-row"><div class="leg-swatch" style="background:#00aaff"></div><span>Upstream catchment</span></div>';
+  document.getElementById('legend-rows').innerHTML=rows;
+}
+
+// ─── Controls ─────────────────────────────────────────────────────────────────
+document.getElementById('inp-exag').addEventListener('input',function(){
+  document.getElementById('exag-val').textContent=this.value+'×';
+});
+
+document.getElementById('inp-layer').addEventListener('change',function(){
+  LAYER=this.value;
+  // Rerender if grid exists
+  if(currentGrid&&currentResult){
+    runAnalysis();
+  }
+});
+
+function loadPreset(v){
+  if(!v)return;
+  var parts=v.split(',');
+  document.getElementById('inp-lat').value=parts[0];
+  document.getElementById('inp-lon').value=parts[1];
+  document.getElementById('inp-name').value=parts.slice(2).join(',');
+}
+
+// ─── Boot ─────────────────────────────────────────────────────────────────────
+initThree();
+</script>
+</body>
+</html>

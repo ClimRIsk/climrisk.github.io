@@ -419,7 +419,9 @@ def run_simulation(request: RunRequest) -> RunResponse:
 
 class AssessRequest(BaseModel):
     company_name: str = Field(..., description="Company name (fuzzy-matched against registry)")
-    sector_hint: str  = Field("steel", description="Sector hint for fallback matching")
+    sector_hint: str  = Field("technology", description="Sector hint for parametric build if company not in registry")
+    jurisdiction: str = Field("US", description="ISO 2-letter country code for parametric risk scoring")
+    revenue_usd_m: float = Field(5_000.0, description="Approximate annual revenue in USD millions")
     assessment_scope: str = Field("standard", description="standard | full")
 
 
@@ -428,28 +430,34 @@ def agent_assess(request: AssessRequest) -> dict:
     """
     Synchronous company assessment for the ClimRisk dashboard.
 
-    Resolves company_name to a registered company (fuzzy), runs the full
-    rating engine across all three NGFS scenarios, and returns a payload
-    matching the AssessmentData TypeScript interface.
+    Resolution order:
+    1. Exact/fuzzy match against the company registry (known companies)
+    2. Parametric synthetic build using IPCC AR6 + NGFS Phase 4 embedded data
+       (works for ANY company in ANY sector in ANY country — no geocoding API)
 
-    This is a convenience wrapper over POST /ratings that maps the output
-    to the dashboard's expected JSON shape.
+    Returns an AssessmentData payload with sector-calibrated physical risk
+    (by climate zone), transition risk (by NGFS carbon pathway), and a
+    2025–2050 CRI trajectory under all three NGFS scenarios.
     """
     from ..outcomes.ratings import RatingEngine, WeightProfile
     from ..outcomes.tiers import Tier
 
-    # ── Resolve company ────────────────────────────────────────────────────────
+    # ── 1. Resolve company from registry (fuzzy match) ─────────────────────────
     query = request.company_name.lower().strip()
     company = None
+    _use_registry = False
+    _scenarios_to_use: dict = {}
 
     # Exact match
     if query in COMPANY_REGISTRY:
         company = COMPANY_REGISTRY[query]
+        _use_registry = True
     else:
         # Substring match on name
         for cid, c in COMPANY_REGISTRY.items():
             if query in c.name.lower() or c.name.lower() in query:
                 company = c
+                _use_registry = True
                 break
 
     # First-word match
@@ -458,24 +466,50 @@ def agent_assess(request: AssessRequest) -> dict:
         for cid, c in COMPANY_REGISTRY.items():
             if first_word and first_word in c.name.lower():
                 company = c
+                _use_registry = True
                 break
 
-    # Sector fallback — pick first company in that sector
-    if company is None:
-        for cid, c in COMPANY_REGISTRY.items():
-            if request.sector_hint.lower() in c.sector.lower():
-                company = c
-                break
+    # ── 2. Parametric build for unknown companies ──────────────────────────────
+    _data_source = "registry"
+    _climate_zone = None
+    _data_notes: list[str] = []
 
-    # Last resort — first company
     if company is None:
-        company = next(iter(COMPANY_REGISTRY.values()))
+        # Build a synthetic Company object from IPCC AR6 + NGFS parameters.
+        # This produces sector- and jurisdiction-specific risk scores without
+        # any external API calls or geocoding.
+        try:
+            from ..data.profile_builder import build_synthetic_company
+            built = build_synthetic_company(
+                name          = request.company_name,
+                sector        = request.sector_hint,
+                jurisdiction  = request.jurisdiction,
+                revenue_usd_m = request.revenue_usd_m,
+            )
+            company = built.company
+            _scenarios_to_use = built.scenarios   # augmented with zone hazard paths
+            _data_source = "parametric_ipcc_ngfs"
+            _climate_zone = built.climate_zone
+            _data_notes = built.data_notes
+        except Exception as _e:
+            import logging
+            logging.getLogger("cri.api").error(f"profile_builder failed: {_e}")
+            # Hard fallback: first registry company
+            company = next(iter(COMPANY_REGISTRY.values()))
+
+    # Use registry scenarios for known companies; augmented scenarios for synthetic
+    if not _scenarios_to_use:
+        _scenarios_to_use = {
+            "nze":     SCENARIO_REGISTRY["nze_2050"],
+            "delayed": SCENARIO_REGISTRY["delayed_transition"],
+            "cp":      SCENARIO_REGISTRY["current_policies"],
+        }
 
     # ── Run full rating ────────────────────────────────────────────────────────
     wp = WeightProfile("balanced")
-    nze_r = run_engine(company=company, scenario=SCENARIO_REGISTRY["nze_2050"])
-    dt_r  = run_engine(company=company, scenario=SCENARIO_REGISTRY["delayed_transition"])
-    cp_r  = run_engine(company=company, scenario=SCENARIO_REGISTRY["current_policies"])
+    nze_r = run_engine(company=company, scenario=_scenarios_to_use["nze"])
+    dt_r  = run_engine(company=company, scenario=_scenarios_to_use["delayed"])
+    cp_r  = run_engine(company=company, scenario=_scenarios_to_use["cp"])
 
     rating_engine = RatingEngine()
     rr = rating_engine.rate(
@@ -607,8 +641,114 @@ def agent_assess(request: AssessRequest) -> dict:
             "itr_adjustment_c":              0.0,
             "evidence_quotes":               [],
         },
-        "model_used": "cri-engine-v0.4",
+        "model_used": "cri-engine-v0.5-parametric",
         "company_id": company.id,
+        "data_provenance": {
+            "source": _data_source,
+            "climate_zone": _climate_zone,
+            "notes": _data_notes,
+            "methodology": (
+                "IPCC AR6 Ch12 physical hazard profiles × NGFS Phase 4 transition pathways"
+                if _data_source == "parametric_ipcc_ngfs"
+                else "CRI company registry with reported asset-level data"
+            ),
+        },
+    }
+
+
+class ParametricAssessRequest(BaseModel):
+    company_name: str  = Field(..., description="Company name")
+    sector:       str  = Field(..., description="Sector (free text — normalised internally)")
+    jurisdiction: str  = Field("US", description="ISO 2-letter country code")
+    revenue_usd_m: float = Field(5_000.0, description="Annual revenue USD millions")
+
+
+@app.post("/assess/parametric", dependencies=[_AUTH])
+def assess_parametric(request: ParametricAssessRequest) -> dict:
+    """
+    Fast parametric climate risk assessment using embedded IPCC AR6 + NGFS data.
+
+    Works for ANY company in ANY sector in ANY country without relying on
+    the company registry, geocoding APIs, or external data sources.
+
+    Returns sector-calibrated physical and transition risk scores for all
+    three NGFS Phase 4 scenarios (NZE, Delayed Transition, Current Policies).
+
+    Physical risk is derived from IPCC AR6 Chapter 12 climate zone hazard
+    profiles.  Transition risk is derived from NGFS Phase 4 carbon pathways
+    and IEA sector emission intensity averages.
+    """
+    from ..data.parameters import (
+        country_to_climate_zone,
+        normalise_sector,
+        compute_composite_score,
+        get_sector_transition_params,
+        get_sector_physical_sensitivity,
+    )
+    from ..ml.risk_predictor import RiskPredictor
+
+    canonical_sector = normalise_sector(request.sector)
+    climate_zone     = country_to_climate_zone(request.jurisdiction)
+    trans_p          = get_sector_transition_params(canonical_sector)
+
+    # NGFS Phase 4 carbon prices at 2030 for each scenario (USD/tCO2e)
+    _cp_2030 = {"nze": 130.0, "delayed": 45.0, "cp": 18.0}
+
+    scores = {}
+    for scen in ("nze", "delayed", "cp"):
+        scores[scen] = compute_composite_score(
+            sector          = canonical_sector,
+            climate_zone    = climate_zone,
+            scenario        = scen,
+            carbon_price_usd = _cp_2030[scen],
+            year            = 2030,
+        )
+
+    composite_now = scores["delayed"]["composite_score"]   # use delayed as baseline
+
+    # 2025–2050 trajectory from ML predictor
+    traj_nze = traj_delayed = traj_cp = None
+    try:
+        traj = RiskPredictor().predict(
+            base_cri_score  = composite_now,
+            sector          = canonical_sector,
+            jurisdiction    = request.jurisdiction,
+            revenue_usd_m   = request.revenue_usd_m,
+            scope1_mt_co2e  = trans_p["carbon_intensity_t_per_m_rev"] * request.revenue_usd_m * 0.6 / 1_000_000,
+            eal_p50_usd_m   = request.revenue_usd_m * 0.025,
+            wacc_adjusted   = 0.09,
+        )
+        traj_nze     = {"scores": traj.nze_scores,     "lo": traj.nze_lo,     "hi": traj.nze_hi}
+        traj_delayed = {"scores": traj.delayed_scores, "lo": traj.delayed_lo, "hi": traj.delayed_hi}
+        traj_cp      = {"scores": traj.cp_scores,      "lo": traj.cp_lo,      "hi": traj.cp_hi}
+    except Exception:
+        pass
+
+    return {
+        "company": request.company_name,
+        "sector":  canonical_sector,
+        "jurisdiction": request.jurisdiction,
+        "climate_zone": climate_zone,
+        "revenue_usd_m": request.revenue_usd_m,
+        "scores_by_scenario": scores,
+        "composite_score_current": composite_now,
+        "trajectory": {
+            "nze":     traj_nze,
+            "delayed": traj_delayed,
+            "cp":      traj_cp,
+        },
+        "sector_params": {
+            "carbon_intensity_t_per_m_rev": trans_p["carbon_intensity_t_per_m_rev"],
+            "carbon_price_coverage": trans_p["carbon_price_coverage"],
+            "policy_risk_score": trans_p["policy_risk_score"],
+            "stranded_asset_risk": trans_p["stranded_asset_risk"],
+        },
+        "methodology": {
+            "physical_risk": "IPCC AR6 Ch12 climate zone hazard profiles (Table 12.1)",
+            "transition_risk": "NGFS Phase 4 carbon pathways + IEA sector emission intensities",
+            "financial_translation": "NGFS financial sector impact study (Annex 3, 2023)",
+            "model_version": "cri-parametric-v2.0",
+        },
     }
 
 

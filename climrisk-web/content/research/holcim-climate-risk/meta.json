@@ -1,0 +1,125 @@
+{
+  "slug": "holcim-climate-risk",
+  "tier": "case-study",
+  "kicker": "Transition Risk · Building Materials",
+  "title": "Holcim After the Split: A Carbon Bill, Not a Weather Bill",
+  "detail": "With North America spun off and the Philippines being sold, Holcim's climate exposure is concentrated in Europe's carbon market, where free allowances for cement run out in 2034 under current law.",
+  "status": "draft",
+  "date": "2026-10-01",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/holcim-climate-risk/cover.png",
+  "sources": [
+    {
+      "title": "Holcim full-year 2025 results media release (27 Feb 2026)",
+      "url": "https://www.holcim.com/media/media-releases/full-year-2025-results"
+    },
+    {
+      "title": "Holcim 2025 Sustainability Statement",
+      "url": "https://www.holcim.com/sites/holcim/files/docs/27022026-holcim-sustainability-statement-2025.pdf"
+    },
+    {
+      "title": "Holcim half-year 2026 results media release (31 Jul 2026)",
+      "url": "https://www.holcim.com/media/media-releases/h1-2026-results"
+    },
+    {
+      "title": "Holcim signs agreement to divest its business in the Philippines (2 Aug 2026)",
+      "url": "https://www.holcim.com/sites/holcim/files/docs/20260802_mr_holcim_philippines.pdf"
+    },
+    {
+      "title": "Holcim GO4ZERO CCUS project, Obourg",
+      "url": "https://www.holcim.com/ccus/go4zero"
+    },
+    {
+      "title": "Spin-off of Holcim's North American business (Amrize)",
+      "url": "https://www.holcim.com/investors/listing-north-america-business-us"
+    },
+    {
+      "title": "Amrize Ltd Form 8-K, completion of spin-off (SEC, 2025)",
+      "url": "https://www.sec.gov/Archives/edgar/data/2035989/000114036125023352/ef20050735_8k.htm"
+    },
+    {
+      "title": "EU ETS free allocation phase-out 2026–2034 (CBAM Guide, updated 15 Aug 2026)",
+      "url": "https://cbamguide.com/carbon/free-allocation/"
+    },
+    {
+      "title": "European Commission proposes a more pragmatic ETS (CemNet, 23 Jul 2026)",
+      "url": "https://www.cemnet.com/News/story/181728/european-commission-proposes-a-more-pragmatic-ets.html"
+    },
+    {
+      "title": "EU ETS: Commission publishes proposal for the revised Emissions Trading System (Linklaters, Jul 2026)",
+      "url": "https://sustainablefutures.linklaters.com/post/102nelm/eu-ets-commission-publishes-proposal-for-the-revised-emissions-trading-system"
+    },
+    {
+      "title": "Carbon allowances post marginal first weekly decline in six weeks (Emba Power, 28 Sep 2026)",
+      "url": "https://www.embapower.ro/2026/09/28/carbon-allowances-post-marginal-first-weekly-decline-in-six-weeks/"
+    },
+    {
+      "title": "Stationary operators – EU ETS compliance (EPA Ireland)",
+      "url": "https://www.epa.ie/our-services/licensing/climate-change/eu-emissions-trading-system-/emissions-trading-system---stationary-installations/stationary-operators---eu-ets-compliance/"
+    },
+    {
+      "title": "IPCC AR6 WGI Summary for Policymakers (2021)",
+      "url": "https://www.ipcc.ch/report/ar6/wg1/chapter/summary-for-policymakers/"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NGFS Climate Scenarios Phase 5",
+      "url": "https://www.ngfs.net/ngfs-scenarios-portal/"
+    },
+    {
+      "title": "Climate TRACE asset emissions",
+      "url": "https://climatetrace.org/"
+    }
+  ],
+  "images": [
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2B_31UER_20260812 over Obourg, Belgium (12 Aug 2026), via AWS Earth Search; processed by ClimRisk"
+    },
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "Holcim 2025 Sustainability Statement; Holcim media release 2 Aug 2026; Directive 2003/87/EC Art. 10a(1a) as amended by Directive (EU) 2023/959; ClimRisk engine run 1 Oct 2026"
+    },
+    {
+      "file": "map_holcim_plants.png",
+      "kind": "map",
+      "source": "Climate TRACE v6 asset register (54 Holcim plants ex-USA/Lebanon, real coordinates); Natural Earth 1:110m land"
+    },
+    {
+      "file": "satellite_davao.png",
+      "kind": "satellite",
+      "source": "Copernicus Sentinel-2 L2A true colour, scene S2B_51NYJ_20260505 (5 May 2026), via AWS Earth Search; processed by ClimRisk"
+    },
+    {
+      "file": "chart_scenarios.png",
+      "kind": "chart",
+      "source": "ClimRisk engine, 54 register plants, NGFS Phase 5, 1,500-draw Monte Carlo, 7% discount, run 1 Oct 2026"
+    },
+    {
+      "file": "chart_region_split.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (PV 2026–2050, mean); Climate TRACE v6 emissions"
+    },
+    {
+      "file": "chart_sagunto_carbon_cost.png",
+      "kind": "chart",
+      "source": "Directive 2003/87/EC Art. 10a(1a) as amended 2023; ClimRisk engine asset run, Sagunto, 1 Oct 2026"
+    },
+    {
+      "file": "satellite_obourg.png",
+      "kind": "satellite",
+      "source": "Copernicus Sentinel-2 L2A true colour, scene S2B_31UER_20260812 (12 Aug 2026), via AWS Earth Search; processed by ClimRisk"
+    },
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2B_31UER_20260812_0_L2A over Holcim Obourg cement plant, Belgium (12 Aug 2026), via AWS Earth Search; processed by ClimRisk"
+    }
+  ],
+  "thumb": "/research/holcim-climate-risk/thumb.jpg"
+}

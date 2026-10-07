@@ -1,0 +1,137 @@
+{
+  "slug": "bangkok-floods-drainage-test",
+  "tier": "case-study",
+  "kicker": "Physical Risk · Southeast Asia",
+  "title": "The Drainage Test: What Bangkok's September 2026 Floods Reveal About Asset Risk",
+  "detail": "Bangkok's industrial estates held this time, but 300 mm of local rain exposed the flood that most asset-level models do not measure, while the Chao Phraya is still rising.",
+  "status": "draft",
+  "date": "2026-09-30",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/bangkok-floods-drainage-test/cover.png",
+  "sources": [
+    {
+      "title": "UTCC forecasts 12.3bn-baht flood losses for September 25–29 (The Nation, 28 Sep 2026)",
+      "url": "https://www.nationthailand.com/business/economy/40071602"
+    },
+    {
+      "title": "Bangkok floodwater eases after affecting 329,000 households (The Nation, 28 Sep 2026)",
+      "url": "https://www.nationthailand.com/thailand/bangkok/40071588"
+    },
+    {
+      "title": "Bangkok's 48-hour deluge exposes limits of city drainage system (The Nation, 28 Sep 2026)",
+      "url": "https://www.nationthailand.com/sustaination/40071580"
+    },
+    {
+      "title": "IEAT orders 24-hour flood watch at Thai industrial estates (The Nation, 26 Sep 2026)",
+      "url": "https://www.nationthailand.com/news/general/40071514"
+    },
+    {
+      "title": "FTI warns Thai firms of flood risks with water storage at 77% on Sept 28 (The Nation, 28 Sep 2026)",
+      "url": "https://www.nationthailand.com/business/economy/40071603"
+    },
+    {
+      "title": "ONWR updates flood-risk provinces as Chao Phraya discharge rises (The Nation, 30 Sep 2026)",
+      "url": "https://www.nationthailand.com/news/general/40071685"
+    },
+    {
+      "title": "Cabinet approves THB165bn canal to strengthen Bangkok flood defence (The Nation, 29 Sep 2026)",
+      "url": "https://www.nationthailand.com/news/politics/40071654"
+    },
+    {
+      "title": "Thai Met Dept Issues Flood Warnings Ahead of New October Downpours (The Nation, 29 Sep 2026)",
+      "url": "https://www.nationthailand.com/news/general/40071670"
+    },
+    {
+      "title": "Heavy rain and flooding in Bangkok disrupts traffic and prompts evacuations (AP, 26 Sep 2026)",
+      "url": "https://www.nbcnews.com/world/thailand/heavy-rain-flooding-bangkok-disrupts-traffic-prompts-evacuations-rcna599948"
+    },
+    {
+      "title": "Weather Alert: Heavy Rain and Flooding throughout Thailand (U.S. Embassy Bangkok, 26 Sep 2026)",
+      "url": "https://th.usembassy.gov/weather-alert-heavy-rain-and-flooding-throughout-thailand-september-26-2026/"
+    },
+    {
+      "title": "2026 Bangkok floods (Wikipedia)",
+      "url": "https://en.wikipedia.org/wiki/2026_Bangkok_floods"
+    },
+    {
+      "title": "Thai flood damage could reach at least $327M (Business Insurance / Reuters, 29 Sep 2026)",
+      "url": "https://www.businessinsurance.com/thai-flood-damage-could-reach-at-least-327m/"
+    },
+    {
+      "title": "2011 Thailand Floods: Rapid Assessment for Resilient Recovery and Reconstruction Planning (World Bank / GFDRR / RTG)",
+      "url": "https://www.preventionweb.net/publication/2011-thailand-floods-rapid-assessment-resilient-recovery-and-reconstruction-planning"
+    },
+    {
+      "title": "2011 Thailand floods (Wikipedia)",
+      "url": "https://en.wikipedia.org/wiki/2011_Thailand_floods"
+    },
+    {
+      "title": "IPCC AR6 WGI Summary for Policymakers (2021)",
+      "url": "https://www.ipcc.ch/report/ar6/wg1/chapter/summary-for-policymakers/"
+    },
+    {
+      "title": "Thai Cabinet Approves Draft Climate Change Act (Nishimura & Asahi, Jan 2026)",
+      "url": "https://www.nishimura.com/en/knowledge/publications/20260115-118561"
+    },
+    {
+      "title": "Thailand ETS profile (ICAP)",
+      "url": "https://icapcarbonaction.com/en/ets/thailand"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "JRC CEMS-GloFAS global river flood hazard maps v2.1.2",
+      "url": "https://jeodpp.jrc.ec.europa.eu/ftp/jrc-opendata/CEMS-GLOFAS/flood_hazard/"
+    }
+  ],
+  "images": [
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-1 RTC (VV) scene 27 Sep 2026 over eastern Bangkok, via Microsoft Planetary Computer; flood mask processed by ClimRisk"
+    },
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "BMA via The Nation (28 Sep 2026); UTCC (28 Sep 2026); World Bank/GFDRR 2011 Rapid Assessment; Thai Cabinet via The Nation (29 Sep 2026)"
+    },
+    {
+      "file": "radar_east_bkk.png",
+      "kind": "satellite",
+      "source": "Copernicus Sentinel-1 RTC (VV), S1D passes 15 Sep and 27 Sep 2026, via Microsoft Planetary Computer; processed by ClimRisk"
+    },
+    {
+      "file": "radar_bangpain.png",
+      "kind": "satellite",
+      "source": "Copernicus Sentinel-1 RTC (VV), S1D passes 15 Sep and 27 Sep 2026, via Microsoft Planetary Computer; processed by ClimRisk"
+    },
+    {
+      "file": "chart_2011_vs_2026_losses.png",
+      "kind": "chart",
+      "source": "World Bank/GFDRR & RTG 2011 Rapid Assessment; UTCC via The Nation, 28 Sep 2026"
+    },
+    {
+      "file": "chart_chao_phraya_discharge.png",
+      "kind": "chart",
+      "source": "IEAT report 25 Sep 2026; FTI update 28 Sep 2026; ONWR update 30 Sep 2026 (via The Nation)"
+    },
+    {
+      "file": "map_chao_phraya_flood_plants.png",
+      "kind": "map",
+      "source": "JRC CEMS-GloFAS v2.1.2 RP100 depth and permanent water; Climate TRACE v6 asset register; ClimRisk engine severity"
+    },
+    {
+      "file": "chart_engine_plants.png",
+      "kind": "chart",
+      "source": "ClimRisk engine asset runs (JRC flood maps, FLOPROS, JRC depth-damage, Climate TRACE v6), 30 Sep 2026"
+    },
+    {
+      "file": "thumb.jpg",
+      "kind": "satellite",
+      "source": "Crop of Copernicus Sentinel-2 L2A true-colour scene S2C_47PPR_20260719_0_L2A over Bang Pa-In Industrial Estate, Ayutthaya, Thailand (19 Jul 2026), via AWS Earth Search; processed by ClimRisk"
+    }
+  ],
+  "thumb": "/research/bangkok-floods-drainage-test/thumb.jpg"
+}

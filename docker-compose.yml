@@ -1,0 +1,20 @@
+# Local dev / integration test — no AWS needed
+# Usage:
+#   docker compose run --rm pipeline --lat 52.52 --lon 13.41 --company Heineken --sector food_beverage
+#   docker compose run --rm pipeline --asset-file /app/assets.csv
+version: "3.9"
+
+services:
+  pipeline:
+    build: .
+    environment:
+      # Set S3_BUCKET=local to skip S3 writes during local testing
+      S3_BUCKET: "local"
+      AWS_DEFAULT_REGION: "us-east-1"
+      # Optional — set real values for a full test against AWS
+      # AWS_ACCESS_KEY_ID: ""
+      # AWS_SECRET_ACCESS_KEY: ""
+    volumes:
+      - ./pipeline.py:/app/pipeline.py   # hot-reload during dev
+      - ./assets.csv:/app/assets.csv
+    command: ["--lat", "52.52", "--lon", "13.41", "--company", "Test", "--sector", "food_beverage"]

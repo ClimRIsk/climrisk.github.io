@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClimRisk — Climate Financial Risk Intelligence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+    :root{
+      --green:#1d9e75;--green-glow:rgba(29,158,117,0.4);
+      --red:#ef4444;--amber:#f59e0b;--blue:#3b82f6;--purple:#8b5cf6;
+      --bg:#010b18;--card:rgba(255,255,255,0.04);--border:rgba(255,255,255,0.08);
+      --text:#e2e8f0;--muted:#94a3b8;--dim:#475569;
+    }
+    html,body{width:100%;height:100%;overflow-x:hidden;background:var(--bg);color:var(--text);
+      font-family:'Inter',system-ui,sans-serif}
+
+    /* ── Globe canvas fills page ── */
+    #globe-container{position:fixed;inset:0;z-index:0}
+    #globe-container canvas{display:block}
+
+    /* Gradient vignette so text pops over globe */
+    .vignette{
+      position:fixed;inset:0;z-index:1;pointer-events:none;
+      background:
+        linear-gradient(to right, rgba(1,11,24,0.92) 0%, rgba(1,11,24,0.6) 45%, transparent 70%),
+        linear-gradient(to top, rgba(1,11,24,0.95) 0%, transparent 25%),
+        radial-gradient(ellipse at 15% 50%, transparent 40%, rgba(1,11,24,0.5) 100%);
+    }
+
+    /* ── Layout shell ── */
+    .site{position:relative;z-index:10;min-height:100vh;display:flex;flex-direction:column;pointer-events:none}
+    .site a,.site button,.layer-controls,.risk-legend{pointer-events:auto}
+
+    /* ── Nav ── */
+    nav{
+      display:flex;align-items:center;justify-content:space-between;
+      padding:20px 48px;
+      border-bottom:1px solid var(--border);
+      background:rgba(1,11,24,0.35);backdrop-filter:blur(12px);
+    }
+    .nav-logo{
+      display:flex;align-items:center;gap:10px;
+      font-size:20px;font-weight:800;letter-spacing:-0.5px;color:var(--text);text-decoration:none;
+    }
+    .nav-dot{
+      width:9px;height:9px;border-radius:50%;background:var(--green);
+      box-shadow:0 0 10px var(--green);animation:breathe 2.5s ease-in-out infinite;
+    }
+    @keyframes breathe{0%,100%{box-shadow:0 0 10px var(--green)}50%{box-shadow:0 0 22px var(--green),0 0 40px rgba(29,158,117,0.3)}}
+    .nav-sub{font-size:10px;font-weight:500;color:var(--dim);letter-spacing:0;margin-left:2px}
+    .nav-links{display:flex;align-items:center;gap:28px}
+    .nav-links a{color:var(--muted);text-decoration:none;font-size:13px;font-weight:500;transition:color .15s}
+    .nav-links a:hover{color:var(--text)}
+    .nav-cta{
+      background:var(--green);color:#fff!important;padding:9px 20px;
+      border-radius:8px;font-size:13px;font-weight:700!important;
+      box-shadow:0 4px 18px rgba(29,158,117,0.35);transition:all .2s!important;
+    }
+    .nav-cta:hover{transform:translateY(-1px);box-shadow:0 6px 24px rgba(29,158,117,0.5)!important}
+
+    /* ── Hero ── */
+    .hero{
+      flex:1;display:flex;flex-direction:column;justify-content:center;
+      padding:80px 48px 32px;max-width:640px;
+    }
+    .hero-badge{
+      display:inline-flex;align-items:center;gap:7px;
+      background:rgba(29,158,117,0.1);border:1px solid rgba(29,158,117,0.25);
+      color:var(--green);padding:5px 14px;border-radius:20px;
+      font-size:10px;font-weight:700;letter-spacing:0.8px;text-transform:uppercase;
+      margin-bottom:22px;width:fit-content;
+    }
+    .badge-dot{width:5px;height:5px;border-radius:50%;background:currentColor;animation:breathe 2.5s infinite}
+    h1{
+      font-size:clamp(34px,4.5vw,60px);font-weight:800;line-height:1.08;
+      letter-spacing:-2px;margin-bottom:18px;
+      background:linear-gradient(140deg,#e2e8f0 0%,#94a3b8 100%);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    h1 .accent{
+      background:linear-gradient(135deg,#1d9e75,#22c55e);
+      -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+    }
+    .hero-desc{font-size:15px;line-height:1.75;color:var(--muted);margin-bottom:32px;max-width:500px}
+    .hero-ctas{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+    .btn-primary{
+      background:var(--green);color:#fff;padding:13px 24px;border-radius:9px;
+      font-size:14px;font-weight:700;text-decoration:none;
+      box-shadow:0 4px 22px rgba(29,158,117,0.4);transition:all .2s;
+      display:inline-flex;align-items:center;gap:6px;
+    }
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(29,158,117,0.55);color:#fff}
+    .btn-secondary{
+      background:rgba(255,255,255,0.05);color:var(--text);padding:13px 24px;
+      border-radius:9px;font-size:14px;font-weight:600;text-decoration:none;
+      border:1px solid var(--border);transition:all .2s;
+    }
+    .btn-secondary:hover{background:rgba(255,255,255,0.09);border-color:rgba(255,255,255,0.15);color:var(--text)}
+
+    /* ── Mini data cards ── */
+    .data-cards{
+      display:flex;gap:10px;margin-top:36px;flex-wrap:wrap;
+    }
+    .data-card{
+      background:rgba(1,11,24,0.7);border:1px solid var(--border);
+      border-radius:9px;padding:12px 16px;backdrop-filter:blur(12px);min-width:130px;
+    }
+    .dc-n{font-size:22px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
+    .dc-l{font-size:10px;color:var(--muted);font-weight:500;margin-top:2px}
+
+    /* ── Bottom stats bar ── */
+    .stats-bar{
+      display:flex;gap:0;background:rgba(1,11,24,0.7);
+      backdrop-filter:blur(16px);border-top:1px solid var(--border);
+    }
+    .stat-item{
+      flex:1;padding:18px 24px;border-right:1px solid var(--border);
+      display:flex;flex-direction:column;gap:3px;
+    }
+    .stat-item:last-child{border-right:none}
+    .stat-n{font-size:20px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
+    .stat-l{font-size:10px;color:var(--muted);font-weight:500;text-transform:uppercase;letter-spacing:0.3px}
+
+    /* ── Layer controls (right side) ── */
+    .layer-controls{
+      position:fixed;right:28px;top:50%;transform:translateY(-50%);
+      z-index:20;display:flex;flex-direction:column;gap:6px;
+    }
+    .layer-title{font-size:9px;color:var(--dim);font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px;padding-left:2px}
+    .layer-btn{
+      background:rgba(1,11,24,0.82);border:1px solid var(--border);
+      color:var(--muted);padding:9px 14px;border-radius:7px;
+      font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;
+      backdrop-filter:blur(10px);text-align:left;display:flex;align-items:center;gap:7px;
+      white-space:nowrap;
+    }
+    .layer-btn:hover{border-color:rgba(255,255,255,0.15);color:var(--text)}
+    .layer-btn.active{border-color:var(--green);color:var(--green);background:rgba(29,158,117,0.1)}
+    .layer-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+
+    /* ── Risk legend ── */
+    .risk-legend{
+      position:fixed;bottom:85px;left:48px;z-index:20;
+      display:flex;align-items:center;gap:14px;
+      background:rgba(1,11,24,0.82);border:1px solid var(--border);
+      border-radius:8px;padding:9px 14px;backdrop-filter:blur(12px);
+    }
+    .rl-label{font-size:9px;color:var(--dim);font-weight:700;letter-spacing:0.8px;text-transform:uppercase}
+    .rl-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--muted);font-weight:500}
+    .rl-dot{width:8px;height:8px;border-radius:50%}
+
+    /* ── Tooltip override ── */
+    .globe-tooltip{pointer-events:none!important}
+
+    @media(max-width:768px){
+      nav{padding:14px 20px}
+      .nav-links .nav-link-hide{display:none}
+      .hero{padding:50px 20px 24px;max-width:100%}
+      h1{font-size:32px;letter-spacing:-1.5px}
+      .data-cards{display:none}
+      .stats-bar{overflow-x:auto}
+      .stat-item{min-width:100px;padding:14px 16px}
+      .layer-controls{right:12px}
+      .risk-legend{left:20px;bottom:72px}
+    }
+  </style>
+</head>
+<body>
+
+<div id="globe-container"></div>
+<div class="vignette"></div>
+
+<div class="site">
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <div class="nav-dot"></div>
+      ClimRisk
+      <span class="nav-sub">Intelligence Platform</span>
+    </a>
+    <div class="nav-links">
+      <a href="app.html" class="nav-link-hide">Platform</a>
+      <a href="#" class="nav-link-hide">Solutions</a>
+      <a href="#" class="nav-link-hide">Research</a>
+      <a href="#" class="nav-link-hide">About</a>
+      <a href="app.html" class="nav-cta">Access Platform →</a>
+    </div>
+  </nav>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-badge">
+      <span class="badge-dot"></span>
+      IPCC AR6 · NGFS Phase 4 · ERA5 Live Data
+    </div>
+    <h1>Predictive <span class="accent">Climate Risk</span><br>For Modern Finance</h1>
+    <p class="hero-desc">Quantify physical and transition climate risks across any global asset portfolio. Satellite Earth observation, CMIP6 projections, and institutional DCF modelling — all in one platform.</p>
+    <div class="hero-ctas">
+      <a href="app.html" class="btn-primary">Launch Platform →</a>
+      <a href="CRI_Demo.html" class="btn-secondary">Live Engine Demo</a>
+    </div>
+
+    <div class="data-cards">
+      <div class="data-card">
+        <div class="dc-n" style="color:#ef4444">91</div>
+        <div class="dc-l">Jakarta CRI Score</div>
+      </div>
+      <div class="data-card">
+        <div class="dc-n" style="color:#f59e0b">$1.4B</div>
+        <div class="dc-l">Water Risk (Sample)</div>
+      </div>
+      <div class="data-card">
+        <div class="dc-n" style="color:#1d9e75">NZE</div>
+        <div class="dc-l">3 NGFS Scenarios</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item"><div class="stat-n">25</div><div class="stat-l">IPCC AR6 Hazards</div></div>
+    <div class="stat-item"><div class="stat-n">3</div><div class="stat-l">NGFS Scenarios</div></div>
+    <div class="stat-item"><div class="stat-n">2050</div><div class="stat-l">Projection Horizon</div></div>
+    <div class="stat-item"><div class="stat-n">ERA5</div><div class="stat-l">Live Meteorological</div></div>
+    <div class="stat-item"><div class="stat-n">IFRS S2</div><div class="stat-l">Disclosure Ready</div></div>
+    <div class="stat-item"><div class="stat-n">TCFD</div><div class="stat-l">Framework Aligned</div></div>
+  </div>
+
+</div>
+
+<!-- LAYER CONTROLS -->
+<div class="layer-controls">
+  <div class="layer-title">Risk Layers</div>
+  <button class="layer-btn active" id="btn-physical" onclick="toggleLayer('physical',this)">
+    <span class="layer-dot" style="background:#ef4444;box-shadow:0 0 6px #ef4444"></span>Physical Risk
+  </button>
+  <button class="layer-btn active" id="btn-transition" onclick="toggleLayer('transition',this)">
+    <span class="layer-dot" style="background:#f59e0b;box-shadow:0 0 6px #f59e0b"></span>Transition Risk
+  </button>
+  <button class="layer-btn active" id="btn-hotspots" onclick="toggleLayer('hotspots',this)">
+    <span class="layer-dot" style="background:#3b82f6;box-shadow:0 0 6px #3b82f6"></span>Asset Hotspots
+  </button>
+  <button class="layer-btn active" id="btn-arcs" onclick="toggleLayer('arcs',this)">
+    <span class="layer-dot" style="background:#8b5cf6;box-shadow:0 0 6px #8b5cf6"></span>Risk Corridors
+  </button>
+  <button class="layer-btn active" id="btn-temp" onclick="toggleLayer('temp',this)">
+    <span class="layer-dot" style="background:#f43f5e;box-shadow:0 0 6px #f43f5e"></span>Temp Anomaly
+  </button>
+</div>
+
+<!-- RISK LEGEND -->
+<div class="risk-legend">
+  <div class="rl-label">Risk Level</div>
+  <div class="rl-item"><div class="rl-dot" style="background:#ef4444"></div>Critical</div>
+  <div class="rl-item"><div class="rl-dot" style="background:#f59e0b"></div>High</div>
+  <div class="rl-item"><div class="rl-dot" style="background:#22c55e"></div>Medium</div>
+  <div class="rl-item"><div class="rl-dot" style="background:#3b82f6"></div>Low</div>
+</div>
+
+<!-- Globe.gl -->
+<script src="https://unpkg.com/globe.gl@2"></script>
+<script>
+// ── DATA ─────────────────────────────────────────────────────────────────────
+
+var HOTSPOTS = [
+  {lat:-6.21,  lng:106.84, city:'Jakarta',      risk:'CRITICAL', score:91, type:'physical',   color:'#ef4444', size:0.65},
+  {lat:23.72,  lng:90.40,  city:'Dhaka',        risk:'CRITICAL', score:88, type:'physical',   color:'#ef4444', size:0.60},
+  {lat:25.77,  lng:-80.19, city:'Miami',        risk:'HIGH',     score:79, type:'physical',   color:'#ef4444', size:0.52},
+  {lat:18.96,  lng:72.82,  city:'Mumbai',       risk:'HIGH',     score:76, type:'physical',   color:'#ef4444', size:0.50},
+  {lat:6.45,   lng:3.39,   city:'Lagos',        risk:'HIGH',     score:74, type:'physical',   color:'#f59e0b', size:0.48},
+  {lat:31.23,  lng:121.47, city:'Shanghai',     risk:'HIGH',     score:72, type:'physical',   color:'#f59e0b', size:0.46},
+  {lat:29.76,  lng:-95.37, city:'Houston',      risk:'HIGH',     score:70, type:'physical',   color:'#f59e0b', size:0.46},
+  {lat:25.20,  lng:55.27,  city:'Dubai',        risk:'HIGH',     score:68, type:'transition', color:'#f59e0b', size:0.44},
+  {lat:30.05,  lng:31.23,  city:'Cairo',        risk:'HIGH',     score:66, type:'physical',   color:'#f59e0b', size:0.42},
+  {lat:-34.61, lng:-58.38, city:'Buenos Aires', risk:'MEDIUM',   score:57, type:'physical',   color:'#22c55e', size:0.38},
+  {lat:40.71,  lng:-74.01, city:'New York',     risk:'MEDIUM',   score:56, type:'physical',   color:'#22c55e', size:0.38},
+  {lat:51.92,  lng:4.47,   city:'Rotterdam',    risk:'MEDIUM',   score:54, type:'physical',   color:'#22c55e', size:0.36},
+  {lat:35.68,  lng:139.69, city:'Tokyo',        risk:'MEDIUM',   score:52, type:'physical',   color:'#22c55e', size:0.36},
+  {lat:1.35,   lng:103.82, city:'Singapore',    risk:'MEDIUM',   score:50, type:'transition', color:'#22c55e', size:0.34},
+  {lat:-33.87, lng:151.21, city:'Sydney',       risk:'MEDIUM',   score:48, type:'physical',   color:'#22c55e', size:0.34},
+  {lat:51.51,  lng:-0.12,  city:'London',       risk:'LOW',      score:42, type:'transition', color:'#3b82f6', size:0.32},
+  {lat:48.86,  lng:2.35,   city:'Paris',        risk:'LOW',      score:40, type:'transition', color:'#3b82f6', size:0.30},
+  {lat:37.77,  lng:-122.41,city:'San Francisco',risk:'LOW',      score:38, type:'transition', color:'#3b82f6', size:0.30},
+  {lat:55.75,  lng:37.62,  city:'Moscow',       risk:'MEDIUM',   score:49, type:'transition', color:'#22c55e', size:0.34},
+  {lat:19.07,  lng:-99.14, city:'Mexico City',  risk:'HIGH',     score:65, type:'physical',   color:'#f59e0b', size:0.42},
+];
+
+var ARCS = [
+  {startLat:25.77,startLng:-80.19, endLat:51.51,endLng:-0.12,   color:'rgba(239,68,68,0.7)',  label:'Hurricane Exposure → EU'},
+  {startLat:-6.21,startLng:106.84, endLat:1.35,endLng:103.82,   color:'rgba(245,158,11,0.6)', label:'Coastal Flood Corridor'},
+  {startLat:18.96,startLng:72.82,  endLat:25.20,endLng:55.27,   color:'rgba(239,68,68,0.65)', label:'Heat Stress Belt'},
+  {startLat:31.23,startLng:121.47, endLat:35.68,endLng:139.69,  color:'rgba(34,197,94,0.5)',  label:'Transition Policy Flow'},
+  {startLat:40.71,startLng:-74.01, endLat:48.86,endLng:2.35,    color:'rgba(59,130,246,0.55)',label:'Carbon Policy Risk'},
+  {startLat:29.76,startLng:-95.37, endLat:37.77,endLng:-122.41, color:'rgba(239,68,68,0.55)', label:'Storm Surge Exposure'},
+  {startLat:23.72,startLng:90.40,  endLat:18.96,endLng:72.82,   color:'rgba(239,68,68,0.6)',  label:'Monsoon Flood Zone'},
+  {startLat:6.45, startLng:3.39,   endLat:30.05,endLng:31.23,   color:'rgba(245,158,11,0.5)', label:'Heat & Water Stress'},
+  {startLat:51.92,startLng:4.47,   endLat:51.51,endLng:-0.12,   color:'rgba(59,130,246,0.5)', label:'European Flood Risk'},
+];
+
+// Temperature anomaly heatmap data (synthetic CMIP6-inspired)
+var TEMP_GRID = [];
+(function(){
+  var hotRegions = [
+    {lat:75,lng:0,r:30,v:1.8},   // Arctic amplification
+    {lat:72,lng:100,r:25,v:1.6}, // Siberia
+    {lat:72,lng:-100,r:22,v:1.5},// Arctic Canada
+    {lat:20,lng:50,r:25,v:1.2},  // Arabian Peninsula
+    {lat:15,lng:20,r:30,v:1.0},  // Sahel
+    {lat:35,lng:60,r:20,v:0.9},  // Central Asia
+    {lat:-20,lng:135,r:18,v:0.7},// Australia interior
+    {lat:25,lng:85,r:20,v:0.8},  // South Asia heat
+  ];
+  for (var lat=-80;lat<=80;lat+=6) {
+    for (var lng=-175;lng<=175;lng+=6) {
+      var val = 0.15 + Math.random()*0.1;
+      hotRegions.forEach(function(h){
+        var dlat=lat-h.lat, dlng=lng-h.lng;
+        var dist=Math.sqrt(dlat*dlat+dlng*dlng);
+        if(dist<h.r) val += h.v*(1-dist/h.r);
+      });
+      if(val>0.3) TEMP_GRID.push({lat:lat,lng:lng,weight:Math.min(val,1.8)});
+    }
+  }
+})();
+
+// ── GLOBE INIT ────────────────────────────────────────────────────────────────
+
+var layers = {physical:true, transition:true, hotspots:true, arcs:true, temp:true};
+
+function filteredPoints(){
+  if(!layers.hotspots) return [];
+  return HOTSPOTS.filter(function(d){
+    return (layers.physical && d.type==='physical') || (layers.transition && d.type==='transition');
+  });
+}
+
+var globe = Globe()(document.getElementById('globe-container'))
+  .globeImageUrl('https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg')
+  .backgroundImageUrl('https://unpkg.com/three-globe/example/img/night-sky.png')
+  .atmosphereColor('rgba(60,140,255,0.28)')
+  .atmosphereAltitude(0.20)
+  // Risk hotspot points
+  .pointsData(filteredPoints())
+  .pointLat('lat').pointLng('lng')
+  .pointColor('color')
+  .pointRadius('size')
+  .pointAltitude(0.015)
+  .pointResolution(12)
+  .pointLabel(function(d){
+    return '<div style="background:rgba(1,11,24,0.95);border:1px solid rgba(255,255,255,0.1);'+
+      'border-left:3px solid '+d.color+';padding:12px 16px;border-radius:8px;'+
+      'font-family:system-ui,sans-serif;min-width:170px;pointer-events:none">'+
+      '<div style="font-weight:700;color:#e2e8f0;font-size:14px;margin-bottom:5px">'+d.city+'</div>'+
+      '<div style="font-size:11px;font-weight:700;color:'+d.color+';margin-bottom:8px;letter-spacing:0.3px">'+d.risk+' RISK</div>'+
+      '<div style="font-size:11px;color:#94a3b8;margin-bottom:3px">CRI Score: <span style="color:#e2e8f0;font-weight:700">'+d.score+'/100</span></div>'+
+      '<div style="font-size:10px;color:#64748b;text-transform:capitalize">'+d.type+' risk exposure</div>'+
+      '</div>';
+  })
+  // Risk arcs
+  .arcsData(ARCS)
+  .arcStartLat('startLat').arcStartLng('startLng')
+  .arcEndLat('endLat').arcEndLng('endLng')
+  .arcColor('color')
+  .arcAltitude(0.22)
+  .arcStroke(0.45)
+  .arcDashLength(0.38)
+  .arcDashGap(0.18)
+  .arcDashAnimateTime(2800)
+  // Temperature heatmap hex bins
+  .hexBinPointsData(TEMP_GRID)
+  .hexBinPointWeight('weight')
+  .hexBinResolution(3)
+  .hexTopColor(function(d){
+    var w=d.sumWeight/2.5;
+    if(w>0.7) return 'rgba(239,68,68,0.75)';
+    if(w>0.45) return 'rgba(245,158,11,0.55)';
+    return 'rgba(251,191,36,0.3)';
+  })
+  .hexSideColor(function(d){
+    var w=d.sumWeight/2.5;
+    if(w>0.7) return 'rgba(239,68,68,0.3)';
+    return 'rgba(245,158,11,0.15)';
+  })
+  .hexAltitude(function(d){ return Math.min(d.sumWeight/2.5,1)*0.07; })
+  .hexBinMerge(true)
+  .width(window.innerWidth)
+  .height(window.innerHeight);
+
+// Initial camera position — slightly right-biased so text on left doesn't overlap globe
+globe.pointOfView({lat:10, lng:40, altitude:2.1});
+
+// Auto-rotate slowly
+globe.controls().autoRotate = true;
+globe.controls().autoRotateSpeed = 0.25;
+globe.controls().enableZoom = true;
+globe.controls().minDistance = 120;
+globe.controls().maxDistance = 700;
+globe.controls().enablePan = false;
+
+// ── LAYER TOGGLE ─────────────────────────────────────────────────────────────
+
+function toggleLayer(name, btn){
+  layers[name] = !layers[name];
+  btn.classList.toggle('active', layers[name]);
+
+  if(name==='physical'||name==='transition'||name==='hotspots'){
+    globe.pointsData(filteredPoints());
+  }
+  if(name==='arcs'){
+    globe.arcsData(layers.arcs ? ARCS : []);
+  }
+  if(name==='temp'){
+    globe.hexBinPointsData(layers.temp ? TEMP_GRID : []);
+  }
+}
+
+// ── RESIZE ────────────────────────────────────────────────────────────────────
+window.addEventListener('resize', function(){
+  globe.width(window.innerWidth).height(window.innerHeight);
+});
+</script>
+</body>
+</html>

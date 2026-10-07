@@ -1,0 +1,49 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ClimRisk — Hugging Face Spaces Deployment
+# ─────────────────────────────────────────────────────────────────────────────
+# Deploy:
+#   1. Create a new Space at huggingface.co/new-space
+#      SDK: Docker  |  Hardware: CPU Basic (free)
+#   2. Push this repo as the Space repo:
+#        git remote add space https://huggingface.co/spaces/<YOUR_HF_USERNAME>/climrisk
+#        git push space main
+#   3. Set Secrets in Space Settings:
+#        DATABASE_URL   postgresql://...@db.supabase.co:5432/postgres
+#        R2_ENDPOINT    https://<account_id>.r2.cloudflarestorage.com
+#        R2_BUCKET      climrisk-rasters
+#        R2_ACCESS_KEY_ID  <R2 key>
+#        R2_SECRET_KEY     <R2 secret>
+#        GEE_SERVICE_ACCOUNT_JSON  <base64-encoded service account JSON>
+#
+# HF Spaces requirements:
+#   • Must expose port 7860
+#   • Dockerfile must be named Dockerfile (rename this file to Dockerfile when deploying)
+# ─────────────────────────────────────────────────────────────────────────────
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system deps for geospatial libraries
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    libgdal-dev gcc g++ curl \
+    && rm -rf /var/lib/apt/lists/*
+
+# Python dependencies
+COPY requirements.hf.txt /app/requirements.hf.txt
+RUN pip install --no-cache-dir -r requirements.hf.txt
+
+# Copy application
+COPY api/         /app/api/
+COPY pipeline.py  /app/pipeline.py
+COPY pipeline_gee.py /app/pipeline_gee.py
+COPY ingest.py    /app/ingest.py
+COPY assets.csv   /app/assets.csv
+
+# GEE service account auth — decode from base64 secret at startup
+COPY docker-entrypoint.sh /app/docker-entrypoint.sh
+RUN chmod +x /app/docker-entrypoint.sh
+
+# HF Spaces requires port 7860
+EXPOSE 7860
+
+ENTRYPOINT ["/app/docker-entrypoint.sh"]

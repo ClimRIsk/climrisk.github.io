@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Productivity Tax | Physical Finance — ClimRisk</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Source+Serif+4:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #FAFAF7;
+    --ink:      #1A1A1A;
+    --mid:      #4A4A4A;
+    --muted:    #7A7570;
+    --border:   #D4CFC6;
+    --light:    #E8E4DC;
+    --blue:     #1565C0;
+    --blue-bg:  #EEF4FF;
+    --orange:   #E65100;
+    --orange-bg:#FFF3E0;
+    --red:      #C62828;
+    --red-bg:   #FFEBEE;
+    --amber:    #F57F17;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Source Serif 4', 'Georgia', serif;
+    font-size: 17px;
+    line-height: 1.72;
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 32px 24px 80px;
+  }
+
+  /* ── MASTHEAD ─────────────────────────────────────────────── */
+  .masthead {
+    background: var(--ink);
+    color: #FAFAF7;
+    padding: 36px 40px 28px;
+    margin-bottom: 0;
+    border-bottom: 3px solid var(--amber);
+  }
+  .pub-label {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--amber);
+    font-family: 'Source Serif 4', serif;
+    margin-bottom: 18px;
+    display: block;
+  }
+  .pub-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 42px;
+    font-weight: 900;
+    color: #FAFAF7;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .pub-tagline {
+    font-size: 11.5px;
+    color: #B0A898;
+    letter-spacing: 0.5px;
+    font-style: italic;
+    margin-bottom: 24px;
+  }
+  .masthead-rule {
+    border: none;
+    border-top: 1px solid #3A3A3A;
+    margin: 16px 0;
+  }
+  .article-meta {
+    font-size: 10.5px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 20px;
+    font-family: 'Source Serif 4', serif;
+  }
+  .article-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 40px;
+    font-weight: 900;
+    color: #FAFAF7;
+    line-height: 1.12;
+    margin-bottom: 16px;
+    letter-spacing: -0.3px;
+  }
+  .article-standfirst {
+    font-size: 15px;
+    color: #C8BFB4;
+    line-height: 1.6;
+    font-style: italic;
+    border-top: 1px solid #3A3A3A;
+    padding-top: 16px;
+  }
+
+  /* ── BYLINE BAR ───────────────────────────────────────────── */
+  .byline-bar {
+    background: var(--light);
+    border-bottom: 2px solid var(--border);
+    padding: 10px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 10.5px;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    font-family: 'Source Serif 4', serif;
+  }
+  .byline-bar strong { color: var(--ink); }
+
+  /* ── BODY ─────────────────────────────────────────────────── */
+  .body-wrap { padding: 36px 40px; }
+
+  p { margin-bottom: 1.15em; }
+
+  h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 23px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 2.2em 0 0.7em;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--blue);
+    letter-spacing: -0.2px;
+  }
+  h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--ink);
+    margin: 1.6em 0 0.5em;
+  }
+
+  /* ── INLINE SOURCE TAGS ───────────────────────────────────── */
+  .src-tag {
+    display: inline-block;
+    background: var(--blue-bg);
+    color: var(--blue);
+    font-size: 9.5px;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+    margin: 0 2px;
+    white-space: nowrap;
+    border: 1px solid #BBDEFB;
+  }
+  .find-tag {
+    display: inline-block;
+    background: var(--orange-bg);
+    color: var(--orange);
+    font-size: 9.5px;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+    margin: 0 2px;
+    white-space: nowrap;
+    border: 1px solid #FFD180;
+  }
+  .warn-tag {
+    display: inline-block;
+    background: var(--red-bg);
+    color: var(--red);
+    font-size: 9.5px;
+    font-family: 'Courier New', monospace;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+    letter-spacing: 0.3px;
+    vertical-align: middle;
+    margin: 0 2px;
+    white-space: nowrap;
+    border: 1px solid #FFCDD2;
+  }
+
+  /* ── STAT ROW ─────────────────────────────────────────────── */
+  .stat-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin: 28px 0;
+  }
+  .stat-box {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--blue);
+    padding: 16px 18px;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 34px;
+    font-weight: 900;
+    color: var(--blue);
+    line-height: 1;
+    display: block;
+    margin-bottom: 4px;
+  }
+  .stat-label {
+    font-size: 10.5px;
+    color: var(--mid);
+    letter-spacing: 0.3px;
+    line-height: 1.4;
+    display: block;
+  }
+  .stat-source {
+    font-size: 9px;
+    color: var(--muted);
+    font-style: italic;
+    margin-top: 4px;
+    display: block;
+  }
+
+  /* ── CALLOUT BOXES ────────────────────────────────────────── */
+  .callout {
+    border-left: 4px solid;
+    padding: 16px 20px;
+    margin: 24px 0;
+    font-size: 14.5px;
+    line-height: 1.65;
+  }
+  .callout.blue  { border-color: var(--blue);   background: var(--blue-bg);   color: #0D2A5A; }
+  .callout.orange{ border-color: var(--orange);  background: var(--orange-bg); color: #4A1800; }
+  .callout.red   { border-color: var(--red);     background: var(--red-bg);   color: #4A0000; }
+  .callout-label {
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 700;
+    margin-bottom: 6px;
+    display: block;
+    font-family: 'Source Serif 4', serif;
+    opacity: 0.75;
+  }
+  .callout strong { display: block; font-size: 15.5px; margin-bottom: 4px; }
+
+  /* ── PULL QUOTE ───────────────────────────────────────────── */
+  .pull-quote {
+    border-top: 3px solid var(--blue);
+    border-bottom: 3px solid var(--blue);
+    padding: 20px 24px;
+    margin: 32px 0;
+    font-family: 'Playfair Display', serif;
+    font-size: 21px;
+    font-style: italic;
+    color: var(--blue);
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  /* ── CHART CONTAINERS ─────────────────────────────────────── */
+  .chart-wrap {
+    background: #fff;
+    border: 1px solid var(--border);
+    padding: 6px 6px 12px;
+    margin: 24px 0;
+  }
+  .chart-wrap img { width: 100%; display: block; }
+  .chart-caption {
+    font-size: 11px;
+    color: var(--muted);
+    text-align: center;
+    margin-top: 8px;
+    font-style: italic;
+    font-family: 'Source Serif 4', serif;
+    padding: 0 12px;
+  }
+
+  /* ── PATHWAY LIST ─────────────────────────────────────────── */
+  .pathway-list { list-style: none; margin: 16px 0 24px; }
+  .pathway-list li {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--light);
+  }
+  .pathway-list li:last-child { border-bottom: none; }
+  .path-num {
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    background: var(--blue);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 3px;
+    font-family: 'Source Serif 4', serif;
+  }
+  .path-body { flex: 1; }
+  .path-title { font-weight: 700; color: var(--ink); font-size: 15px; display: block; margin-bottom: 2px; }
+
+  /* ── IMPACT TABLE ─────────────────────────────────────────── */
+  .impact-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 20px 0;
+  }
+  .impact-table thead tr { background: var(--ink); color: #FAFAF7; }
+  .impact-table thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-family: 'Source Serif 4', serif;
+    font-weight: 700;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+  .impact-table tbody tr { border-bottom: 1px solid var(--border); }
+  .impact-table tbody tr:nth-child(even) { background: #F4F1EC; }
+  .impact-table td { padding: 9px 14px; vertical-align: top; line-height: 1.45; }
+  .impact-table td:first-child { font-weight: 600; color: var(--ink); }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 10.5px;
+    font-weight: 700;
+    font-family: 'Source Serif 4', serif;
+    letter-spacing: 0.5px;
+  }
+  .badge.mod  { background: #E3F2FD; color: var(--blue); }
+  .badge.high { background: #FFF8E1; color: var(--amber); }
+  .badge.sev  { background: var(--red-bg); color: var(--red); }
+
+  /* ── TRANSMISSION BARS ────────────────────────────────────── */
+  .transmission-section { margin: 24px 0; }
+  .trans-item { margin-bottom: 14px; }
+  .trans-label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .trans-bar-bg { background: var(--light); height: 8px; border-radius: 4px; overflow: hidden; }
+  .trans-bar-fill { height: 100%; border-radius: 4px; }
+
+  /* ── CTA ──────────────────────────────────────────────────── */
+  .cta-panel {
+    background: var(--blue);
+    color: #FAFAF7;
+    padding: 32px 40px;
+    margin-top: 40px;
+  }
+  .cta-panel h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 22px;
+    color: #FAFAF7;
+    margin-bottom: 10px;
+  }
+  .cta-panel p { font-size: 14.5px; color: #BBDEFB; line-height: 1.65; margin-bottom: 14px; }
+  .cta-link {
+    display: inline-block;
+    background: #FAFAF7;
+    color: var(--blue);
+    padding: 10px 22px;
+    font-weight: 700;
+    font-size: 13px;
+    text-decoration: none;
+    letter-spacing: 0.5px;
+    font-family: 'Source Serif 4', serif;
+  }
+
+  /* ── SOURCES FOOTER ───────────────────────────────────────── */
+  .sources-footer {
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 2px solid var(--border);
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.7;
+    font-style: italic;
+  }
+  .sources-footer strong { color: var(--mid); font-style: normal; font-size: 10.5px; letter-spacing: 0.5px; }
+
+  @media print {
+    body { font-size: 14px; max-width: 100%; padding: 0; }
+    .masthead, .byline-bar, .body-wrap { padding-left: 28px; padding-right: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── MASTHEAD ──────────────────────────────────────────────── -->
+<div class="masthead">
+  <span class="pub-label">Physical Finance · ClimRisk Research</span>
+  <div class="pub-name">PHYSICAL FINANCE</div>
+  <div class="pub-tagline">Physical climate parameters. Financial consequences. No noise.</div>
+  <hr class="masthead-rule">
+  <div class="article-meta">India Series · No. 2 &nbsp;|&nbsp; Heat Stress &amp; Labour Productivity &nbsp;|&nbsp; August 2026</div>
+  <div class="article-title">The Productivity Tax: What Extreme Heat Costs India Before It Appears in Any Model</div>
+  <div class="article-standfirst">India's informal workforce — more than 90 percent of all employment — has no air conditioning, no paid sick leave, and no access to financial buffers when heat forces them to stop working. As heatwave days multiply and wet-bulb temperatures climb, the economic loss accumulates silently, in sectors that standard equity research and credit risk frameworks do not systematically monitor.</div>
+</div>
+
+<!-- ── BYLINE ─────────────────────────────────────────────────── -->
+<div class="byline-bar">
+  <span>By <strong>Shrinivash D Kannan</strong>, Founder — ClimRisk</span>
+  <span>Physical Risk · South Asia · Labour Economics · August 2026</span>
+</div>
+
+<div class="body-wrap">
+
+<!-- ── OPENING ───────────────────────────────────────────────── -->
+<p>
+On 29 May 2024, the India Meteorological Department recorded temperatures above 45°C across large parts of Rajasthan, Uttar Pradesh, and Haryana simultaneously. <span class="src-tag">IMD Heat Watch 2024</span> Heat-related deaths were reported in Delhi, Odisha, and Bihar. Schools were shut. Outdoor construction work in several cities ceased by 10am. The NDMA issued advisories across eleven states. <span class="src-tag">NDMA 2024</span>
+</p>
+<p>
+None of this appeared in any quarterly earnings model for an Indian FMCG company, real estate developer, or agricultural lender. The loss was invisible — not because it was small, but because the analytical frameworks used by most financial institutions do not have a systematic method for converting atmospheric temperature into financial output.
+</p>
+<p>
+This article builds that method. It traces the physical mechanism by which extreme heat suppresses labour output, maps the six financial transmission pathways into which that suppression flows, and uses ILO and NGFS Phase 4 data to quantify what the loss looks like under three warming scenarios through 2050. <span class="src-tag">ILO 2019</span> <span class="src-tag">NGFS Phase 4</span>
+</p>
+
+<!-- ── STAT ROW ───────────────────────────────────────────────── -->
+<div class="stat-row">
+  <div class="stat-box">
+    <span class="stat-num">90%+</span>
+    <span class="stat-label">India's workforce in the informal sector — no cooling, no paid leave, no health protection</span>
+    <span class="stat-source">PLFS 2022–23, Ministry of Statistics</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num">5.3%</span>
+    <span class="stat-label">Working hours South Asia will lose annually to heat stress by 2030 under current warming trajectory</span>
+    <span class="stat-source">ILO, "Working on a warmer planet" (2019)</span>
+  </div>
+  <div class="stat-box">
+    <span class="stat-num">35°C</span>
+    <span class="stat-label">Wet-bulb temperature at which sustained outdoor labour becomes physiologically impossible, even with hydration</span>
+    <span class="stat-source">IPCC AR6 WGII Ch. 16; Sherwood &amp; Huber (2010)</span>
+  </div>
+</div>
+
+<!-- ── SECTION 1: PHYSICAL MECHANISM ────────────────────────── -->
+<h2>The Physical Mechanism: Why Heat Kills Productivity Before It Kills Workers</h2>
+
+<p>
+The human body maintains a core temperature of approximately 37°C. When ambient temperature and humidity rise, the body diverts blood flow from muscles to the skin surface to facilitate cooling through sweating. <span class="src-tag">IPCC AR6 WGII Ch.16</span> Physical work capacity falls. Reaction time slows. Decision-making degrades. At moderate heat stress — a wet-bulb globe temperature (WBGT) above 28°C — outdoor workers operating at moderate intensity lose an estimated 50 percent of their sustainable work capacity. <span class="find-tag">ILO 2019: WBGT &gt;28°C → 50% capacity loss at moderate work rate</span>
+</p>
+
+<p>
+Wet-bulb temperature is the critical threshold. Unlike standard temperature, wet-bulb temperature accounts for humidity: it is the lowest temperature a surface can reach through evaporative cooling. At a wet-bulb temperature of 35°C, the human body cannot cool itself even in full shade with unlimited hydration. <span class="src-tag">Sherwood &amp; Huber, PNAS 2010</span> No amount of rest prevents core temperature from rising toward dangerous levels. Work must stop — or the worker dies.
+</p>
+
+<div class="callout orange">
+  <span class="callout-label">Source — IPCC AR6 Working Group II, Chapter 16 (Key Risks)</span>
+  <strong>"Heat stress is among the most broadly impactful physical climate hazards for human health and labour productivity."</strong>
+  "Labour productivity losses from heat stress are projected to increase non-linearly with warming. At 1.5°C, global losses reach approximately 2.2 percent of working hours. At 2.0°C, they reach 3.8 percent. The losses are geographically concentrated in tropical regions and sectors with high outdoor exposure — agriculture, construction, utilities, and informal manufacturing."
+</div>
+
+<div class="chart-wrap">
+  <img src="chart1_heatwave_days_imd.png" alt="India heatwave days per year 2000–2024">
+  <div class="chart-caption">India: Heatwave days per year, 2000–2024. Red bars mark record or near-record years. The upward trend is consistent with IMD's documented increase in extreme heat frequency across northwest, central, and peninsular India. Source: IMD Annual Climate Reports.</div>
+</div>
+
+<div class="callout blue">
+  <span class="callout-label">Source — IMD Annual Climate Summary and Heat Wave Reports</span>
+  <strong>India's heatwave footprint is expanding in both intensity and geographic reach.</strong>
+  "The northwest, central, and eastern India regions have experienced a statistically significant increase in heatwave frequency and duration since 1950. The 2022 northwest India heatwave — the earliest on record, peaking in late March — demonstrated that heat stress now arrives before the traditional May-June season that agricultural and construction calendars assume. In 2024, peak temperature anomalies extended into Odisha, Bihar, and parts of the northeastern corridor simultaneously."
+</div>
+
+<!-- ── SECTION 2: WHO BEARS THE COST ──────────────────────────── -->
+<h2>Who Bears the Cost: India's Informal Workforce</h2>
+
+<p>
+India's Periodic Labour Force Survey (PLFS) for 2022–23 records that more than 90 percent of India's employed workforce is in informal employment. <span class="src-tag">PLFS 2022–23</span> This means: no employer-provided health insurance, no air-conditioned workspace, no paid sick leave, and no access to workers' compensation when heat forces a day off. The productivity loss that heat imposes on this population does not appear on any corporate balance sheet. It appears — much later, and less visibly — in agricultural credit NPA ratios, rural consumer demand figures, and informal sector output indices. <span class="src-tag">RBI FSR 2023</span>
+</p>
+
+<p>
+The sectoral exposure is not uniform. Agriculture employs an estimated 600 million people across rural India, including household members dependent on farm income. <span class="src-tag">PLFS 2022–23</span> Kharif cultivation — rice, cotton, maize, soybean — peaks in June through August, exactly the window of highest heat-humidity combination in the Indo-Gangetic Plain. Construction employs approximately 60 to 65 million workers. <span class="find-tag">ILO 2019: Construction sector loses 5.6% of working hours at 1.5°C warming</span> Both sectors are dominated by daily-wage labour — workers who are paid only when they work, and who cannot afford to stop.
+</p>
+
+<div class="pull-quote">
+  "The worker who stops when it is 47°C does not file a productivity report. The loss accumulates invisibly — in informal incomes, in food output, in rural demand — until it reaches a balance sheet many steps removed from the original temperature."
+</div>
+
+<div class="chart-wrap">
+  <img src="chart2_ilo_hours_lost.png" alt="ILO working hours lost by sector, South Asia 2030">
+  <div class="chart-caption">South Asia: Projected working hours lost to heat stress by sector, 2030. Agriculture and construction carry the highest exposure at both 1.5°C and 2.0°C warming. India drives the majority of the South Asia total. Source: ILO, "Working on a warmer planet" (2019).</div>
+</div>
+
+<div class="callout blue">
+  <span class="callout-label">Source — ILO, "Working on a warmer planet: The impact of heat stress on labour productivity and decent work" (2019)</span>
+  <strong>South Asia is the most exposed region in the world to heat-related working hour losses.</strong>
+  "By 2030, South Asia is projected to lose approximately 5.3 percent of total working hours annually to heat stress — the highest regional exposure globally. India accounts for the largest share of this loss in absolute terms, driven by its agricultural workforce size, dominant informal sector, and geographic overlap between peak temperature zones and peak working populations. Agriculture loses an estimated 8.1 percent of working hours at 1.5°C warming and 10.4 percent at 2.0°C."
+</div>
+
+<!-- ── SECTION 3: SIX TRANSMISSION PATHWAYS ──────────────────── -->
+<h2>Six Financial Transmission Pathways</h2>
+
+<p>
+Heat stress does not stop at the individual worker. It moves through the economy along six pathways that are distinct in their financial character but simultaneous in their occurrence.
+</p>
+
+<ul class="pathway-list">
+  <li>
+    <div class="path-num">1</div>
+    <div class="path-body">
+      <span class="path-title">Agricultural Output Compression <span class="src-tag">FAO · IMD</span></span>
+      Kharif crops cultivated at heat-humidity conditions above WBGT thresholds produce lower yields regardless of rainfall adequacy. High night-time temperatures during grain-filling stages of rice — a documented and measurable phenomenon <span class="find-tag">IPCC AR6 WGII Ch.5: 10% rice yield loss per 1°C night temp rise above threshold</span> — permanently suppress output per hectare. This transmission moves from atmospheric temperature into FCI procurement volumes, MSP pressure, and eventually food inflation that the RBI must respond to through monetary policy.
+    </div>
+  </li>
+  <li>
+    <div class="path-num">2</div>
+    <div class="path-body">
+      <span class="path-title">Agricultural Credit NPA Pressure <span class="src-tag">RBI FSR</span></span>
+      Informal daily-wage farm labour that loses income during peak heat periods cannot service agricultural input loans. Scheduled commercial bank NPA ratios in the agriculture segment have documented sensitivity to both monsoon deficit and temperature anomaly years. <span class="src-tag">RBI Financial Stability Report June 2023</span> <span class="warn-tag">NPA sensitivity to heat stress not yet systematically modelled by Indian banks</span> The failure to systematically embed heat stress into agricultural credit underwriting means NPA risk is systematically underpriced in this segment.
+    </div>
+  </li>
+  <li>
+    <div class="path-num">3</div>
+    <div class="path-body">
+      <span class="path-title">Construction Sector Output and Real Estate Developer Credit <span class="src-tag">NHB · CRISIL</span></span>
+      Construction activity halts during peak heat periods. The 2024 NDMA heat action advisories explicitly cited construction worker safety as the trigger for work stoppages in Delhi NCR, Rajasthan, and UP. <span class="src-tag">NDMA 2024</span> Project timelines extend. Completion schedules slip. Real estate developer cash flows — already compressed from delayed collections — face additional compression from heat-forced delays. Lenders holding construction finance exposure bear the credit consequence. <span class="find-tag">NHB: Construction finance NPA ratio elevated in heat-event years</span>
+    </div>
+  </li>
+  <li>
+    <div class="path-num">4</div>
+    <div class="path-body">
+      <span class="path-title">FMCG Rural Revenue and Earnings Impact <span class="src-tag">Company Filings · CMIE</span></span>
+      Rural India contributes 35 to 40 percent of FMCG company revenues. The informal rural workforce loses earned income on heat-stop days. That income loss reduces consumption expenditure on packaged food, personal care, and household products within the same quarter. <span class="src-tag">HUL, ITC, Dabur — Annual Reports 2023–24</span> Companies including HUL have noted rural volume growth as the single most variable input in quarterly earnings commentary. Heat events that suppress rural daily wages compress that variable faster than monsoon forecasts — and with less warning.
+    </div>
+  </li>
+  <li>
+    <div class="path-num">5</div>
+    <div class="path-body">
+      <span class="path-title">Energy System Stress <span class="src-tag">CEA · MoP India</span></span>
+      Extreme heat drives a simultaneous demand spike across cooling (air conditioning in offices, data centres, hospitals) and a supply-side constraint (thermal power plant efficiency falls as ambient temperature rises; water availability for cooling towers reduces). <span class="find-tag">CEA: Grid stress events correlated with ambient temperature peaks in 2022 and 2024</span> India's Ministry of Power documented grid stress events during both the 2022 and 2024 heatwaves. The cost of peaking power procurement rises. Discoms with already-stressed balance sheets face higher short-term power purchase costs during heat events.
+    </div>
+  </li>
+  <li>
+    <div class="path-num">6</div>
+    <div class="path-body">
+      <span class="path-title">Sovereign Fiscal Exposure and Long-Term Human Capital Discount <span class="src-tag">World Bank · IMF</span></span>
+      The Government of India bears direct heat costs through MGNREGS wage disbursements (the scheme provides rural employment as a heat-buffer, but at fiscal cost), NDMA heat action plan funding, and public health system pressure. <span class="src-tag">Ministry of Finance · MoRD Annual Reports</span> Beyond the immediate fiscal cost, the World Bank has documented that repeated heat exposure during childhood produces measurable long-term cognitive and physical productivity deficits — a human capital depreciation that suppresses sovereign GDP potential over decade-scale time horizons. <span class="find-tag">World Bank: Heat-exposed childhood cohorts show 5–7% lower lifetime earnings (2022)</span>
+    </div>
+  </li>
+</ul>
+
+<div class="callout red">
+  <span class="callout-label">Source — Reserve Bank of India, Financial Stability Report (June 2023) and Annual Report (2023–24)</span>
+  <strong>India's financial system has not yet systematically embedded heat stress into credit risk frameworks.</strong>
+  "The RBI's climate risk guidance documents identify physical risk — including extreme heat events — as a material consideration for bank stress testing. However, heat stress as a distinct, quantifiable driver of agricultural NPA formation, construction finance delinquency, and informal sector income collapse is not yet reflected in the standardised credit risk models used by most scheduled commercial banks. This represents a systematic underpricing of physical climate risk across the agriculture and construction lending portfolios."
+</div>
+
+<!-- ── SECTION 4: THROUGH 2050 ──────────────────────────────── -->
+<h2>What Climate Science Says About India's Heat Trajectory Through 2050</h2>
+
+<p>
+IPCC AR6 WGI Chapter 11 — the chapter on weather and climate extremes — is explicit on the India heat trajectory. <span class="src-tag">IPCC AR6 WGI Ch.11</span> Under current policies, India is projected to see: a statistically significant increase in the number of days per year when WBGT exceeds the moderate-risk threshold for outdoor workers; a higher frequency of concurrent heat and humidity events (the combination that determines wet-bulb temperature); and an extension of the heat-stress season from the traditional May-June window into March-April and September-October. <span class="find-tag">IPCC AR6 WGI Ch.11: Rare 1-in-50-year heat events become 1-in-5-year events at 2°C warming</span>
+</p>
+
+<p>
+The financial consequence is not simply that heat events become more frequent. It is that the economic system — construction schedules, agricultural calendars, MGNREGS work schedules — is calibrated to a heat pattern that no longer reflects the physical reality. Every additional week of heat-stop conditions that falls outside the traditional assumed window represents an uncalibrated loss. Standard financial models do not price for it. <span class="warn-tag">Systematic model gap: heat seasonality shift unpriced in most India credit models</span>
+</p>
+
+<div class="chart-wrap">
+  <img src="chart3_ngfs_productivity.png" alt="NGFS Phase 4 outdoor labour productivity index India 2025–2050">
+  <div class="chart-caption">India: Outdoor labour productivity index under NGFS Phase 4 warming scenarios, 2025–2050 (2025 = 100). Under Current Policies (~2.8°C), the cumulative productivity tax by 2050 is approximately 15 index points. Under Net Zero 2050, it is contained to approximately 4 points. The divergence begins materially after 2035. Source: NGFS Phase 4 scenario documentation; ILO productivity-temperature coefficients.</div>
+</div>
+
+<div class="callout orange">
+  <span class="callout-label">Source — IPCC AR6 Working Group I, Chapter 11 (Weather and Climate Extremes)</span>
+  <strong>"Heat extremes have increased in frequency and intensity in India since the 1950s and are virtually certain to intensify further under all warming scenarios."</strong>
+  "Under 2°C of global warming above pre-industrial levels, heat events that currently occur once in 50 years are projected to occur once in approximately 5 years. Under 4°C, they become near-annual. For India's outdoor workforce, this represents a structural shift in the number of physiologically constrained work-days per year — a permanent, compounding drag on labour productivity that begins to appear in sectoral output statistics within the current investment horizon."
+</div>
+
+<!-- ── IMPACT TABLE ──────────────────────────────────────────── -->
+<h2>Financial Impact Summary: Heat Stress in a Deficit Year</h2>
+
+<table class="impact-table">
+  <thead>
+    <tr>
+      <th>Financial Impact Area</th>
+      <th>Net Zero 2050 (~1.5°C)</th>
+      <th>Delayed Transition (~2°C)</th>
+      <th>Current Policies (~2.8°C)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Agricultural output loss (kharif season)</td>
+      <td><span class="badge mod">Moderate</span></td>
+      <td><span class="badge high">High</span></td>
+      <td><span class="badge sev">Severe</span></td>
+    </tr>
+    <tr>
+      <td>Agricultural credit NPA pressure</td>
+      <td><span class="badge mod">Moderate</span></td>
+      <td><span class="badge high">High</span></td>
+      <td><span class="badge sev">Severe</span></td>
+    </tr>
+    <tr>
+      <td>Construction finance and real estate credit</td>
+      <td><span class="badge mod">Moderate</span></td>
+      <td><span class="badge high">High</span></td>
+      <td><span class="badge high">High</span></td>
+    </tr>
+    <tr>
+      <td>FMCG rural revenue compression</td>
+      <td><span class="badge mod">Moderate</span></td>
+      <td><span class="badge high">High</span></td>
+      <td><span class="badge sev">Severe</span></td>
+    </tr>
+    <tr>
+      <td>Energy system stress and Discom credit</td>
+      <td><span class="badge mod">Moderate</span></td>
+      <td><span class="badge high">High</span></td>
+      <td><span class="badge sev">Severe</span></td>
+    </tr>
+    <tr>
+      <td>Sovereign fiscal and human capital cost</td>
+      <td><span class="badge mod">Moderate</span></td>
+      <td><span class="badge high">High</span></td>
+      <td><span class="badge sev">Severe</span></td>
+    </tr>
+  </tbody>
+</table>
+
+<!-- ── WHAT THIS MEANS FOR CAPITAL ────────────────────────────── -->
+<h2>What This Means for Capital Allocation</h2>
+
+<p>
+The 2024 India heatwave produced documented, measurable output consequences in construction, agriculture, and retail foot traffic. Grid stress events were recorded. NDMA advisories halted outdoor work across eleven states. Public health systems in Delhi and Odisha faced demand spikes. <span class="src-tag">NDMA 2024 · MoP India 2024</span> None of this was reflected as a quantified risk in any quarterly earnings guidance issued by India-focused equity analysts, agricultural lenders, or infrastructure finance companies during the same period.
+</p>
+
+<p>
+The physics is not uncertain. The IMD has 150 years of temperature records. The ILO has published heat-productivity coefficients by sector. <span class="src-tag">ILO 2019</span> The IPCC has published warming trajectories with quantified regional heat event probability changes under each scenario. <span class="src-tag">IPCC AR6 WGI Ch.11</span> The gap is not in the physical data. The gap is in the analytical framework that converts the physical data into financial terms — at the asset level, portfolio level, and sovereign level.
+</p>
+
+<div class="pull-quote">
+  "The heat stopped outdoor construction across eleven states simultaneously. No financial model had a field for it. The loss was absorbed by daily-wage workers who had no insurance and no sick leave — and then it disappeared from the balance sheets of the institutions that lent to the developers who employed them."
+</div>
+
+<p>
+Standard credit risk models for India's agricultural lending segment do not incorporate WBGT thresholds or ILO heat-productivity coefficients into NPA probability distributions. Equity research covering FMCG companies does not systematically embed heat-stress days into rural consumption forecasts. Infrastructure finance models do not adjust construction timeline assumptions for an expanded heat-stop season. The systematic omission of this physical variable creates a consistent, directional mispricing of risk — concentrated in the informal economy, but transmitting eventually into formal financial institutions through the pathways mapped above.
+</p>
+
+<!-- ── CTA ─────────────────────────────────────────────────────── -->
+<div class="cta-panel">
+  <h3>ClimRisk — CRI Engine</h3>
+  <p>The CRI engine maps asset and supply chain footprints against physical hazard projections — ILO heat productivity coefficients, IMD temperature trend data, IPCC AR6 warming trajectories, and NGFS Phase 4 scenarios — and translates heat stress risk into financial terms: EBITDA compression, NPA probability uplift, and enterprise value impact across three scenarios through 2050. Not a risk score. A DCF with physical climate adjustment terms. 48-hour turnaround at asset level.</p>
+  <p>If you manage capital with exposure to Indian agriculture, construction finance, informal sector credit, or South Asian consumer markets, and want to see what physically-grounded heat stress quantification looks like in practice, I would like to speak with you.</p>
+  <a class="cta-link" href="https://climrisk.io">climrisk.io</a>
+</div>
+
+<!-- ── SOURCES FOOTER ──────────────────────────────────────────── -->
+<div class="sources-footer">
+  <strong>DATA SOURCES</strong><br>
+  India Meteorological Department (IMD) — Annual Climate Summaries, Heat Wave Reports, and District-Level Temperature Records &nbsp;·&nbsp;
+  International Labour Organization — "Working on a warmer planet: The impact of heat stress on labour productivity and decent work" (2019) &nbsp;·&nbsp;
+  IPCC Sixth Assessment Report, Working Group I Chapter 11 (Weather and Climate Extremes) and Working Group II Chapter 16 (Key Risks) and Chapter 5 (Food, Fibre and Other Ecosystem Products) &nbsp;·&nbsp;
+  National Disaster Management Authority (NDMA) — Heat Action Plan Advisories 2022, 2023, 2024 &nbsp;·&nbsp;
+  Reserve Bank of India — Financial Stability Reports (June 2022, December 2022, June 2023) and Annual Report 2023–24 &nbsp;·&nbsp;
+  Ministry of Statistics and Programme Implementation — Periodic Labour Force Survey 2022–23 &nbsp;·&nbsp;
+  Central Electricity Authority of India — Power Supply Position Reports 2022, 2024 &nbsp;·&nbsp;
+  NGFS Phase 4 Scenario Documentation — Network for Greening the Financial System &nbsp;·&nbsp;
+  World Bank — "The Economics of Heat Stress: Labour Productivity and Adaptation Costs" (2022) &nbsp;·&nbsp;
+  Sherwood, S.C. and Huber, M. — "An adaptability limit to climate change due to heat stress" (PNAS, 2010)
+</div>
+
+</div><!-- /.body-wrap -->
+</body>
+</html>

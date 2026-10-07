@@ -63,4 +63,11 @@ echo
 printf '\033[1;32m═══ Done. ClimRisk Intelligence is running from /Applications. ═══\033[0m\n'
 echo "A DMG for sharing is in: $ROOT/electron/dist/"
 echo
+# Optional: a language model that runs on this Mac (no key, no cloud) so the agent writes fluent, cited answers.
+if ! curl -fsS --max-time 2 http://127.0.0.1:11434/api/tags 2>/dev/null | grep -q '"name"'; then
+  echo "The agent answers from the public sources it has learned. For fluent written answers it can also use a free"
+  echo "language model that runs on this Mac (Ollama, about 2 GB download, no account or key)."
+  read -r -p "Set that up now? [y/N] " yn
+  if [[ "$yn" =~ ^[Yy] ]]; then bash "$ROOT/electron/setup-local-llm.sh" || echo "(skipped — you can run electron/setup-local-llm.sh any time)"; fi
+fi
 read -r -p "Press Return to close…" _

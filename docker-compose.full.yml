@@ -1,0 +1,88 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# ClimRisk — Full Local Stack
+# Services: PostGIS · FastAPI · TiTiler · Pipeline worker
+#
+# Usage:
+#   docker compose -f docker-compose.full.yml up
+#   API  → http://localhost:8000/docs
+#   Tiles→ http://localhost:8080
+#   DB   → localhost:5432
+#
+# First-time schema init:
+#   docker compose -f docker-compose.full.yml exec api \
+#     python -c "import asyncio; from api.db import init_schema; asyncio.run(init_schema())"
+# ─────────────────────────────────────────────────────────────────────────────
+version: "3.9"
+
+x-common-env: &common-env
+  S3_BUCKET: "local"                   # set real bucket for AWS deploys
+  DATABASE_URL: "postgresql://climrisk:climrisk@db:5432/climrisk"
+  AWS_DEFAULT_REGION: "us-east-1"
+
+services:
+
+  # ── PostGIS 15 ──────────────────────────────────────────────────────────────
+  db:
+    image: postgis/postgis:15-3.4-alpine
+    environment:
+      POSTGRES_USER: climrisk
+      POSTGRES_PASSWORD: climrisk
+      POSTGRES_DB: climrisk
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U climrisk"]
+      interval: 5s
+      retries: 10
+
+  # ── FastAPI serving layer ───────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    environment:
+      <<: *common-env
+      TITILER_URL: "http://titiler:8080"
+    volumes:
+      - ./api:/app/api          # hot-reload in dev
+      - ./pipeline.py:/app/pipeline.py
+    command: ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # ── TiTiler — dynamic COG tile server ──────────────────────────────────────
+  titiler:
+    image: ghcr.io/developmentseed/titiler:latest
+    ports:
+      - "8080:8080"
+    environment:
+      # Point at your S3 bucket for real rasters; no-op in local mode
+      AWS_DEFAULT_REGION: "us-east-1"
+      TITILER_API_CORS_ORIGINS: "*"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/healthz"]
+      interval: 10s
+      retries: 5
+
+  # ── Pipeline worker (manual trigger or cron via ofelia) ────────────────────
+  pipeline:
+    build: .
+    environment:
+      <<: *common-env
+    volumes:
+      - ./pipeline.py:/app/pipeline.py
+      - ./assets.csv:/app/assets.csv
+    command: ["--asset-file", "/app/assets.csv"]
+    depends_on:
+      db:
+        condition: service_healthy
+    profiles:
+      - run   # only starts with: docker compose --profile run up pipeline
+
+volumes:
+  pgdata:
