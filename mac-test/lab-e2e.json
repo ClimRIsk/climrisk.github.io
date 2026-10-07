@@ -1,0 +1,110 @@
+{
+ "started": "2026-10-07 22:50:10",
+ "studies": [
+  {
+   "text": "build a flood model for 22.2645, 91.805",
+   "intent": "modellab",
+   "first_reply": "Starting a flood study for 22.2645, 91.8050. I will work through: physics choice, terrain and rainfall data, model run, five verification tests, sensitivity, then write the methods and results. This t",
+   "ok": true,
+   "status": "done",
+   "took_s": 48.3,
+   "table": [
+    [
+     "Status",
+     "verified only"
+    ],
+    [
+     "Verification",
+     "7 of 7 tests passed"
+    ],
+    [
+     "Peak depth at the site",
+     "0.03 m"
+    ],
+    [
+     "Time under water",
+     "0.0 h"
+    ],
+    [
+     "Area deeper than 30 cm",
+     "1.21 km\u00b2"
+    ],
+    [
+     "Design storm",
+     "100-year, 172 mm in 6 h"
+    ],
+    [
+     "Biggest uncertainty",
+     "Surface roughness (Manning n)"
+    ],
+    [
+     "Calibrated / validated",
+     "no: no observations supplied"
+    ]
+   ],
+   "reply": "**Flood model for 22.2645, 91.8050: a 100-year rainstorm**\nThe engine built a two-dimensional inundation model for an area near 22.2645, 91.8050, finding minimal water depth and duration. It verified the model through several tests, including lake at rest, mass conservation, and grid convergence, but notes verification is only confirmed. To improve trust, additional real-world data validation would be essential.",
+   "html_bytes": 244596,
+   "file": "modellab-flood_22-2645-91-8050_64ffe70b.html"
+  },
+  {
+   "text": "air quality model for 28.6139, 77.2090",
+   "intent": "unknown",
+   "first_reply": "I'm not sure what you want. Did you mean one of these? (Your choice teaches me.)",
+   "ok": false,
+   "error": "no job started: I'm not sure what you want. Did you mean one of these? (Your choice teaches me.)"
+  },
+  {
+   "text": "build an air quality model for 23.8103, 90.4125",
+   "intent": "modellab",
+   "first_reply": "Starting a air-quality study for 23.8103, 90.4125. I will work through: physics choice, three competing model structures, validation on unseen hours, verification tests, sensitivity, then write the me",
+   "ok": true,
+   "status": "done",
+   "took_s": 18.0,
+   "table": [
+    [
+     "Status",
+     "verified and calibrated; validation shows no skill over baselines"
+    ],
+    [
+     "Verification",
+     "4 of 4 tests passed"
+    ],
+    [
+     "Chosen structure",
+     "M2: Diurnal emission + mixing-height correction"
+    ],
+    [
+     "Unseen-data correlation",
+     "0.33"
+    ],
+    [
+     "Unseen-data RMSE",
+     "39.1 \u00b5g/m\u00b3"
+    ],
+    [
+     "Skill vs mean daily cycle",
+     "+8%"
+    ],
+    [
+     "AQI category right",
+     "38% of 24 unseen days"
+    ],
+    [
+     "Biggest uncertainty",
+     "City length"
+    ]
+   ],
+   "reply": "**Air-quality model for 23.8103, 90.4125: PM2.5 and the AQI**\nThe engine built a physical box model for air quality assessment, verified and calibrated using a 60-day training period. It tested three competing structures, finding the winner correlated at 0.33 with the mean daily cycle, offering an 8% skill improvement. The model passed several verification tests, including matching the closed-form plume centerline, conserving emitted mass, achieving steady state and exponential decay, and reproducing EPA breakpoints for AQI. However, validation showed no skill over baselines. To improve, the model needs more accurate data or a longer training period.",
+   "html_bytes": 281157,
+   "file": "modellab-air_23-8103-90-4125_ebd38892.html"
+  }
+ ],
+ "language_model": {
+  "available": true,
+  "model": "qwen2.5:7b",
+  "why": "ok"
+ },
+ "help": "The Model Lab builds a physics model the way a researcher would, without being walked through it: it chooses the equations, fetches the data, builds and runs the model, proves it is solved correctly against analytic solutions and conservation laws, calibrates on part of the record, tests on part it never saw, finds which assumption matters most, and writes the methods and results. It says plainly whether the result is only verified, or also calibrated and validated. Say, for example: \"build a flood model for Chattogram\" or \"air quality model for Delhi\".",
+ "passed": 2,
+ "failed": 1
+}
