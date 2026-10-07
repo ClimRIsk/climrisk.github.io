@@ -68,6 +68,19 @@ const TESTS: Test[] = [
     verdict: "A sanity check, not a statistical benchmark.",
     script: "scripts/world_qa.py",
   },
+  {
+    title: "Historical disaster calibration",
+    truth: "16 sourced catastrophe losses, 1997–2022 (EM-DAT, Munich Re NatCatSERVICE, Swiss Re sigma, FAO, World Bank and national disaster agencies), each compared against a single representative company run",
+    headline: [
+      { value: "16", label: "sourced historical events, 1997–2022" },
+      { value: "1 / 16", label: "events inside the 20% \"calibrated\" band" },
+      { value: "25.1%", label: "best result: 2010–12 Queensland floods" },
+    ],
+    detail:
+      "Each event's documented loss is compared against the engine's own hazard output for one representative company, normalised to loss-as-percent-of-revenue because historical figures are economy-wide and the engine runs at company level. Error climbs past 100% for most events — not because the hazard magnitudes are wrong, but because one proxy company cannot stand in for an entire economy's sector mix. It is a transparency check on the calibration module itself, never used to tune the model: run per-event from the same script shown below.",
+    verdict: "A deliberately blunt check. The measured-hazard results above are the stronger evidence; this one is published for the same reason they are — so a reviewer sees it, not only the results that flattered the model.",
+    script: "climate_risk_engine/src/cri/climate/scenarios/calibration.py · historical_events.py",
+  },
 ];
 
 const SOURCES = [

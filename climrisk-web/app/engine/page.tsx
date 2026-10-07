@@ -14,9 +14,9 @@ const SECTIONS = [
     id: "pipeline",
     tag: "01",
     title: "The Geospatial Pipeline",
-    body: "Every run starts from asset coordinates, not sector averages. At site level the engine reads flood depths from the JRC river flood maps and Deltares coastal flood maps, cyclone wind from the NOAA IBTrACS track record, local flood defences from FLOPROS, water risk from the WRI Aqueduct 4.0 dataset (68,506 basin × admin-1 units), and Sentinel-1/2 satellite imagery. A further 25 parametric hazard functions (heat, drought, wildfire, sea-level rise and others) score regional exposure. The result is a facility-level hazard profile, not a country- or sector-level proxy.",
+    body: "Every run starts from asset coordinates, not sector averages, through a three-tier stack built in-house. Tier 1 scores all 25 hazards from embedded SSP tables for every asset, with or without coordinates. Tier 2, when lat/lon is available, pulls live CMIP6 downscaled projections (three models via the Open-Meteo Climate API), ERA5 and NASA POWER baselines, and a live WRI Aqueduct point query, and merges those real deltas into the Tier 1 scores instead of leaving them as static lookups. Tier 3, where the optional GIS extra is installed, swaps in Copernicus DEM elevation, Global Surface Water floodplain extent and VIIRS active-fire data in place of the lookup tables entirely. At site level the engine also reads flood depths from the JRC river and Deltares coastal flood maps, cyclone wind from the NOAA IBTrACS track record, local flood defences from FLOPROS, and Sentinel-1/2 imagery. The result is a facility-level hazard profile that gets more precise as more data is available for a site, never a country- or sector-level proxy.",
     points: [
-      { t: "Asset-Level Resolution", d: "Flood depths, cyclone wind, defences and water risk read at each facility's coordinates." },
+      { t: "Three-Tier Hazard Matrix", d: "Embedded SSP tables score every asset; live CMIP6/ERA5/NASA POWER downscaling at exact coordinates sharpens it when lat/lon is known; optional GIS rasters override it where installed." },
       { t: "NGFS Phase 5 Scenarios", d: "Seven NGFS Phase 5 pathways (three models) for the Risk Analyst; the legacy CRI score runs Net Zero 2050, Delayed Transition and Current Policies." },
       { t: "Production Loss Modelling", d: "Hazard exposure is converted into a production loss percentage before it ever touches a financial statement." },
     ],
@@ -25,11 +25,11 @@ const SECTIONS = [
     id: "financial-translation",
     tag: "02",
     title: "Financial Translation",
-    body: "Physical loss and transition cost are translated into the language a CFO's office already speaks. A full discounted cash flow model runs the 2026–2050 horizon with a Gordon Growth terminal value, applying a WACC uplift built from a base rate, a scenario premium, and an asset-specific exposure premium. The output is an EV haircut against baseline, not an abstract risk score.",
+    body: "Physical loss and transition cost are translated into the language a CFO's office already speaks. A full discounted cash flow model runs the 2026–2050 horizon with a Gordon Growth terminal value, applying a WACC uplift built from a base rate, a scenario premium, and an asset-specific exposure premium. Underneath that sits a double-materiality translator: the two risk types move in opposite directions across the scenario set — transition risk is highest under Net Zero 2050 and physical risk is highest under Current Policies — so the engine derives annual hazard probabilities from each scenario's own GMST path, combines them into a joint expected-loss fraction, scales that by a sector-specific revenue-at-risk ratio, and discounts it into a physical NPV drag that sits alongside, and is additive to, the transition-risk NPV impact. The output is one EV haircut against baseline that actually contains both halves of the picture, not an abstract risk score.",
     points: [
       { t: "Carbon Cost Trajectory", d: "Scope 1 and 2 carbon costs, net of EU ETS free allocation, run against each scenario's carbon price path." },
       { t: "Abatement Capex (MACC)", d: "A marginal abatement cost curve prices the capex required to hit stated decarbonization targets — modelled as capex, not double-charged against the carbon cost." },
-      { t: "EV Haircut & WACC Uplift", d: "Full DCF output: enterprise value under stress versus baseline, and the WACC uplift driving that gap." },
+      { t: "Double Materiality (Physical + Transition NPV)", d: "Physical hazard intensity is converted into a discounted NPV drag, additive to the transition NPV impact, so a Net Zero 2050 run doesn't silently drop the physical side just because it's the low-physical-risk scenario." },
     ],
   },
   {
@@ -132,6 +132,7 @@ export default function EnginePage() {
           <h2 className="heading-lg grad-text mb-4">See how we screen 10,000 assets in seconds.</h2>
           <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
             <Link href="/contact" className="btn-primary">Book a Technical Demo</Link>
+            <Link href="/platform" className="btn-ghost">See the five tools built on this engine</Link>
             <Link href="/methodology" className="btn-ghost">Read the full methodology</Link>
           </div>
         </Reveal>

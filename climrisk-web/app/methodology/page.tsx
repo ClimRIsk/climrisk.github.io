@@ -12,8 +12,8 @@ const PIPELINE = [
   {
     n: "01",
     title: "Climate Hazard Quantification",
-    body: "Site-level flood depths (JRC river, Deltares coastal with sea-level rise), cyclone wind from NOAA IBTrACS tracks since 1980, WRI Aqueduct 4.0 water risk, plus 25 parametric hazard functions scaled by IPCC AR6 warming and CMIP6 projections.",
-    tag: "JRC · Deltares · IBTrACS · CMIP6",
+    body: "A three-tier hazard matrix, built in-house. Tier 1 scores all 25 parametric hazard functions from embedded SSP tables for every asset. Tier 2 merges in live CMIP6 downscaled projections, ERA5 and NASA POWER baselines, and a live WRI Aqueduct query at the asset's own coordinates where lat/lon is known. Tier 3 swaps in Copernicus DEM, Global Surface Water and VIIRS fire rasters where the optional GIS extra is installed. Site-level flood depths (JRC river, Deltares coastal with sea-level rise) and cyclone wind (NOAA IBTrACS tracks since 1980) sit alongside it.",
+    tag: "JRC · Deltares · IBTrACS · CMIP6 · ERA5 · NASA POWER",
   },
   {
     n: "02",
@@ -89,6 +89,7 @@ const DATA_GROUPS = [
     group: "The Engine",
     items: [
       { name: "CRI Engine", detail: "Tested against measured cyclone winds, FEMA flood claims and EPA-reported emissions — results, including the weak ones, on the Validation page." },
+      { name: "Historical Disaster Calibration", detail: "16 sourced catastrophe losses, 1997–2022 (EM-DAT, Munich Re, Swiss Re sigma), run against the hazard matrix as a transparency check, not a tuning mechanism — full results on the Validation page." },
       { name: "Product Carbon Footprint (LCA)", detail: "ISO 14067-aligned cradle-to-gate footprints with IPCC 2006, GCCA, Ember and DESNZ 2025 factors, uncertainty bands and an EU CBAM view." },
     ],
   },
@@ -198,7 +199,7 @@ export default function MethodologyPage() {
             is not a secret. This is what an auditor would need to know to follow the math.
           </p>
         </Reveal>
-        <div className="grid sm:grid-cols-3 gap-5">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <Reveal delayMs={0}>
             <div className="panel p-6 h-full">
               <h3 className="text-sm font-semibold text-white mb-2">Discounted Cash Flow</h3>
@@ -211,6 +212,17 @@ export default function MethodologyPage() {
           </Reveal>
           <Reveal delayMs={60}>
             <div className="panel p-6 h-full">
+              <h3 className="text-sm font-semibold text-white mb-2">Physical-to-NPV (Double Materiality)</h3>
+              <p className="text-xs text-zinc-500 leading-relaxed">
+                Hazard probabilities are derived from each scenario's own GMST path (flood scales with
+                (1+0.07·ΔT)², heat stress with 1.40^ΔT, and so on per IPCC AR6 Ch.11), combined into a
+                joint expected-loss fraction capped at 80%, scaled by sector revenue exposure, and
+                discounted into an NPV drag additive to the transition-risk impact above.
+              </p>
+            </div>
+          </Reveal>
+          <Reveal delayMs={120}>
+            <div className="panel p-6 h-full">
               <h3 className="text-sm font-semibold text-white mb-2">Value at Risk</h3>
               <p className="text-xs text-zinc-500 leading-relaxed">
                 Portfolio VaR is computed at 95% and 99% confidence, weighted by exposure across the full
@@ -218,7 +230,7 @@ export default function MethodologyPage() {
               </p>
             </div>
           </Reveal>
-          <Reveal delayMs={120}>
+          <Reveal delayMs={180}>
             <div className="panel p-6 h-full">
               <h3 className="text-sm font-semibold text-white mb-2">Net Present Value</h3>
               <p className="text-xs text-zinc-500 leading-relaxed">
