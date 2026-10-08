@@ -1,11 +1,12 @@
 #!/bin/bash
 # Fine-tune Llama 3.2 3B Instruct with LoRA (MLX, on this Mac), fuse, import into Ollama as "climrisk-llm".
 # Resumable: each stage is skipped if its output exists. Progress -> mac-test/llm/train.log
-HERE="$(cd "$(dirname "$0")" && pwd)"; L="$HERE/llm"; DS="$L/ds"; OUT="$HOME/.climrisk/llm"; LOG="$L/train.log"
+HERE="$(cd "$(dirname "$0")" && pwd)"; L="$HERE/llm"; DS="${DS:-$L/ds}"; TAG="${TAG:-v1}"; NAME="${NAME:-climrisk-llm}"; OUT="$HOME/.climrisk/llm/$TAG"; LOG="$L/train_$TAG.log"
+[ "$TAG" = "v1" ] && [ -f "$HOME/.climrisk/llm/adapters/adapters.safetensors" ] && OUT="$HOME/.climrisk/llm"
 mkdir -p "$OUT"; exec > >(tee -a "$LOG") 2>&1
 say(){ printf '\n[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }
-rm -f "$L/TRAIN_DONE" "$L/TRAIN_FAILED"
-fail(){ say "FAILED: $*"; echo "$*" > "$L/TRAIN_FAILED"; exit 1; }
+rm -f "$L/TRAIN_DONE_$TAG" "$L/TRAIN_FAILED_$TAG"
+fail(){ say "FAILED: $*"; echo "$*" > "$L/TRAIN_FAILED_$TAG"; exit 1; }
 [ -f "$DS/train.jsonl" ] || fail "dataset missing in $DS"
 export PATH="/opt/homebrew/bin:$PATH"
 
@@ -20,9 +21,11 @@ V="$HOME/.climrisk/mlx-venv"
 "$V/bin/python" -c "import mlx_lm,mlx.core as mx;print('mlx_lm',mlx_lm.__version__,'metal',mx.metal.is_available())"
 
 # 16 GB Mac: free memory first (a resident Ollama model + the app were making a bf16 run swap at ~13 tok/s), train on the 4-bit base (QLoRA).
-pkill -f "mlx_lm lora" 2>/dev/null; sleep 1
-for m in $(ollama ps 2>/dev/null | awk 'NR>1{print $1}'); do ollama stop "$m" 2>/dev/null; done
-rm -rf "$OUT/adapters"
+if [ ! -f "$OUT/adapters/adapters.safetensors" ] || [ ! -s "$OUT/adapters/adapters.safetensors" ]; then
+  pkill -f "mlx_lm lora" 2>/dev/null; sleep 1
+  for m in $(ollama ps 2>/dev/null | awk 'NR>1{print $1}'); do ollama stop "$m" 2>/dev/null; done
+  rm -rf "$OUT/adapters"
+fi
 BASE="mlx-community/Llama-3.2-3B-Instruct-4bit"
 say "2/6 QLoRA training on $BASE  ($(wc -l < "$DS/train.jsonl") examples)  — checkpoints every 100 iterations"
 ITERS="${ITERS:-500}"
@@ -42,9 +45,10 @@ pgrep -x ollama >/dev/null || pgrep -f "ollama serve" >/dev/null || (ollama serv
 ollama list | grep -q "^llama3.2:3b" || ollama pull llama3.2:3b || fail "ollama pull llama3.2:3b"
 ollama show llama3.2:3b --modelfile | grep -v '^FROM' | grep -v '^#' > "$OUT/Modelfile.tail"
 { echo "FROM $OUT/fused"; cat "$OUT/Modelfile.tail"; echo "PARAMETER temperature 0.2"; } > "$OUT/Modelfile"
-ollama create climrisk-llm -f "$OUT/Modelfile" --quantize q4_K_M || fail "ollama create"
-ollama list | grep climrisk
+# Newer Ollama versions accept only int4/int8 style quantization for imported safetensors; try 4-bit, then 8-bit, then unquantized.
+ollama create "$NAME" -f "$OUT/Modelfile" --quantize int4 || ollama create "$NAME" -f "$OUT/Modelfile" --quantize int8 || ollama create "$NAME" -f "$OUT/Modelfile" || fail "ollama create"
+ollama list | grep -i "$NAME"
 
 say "6/6 smoke test"
-curl -s -m 120 http://127.0.0.1:11434/api/chat -d '{"model":"climrisk-llm","stream":false,"messages":[{"role":"user","content":"In two sentences, what does a 1-in-100 loss mean?"}]}' | head -c 700; echo
-echo done > "$L/TRAIN_DONE"; say "finished"
+curl -s -m 120 http://127.0.0.1:11434/api/chat -d '{"model":"'"$NAME"'","stream":false,"messages":[{"role":"user","content":"In two sentences, what does a 1-in-100 loss mean?"}]}' | head -c 700; echo
+echo done > "$L/TRAIN_DONE_$TAG"; say "finished"
