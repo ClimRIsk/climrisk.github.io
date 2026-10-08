@@ -126,6 +126,26 @@ body {
   background-clip: text;
 }
 
+/* Ambient backdrop behind GlobeBackground, visible immediately (pure CSS,
+   no JS/network dependency) so a cold-cache visit never shows a flat black
+   hero while globe.gl's script + textures are still loading. The globe's
+   own background is transparent, so this stays visible underneath it. */
+@keyframes ambientPulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.85; }
+}
+.globe-ambient {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 62% 45%, rgba(212,175,55,0.14) 0%, rgba(212,175,55,0.05) 32%, transparent 60%),
+    radial-gradient(rgba(255,255,255,0.05) 1px, transparent 1px);
+  background-size: auto, 34px 34px;
+  animation: ambientPulse 6s ease-in-out infinite;
+}
+
 /* Grid background texture */
 .bg-grid {
   background-image: linear-gradient(rgba(212,175,55,0.035) 1px, transparent 1px),

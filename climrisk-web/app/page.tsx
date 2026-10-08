@@ -5,6 +5,7 @@ import GlobeBackground from "./components/GlobeBackground";
 import IsometricShowcase from "./components/IsometricShowcase";
 import LiveAssessWidget from "./components/LiveAssessWidget";
 import { allArticles } from "../lib/research";
+import { CardThumb } from "./components/ResearchCardThumb";
 
 const MANDATES = [
   {
@@ -12,18 +13,39 @@ const MANDATES = [
     title: "Carbon Auditing & Data Assurance",
     body: "Activity data turned into a GHG Protocol / ISO 14064-1 inventory — Scope 1, 2 and all 15 Scope 3 categories — with an assurance pack that traces every tonne to its evidence.",
     href: "/capabilities#carbon-auditing",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1Z" />
+        <path d="M6 6h12v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6Z" />
+        <path d="m9 13 2 2 4-4" />
+      </svg>
+    ),
   },
   {
     tag: "02",
     title: "Dynamic Life Cycle Assessments",
     body: "Cradle-to-gate product carbon footprints (ISO 14067-aligned) for cement, steel, aluminium, ammonia or any product, with uncertainty bands, an EU CBAM cost view and 2050 grid pathways.",
     href: "/capabilities#lca",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M17 2v4M17 2 14 5" />
+        <path d="M3 12a9 9 0 0 1 15.3-6.4" />
+        <path d="M7 22v-4M7 22l3-3" />
+        <path d="M21 12a9 9 0 0 1-15.3 6.4" />
+      </svg>
+    ),
   },
   {
     tag: "03",
     title: "Regulatory Transition & Physical Stress Testing",
     body: "NGFS-aligned scenario execution, translated into PD & LGD credit-risk terms, and defended at the collateral level.",
     href: "/capabilities#stress-testing",
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+        <path d="M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5l-8-3Z" />
+        <path d="M9 12.5 11 15l4.5-5" />
+      </svg>
+    ),
   },
 ];
 
@@ -35,7 +57,7 @@ export default function Home() {
   return (
     <>
       {/* Hero */}
-      <section className="relative pt-40 pb-24 px-6 overflow-hidden">
+      <section className="relative pt-40 pb-12 px-6 overflow-hidden">
         <GlobeBackground />
         <div
           aria-hidden="true"
@@ -87,7 +109,7 @@ export default function Home() {
       </section>
 
       {/* Live assessment */}
-      <section className="px-6 py-20 border-b border-white/8">
+      <section className="px-6 pt-12 pb-20 border-b border-white/8">
         <div className="max-w-4xl mx-auto text-center mb-10">
           <Reveal>
             <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Live, Not a Mockup</p>
@@ -203,7 +225,10 @@ export default function Home() {
           {MANDATES.map((m, i) => (
             <Reveal key={m.title} delayMs={i * 120}>
               <Link href={m.href} className="panel panel-hover block p-8 h-full">
-                <span className="text-xs font-mono text-zinc-600">{m.tag}</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-mono text-zinc-600">{m.tag}</span>
+                  <span className="text-gold-200/70">{m.icon}</span>
+                </div>
                 <h3 className="heading-md text-white mt-4 mb-3">{m.title}</h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">{m.body}</p>
                 <span className="inline-flex items-center gap-1.5 text-sm text-gold-200 mt-6">
@@ -259,20 +284,8 @@ export default function Home() {
           {latestResearch.map((a, i) => (
             <Reveal key={a.slug} delayMs={i * 120}>
               <Link href={a.href ?? `/research/${a.slug}`} className="panel panel-hover block h-full overflow-hidden">
-                {a.thumb ? (
-                  <div className="relative h-36 overflow-hidden">
-                    <img src={a.thumb} alt="" className="w-full h-full object-cover" loading="lazy" />
-                    <div
-                      aria-hidden="true"
-                      className="absolute inset-0"
-                      style={{
-                        background:
-                          "linear-gradient(180deg, rgba(10,11,14,0.10) 0%, rgba(10,11,14,0.55) 60%, rgba(10,11,14,0.96) 100%)",
-                      }}
-                    />
-                  </div>
-                ) : null}
-                <div className={a.thumb ? "p-7 pt-5" : "p-7"}>
+                <CardThumb a={a} heightClass="h-36" />
+                <div className="p-7 pt-5">
                   <p className="text-xs font-mono text-zinc-600 mb-3">{a.kicker}</p>
                   <h3 className="text-white font-semibold leading-snug mb-3">{a.title}</h3>
                   <p className="text-sm text-zinc-500 leading-relaxed">{a.detail}</p>
@@ -295,7 +308,7 @@ export default function Home() {
           className="absolute inset-0"
           style={{
             background:
-              "linear-gradient(180deg, rgba(10,11,14,0.55) 0%, rgba(10,11,14,0.82) 55%, rgba(10,11,14,0.97) 100%)",
+              "linear-gradient(180deg, rgba(10,11,14,0.32) 0%, rgba(10,11,14,0.72) 55%, rgba(10,11,14,0.95) 100%)",
           }}
         />
         <div className="relative px-6 py-32 text-center" style={{ zIndex: 2 }}>

@@ -115,10 +115,13 @@ export default function GlobeBackground() {
   }, []);
 
   return (
-    <div
-      ref={ref}
-      aria-hidden="true"
-      style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}
-    />
+    <>
+      <div className="globe-ambient" aria-hidden="true" />
+      <div
+        ref={ref}
+        aria-hidden="true"
+        style={{ position: "absolute", inset: 0, zIndex: 0, pointerEvents: "none" }}
+      />
+    </>
   );
 }
