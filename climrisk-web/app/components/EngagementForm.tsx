@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, FormEvent } from "react";
+import { useState, FormEvent, Suspense } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 
 const INQUIRY_ENDPOINT = "https://climrisk-github-io.onrender.com/inquiry";
 
@@ -38,7 +39,10 @@ const selectClass =
   "w-full bg-obsidian-800 border border-white/8 rounded-md px-3 py-2.5 text-sm text-zinc-200 focus:outline-none focus:border-gold-200/50 transition-colors duration-300";
 const inputClass = selectClass;
 
-export default function EngagementForm() {
+function EngagementFormInner() {
+  const searchParams = useSearchParams();
+  const prefillCompany = searchParams.get("company") || "";
+  const prefillNotes = searchParams.get("notes") || "";
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [emailError, setEmailError] = useState("");
 
@@ -134,7 +138,7 @@ export default function EngagementForm() {
         </Field>
 
         <Field label="Company Name">
-          <input name="company" type="text" required className={inputClass} />
+          <input name="company" type="text" required defaultValue={prefillCompany} className={inputClass} />
         </Field>
 
         <Field label="Primary Function">
@@ -152,8 +156,13 @@ export default function EngagementForm() {
         </Field>
 
         <Field label="Notes (optional)">
-          <textarea name="notes" rows={3} className={`${inputClass} resize-none`} />
+          <textarea name="notes" rows={3} defaultValue={prefillNotes} className={`${inputClass} resize-none`} />
         </Field>
+        {prefillNotes && (
+          <p className="text-xs text-gold-200/80 -mt-3">
+            Carried over from the live demo you just ran — edit anything before sending.
+          </p>
+        )}
 
         <button type="submit" className="btn-primary w-full justify-center" disabled={status === "sending"}>
           {status === "sending" ? "Submitting…" : "Request Access"}
@@ -172,5 +181,13 @@ export default function EngagementForm() {
         )}
       </form>
     </div>
+  );
+}
+
+export default function EngagementForm() {
+  return (
+    <Suspense fallback={<div className="panel p-8" />}>
+      <EngagementFormInner />
+    </Suspense>
   );
 }

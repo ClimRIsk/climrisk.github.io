@@ -129,9 +129,32 @@ export default function ValidationPage() {
           reported emissions. We publish the weak results alongside the strong ones, and every test can be
           re-run from the script named under it.
         </p>
-        <p className="text-slate-500 text-sm leading-relaxed mb-14 max-w-3xl">
+        <p className="text-slate-500 text-sm leading-relaxed mb-10 max-w-3xl">
           We have not benchmarked against commercial climate-VaR products, whose models and outputs are not public.
         </p>
+
+        <div className="rounded-xl border border-white/7 bg-[#0b1f38]/60 p-7 mb-16 max-w-3xl">
+          <p className="text-xs font-mono text-green-500 uppercase tracking-widest mb-3">Reads Like a Model Risk Management File, Because It Is One</p>
+          <p className="text-sm text-slate-400 leading-relaxed mb-4">
+            Bank model-validation teams generally ask the same three questions of any model before it reaches
+            production: is it conceptually sound, is it monitored on an ongoing basis, and has its outcome been
+            tested against reality. The tests below are organised the same way, just not labelled that way until now:
+          </p>
+          <div className="grid sm:grid-cols-3 gap-5">
+            <div>
+              <p className="text-xs font-semibold text-white mb-1.5">Conceptual soundness</p>
+              <p className="text-xs text-slate-500 leading-relaxed">Every hazard function traces to a named public source — see the full methodology and the data sources listed below.</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-white mb-1.5">Ongoing monitoring</p>
+              <p className="text-xs text-slate-500 leading-relaxed">Model Lab's global sweep and the worldwide QA run are re-executed, not one-off — each ships with the script that produced it.</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-white mb-1.5">Outcomes analysis</p>
+              <p className="text-xs text-slate-500 leading-relaxed">Cyclone winds vs. measured stations, flood scores vs. NFIP claims, emissions vs. EPA GHGRP — hindcast against data the model was never fitted on.</p>
+            </div>
+          </div>
+        </div>
 
         <div className="grid md:grid-cols-2 gap-6 mb-16">
           {TESTS.map((t) => (

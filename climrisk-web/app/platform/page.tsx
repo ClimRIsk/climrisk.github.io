@@ -166,6 +166,10 @@ const ENGAGEMENT_MODELS = [
     label: "White Label",
     desc: "Financial institutions license the engine under their own brand for client reporting, with our team running the analysis behind it.",
   },
+  {
+    label: "Enterprise API",
+    desc: "Feed a coordinate or a portfolio file, get Capital-at-Risk, scenario loss, and disclosure-ready output back programmatically — the same engine, the same validation record, integrated directly into your own risk systems at whatever volume your book requires.",
+  },
 ];
 
 export default function PlatformPage() {
@@ -259,7 +263,7 @@ export default function PlatformPage() {
             engagement models, each ending with an advisor, not a login.
           </p>
         </Reveal>
-        <div className="grid sm:grid-cols-3 gap-5 mb-24">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-24">
           {ENGAGEMENT_MODELS.map((m, i) => (
             <Reveal key={m.label} delayMs={i * 60}>
               <div className="panel p-6 h-full">

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Reveal from "../components/Reveal";
 import EngagementForm from "../components/EngagementForm";
+import Faq from "../components/Faq";
 
 export const metadata: Metadata = {
   title: "See the ClimRisk Engine in Action",
@@ -25,15 +26,12 @@ export default function ContactPage() {
             <p className="text-xs uppercase tracking-widest text-zinc-600 font-mono mb-4">
               Built for the frameworks you already answer to
             </p>
-            <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm font-mono text-zinc-500 mb-10">
-              <span>IFRS S2</span>
-              <span>TCFD</span>
-              <span>CSRD</span>
-              <span>SFDR</span>
-              <span>EU Taxonomy</span>
-              <span>PCAF</span>
-              <span>TNFD</span>
-              <span>Basel III</span>
+            <div className="flex flex-wrap gap-2 mb-10">
+              {["IFRS S2", "TCFD", "CSRD", "SFDR", "EU Taxonomy", "PCAF", "TNFD", "Basel III"].map((f) => (
+                <span key={f} className="text-xs font-mono text-zinc-400 border border-white/10 bg-white/[0.03] rounded-full px-3 py-1.5">
+                  {f}
+                </span>
+              ))}
             </div>
 
             <div className="pt-8 border-t border-white/8 text-sm text-zinc-500 space-y-2">
@@ -56,6 +54,8 @@ export default function ContactPage() {
           <EngagementForm />
         </Reveal>
       </div>
+
+      <Faq />
     </div>
   );
 }

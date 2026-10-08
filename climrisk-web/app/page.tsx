@@ -74,17 +74,12 @@ export default function Home() {
             <p className="text-xs uppercase tracking-widest text-zinc-600 mb-4">
               Powered by frameworks and data from
             </p>
-            <div className="flex flex-wrap gap-x-10 gap-y-3 text-sm font-mono text-zinc-500">
-              <span>NGFS</span>
-              <span>IPCC</span>
-              <span>WRI Aqueduct</span>
-              <span>Copernicus</span>
-              <span>TCFD</span>
-              <span>SFDR</span>
-              <span>EU Taxonomy</span>
-              <span>PCAF</span>
-              <span>TNFD</span>
-              <span>Basel III</span>
+            <div className="flex flex-wrap gap-2">
+              {["NGFS", "IPCC", "WRI Aqueduct", "Copernicus", "TCFD", "SFDR", "EU Taxonomy", "PCAF", "TNFD", "Basel III"].map((f) => (
+                <span key={f} className="text-xs font-mono text-zinc-400 border border-white/10 bg-white/[0.03] rounded-full px-3 py-1.5">
+                  {f}
+                </span>
+              ))}
             </div>
           </div>
         </div>
@@ -116,13 +111,38 @@ export default function Home() {
           <p className="text-center text-xs uppercase tracking-widest text-zinc-600 font-mono mb-6">
             Assets & Emissions Modelled For
           </p>
-          <div className="trust-strip flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-sm font-semibold text-zinc-300">
+          <div className="trust-strip flex flex-wrap items-center justify-center gap-x-12 gap-y-4 text-sm font-semibold text-zinc-300 mb-10">
             <span>Maritime Terminals</span>
             <span>Energy Infrastructure</span>
             <span>Light Manufacturing</span>
             <span>Real Estate Portfolios</span>
             <span>Mining & Extraction</span>
             <span>Agricultural Assets</span>
+          </div>
+
+          <div className="pt-8 border-t border-white/8">
+            <p className="text-center text-xs uppercase tracking-widest text-zinc-600 font-mono mb-5">
+              No logo wall yet — an open validation record instead
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              {[
+                { v: "69% validated", d: "published, failures included" },
+                { v: "No vendor AI", d: "resident agent needs no API key" },
+                { v: "Fully local option", d: "an LLM that never leaves your machine" },
+                { v: "Every script named", d: "re-run any validation test yourself" },
+              ].map((b) => (
+                <Link
+                  key={b.v}
+                  href="/validation"
+                  className="group flex items-center gap-2 text-xs font-mono border border-terminal/30 bg-terminal/5 hover:bg-terminal/10 hover:border-terminal/50 rounded-full pl-3 pr-3.5 py-1.5 transition-colors duration-300"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-terminal shrink-0" />
+                  <span className="text-zinc-200 font-semibold">{b.v}</span>
+                  <span className="text-zinc-600">·</span>
+                  <span className="text-zinc-500">{b.d}</span>
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
@@ -143,6 +163,30 @@ export default function Home() {
               </div>
             </Reveal>
           ))}
+        </div>
+      </section>
+
+      {/* Scale strip — how wide, not just how deep */}
+      <section className="px-6 py-16 border-b border-white/8 bg-white/[0.015]">
+        <div className="max-w-6xl mx-auto">
+          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-8">
+            Any Coordinate, Not a Pre-Mapped Database
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+            {[
+              { value: "0.1°", label: "downscaled resolution, worldwide" },
+              { value: "Any", label: "lat/lon on Earth — no fixed asset list to miss you" },
+              { value: "3", label: "live data tiers (CMIP6, ERA5, NASA POWER, WRI Aqueduct) — not a static lookup" },
+              { value: "2100", label: "scenario horizon across 7 NGFS Phase 5 pathways" },
+            ].map((s) => (
+              <Reveal key={s.label}>
+                <div className="text-center md:text-left">
+                  <div className="text-3xl font-bold grad-text">{s.value}</div>
+                  <p className="text-sm text-zinc-500 mt-2 leading-snug">{s.label}</p>
+                </div>
+              </Reveal>
+            ))}
+          </div>
         </div>
       </section>
 

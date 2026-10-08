@@ -95,7 +95,16 @@ export default function LiveAssessWidget() {
         <div className="mt-8 pt-6 border-t border-white/8 text-sm text-zinc-400 leading-relaxed">
           <p className="text-white mb-2">No mapped sites for &ldquo;{result.query}&rdquo;.</p>
           <p>{result.note}</p>
-          <p className="mt-3">For other companies we run the analysis on your own asset list — <Link href="/contact" className="text-gold-200">book a run</Link>.</p>
+          <p className="mt-3">
+            For other companies we run the analysis on your own asset list —{" "}
+            <Link
+              href={`/contact?company=${encodeURIComponent(result.query)}&notes=${encodeURIComponent(`Ran the live homepage tool for "${result.query}" — no mapped sites found there. Would like this run on our own asset list instead.`)}`}
+              className="text-gold-200"
+            >
+              book a run
+            </Link>
+            .
+          </p>
         </div>
       )}
 
@@ -141,7 +150,14 @@ export default function LiveAssessWidget() {
             Live output from the CRI Engine Risk Analyst: {result.sources?.join(" · ")}. {result.value_note} Screening
             estimate — not investment advice or an audit-ready figure.
           </p>
-          <div className="mt-6"><Link href="/contact" className="btn-ghost text-sm">Run it on your own asset list</Link></div>
+          <div className="mt-6">
+            <Link
+              href={`/contact?company=${encodeURIComponent(result.matched)}&notes=${encodeURIComponent(`Just ran the live homepage tool for ${result.matched}: ${usd(result.portfolio_value_usd)} mapped replacement value, ${result.physical_aal_pct != null ? result.physical_aal_pct.toFixed(2) + "%" : "—"} average annual physical damage. Want to see this run on our full asset list.`)}`}
+              className="btn-ghost text-sm"
+            >
+              Run it on your own asset list
+            </Link>
+          </div>
         </div>
       )}
     </div>
