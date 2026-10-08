@@ -38,6 +38,17 @@ fi
 
 say "Installing the ClimRisk engine (first run downloads ~300 MB of scientific libraries)"
 "$VENV/bin/python" -m pip install --upgrade pip wheel >/dev/null
+# macOS blocks the desktop app (and the engine it launches) from reading ~/Documents, ~/Desktop and
+# ~/Downloads without a per-app grant, and Python then hangs at start-up. So the engine is mirrored to
+# ~/.climrisk/engine-src and installed from there. Re-run this script after pulling engine changes.
+SRC_COPY="$HOME_DIR/engine-src"
+case "$ENGINE_DIR" in
+  "$HOME"/Documents/*|"$HOME"/Desktop/*|"$HOME"/Downloads/*)
+    say "Mirroring the engine to $SRC_COPY (macOS blocks apps from reading Documents)"
+    mkdir -p "$SRC_COPY"
+    rsync -a --delete --exclude .git --exclude __pycache__ --exclude '*.egg-info' --exclude build --exclude tests "$ENGINE_DIR/" "$SRC_COPY/"
+    ENGINE_DIR="$SRC_COPY" ;;
+esac
 "$VENV/bin/python" -m pip install -e "$ENGINE_DIR[api]"
 
 say "Checking the engine starts"
@@ -61,6 +72,6 @@ fi
 chmod 600 "$ENVFILE"
 
 say "Done. Open ClimRisk Intelligence (or choose Retry) — the engine now runs locally."
-echo "  Engine code : $ENGINE_DIR (editable — git pull updates it)"
+echo "  Engine code : $ENGINE_DIR (re-run this script after engine updates)"
 echo "  Secrets     : $ENVFILE"
 echo "  Logs        : $HOME_DIR/logs/engine.log"
