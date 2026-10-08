@@ -79,11 +79,14 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
-  transition: background 0.4s var(--ease-inst), border-color 0.4s var(--ease-inst);
+  transition: background 0.4s var(--ease-inst), border-color 0.4s var(--ease-inst),
+              transform 0.4s var(--ease-inst), box-shadow 0.4s var(--ease-inst);
 }
 .panel-hover:hover {
   background: var(--surface-hi);
   border-color: var(--border-hi);
+  transform: translateY(-3px);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(212,175,55,0.08);
 }
 
 /* Gold accent rule */
