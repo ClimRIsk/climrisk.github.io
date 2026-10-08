@@ -4,30 +4,90 @@
   "kicker": "Carbon Border Policy · EU–India Steel",
   "title": "The First Certificates: What EU CBAM Will Cost an Indian Steel Plant, and When",
   "detail": "The EU's third CBAM certificate price came in at €82.32 this week, but only 2.5 percent of emissions are payable in 2026; ClimRisk's engine shows how the bill compounds for Indian steel plants as the share rises to 100 percent by 2034.",
-  "status": "draft",
+  "status": "published",
   "date": "2026-10-07",
   "author": "Shrinivash D Kannan",
   "cover": "/research/cbam-first-certificates/cover.png",
   "sources": [
-    {"title": "European Commission — Price of CBAM certificates (Q1 €75.36, Q2 €75.28; method; sales from Feb 2027)", "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/price-cbam-certificates_en"},
-    {"title": "SteelOrbis — EU CBAM certificate price rises to €82.32 for Q3 2026", "url": "https://www.steelorbis.com/steel-news/latest-news/eu-cbam-certificate-price-rises-to-8232-for-q3-2026-1481786.htm"},
-    {"title": "Climease — CBAM certificate price 2026: quarterly prices, purchase timing and 2027 changes", "url": "https://climease.com/en/cbam-certificate-price-2026/"},
-    {"title": "Reed Smith — EU Carbon Border Adjustment Mechanism (phase-out schedule 2026–2034)", "url": "https://www.reedsmith.com/articles/eu-carbon-border-adjustment-mechanism/"},
-    {"title": "GreenSutra — Why do importers pay only 2.5 per cent of CBAM emissions in 2026?", "url": "https://greensutra.in/question/why-cbam-payable-share-2026/"},
-    {"title": "GreenSutra — What is the CBAM mark-up on steel default values?", "url": "https://greensutra.in/?p=237208"},
-    {"title": "European Parliamentary Research Service — CBAM downstream extension briefing (July 2026)", "url": "https://eprs.europarl.europa.eu/contents/publications/EPRS/2026/07/EPRS_BRI(2026)789314.html"},
-    {"title": "Mayer Brown — Commission issues CBAM operational rules and proposes downstream extension (Dec 2025)", "url": "https://www.mayerbrown.com/ja/insights/publications/2025/12/european-commission-issues-cbam-operational-rules-and-proposes-downstream-extension-of-the-cbam-scope"},
-    {"title": "CBAMGuide — India: CBAM exposure and steel exports", "url": "https://cbamguide.com/countries/india/"},
-    {"title": "World Bank Carbon Pricing Dashboard (May 2026 data release)", "url": "https://carbonpricingdashboard.worldbank.org/"},
-    {"title": "Climate TRACE v6 (asset emissions)", "url": "https://climatetrace.org/"},
-    {"title": "NGFS Phase 5 scenarios via IIASA", "url": "https://www.ngfs.net/"}
+    {
+      "title": "European Commission — Price of CBAM certificates (Q1 €75.36, Q2 €75.28; method; sales from Feb 2027)",
+      "url": "https://taxation-customs.ec.europa.eu/carbon-border-adjustment-mechanism/price-cbam-certificates_en"
+    },
+    {
+      "title": "SteelOrbis — EU CBAM certificate price rises to €82.32 for Q3 2026",
+      "url": "https://www.steelorbis.com/steel-news/latest-news/eu-cbam-certificate-price-rises-to-8232-for-q3-2026-1481786.htm"
+    },
+    {
+      "title": "Climease — CBAM certificate price 2026: quarterly prices, purchase timing and 2027 changes",
+      "url": "https://climease.com/en/cbam-certificate-price-2026/"
+    },
+    {
+      "title": "Reed Smith — EU Carbon Border Adjustment Mechanism (phase-out schedule 2026–2034)",
+      "url": "https://www.reedsmith.com/articles/eu-carbon-border-adjustment-mechanism/"
+    },
+    {
+      "title": "GreenSutra — Why do importers pay only 2.5 per cent of CBAM emissions in 2026?",
+      "url": "https://greensutra.in/question/why-cbam-payable-share-2026/"
+    },
+    {
+      "title": "GreenSutra — What is the CBAM mark-up on steel default values?",
+      "url": "https://greensutra.in/?p=237208"
+    },
+    {
+      "title": "European Parliamentary Research Service — CBAM downstream extension briefing (July 2026)",
+      "url": "https://eprs.europarl.europa.eu/contents/publications/EPRS/2026/07/EPRS_BRI(2026)789314.html"
+    },
+    {
+      "title": "Mayer Brown — Commission issues CBAM operational rules and proposes downstream extension (Dec 2025)",
+      "url": "https://www.mayerbrown.com/ja/insights/publications/2025/12/european-commission-issues-cbam-operational-rules-and-proposes-downstream-extension-of-the-cbam-scope"
+    },
+    {
+      "title": "CBAMGuide — India: CBAM exposure and steel exports",
+      "url": "https://cbamguide.com/countries/india/"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard (May 2026 data release)",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "Climate TRACE v6 (asset emissions)",
+      "url": "https://climatetrace.org/"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios via IIASA",
+      "url": "https://www.ngfs.net/"
+    }
   ],
   "images": [
-    {"file": "cover.png", "kind": "satellite", "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_43PFS_20260306, via AWS Earth Search; cropped"},
-    {"file": "satellite_vijayanagar.png", "kind": "satellite", "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_43PFS_20260306_0_L2A, 6 March 2026"},
-    {"file": "infographic_key_figures.png", "kind": "infographic", "source": "European Commission/SteelOrbis; Reg. (EU) 2023/956; EPRS; ClimRisk engine; World Bank Carbon Pricing Dashboard"},
-    {"file": "chart_cbam_phase_in.png", "kind": "chart", "source": "Reg. (EU) 2023/956 CBAM factor via Reed Smith; Commission Q3 2026 price via SteelOrbis; ClimRisk arithmetic"},
-    {"file": "chart_cbam_engine.png", "kind": "chart", "source": "ClimRisk engine, NGFS Phase 5, 3,000 draws, 7% discount"},
-    {"file": "map_jsw_assets.png", "kind": "map", "source": "Climate TRACE v6 / EPA GHGRP asset register; ClimRisk engine; Natural Earth"}
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_43PFS_20260306, via AWS Earth Search; cropped"
+    },
+    {
+      "file": "satellite_vijayanagar.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_43PFS_20260306_0_L2A, 6 March 2026"
+    },
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "European Commission/SteelOrbis; Reg. (EU) 2023/956; EPRS; ClimRisk engine; World Bank Carbon Pricing Dashboard"
+    },
+    {
+      "file": "chart_cbam_phase_in.png",
+      "kind": "chart",
+      "source": "Reg. (EU) 2023/956 CBAM factor via Reed Smith; Commission Q3 2026 price via SteelOrbis; ClimRisk arithmetic"
+    },
+    {
+      "file": "chart_cbam_engine.png",
+      "kind": "chart",
+      "source": "ClimRisk engine, NGFS Phase 5, 3,000 draws, 7% discount"
+    },
+    {
+      "file": "map_jsw_assets.png",
+      "kind": "map",
+      "source": "Climate TRACE v6 / EPA GHGRP asset register; ClimRisk engine; Natural Earth"
+    }
   ]
 }
