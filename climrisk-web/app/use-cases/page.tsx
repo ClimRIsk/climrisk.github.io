@@ -186,20 +186,25 @@ export default function UseCasesPage() {
 
       {/* Sticky tab nav */}
       <div className="sticky top-16 z-30 bg-[#0A0B0E]/95 backdrop-blur-md border-y border-white/8 mb-14">
-        <div className="max-w-5xl mx-auto px-6 overflow-x-auto">
-          <div className="flex gap-1 py-3 min-w-max">
-            {SECTORS.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setActive(s.id)}
-                className={`px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-300 ${
-                  active === s.id ? "text-white bg-white/8" : "text-zinc-500 hover:text-white hover:bg-white/5"
-                }`}
-              >
-                {s.navLabel}
-              </button>
-            ))}
+        <div className="relative max-w-7xl mx-auto">
+          <div className="px-6 overflow-x-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="flex gap-1 py-3 min-w-max">
+              {SECTORS.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => setActive(s.id)}
+                  className={`px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors duration-300 ${
+                    active === s.id ? "text-white bg-white/8" : "text-zinc-500 hover:text-white hover:bg-white/5"
+                  }`}
+                >
+                  {s.navLabel}
+                </button>
+              ))}
+            </div>
           </div>
+          {/* Scroll-affordance fades — only matter on viewports narrower than the tab row itself */}
+          <div className="pointer-events-none absolute top-0 bottom-0 left-0 w-8 bg-gradient-to-r from-[#0A0B0E] to-transparent" />
+          <div className="pointer-events-none absolute top-0 bottom-0 right-0 w-8 bg-gradient-to-l from-[#0A0B0E] to-transparent" />
         </div>
       </div>
 
