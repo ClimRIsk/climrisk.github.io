@@ -6,6 +6,7 @@ import IsometricShowcase from "./components/IsometricShowcase";
 import LiveAssessWidget from "./components/LiveAssessWidget";
 import { allArticles } from "../lib/research";
 import { CardThumb } from "./components/ResearchCardThumb";
+import ScenarioExplorer from "./components/ScenarioExplorer";
 
 const MANDATES = [
   {
@@ -213,6 +214,26 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Interactive scenario explorer */}
+      <section className="px-6 py-24 border-b border-white/8">
+        <div className="max-w-4xl mx-auto text-center mb-12">
+          <Reveal>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Interactive</p>
+            <h2 className="heading-lg grad-text mb-4">Drag the year. Change the scenario.</h2>
+            <p className="text-zinc-400 leading-relaxed max-w-2xl mx-auto">
+              The same Monte Carlo loss distribution every Story Report runs on, exposed as something you can
+              actually move. Switch between NGFS-style pathways and scrub from 2026 to 2050 to see how fast the
+              expected loss — and its tail — compounds depending on how late the transition actually happens.
+            </p>
+          </Reveal>
+        </div>
+        <div className="max-w-3xl mx-auto">
+          <Reveal delayMs={100}>
+            <ScenarioExplorer />
+          </Reveal>
+        </div>
+      </section>
+
       {/* Three mandates */}
       <section className="px-6 py-24 max-w-6xl mx-auto">
         <Reveal>
@@ -227,7 +248,7 @@ export default function Home() {
               <Link href={m.href} className="panel panel-hover block p-8 h-full">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-zinc-600">{m.tag}</span>
-                  <span className="text-gold-200/70">{m.icon}</span>
+                  <span className="text-gold-200/70 mandate-icon">{m.icon}</span>
                 </div>
                 <h3 className="heading-md text-white mt-4 mb-3">{m.title}</h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">{m.body}</p>

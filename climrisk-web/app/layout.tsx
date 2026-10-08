@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import Nav from "./components/Nav";
 import Footer from "./components/Footer";
+import InteractionLayer from "./components/InteractionLayer";
 
 export const metadata: Metadata = {
   title: {
@@ -50,6 +51,7 @@ export default function RootLayout({
         />
       </head>
       <body className="antialiased bg-[#0A0B0E] text-zinc-100 min-h-screen">
+        <InteractionLayer />
         <Nav />
         <main>{children}</main>
         <Footer />

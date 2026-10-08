@@ -76,6 +76,7 @@ body {
 
 /* Panel surface */
 .panel {
+  position: relative;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 12px;
@@ -89,6 +90,27 @@ body {
   box-shadow: 0 16px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(212,175,55,0.08);
 }
 
+/* Cursor-reactive spotlight — a soft gold glow that tracks the pointer
+   across any .panel, set via --spot-x/--spot-y (InteractionLayer.tsx).
+   Negative z-index keeps it behind the panel's own static content without
+   requiring every panel's children to opt into a stacking context. Skipped
+   entirely on touch devices / reduced-motion (the listener never attaches),
+   so --spot-x/--spot-y simply stay at their centered default there. */
+.panel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  opacity: 0;
+  background: radial-gradient(260px circle at var(--spot-x, 50%) var(--spot-y, 0%), rgba(212,175,55,0.14), transparent 72%);
+  transition: opacity 0.35s var(--ease-inst);
+  pointer-events: none;
+}
+.panel:hover::before {
+  opacity: 1;
+}
+
 /* Isolation treatment for the one element on a page that should read as
    genuinely different, not another card in the same rhythm (Von Restorff
    effect — distinctiveness only registers when most things stay uniform,
@@ -100,6 +122,88 @@ body {
 .panel-live {
   border-color: rgba(212,175,55,0.22);
   animation: livePulseGlow 4.5s ease-in-out infinite;
+}
+
+/* Mandate card icons — stroke-draws in once the card scrolls into view,
+   instead of just appearing with the card's fade-up (Reveal toggles
+   .is-visible on the wrapping .reveal div these icons live inside). */
+.mandate-icon path,
+.mandate-icon circle {
+  stroke-dasharray: 48;
+  stroke-dashoffset: 48;
+  transition: stroke-dashoffset 0.9s var(--ease-inst) 0.15s;
+}
+.reveal.is-visible .mandate-icon path,
+.reveal.is-visible .mandate-icon circle {
+  stroke-dashoffset: 0;
+}
+
+/* Scenario Explorer — interactive year slider + scenario toggle */
+.scenario-toggle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,0.02);
+  color: var(--muted);
+  cursor: pointer;
+  transition: border-color 0.3s var(--ease-inst), color 0.3s var(--ease-inst), background 0.3s var(--ease-inst);
+}
+.scenario-toggle:hover {
+  color: #fff;
+  border-color: var(--border-hi);
+}
+.scenario-toggle.active {
+  color: #0A0B0E;
+  background: var(--scenario-color, var(--gold));
+  border-color: var(--scenario-color, var(--gold));
+}
+
+.scenario-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--scenario-color, var(--gold)) 0%, var(--scenario-color, var(--gold)) var(--slider-pct, 50%), rgba(255,255,255,0.08) var(--slider-pct, 50%), rgba(255,255,255,0.08) 100%);
+  outline: none;
+  cursor: pointer;
+}
+.scenario-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--scenario-color, var(--gold));
+  border: 3px solid #0A0B0E;
+  box-shadow: 0 0 0 1px var(--scenario-color, var(--gold)), 0 0 14px var(--scenario-color, var(--gold));
+  cursor: pointer;
+  transition: transform 0.15s ease-out;
+}
+.scenario-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.scenario-slider::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--scenario-color, var(--gold));
+  border: 3px solid #0A0B0E;
+  box-shadow: 0 0 0 1px var(--scenario-color, var(--gold)), 0 0 14px var(--scenario-color, var(--gold));
+  cursor: pointer;
+}
+
+.scenario-curve {
+  fill: none;
+  stroke-width: 1.5;
+}
+.scenario-curve-active {
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 6px var(--scenario-color, var(--gold)));
 }
 
 /* Gold accent rule */
@@ -158,7 +262,8 @@ body {
   box-shadow: 0 0 32px var(--gold-glow);
 }
 
-/* Button styles — no scale on hover, border/glow fade only */
+/* Button styles — no scale on hover; glow/border fade plus a small magnetic
+   translate toward the pointer (InteractionLayer.tsx sets the transform) */
 .btn-primary {
   display: inline-flex;
   align-items: center;
@@ -171,7 +276,7 @@ body {
   border-radius: 6px;
   border: none;
   cursor: pointer;
-  transition: background 0.4s var(--ease-inst), box-shadow 0.4s var(--ease-inst);
+  transition: background 0.4s var(--ease-inst), box-shadow 0.4s var(--ease-inst), transform 0.15s ease-out;
   text-decoration: none;
   letter-spacing: 0.01em;
 }
