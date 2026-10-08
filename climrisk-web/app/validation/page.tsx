@@ -81,6 +81,19 @@ const TESTS: Test[] = [
     verdict: "A deliberately blunt check. The measured-hazard results above are the stronger evidence; this one is published for the same reason they are — so a reviewer sees it, not only the results that flattered the model.",
     script: "climate_risk_engine/src/cri/climate/scenarios/calibration.py · historical_events.py",
   },
+  {
+    title: "Model Lab global sweep",
+    truth: "222 from-scratch physics studies at 37 cities across every inhabited climate zone, 6 hazards, checked against each site's own historical record where one exists",
+    headline: [
+      { value: "153 / 222", label: "validated outright or with a small, real drift (69%)" },
+      { value: "88 / 147", label: "extreme-value hindcast passed outright (rain/wind/fire/heat)" },
+      { value: "1.06", label: "median earthquake b-value, 17 sites (physical realism check)" },
+    ],
+    detail:
+      "Model Lab builds a hazard model from first principles on request \u2014 picks the physics, pulls terrain and reanalysis data, runs it, verifies it, and hindcasts it against the site's own historical record \u2014 across flood, wind, fire, heat, cyclone and earthquake. Run at 37 cities from Reykjavik to Singapore, 19 of 222 studies failed their hindcast outright and are listed, not dropped; several of those are the hazard genuinely intensifying (recent years measurably exceeding what the early record predicted), reported as a finding rather than an error. One bug surfaced mid-sweep \u2014 a fire-weather run crashed on a hyper-arid site \u2014 and is fixed.",
+    verdict: "The newest and widest of these checks: real breadth, an honest failure rate, climate trends it caught rather than smoothed over. Full site-by-site map on the Updates page.",
+    script: "mac-test/mac_lab_e2e.py \u00b7 sweep/sweep.jsonl",
+  },
 ];
 
 const SOURCES = [

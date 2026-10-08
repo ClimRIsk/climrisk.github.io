@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: "Industries",  href: "/use-cases" },
   { label: "Methodology", href: "/methodology" },
   { label: "Research",    href: "/research" },
+  { label: "Updates",     href: "/updates" },
   { label: "About",       href: "/company" },
 ];
 
