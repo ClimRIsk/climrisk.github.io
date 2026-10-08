@@ -1,0 +1,103 @@
+{
+  "slug": "catalonia-cloudburst",
+  "tier": "case-study",
+  "kicker": "Physical Risk · Southern Europe",
+  "title": "The Cloudburst Test: What Catalonia's October 2026 Floods Say About Industrial Climate Risk",
+  "detail": "Barcelona logged 190.8 mm in one night, double its 2017 record. A standard river-flood model sees almost nothing at the region's plants; the carbon bill is the bigger number, and the flash flood is the one nobody has priced.",
+  "status": "draft",
+  "date": "2026-10-08",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/catalonia-cloudburst/cover.png",
+  "sources": [
+    {
+      "title": "Catalonia floods: overnight emergency (Catalunya Press, 4 Oct 2026)",
+      "url": "https://www.catalunyapress.es/articulo/sociedad/2026-10-04/6038715-noche-emergencia-catalunya-433-avisos-inundaciones-maxima-alerta-bess"
+    },
+    {
+      "title": "Catalonia under red alert: Barcelona exceeds 190 l/m² (El Tiempo, 4 Oct 2026)",
+      "url": "https://www.eltiempo.es/noticias/cataluna-sigue-bajo-aviso-rojo-barcelona-supera-los-190-l-m%C2%B2-y-el-episodio-se-desplaza-hacia-girona"
+    },
+    {
+      "title": "Two people have died in Catalonia (Euronews, 4 Oct 2026)",
+      "url": "https://www.euronews.com/2026/10/04/two-people-have-died-in-catalonia-as-the-region-is-hit-by-torrential-rain-and-flooding"
+    },
+    {
+      "title": "Torrential rain in Barcelona: two dead, one missing (Perfil, 4 Oct 2026)",
+      "url": "https://www.perfil.com/noticias/internacional/lluvias-torrenciales-en-barcelona-dos-muertos-un-desaparecido-y-mas-de-200-litros-de-agua-por-metro-cuadrado.phtml"
+    },
+    {
+      "title": "Flash flooding kills one in Madrigueras, Spain (The Watchers, 3 Oct 2026)",
+      "url": "https://watchers.news/2026/10/03/flash-flooding-kills-one-prompts-around-90-rescues-in-madrigueras-spain/"
+    },
+    {
+      "title": "Flash floods across Spain (The Olive Press, 3 Oct 2026)",
+      "url": "https://www.theolivepress.es/spain-news/2026/10/03/flash-floods-spain-weather-warning/"
+    },
+    {
+      "title": "Barcelona travel disruption continues (FTN News, 5 Oct 2026)",
+      "url": "https://ftnnews.com/travel-news/news-from-spain/barcelona-travel-disruption-continues-oct-2026/"
+    },
+    {
+      "title": "Spain October 2026 flash floods: EuroMeteo gauges and OPERA radar (Climate Explorer)",
+      "url": "https://climateexplorer.app/articles/spain-october-2026-flash-floods"
+    },
+    {
+      "title": "Spain flooding disrupts Renfe and Euromed (RusTourismNews, 2 Oct 2026)",
+      "url": "https://www.rustourismnews.com/2026/10/02/spain-flooding-disrupts-renfe-and-euromed-as-red-alerts-continue/"
+    },
+    {
+      "title": "Torrential rain brings deadly floods back to Spain's east coast (AP via Claims Journal, 17 Sep 2026)",
+      "url": "https://www.claimsjournal.com/news/national/2026/09/17/340188.htm"
+    },
+    {
+      "title": "El Consorcio supera los 4.000 millones en pagos por la DANA (Spanish Government, 26 Nov 2025)",
+      "url": "https://www.lamoncloa.gob.es/serviciosdeprensa/notasprensa/economia-comercio-empresa/Paginas/2025/261125-indemnizacion-dana.aspx"
+    },
+    {
+      "title": "IPCC AR6 WGI Summary for Policymakers (2021)",
+      "url": "https://www.ipcc.ch/report/ar6/wg1/chapter/summary-for-policymakers/"
+    }
+  ],
+  "images": [
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "Meteocat/Bombers via El Tiempo and Catalunya Press (4 Oct 2026); Perfil/Euronews (4 Oct 2026); figures labelled per panel"
+    },
+    {
+      "file": "chart_rainfall.png",
+      "kind": "chart",
+      "source": "Meteocat official stations via El Tiempo, 4 Oct 2026; El Prat provisional via Catalunya Press"
+    },
+    {
+      "file": "chart_river_flows.png",
+      "kind": "chart",
+      "source": "Meteocat/ACA gauge readings as reported by El Tiempo, 4 Oct 2026"
+    },
+    {
+      "file": "map_catalonia_assets_rain.png",
+      "kind": "map",
+      "source": "Climate TRACE v6 / EPA GHGRP asset register (ClimRisk); Meteocat rainfall via El Tiempo; gauge positions approximate"
+    },
+    {
+      "file": "chart_celsa_flood.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (JRC CEMS-GloFAS v2.1.2; JRC depth-damage), 8 Oct 2026"
+    },
+    {
+      "file": "chart_physical_vs_carbon.png",
+      "kind": "chart",
+      "source": "ClimRisk engine, NGFS Phase 5, 3,000-draw Monte Carlo, 8 Oct 2026"
+    },
+    {
+      "file": "sat_before.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 L2A data, scene S2C_31TDF_20260923_0_L2A (23 Sep 2026, 0.5% cloud), via AWS Earth Search; processed by ClimRisk"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 scene S2C_31TDF_20260923_0_L2A over Barcelona (23 Sep 2026), via AWS Earth Search; processed by ClimRisk"
+    }
+  ]
+}
