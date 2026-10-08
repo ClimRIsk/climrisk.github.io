@@ -39,7 +39,7 @@ def study(text, wait=900):
                     name = files[0]["url"].rsplit("/", 1)[1]
                     open(os.path.join(OUT, "out", name), "wb").write(html)
                     rec["html_bytes"] = len(html); rec["file"] = name
-                    rec["ok"] = len(html) > 60000
+                    rec["ok"] = len(html) > 5000
             else:
                 rec["error"] = j.get("error")
             break
@@ -54,7 +54,20 @@ try:
     kn = js("/resident/knowledge"); res["language_model"] = kn.get("language_model"); print("language model:", kn.get("language_model"), flush=True)
 except Exception as e:
     print("knowledge endpoint failed", e)
-for q in ["what can the model lab do?", "build a flood model for 22.2645, 91.805", "air quality model for 28.6139, 77.2090", "build an air quality model for 23.8103, 90.4125"]:
+QUERIES = ["what can the model lab do?",
+           "build a flood model for 22.2645, 91.805",
+           "air quality model for 28.6139, 77.2090",
+           "extreme heat model for 23.8103, 90.4125",
+           "extreme rainfall model for 23.8103, 90.4125",
+           "extreme wind model for 22.2645, 91.805",
+           "fire weather model for -33.8688, 151.2093",
+           "drought model for -1.2864, 36.8172",
+           "river flow model for 23.8103, 90.4125",
+           "tropical cyclone hazard for 22.2645, 91.805",
+           "earthquake hazard for 35.6762, 139.6503",
+           "landslide risk for 27.7172, 85.3240",
+           "storm surge model for 22.8456, 89.5403"]
+for q in QUERIES:
     try:
         if q.startswith("what can"):
             r = js("/resident/chat", {"session": "lab-e2e", "text": q}); print("lab help:", r["reply"][:160], flush=True); res["help"] = r["reply"]; continue

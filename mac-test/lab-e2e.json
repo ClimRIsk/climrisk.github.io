@@ -1,13 +1,13 @@
 {
- "started": "2026-10-07 22:50:10",
+ "started": "2026-10-08 06:59:46",
  "studies": [
   {
    "text": "build a flood model for 22.2645, 91.805",
    "intent": "modellab",
-   "first_reply": "Starting a flood study for 22.2645, 91.8050. I will work through: physics choice, terrain and rainfall data, model run, five verification tests, sensitivity, then write the methods and results. This t",
+   "first_reply": "Starting a flood inundation study for 22.2645, 91.8050. I will work through: physics choice, terrain and rainfall data, model run, five verification tests, sensitivity, then write the methods and resu",
    "ok": true,
    "status": "done",
-   "took_s": 48.3,
+   "took_s": 33.2,
    "table": [
     [
      "Status",
@@ -19,7 +19,7 @@
     ],
     [
      "Peak depth at the site",
-     "0.03 m"
+     "0.01 m"
     ],
     [
      "Time under water",
@@ -27,7 +27,7 @@
     ],
     [
      "Area deeper than 30 cm",
-     "1.21 km\u00b2"
+     "0.83 km\u00b2"
     ],
     [
      "Design storm",
@@ -42,28 +42,21 @@
      "no: no observations supplied"
     ]
    ],
-   "reply": "**Flood model for 22.2645, 91.8050: a 100-year rainstorm**\nThe engine built a two-dimensional inundation model for an area near 22.2645, 91.8050, finding minimal water depth and duration. It verified the model through several tests, including lake at rest, mass conservation, and grid convergence, but notes verification is only confirmed. To improve trust, additional real-world data validation would be essential.",
-   "html_bytes": 244596,
-   "file": "modellab-flood_22-2645-91-8050_64ffe70b.html"
+   "reply": "**Flood model for 22.2645, 91.8050: a 100-year rainstorm**\nThe engine built a two-dimensional inundation model of 22.2645, 91.8050 from first principles, tested it, and found 0.01 m of water at the site, which drains almost at once, with 0.83 km\u00b2 of the 10.1 km\u00b2 of land deeper than 30 cm. Status: verified only.",
+   "html_bytes": 246698,
+   "file": "modellab-flood_22-2645-91-8050_4c741d05.html"
   },
   {
    "text": "air quality model for 28.6139, 77.2090",
-   "intent": "unknown",
-   "first_reply": "I'm not sure what you want. Did you mean one of these? (Your choice teaches me.)",
-   "ok": false,
-   "error": "no job started: I'm not sure what you want. Did you mean one of these? (Your choice teaches me.)"
-  },
-  {
-   "text": "build an air quality model for 23.8103, 90.4125",
    "intent": "modellab",
-   "first_reply": "Starting a air-quality study for 23.8103, 90.4125. I will work through: physics choice, three competing model structures, validation on unseen hours, verification tests, sensitivity, then write the me",
+   "first_reply": "Starting a air quality study for 28.6139, 77.2090. I will work through: physics choice, three competing model structures, validation on unseen hours, verification tests, sensitivity, then write the me",
    "ok": true,
    "status": "done",
-   "took_s": 18.0,
+   "took_s": 6.0,
    "table": [
     [
      "Status",
-     "verified and calibrated; validation shows no skill over baselines"
+     "verified, calibrated and validated against the CAMS analysis (a model product, not stations)"
     ],
     [
      "Verification",
@@ -75,28 +68,454 @@
     ],
     [
      "Unseen-data correlation",
-     "0.33"
+     "0.60"
     ],
     [
      "Unseen-data RMSE",
-     "39.1 \u00b5g/m\u00b3"
+     "21.3 \u00b5g/m\u00b3"
     ],
     [
      "Skill vs mean daily cycle",
-     "+8%"
+     "+11%"
     ],
     [
      "AQI category right",
-     "38% of 24 unseen days"
+     "67% of 24 unseen days"
     ],
     [
      "Biggest uncertainty",
-     "City length"
+     "Deposition velocity"
     ]
    ],
-   "reply": "**Air-quality model for 23.8103, 90.4125: PM2.5 and the AQI**\nThe engine built a physical box model for air quality assessment, verified and calibrated using a 60-day training period. It tested three competing structures, finding the winner correlated at 0.33 with the mean daily cycle, offering an 8% skill improvement. The model passed several verification tests, including matching the closed-form plume centerline, conserving emitted mass, achieving steady state and exponential decay, and reproducing EPA breakpoints for AQI. However, validation showed no skill over baselines. To improve, the model needs more accurate data or a longer training period.",
-   "html_bytes": 281157,
-   "file": "modellab-air_23-8103-90-4125_ebd38892.html"
+   "reply": "**Air-quality model for 28.6139, 77.2090: PM2.5 and the AQI**\nThe engine built a physical box model of 28.6139, 77.2090, let three competing structures fight it out on the first 60% of 61 days of data, and tested the winner on the rest: correlation 0.60, skill +11% against the mean daily cycle. Status: verified, calibrated and validated against the CAMS analysis (a model product, not stations).",
+   "html_bytes": 333726,
+   "file": "modellab-air_28-6139-77-2090_758dc7d5.html"
+  },
+  {
+   "text": "extreme heat model for 23.8103, 90.4125",
+   "intent": "modellab",
+   "first_reply": "Starting a extreme heat study for 23.8103, 90.4125. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write the methods ",
+   "ok": true,
+   "status": "done",
+   "took_s": 6.0,
+   "table": [
+    [
+     "Status",
+     "verified and hindcast-validated, trend detected"
+    ],
+    [
+     "Verification",
+     "6 of 6 tests passed"
+    ],
+    [
+     "10-year level",
+     "38.4 WBGT \u00b0C"
+    ],
+    [
+     "50-year level",
+     "39.3 WBGT \u00b0C"
+    ],
+    [
+     "100-year level",
+     "39.7 WBGT \u00b0C"
+    ],
+    [
+     "trend (significant)",
+     "+0.16 per decade"
+    ],
+    [
+     "hindcast uniformity test",
+     "p = 0.11"
+    ],
+    [
+     "Main limit",
+     "ERA5 humidity and temperature are modelled, not measured; peaks in dry-season heat waves are typically under-stated."
+    ]
+   ],
+   "reply": "**Extreme heat at 23.8103, 90.4125: how bad, how often, and can we trust it**\nThe engine built an extreme-value model of hourly peak wet-bulb globe temperature (shade) at 23.8103, 90.4125 from 43 years of data, hid the last third to test it, and found a 100-year level of 39.7 WBGT \u00b0C (50-year 39.3). It predicted the held-out years. Status: verified and hindcast-validated, trend detected.",
+   "html_bytes": 194428,
+   "file": "modellab-heat_23-8103-90-4125_81a03b24.html"
+  },
+  {
+   "text": "extreme rainfall model for 23.8103, 90.4125",
+   "intent": "modellab",
+   "first_reply": "Starting a extreme rainfall study for 23.8103, 90.4125. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write the meth",
+   "ok": true,
+   "status": "done",
+   "took_s": 3.1,
+   "table": [
+    [
+     "Status",
+     "verified and hindcast-validated"
+    ],
+    [
+     "Verification",
+     "4 of 4 tests passed"
+    ],
+    [
+     "10-year level",
+     "121 mm per day"
+    ],
+    [
+     "50-year level",
+     "155 mm per day"
+    ],
+    [
+     "100-year level",
+     "169 mm per day"
+    ],
+    [
+     "trend (not significant)",
+     "+0.24 per decade"
+    ],
+    [
+     "hindcast uniformity test",
+     "p = 0.49"
+    ],
+    [
+     "Main limit",
+     "ERA5 smooths convective extremes: the numbers are a floor."
+    ]
+   ],
+   "reply": "**Extreme rainfall at 23.8103, 90.4125: how bad, how often, and can we trust it**\nThe engine built an extreme-value model of annual maximum daily rainfall at 23.8103, 90.4125 from 74 years of data, hid the last third to test it, and found a 100-year level of 169 mm per day (50-year 155). It predicted the held-out years. Status: verified and hindcast-validated.",
+   "html_bytes": 192878,
+   "file": "modellab-rain_23-8103-90-4125_1dbf66c2.html"
+  },
+  {
+   "text": "extreme wind model for 22.2645, 91.805",
+   "intent": "modellab",
+   "first_reply": "Starting a extreme wind study for 22.2645, 91.8050. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write the methods ",
+   "ok": true,
+   "status": "done",
+   "took_s": 3.1,
+   "table": [
+    [
+     "Status",
+     "verified and hindcast-validated"
+    ],
+    [
+     "Verification",
+     "4 of 4 tests passed"
+    ],
+    [
+     "10-year level",
+     "26.2 m/s gust"
+    ],
+    [
+     "50-year level",
+     "35.5 m/s gust"
+    ],
+    [
+     "100-year level",
+     "40.5 m/s gust"
+    ],
+    [
+     "trend (not significant)",
+     "+0.14 per decade"
+    ],
+    [
+     "hindcast uniformity test",
+     "p = 0.76"
+    ],
+    [
+     "Main limit",
+     "Tornadoes, downbursts and the core of tropical cyclones are not in ERA5."
+    ]
+   ],
+   "reply": "**Extreme wind at 22.2645, 91.8050: how bad, how often, and can we trust it**\nThe engine built an extreme-value model of annual maximum daily 10 m gust at 22.2645, 91.8050 from 74 years of data, hid the last third to test it, and found a 100-year level of 40.5 m/s gust (50-year 35.5). It predicted the held-out years. Status: verified and hindcast-validated.",
+   "html_bytes": 181483,
+   "file": "modellab-wind_22-2645-91-8050_57761d12.html"
+  },
+  {
+   "text": "fire weather model for -33.8688, 151.2093",
+   "intent": "modellab",
+   "first_reply": "Starting a fire weather study for -33.8688, 151.2093. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write the method",
+   "ok": true,
+   "status": "done",
+   "took_s": 6.1,
+   "table": [
+    [
+     "Status",
+     "verified; hindcast FAILED (the early record does not predict the recent one)"
+    ],
+    [
+     "Verification",
+     "6 of 6 tests passed"
+    ],
+    [
+     "10-year level",
+     "97 FWI"
+    ],
+    [
+     "50-year level",
+     "125 FWI"
+    ],
+    [
+     "100-year level",
+     "137 FWI"
+    ],
+    [
+     "trend (not significant)",
+     "+4.1 per decade"
+    ],
+    [
+     "hindcast uniformity test",
+     "p = 0.01"
+    ],
+    [
+     "Main limit",
+     "Fire weather is not fire: ignition and fuel load decide whether it burns. The index measures how the weather would let a fire spread."
+    ]
+   ],
+   "reply": "**Fire weather at -33.8688, 151.2093: how bad, how often, and can we trust it**\nThe engine built an extreme-value model of annual maximum Fire Weather Index at -33.8688, 151.2093 from 42 years of data, hid the last third to test it, and found a 100-year level of 137 FWI (50-year 125). It did NOT predict the held-out years. Status: verified; hindcast FAILED (the early record does not predict the recent one).",
+   "html_bytes": 166361,
+   "file": "modellab-fire_33-8688-151-2093_07bbc1c8.html"
+  },
+  {
+   "text": "drought model for -1.2864, 36.8172",
+   "intent": "modellab",
+   "first_reply": "Starting a drought study for -1.2864, 36.8172. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write the methods and r",
+   "ok": true,
+   "status": "done",
+   "took_s": 18.1,
+   "table": [
+    [
+     "Status",
+     "verified, calibrated and validated against ERA5-Land soil moisture (a model product)"
+    ],
+    [
+     "Verification",
+     "4 of 4 tests passed"
+    ],
+    [
+     "anomaly correlation on unseen years",
+     "0.91"
+    ],
+    [
+     "skill vs climatology",
+     "+60%"
+    ],
+    [
+     "drought days detected",
+     "56%"
+    ],
+    [
+     "false-alarm ratio",
+     "31%"
+    ],
+    [
+     "RMSE (m\u00b3/m\u00b3)",
+     "0.027"
+    ],
+    [
+     "Main limit",
+     "The 'observations' are ERA5-Land soil moisture, itself a land-surface model, not probes or satellites."
+    ]
+   ],
+   "reply": "**Drought model for -1.2864, 36.8172: soil water, not rain**\nThe engine built a soil water balance for -1.2864, 36.8172, chose among three structures on the early years, and tested it on the last 13: anomaly correlation 0.91, skill +60% against climatology. Status: verified, calibrated and validated against ERA5-Land soil moisture (a model product).",
+   "html_bytes": 264863,
+   "file": "modellab-drought_1-2864-36-8172_08e99187.html"
+  },
+  {
+   "text": "river flow model for 23.8103, 90.4125",
+   "intent": "modellab",
+   "first_reply": "Starting a river flow study for 23.8103, 90.4125. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write the methods an",
+   "ok": true,
+   "status": "done",
+   "took_s": 18.1,
+   "table": [
+    [
+     "Status",
+     "verified, calibrated and validated against GloFAS (a model product, not a gauge)"
+    ],
+    [
+     "Verification",
+     "4 of 4 tests passed"
+    ],
+    [
+     "Nash\u2013Sutcliffe on unseen years",
+     "0.82"
+    ],
+    [
+     "Kling\u2013Gupta efficiency",
+     "0.90"
+    ],
+    [
+     "skill vs climatology",
+     "+45%"
+    ],
+    [
+     "flood days detected",
+     "49%"
+    ],
+    [
+     "annual-peak correlation",
+     "0.71"
+    ],
+    [
+     "Main limit",
+     "Observed flow: GloFAS v4 river-discharge reanalysis (Copernicus/ECMWF), a model product, not a gauge."
+    ]
+   ],
+   "reply": "**River-flow model for 23.8103, 90.4125: can rain at one place explain the river?**\nThe engine built a rainfall\u2013runoff model for the river near 23.8103, 90.4125 and tested it on 11 unseen years: Nash\u2013Sutcliffe 0.82, flood days detected 49%. Status: verified, calibrated and validated against GloFAS (a model product, not a gauge).",
+   "html_bytes": 225741,
+   "file": "modellab-river_23-8103-90-4125_cc77f2f1.html"
+  },
+  {
+   "text": "tropical cyclone hazard for 22.2645, 91.805",
+   "intent": "modellab",
+   "first_reply": "Starting a tropical cyclone wind study for 22.2645, 91.8050. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write the",
+   "ok": true,
+   "status": "done",
+   "took_s": 6.0,
+   "table": [
+    [
+     "Status",
+     "verified and hindcast-validated"
+    ],
+    [
+     "Verification",
+     "5 of 5 tests passed"
+    ],
+    [
+     "tropical-storm wind or more",
+     "0.43 / yr"
+    ],
+    [
+     "hurricane-force wind",
+     "0.09 / yr"
+    ],
+    [
+     "100-year peak wind",
+     "61 m/s"
+    ],
+    [
+     "worst storm (Unnamed 1991)",
+     "67 m/s"
+    ],
+    [
+     "Main limit",
+     "Storm surge, rainfall and tornadoes are separate perils not modelled here."
+    ]
+   ],
+   "reply": "**Tropical cyclones at 22.2645, 91.8050: how often, how strong, and can we trust it**\nThe engine rebuilt the 167 storms that passed near 22.2645, 91.8050 since 1980 with the Holland wind profile, found 0.43 tropical-storm-wind events a year and a 100-year peak wind near 61 m/s, then tested its forecast on seasons it had not seen. Status: verified and hindcast-validated.",
+   "html_bytes": 129845,
+   "file": "modellab-cyclone_22-2645-91-8050_a8dae96a.html"
+  },
+  {
+   "text": "earthquake hazard for 35.6762, 139.6503",
+   "intent": "modellab",
+   "first_reply": "Starting a earthquake shaking study for 35.6762, 139.6503. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write the m",
+   "ok": true,
+   "status": "done",
+   "took_s": 6.0,
+   "table": [
+    [
+     "Status",
+     "verified; hindcast passed only after raising the completeness magnitude (diagnosed, not independent)"
+    ],
+    [
+     "Verification",
+     "4 of 4 tests passed"
+    ],
+    [
+     "independent M \u2265 4.8 within 300 km",
+     "12.5 / yr"
+    ],
+    [
+     "Gutenberg\u2013Richter slope",
+     "b = 1.18"
+    ],
+    [
+     "PGA, 475-year",
+     "0.28 g"
+    ],
+    [
+     "PGA, 2 475-year",
+     "0.42 g"
+    ],
+    [
+     "largest on record",
+     "M 7.9"
+    ],
+    [
+     "Main limit",
+     "A 50-year catalogue cannot see the rarest large earthquakes; the extension to Mmax relies on the Gutenberg\u2013Richter extrapolation."
+    ]
+   ],
+   "reply": "**Earthquakes at 35.6762, 139.6503: how often, how hard, and can we trust it**\nThe engine fitted a Gutenberg\u2013Richter model to 648 independent earthquakes within 300 km of 35.6762, 139.6503, found b = 1.18 and a 475-year ground acceleration of 0.28 g, then tested its forecast on years it had not seen. Status: verified; hindcast passed only after raising the completeness magnitude (diagnosed, not independent).",
+   "html_bytes": 258071,
+   "file": "modellab-earthquake_35-6762-139-6503_1ed23f69.html"
+  },
+  {
+   "text": "landslide risk for 27.7172, 85.3240",
+   "intent": "modellab",
+   "first_reply": "Starting a landslide susceptibility study for 27.7172, 85.3240. I will work through: physics choice, public data, model fit, verification tests, and a hindcast on data the model never saw, then write ",
+   "ok": true,
+   "status": "done",
+   "took_s": 9.0,
+   "table": [
+    [
+     "Status",
+     "verified only (no landslide inventory to validate against)"
+    ],
+    [
+     "Verification",
+     "5 of 5 tests passed"
+    ],
+    [
+     "land cells unstable after the storm",
+     "0.2%"
+    ],
+    [
+     "unstable when dry",
+     "0.2%"
+    ],
+    [
+     "95th-percentile slope",
+     "11\u00b0"
+    ],
+    [
+     "soil column saturated",
+     "11%"
+    ],
+    [
+     "Main limit",
+     "30 m terrain smooths steep local slopes, which understates instability."
+    ]
+   ],
+   "reply": "**Landslide susceptibility at 27.7172, 85.3240: which slopes fail in a 100-year storm**\nThe engine applied the infinite-slope stability equation to 27.7172, 85.3240's terrain: 0.2% of land cells are unstable dry and 0.2% after a 100-year storm (311 mm/day). No inventory of real landslides was available, so the map is verified against the physics but not validated. Status: verified only (no landslide inventory to validate against).",
+   "html_bytes": 261452,
+   "file": "modellab-landslide_27-7172-85-3240_605d91a5.html"
+  },
+  {
+   "text": "storm surge model for 22.8456, 89.5403",
+   "intent": "modellab",
+   "first_reply": "Starting a storm surge study for 22.8456, 89.5403. I will work through: reading up on the physics and the public datasets, and checking what a verified model would need, then write the methods and res",
+   "ok": true,
+   "status": "done",
+   "took_s": 3.0,
+   "table": [
+    [
+     "Status",
+     "no model yet (dossier only)"
+    ],
+    [
+     "no model run",
+     "none"
+    ],
+    [
+     "public datasets identified",
+     "3"
+    ],
+    [
+     "Main limit",
+     "This is a research dossier, not a hazard assessment."
+    ]
+   ],
+   "reply": "**Storm surge: what the engine knows and what it would take to model it**\nThe engine has no verified solver for storm surge yet. It identified the governing physics and 3 public datasets that could validate a model, and listed what is missing. No numbers were produced.",
+   "html_bytes": 7901,
+   "file": "modellab-surge_22-8456-89-5403_78c428d4.html"
   }
  ],
  "language_model": {
@@ -104,7 +523,7 @@
   "model": "qwen2.5:7b",
   "why": "ok"
  },
- "help": "The Model Lab builds a physics model the way a researcher would, without being walked through it: it chooses the equations, fetches the data, builds and runs the model, proves it is solved correctly against analytic solutions and conservation laws, calibrates on part of the record, tests on part it never saw, finds which assumption matters most, and writes the methods and results. It says plainly whether the result is only verified, or also calibrated and validated. Say, for example: \"build a flood model for Chattogram\" or \"air quality model for Delhi\".",
- "passed": 2,
- "failed": 1
+ "help": "The Model Lab builds a physics model the way a researcher would, without being walked through it: it chooses the equations, fetches the data, builds and runs the model, proves it is solved correctly against analytic solutions and conservation laws, calibrates on part of the record, tests on part it never saw, finds which assumption matters most, and writes the methods and results. It says plainly whether the result is only verified, or also calibrated and validated, and for a hazard it has no verified solver for it researches the physics and data and tells you what is missing instead of guessing. It covers flood inundation, air quality, extreme heat, extreme rainfall, extreme wind, fire weather, drought, river flow, tropical cyclone wind, earthquake shaking, landslide susceptibility. Say, for example: \"build a flood model for Chattogram\", \"earthquake hazard for Tokyo\" or \"air quality model for Delhi\".",
+ "passed": 12,
+ "failed": 0
 }
