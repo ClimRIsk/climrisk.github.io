@@ -1,0 +1,1121 @@
+[
+ {
+  "hazard": "sealevel",
+  "site": "New York Battery",
+  "status": "verified and backtested against a tide gauge",
+  "grade": "A",
+  "headline": [
+   [
+    "0.36 m",
+    "2050, middle pathway (median)"
+   ],
+   [
+    "0.81 m",
+    "2100, middle pathway (median)"
+   ],
+   [
+    "1.04 m",
+    "2100, very high emissions (median)"
+   ],
+   [
+    "1.62 m",
+    "2100, very high emissions, 95th percentile"
+   ],
+   [
+    "A",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics and the data",
+   "Projected sea-level rise",
+   "Does it match the tide gauge?",
+   "What it does to the shoreline",
+   "What to take from this"
+  ],
+  "skill": null,
+  "levels": {},
+  "crosscheck": null,
+  "limits": [
+   "Projections are scenarios, not forecasts; the pathway society follows is not predicted.",
+   "A one-degree grid point is not a tide gauge: local subsidence (deltas, groundwater pumping) can add millimetres a year that a grid point misses.",
+   "Attribution: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 27.9
+ },
+ {
+  "hazard": "sealevel",
+  "site": "Galveston",
+  "status": "verified and backtested against a tide gauge",
+  "grade": "A",
+  "headline": [
+   [
+    "0.47 m",
+    "2050, middle pathway (median)"
+   ],
+   [
+    "1.07 m",
+    "2100, middle pathway (median)"
+   ],
+   [
+    "1.29 m",
+    "2100, very high emissions (median)"
+   ],
+   [
+    "1.87 m",
+    "2100, very high emissions, 95th percentile"
+   ],
+   [
+    "A",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics and the data",
+   "Projected sea-level rise",
+   "Does it match the tide gauge?",
+   "What it does to the shoreline",
+   "What to take from this"
+  ],
+  "skill": null,
+  "levels": {},
+  "crosscheck": null,
+  "limits": [
+   "Projections are scenarios, not forecasts; the pathway society follows is not predicted.",
+   "A one-degree grid point is not a tide gauge: local subsidence (deltas, groundwater pumping) can add millimetres a year that a grid point misses.",
+   "Attribution: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 19.4
+ },
+ {
+  "hazard": "sealevel",
+  "site": "Dhaka-Chattogram coast",
+  "status": "verified only (no tide gauge within 150 km to check against)",
+  "grade": "C",
+  "headline": [
+   [
+    "0.17 m",
+    "2050, middle pathway (median)"
+   ],
+   [
+    "0.50 m",
+    "2100, middle pathway (median)"
+   ],
+   [
+    "0.72 m",
+    "2100, very high emissions (median)"
+   ],
+   [
+    "1.42 m",
+    "2100, very high emissions, 95th percentile"
+   ],
+   [
+    "C",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics and the data",
+   "Projected sea-level rise",
+   "Does it match the tide gauge?",
+   "What it does to the shoreline",
+   "What to take from this"
+  ],
+  "skill": null,
+  "levels": {},
+  "crosscheck": null,
+  "limits": [
+   "Projections are scenarios, not forecasts; the pathway society follows is not predicted.",
+   "A one-degree grid point is not a tide gauge: local subsidence (deltas, groundwater pumping) can add millimetres a year that a grid point misses.",
+   "Attribution: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 14.8
+ },
+ {
+  "hazard": "sealevel",
+  "site": "Mumbai",
+  "status": "verified only (no tide gauge within 150 km to check against)",
+  "grade": "C",
+  "headline": [
+   [
+    "0.17 m",
+    "2050, middle pathway (median)"
+   ],
+   [
+    "0.46 m",
+    "2100, middle pathway (median)"
+   ],
+   [
+    "0.70 m",
+    "2100, very high emissions (median)"
+   ],
+   [
+    "1.24 m",
+    "2100, very high emissions, 95th percentile"
+   ],
+   [
+    "C",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics and the data",
+   "Projected sea-level rise",
+   "Does it match the tide gauge?",
+   "What it does to the shoreline",
+   "What to take from this"
+  ],
+  "skill": null,
+  "levels": {},
+  "crosscheck": null,
+  "limits": [
+   "Projections are scenarios, not forecasts; the pathway society follows is not predicted.",
+   "A one-degree grid point is not a tide gauge: local subsidence (deltas, groundwater pumping) can add millimetres a year that a grid point misses.",
+   "Attribution: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 17.6
+ },
+ {
+  "hazard": "surge",
+  "site": "Charleston",
+  "status": "verified; tide-gauge hindcast FAILED (the surge model has no skill against recorded surges)",
+  "grade": "B",
+  "headline": [
+   [
+    "0.7 m",
+    "10-year cyclone surge"
+   ],
+   [
+    "1.1 m",
+    "50-year cyclone surge"
+   ],
+   [
+    "1.3 m",
+    "100-year cyclone surge"
+   ],
+   [
+    "1.99 m",
+    "50-year storm tide at the gauge (above mean sea level)"
+   ],
+   [
+    "r = 0.65",
+    "gauge hindcast correlation"
+   ],
+   [
+    "B",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "What the tide gauge recorded",
+   "Does the model reproduce recorded surges?",
+   "Cyclone surge at the site",
+   "With the rising sea",
+   "What to take from this"
+  ],
+  "skill": {
+   "n": 24,
+   "r": 0.6502452667188258,
+   "rmse": 0.23739954209935946,
+   "bias": -0.0748958733140375,
+   "skill": 0.195346451519538,
+   "alpha": 1.2207724870533925
+  },
+  "levels": {
+   "10": 0.6582098570161157,
+   "50": 1.1183394817920642,
+   "100": 1.3165065248581715
+  },
+  "crosscheck": {
+   "observed_50": 1.9936186990219378,
+   "model_surge_50": 1.1183394817920642,
+   "agree": true,
+   "note": "Observed 50-year storm tide at the gauge 1.99 m above mean sea level (includes tide); modelled cyclone surge alone 1.12 m."
+  },
+  "limits": [
+   "Only tropical cyclones are modelled in B; extratropical storms (nor'easters, North Sea surges) appear only through the gauge record in A.",
+   "Gauge data: NOAA CO-OPS (public domain). Tracks: IBTrACS (NOAA NCEI). Sea-level projection: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 95.8
+ },
+ {
+  "hazard": "surge",
+  "site": "Norfolk",
+  "status": "verified and validated against tide-gauge surges",
+  "grade": "A",
+  "headline": [
+   [
+    "0.9 m",
+    "10-year cyclone surge"
+   ],
+   [
+    "1.4 m",
+    "50-year cyclone surge"
+   ],
+   [
+    "1.7 m",
+    "100-year cyclone surge"
+   ],
+   [
+    "1.74 m",
+    "50-year storm tide at the gauge (above mean sea level)"
+   ],
+   [
+    "r = 0.70",
+    "gauge hindcast correlation"
+   ],
+   [
+    "A",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "What the tide gauge recorded",
+   "Does the model reproduce recorded surges?",
+   "Cyclone surge at the site",
+   "With the rising sea",
+   "What to take from this"
+  ],
+  "skill": {
+   "n": 24,
+   "r": 0.7022366709288181,
+   "rmse": 0.2944646046454165,
+   "bias": -0.027639194320728738,
+   "skill": 0.5009641269070999,
+   "alpha": 1.2627045711667626
+  },
+  "levels": {
+   "10": 0.8846013097246008,
+   "50": 1.4407480827426955,
+   "100": 1.680267460729753
+  },
+  "crosscheck": {
+   "observed_50": 1.7440978822429707,
+   "model_surge_50": 1.4407480827426955,
+   "agree": true,
+   "note": "Observed 50-year storm tide at the gauge 1.74 m above mean sea level (includes tide); modelled cyclone surge alone 1.44 m."
+  },
+  "limits": [
+   "Only tropical cyclones are modelled in B; extratropical storms (nor'easters, North Sea surges) appear only through the gauge record in A.",
+   "Gauge data: NOAA CO-OPS (public domain). Tracks: IBTrACS (NOAA NCEI). Sea-level projection: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 91.3
+ },
+ {
+  "hazard": "surge",
+  "site": "Galveston",
+  "status": "verified; tide-gauge hindcast FAILED (the surge model has no skill against recorded surges)",
+  "grade": "B",
+  "headline": [
+   [
+    "0.7 m",
+    "10-year cyclone surge"
+   ],
+   [
+    "1.4 m",
+    "50-year cyclone surge"
+   ],
+   [
+    "1.7 m",
+    "100-year cyclone surge"
+   ],
+   [
+    "1.61 m",
+    "50-year storm tide at the gauge (above mean sea level)"
+   ],
+   [
+    "r = 0.35",
+    "gauge hindcast correlation"
+   ],
+   [
+    "B",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "What the tide gauge recorded",
+   "Does the model reproduce recorded surges?",
+   "Cyclone surge at the site",
+   "With the rising sea",
+   "What to take from this"
+  ],
+  "skill": {
+   "n": 23,
+   "r": 0.347714554892757,
+   "rmse": 0.5583719613205399,
+   "bias": -0.28002222383230513,
+   "skill": -0.21142105569382652,
+   "alpha": 1.7969520289124972
+  },
+  "levels": {
+   "10": 0.7258333727099096,
+   "50": 1.3826358438499524,
+   "100": 1.665505271454645
+  },
+  "crosscheck": {
+   "observed_50": 1.611092494616632,
+   "model_surge_50": 1.3826358438499524,
+   "agree": true,
+   "note": "Observed 50-year storm tide at the gauge 1.61 m above mean sea level (includes tide); modelled cyclone surge alone 1.38 m."
+  },
+  "limits": [
+   "Only tropical cyclones are modelled in B; extratropical storms (nor'easters, North Sea surges) appear only through the gauge record in A.",
+   "Gauge data: NOAA CO-OPS (public domain). Tracks: IBTrACS (NOAA NCEI). Sea-level projection: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 86.5
+ },
+ {
+  "hazard": "surge",
+  "site": "Miami",
+  "status": "verified; tide-gauge hindcast FAILED (the surge model has no skill against recorded surges)",
+  "grade": "B",
+  "headline": [
+   [
+    "0.5 m",
+    "10-year cyclone surge"
+   ],
+   [
+    "1.3 m",
+    "50-year cyclone surge"
+   ],
+   [
+    "1.7 m",
+    "100-year cyclone surge"
+   ],
+   [
+    "1.05 m",
+    "50-year storm tide at the gauge (above mean sea level)"
+   ],
+   [
+    "r = 0.13",
+    "gauge hindcast correlation"
+   ],
+   [
+    "B",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "What the tide gauge recorded",
+   "Does the model reproduce recorded surges?",
+   "Cyclone surge at the site",
+   "With the rising sea",
+   "What to take from this"
+  ],
+  "skill": {
+   "n": 18,
+   "r": 0.13083296852659032,
+   "rmse": 0.29938319301963295,
+   "bias": -0.1529870648431535,
+   "skill": -0.2333467435072023,
+   "alpha": 5.675940492382992
+  },
+  "levels": {
+   "10": 0.5,
+   "50": 1.2888600026520336,
+   "100": 1.6609121405616156
+  },
+  "crosscheck": {
+   "observed_50": 1.0474235105471208,
+   "model_surge_50": 1.2888600026520336,
+   "agree": true,
+   "note": "Observed 50-year storm tide at the gauge 1.05 m above mean sea level (includes tide); modelled cyclone surge alone 1.29 m."
+  },
+  "limits": [
+   "Only tropical cyclones are modelled in B; extratropical storms (nor'easters, North Sea surges) appear only through the gauge record in A.",
+   "Gauge data: NOAA CO-OPS (public domain). Tracks: IBTrACS (NOAA NCEI). Sea-level projection: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 76.1
+ },
+ {
+  "hazard": "surge",
+  "site": "Chattogram",
+  "status": "verified only (no tide gauge within 100 km to check against)",
+  "grade": "C",
+  "headline": [
+   [
+    "1.2 m",
+    "10-year cyclone surge"
+   ],
+   [
+    "2.1 m",
+    "50-year cyclone surge"
+   ],
+   [
+    "2.5 m",
+    "100-year cyclone surge"
+   ],
+   [
+    "C",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "Cyclone surge at the site",
+   "With the rising sea",
+   "What to take from this"
+  ],
+  "skill": null,
+  "levels": {
+   "10": 1.2042186036224671,
+   "50": 2.1134577876725213,
+   "100": 2.505045789924659
+  },
+  "crosscheck": null,
+  "limits": [
+   "Only tropical cyclones are modelled in B; extratropical storms (nor'easters, North Sea surges) appear only through the gauge record in A.",
+   "Gauge data: NOAA CO-OPS (public domain). Tracks: IBTrACS (NOAA NCEI). Sea-level projection: IPCC AR6 sea-level projections: Fox-Kemper, B. et al. (2021) Ocean, Cryosphere and Sea Level Change, in Climate Change 2021: The Physical Science Basis (IPCC AR6 WG1, ch. 9); Garner, G. G. et al. (2021) IPCC AR6 Sea-Level Rise Projections, version 20210809, PO.DAAC; Kopp, R. E. et al. (2023) The Framework for Assessment of Changes To Sea-level (FACTS), Geosci. Model Dev. 16, 7461. Zenodo 10.5281/zenodo.6382554 (CC BY 4.0)."
+  ],
+  "secs": 38.9
+ },
+ {
+  "hazard": "fire",
+  "site": "Los Angeles",
+  "status": "verified and hindcast-validated",
+  "grade": "A",
+  "headline": [
+   [
+    "141 FWI",
+    "10-year level"
+   ],
+   [
+    "167 FWI",
+    "50-year level"
+   ],
+   [
+    "177 FWI",
+    "100-year level"
+   ],
+   [
+    "+0.21 per decade",
+    "trend (not significant)"
+   ],
+   [
+    "p = 0.49",
+    "hindcast uniformity test"
+   ],
+   [
+    "A",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "The data",
+   "Did the model predict the years it never saw?",
+   "Return levels",
+   "Fire weather in a warmer climate"
+  ],
+  "skill": null,
+  "levels": {
+   "10": 141.0264149502972,
+   "50": 166.5546173278956,
+   "100": 177.34680073108956
+  },
+  "crosscheck": null,
+  "limits": [
+   "Fire projections: temperature and mean-rain changes from the CMIP6 ensemble applied to observed daily weather; vegetation, fuel load and ignitions are not modelled. World Bank Climate Change Knowledge Portal (https://climateknowledgeportal.worldbank.org), CMIP6 0.25\u00b0 ensemble statistically downscaled from NASA NEX-GDDP-CMIP6 (Thrasher et al. 2021). We acknowledge the World Climate Research Programme, which, through its Working Group on Coupled Modelling, coordinated and promoted CMIP6, and the climate modelling groups who produced and shared their output (CC0).",
+   "Attribution: These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate Applied Science Program."
+  ],
+  "scenarios_keys": [
+   "fire",
+   "baseline_annual_max",
+   "baseline_days30",
+   "source"
+  ],
+  "secs": 18.8
+ },
+ {
+  "hazard": "fire",
+  "site": "Sydney",
+  "status": "verified; hindcast FAILED (the early record does not predict the recent one)",
+  "grade": "B",
+  "headline": [
+   [
+    "73 FWI",
+    "10-year level"
+   ],
+   [
+    "95 FWI",
+    "50-year level"
+   ],
+   [
+    "104 FWI",
+    "100-year level"
+   ],
+   [
+    "+1.8 per decade",
+    "trend (not significant)"
+   ],
+   [
+    "p = 0.02",
+    "hindcast uniformity test"
+   ],
+   [
+    "B",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "The data",
+   "Did the model predict the years it never saw?",
+   "Return levels",
+   "Fire weather in a warmer climate"
+  ],
+  "skill": null,
+  "levels": {
+   "10": 72.97710856500741,
+   "50": 94.69008262085148,
+   "100": 103.86935794832584
+  },
+  "crosscheck": null,
+  "limits": [
+   "Fire projections: temperature and mean-rain changes from the CMIP6 ensemble applied to observed daily weather; vegetation, fuel load and ignitions are not modelled. World Bank Climate Change Knowledge Portal (https://climateknowledgeportal.worldbank.org), CMIP6 0.25\u00b0 ensemble statistically downscaled from NASA NEX-GDDP-CMIP6 (Thrasher et al. 2021). We acknowledge the World Climate Research Programme, which, through its Working Group on Coupled Modelling, coordinated and promoted CMIP6, and the climate modelling groups who produced and shared their output (CC0).",
+   "Attribution: These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate Applied Science Program."
+  ],
+  "scenarios_keys": [
+   "fire",
+   "baseline_annual_max",
+   "baseline_days30",
+   "source"
+  ],
+  "secs": 19.5
+ },
+ {
+  "hazard": "fire",
+  "site": "Athens",
+  "status": "verified and hindcast-validated",
+  "grade": "A",
+  "headline": [
+   [
+    "117 FWI",
+    "10-year level"
+   ],
+   [
+    "131 FWI",
+    "50-year level"
+   ],
+   [
+    "137 FWI",
+    "100-year level"
+   ],
+   [
+    "+1.6 per decade",
+    "trend (not significant)"
+   ],
+   [
+    "p = 0.52",
+    "hindcast uniformity test"
+   ],
+   [
+    "A",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "The data",
+   "Did the model predict the years it never saw?",
+   "Return levels",
+   "Fire weather in a warmer climate"
+  ],
+  "skill": null,
+  "levels": {
+   "10": 117.01684004660585,
+   "50": 131.36840907126543,
+   "100": 137.435611248166
+  },
+  "crosscheck": null,
+  "limits": [
+   "Fire projections: temperature and mean-rain changes from the CMIP6 ensemble applied to observed daily weather; vegetation, fuel load and ignitions are not modelled. World Bank Climate Change Knowledge Portal (https://climateknowledgeportal.worldbank.org), CMIP6 0.25\u00b0 ensemble statistically downscaled from NASA NEX-GDDP-CMIP6 (Thrasher et al. 2021). We acknowledge the World Climate Research Programme, which, through its Working Group on Coupled Modelling, coordinated and promoted CMIP6, and the climate modelling groups who produced and shared their output (CC0).",
+   "Attribution: These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate Applied Science Program."
+  ],
+  "scenarios_keys": [
+   "fire",
+   "baseline_annual_max",
+   "baseline_days30",
+   "source"
+  ],
+  "secs": 12.1
+ },
+ {
+  "hazard": "drought",
+  "site": "London",
+  "error": "QuotaExceeded: the free weather-data service (Open-Meteo) has used up its daily allowance for this computer; it resets within 24 hours. The engine can fall back to NASA POWER for rain, wind, heat and fire weather.",
+  "secs": 0.8
+ },
+ {
+  "hazard": "drought",
+  "site": "Nairobi",
+  "error": "QuotaExceeded: the free weather-data service (Open-Meteo) has used up its daily allowance for this computer; it resets within 24 hours. The engine can fall back to NASA POWER for rain, wind, heat and fire weather.",
+  "secs": 0.8
+ },
+ {
+  "hazard": "cyclone",
+  "site": "Miami",
+  "status": "verified and hindcast-validated",
+  "grade": "A",
+  "headline": [
+   [
+    "0.70 / yr",
+    "tropical-storm wind or more"
+   ],
+   [
+    "0.11 / yr",
+    "hurricane-force wind"
+   ],
+   [
+    "50 m/s",
+    "100-year peak wind"
+   ],
+   [
+    "57 m/s",
+    "worst storm (Andrew 1992)"
+   ],
+   [
+    "A",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "The data",
+   "Did the model predict the seasons it never saw?",
+   "How strong, how often",
+   "Under a warmer climate (literature scaling, low confidence)"
+  ],
+  "skill": null,
+  "levels": {
+   "10": 32.52436715943561,
+   "50": 44.99074878524312,
+   "100": 50.35972711547529
+  },
+  "crosscheck": null,
+  "limits": [],
+  "future": [
+   {
+    "ssp": "ssp126",
+    "warming": 0.95,
+    "wind_change": 0.02375,
+    "range": [
+     0.00475,
+     0.0475
+    ]
+   },
+   {
+    "ssp": "ssp245",
+    "warming": 1.85,
+    "wind_change": 0.046250000000000006,
+    "range": [
+     0.009250000000000001,
+     0.09250000000000001
+    ]
+   },
+   {
+    "ssp": "ssp370",
+    "warming": 2.75,
+    "wind_change": 0.06875,
+    "range": [
+     0.01375,
+     0.1375
+    ]
+   },
+   {
+    "ssp": "ssp585",
+    "warming": 3.55,
+    "wind_change": 0.08875,
+    "range": [
+     0.01775,
+     0.1775
+    ]
+   }
+  ],
+  "secs": 0.1
+ },
+ {
+  "hazard": "cyclone",
+  "site": "Manila",
+  "status": "verified; hindcast FAILED (rates changed between early and late record)",
+  "grade": "C",
+  "headline": [
+   [
+    "1.04 / yr",
+    "tropical-storm wind or more"
+   ],
+   [
+    "0.22 / yr",
+    "hurricane-force wind"
+   ],
+   [
+    "55 m/s",
+    "100-year peak wind"
+   ],
+   [
+    "57 m/s",
+    "worst storm (Angela 1995)"
+   ],
+   [
+    "C",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "The data",
+   "Did the model predict the seasons it never saw?",
+   "How strong, how often",
+   "Under a warmer climate (literature scaling, low confidence)"
+  ],
+  "skill": null,
+  "levels": {
+   "10": 36.619605144113436,
+   "50": 49.74110561802391,
+   "100": 55.39222827888606
+  },
+  "crosscheck": null,
+  "limits": [],
+  "future": [
+   {
+    "ssp": "ssp126",
+    "warming": 0.95,
+    "wind_change": 0.02375,
+    "range": [
+     0.00475,
+     0.0475
+    ]
+   },
+   {
+    "ssp": "ssp245",
+    "warming": 1.85,
+    "wind_change": 0.046250000000000006,
+    "range": [
+     0.009250000000000001,
+     0.09250000000000001
+    ]
+   },
+   {
+    "ssp": "ssp370",
+    "warming": 2.75,
+    "wind_change": 0.06875,
+    "range": [
+     0.01375,
+     0.1375
+    ]
+   },
+   {
+    "ssp": "ssp585",
+    "warming": 3.55,
+    "wind_change": 0.08875,
+    "range": [
+     0.01775,
+     0.1775
+    ]
+   }
+  ],
+  "secs": 0.1
+ },
+ {
+  "hazard": "rain",
+  "site": "London",
+  "status": "verified; hindcast FAILED (the early record does not predict the recent one)",
+  "grade": "C",
+  "headline": [
+   [
+    "31 mm per day",
+    "10-year level"
+   ],
+   [
+    "39 mm per day",
+    "50-year level"
+   ],
+   [
+    "42 mm per day",
+    "100-year level"
+   ],
+   [
+    "+1.1 per decade",
+    "trend (not significant)"
+   ],
+   [
+    "p = 0.02",
+    "hindcast uniformity test"
+   ],
+   [
+    "C",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "The data",
+   "Did the model predict the years it never saw?",
+   "Return levels",
+   "Where the hazard is heading: climate scenarios to 2099",
+   "Can the climate models be trusted here? A backtest",
+   "Compared with a weather station"
+  ],
+  "skill": null,
+  "levels": {
+   "10": 31.16506245253833,
+   "50": 38.64940654773531,
+   "100": 41.81345284183932
+  },
+  "crosscheck": {
+   "agree": false,
+   "note": "Median over 3 stations: design-level ratio 2.48 (agreement band 0.6\u20131.7), rank correlation 0.20 (needs 0.3): inconsistent.",
+   "verdict": "inconsistent",
+   "stations": [
+    {
+     "station": "Hampstead",
+     "id": "UKE00105915",
+     "km": 22.099663248675864,
+     "n": 33,
+     "rho": 0.007688450717453571,
+     "p": 0.9661285409221827,
+     "station_levels": {
+      "10": 57.2449728825856,
+      "50": 86.80121063058056
+     },
+     "grid_levels": {
+      "10": 28.790522360939676,
+      "50": 34.96862968601724
+     },
+     "ratio50": 2.4822594253754646,
+     "mean_ratio": 1.6115208425690837,
+     "detail": "Hampstead (22 km, 33 years): 50-year daily rain 87 mm at the station against 35 mm gridded (ratio 2.48); rank correlation of annual maxima 0.01"
+    },
+    {
+     "station": "Heathrow",
+     "id": "UKM00003772",
+     "km": 23.189607149455494,
+     "n": 23,
+     "rho": 0.20074171157529871,
+     "p": 0.35839200001726973,
+     "station_levels": {
+      "10": 88.83057360737479,
+      "50": 129.2810871751643
+     },
+     "grid_levels": {
+      "10": 33.34163851604186,
+      "50": 42.27073669871745
+     },
+     "ratio50": 3.0584062940896617,
+     "mean_ratio": 1.3273975275358714,
+     "detail": "Heathrow (23 km, 23 years): 50-year daily rain 129 mm at the station against 42 mm gridded (ratio 3.06); rank correlation of annual maxima 0.20"
+    },
+    {
+     "station": "Heathrow",
+     "id": "UKE00107650",
+     "km": 40.225473587211845,
+     "n": 43,
+     "rho": 0.3551468962800027,
+     "p": 0.01943995895460366,
+     "station_levels": {
+      "10": 46.886056385563705,
+      "50": 60.105884895559385
+     },
+     "grid_levels": {
+      "10": 31.16506245253833,
+      "50": 38.64940654773531
+     },
+     "ratio50": 1.555156734976603,
+     "mean_ratio": 1.338647447071036,
+     "detail": "Heathrow (40 km, 43 years): 50-year daily rain 60 mm at the station against 39 mm gridded (ratio 1.56); rank correlation of annual maxima 0.36"
+    }
+   ],
+   "rho": 0.20074171157529871,
+   "station_levels": {
+    "10": 57.2449728825856,
+    "50": 86.80121063058056
+   },
+   "grid_levels": {
+    "10": 28.790522360939676,
+    "50": 34.96862968601724
+   }
+  },
+  "limits": [
+   "Climate-model projections are scenarios, not forecasts: they depend on the emissions pathway society follows, and the 10th\u201390th percentile range covers model differences, not every uncertainty.",
+   "Attribution: These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate Applied Science Program."
+  ],
+  "scenarios_keys": [
+   "table",
+   "baseline",
+   "cell",
+   "backtest",
+   "mode",
+   "source"
+  ],
+  "secs": 133.2
+ },
+ {
+  "hazard": "rain",
+  "site": "Houston",
+  "status": "verified and hindcast-validated",
+  "grade": "A",
+  "headline": [
+   [
+    "105 mm per day",
+    "10-year level"
+   ],
+   [
+    "162 mm per day",
+    "50-year level"
+   ],
+   [
+    "193 mm per day",
+    "100-year level"
+   ],
+   [
+    "+1.7 per decade",
+    "trend (not significant)"
+   ],
+   [
+    "p = 0.35",
+    "hindcast uniformity test"
+   ],
+   [
+    "A",
+    "evidence grade (A best)"
+   ]
+  ],
+  "blocks": [
+   "The question",
+   "How much weight these numbers deserve",
+   "The physics the engine chose",
+   "The data",
+   "Did the model predict the years it never saw?",
+   "Return levels",
+   "Where the hazard is heading: climate scenarios to 2099",
+   "Can the climate models be trusted here? A backtest",
+   "Compared with a weather station"
+  ],
+  "skill": null,
+  "levels": {
+   "10": 105.02219704750254,
+   "50": 162.07175503261578,
+   "100": 192.84694416338823
+  },
+  "crosscheck": {
+   "agree": null,
+   "note": "Median over 3 stations: design-level ratio 1.77 (agreement band 0.6\u20131.7), rank correlation 0.64 (needs 0.3): partly consistent.",
+   "verdict": "partly consistent",
+   "stations": [
+    {
+     "station": "Houston-Westbury",
+     "id": "USC00414325",
+     "km": 8.760259657706284,
+     "n": 39,
+     "rho": 0.6366673448295739,
+     "p": 1.3176647086213384e-05,
+     "station_levels": {
+      "10": 180.31732742988535,
+      "50": 288.7529434421832
+     },
+     "grid_levels": {
+      "10": 104.22806591403486,
+      "50": 162.68979469704678
+     },
+     "ratio50": 1.7748682022734448,
+     "mean_ratio": 1.7693235607929987,
+     "detail": "Houston-Westbury (9 km, 39 years): 50-year daily rain 289 mm at the station against 163 mm gridded (ratio 1.77); rank correlation of annual maxima 0.64"
+    },
+    {
+     "station": "Houston William P Hobby Ap",
+     "id": "USW00012918",
+     "km": 15.26954861081886,
+     "n": 43,
+     "rho": 0.610104215604645,
+     "p": 1.4020730238192776e-05,
+     "station_levels": {
+      "10": 186.13695972086006,
+      "50": 295.87694182424013
+     },
+     "grid_levels": {
+      "10": 105.02219704750254,
+      "50": 162.07175503261578
+     },
+     "ratio50": 1.825592261678767,
+     "mean_ratio": 1.807814014433874,
+     "detail": "Houston William P Hobby Ap (15 km, 43 years): 50-year daily rain 296 mm at the station against 162 mm gridded (ratio 1.83); rank correlation of annual maxima 0.61"
+    },
+    {
+     "station": "Houston N Houston",
+     "id": "USC00414327",
+     "km": 19.73812532692256,
+     "n": 40,
+     "rho": 0.6819312524704453,
+     "p": 1.2646504476428316e-06,
+     "station_levels": {
+      "10": 177.50279989548784,
+      "50": 238.18271792504095
+     },
+     "grid_levels": {
+      "10": 107.49193228346877,
+      "50": 167.66984662751634
+     },
+     "ratio50": 1.4205459282978359,
+     "mean_ratio": 1.885681963010962,
+     "detail": "Houston N Houston (20 km, 40 years): 50-year daily rain 238 mm at the station against 168 mm gridded (ratio 1.42); rank correlation of annual maxima 0.68"
+    }
+   ],
+   "rho": 0.6366673448295739,
+   "station_levels": {
+    "10": 180.31732742988535,
+    "50": 288.7529434421832
+   },
+   "grid_levels": {
+    "10": 104.22806591403486,
+    "50": 162.68979469704678
+   }
+  },
+  "limits": [
+   "Climate-model projections are scenarios, not forecasts: they depend on the emissions pathway society follows, and the 10th\u201390th percentile range covers model differences, not every uncertainty.",
+   "Attribution: These data were obtained from the NASA Langley Research Center POWER Project funded through the NASA Earth Science Directorate Applied Science Program."
+  ],
+  "scenarios_keys": [
+   "table",
+   "baseline",
+   "cell",
+   "backtest",
+   "mode",
+   "source"
+  ],
+  "secs": 131.2
+ }
+]
