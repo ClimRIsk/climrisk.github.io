@@ -3,6 +3,13 @@
 # Resumable: each stage is skipped if its output exists. Progress -> mac-test/llm/train.log
 HERE="$(cd "$(dirname "$0")" && pwd)"; L="$HERE/llm"; DS="${DS:-$L/ds}"; TAG="${TAG:-v1}"; NAME="${NAME:-climrisk-llm}"; OUT="$HOME/.climrisk/llm/$TAG"; LOG="$L/train_$TAG.log"
 [ "$TAG" = "v1" ] && [ -f "$HOME/.climrisk/llm/adapters/adapters.safetensors" ] && OUT="$HOME/.climrisk/llm"
+LOCK="$HOME/.climrisk/llm.lock"; mkdir -p "$HOME/.climrisk"   # one training/eval job at a time (16 GB RAM)
+while ! mkdir "$LOCK" 2>/dev/null; do
+  p=$(cat "$LOCK/pid" 2>/dev/null); if [ -n "$p" ] && ! kill -0 "$p" 2>/dev/null; then rm -rf "$LOCK"; continue; fi
+  sleep 20
+done
+echo $$ > "$LOCK/pid"; trap 'rm -rf "$LOCK"' EXIT
+export PATH="/opt/homebrew/bin:$PATH"; [ "${FORCE:-0}" != 1 ] && ollama list 2>/dev/null | grep -q "^$NAME" && exit 0   # already imported
 mkdir -p "$OUT"; exec > >(tee -a "$LOG") 2>&1
 say(){ printf '\n[%s] %s\n' "$(date +%H:%M:%S)" "$*"; }
 rm -f "$L/TRAIN_DONE_$TAG" "$L/TRAIN_FAILED_$TAG"
