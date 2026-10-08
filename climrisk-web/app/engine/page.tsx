@@ -132,7 +132,7 @@ export default function EnginePage() {
           <h2 className="heading-lg grad-text mb-4">See how we screen 10,000 assets in seconds.</h2>
           <div className="flex flex-wrap items-center justify-center gap-4 mt-4">
             <Link href="/contact" className="btn-primary">Book a Technical Demo</Link>
-            <Link href="/platform" className="btn-ghost">See the five tools built on this engine</Link>
+            <Link href="/platform" className="btn-ghost">See the six tools built on this engine</Link>
             <Link href="/methodology" className="btn-ghost">Read the full methodology</Link>
           </div>
         </Reveal>
