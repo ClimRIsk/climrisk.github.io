@@ -89,6 +89,19 @@ body {
   box-shadow: 0 16px 40px rgba(0,0,0,0.35), 0 0 0 1px rgba(212,175,55,0.08);
 }
 
+/* Isolation treatment for the one element on a page that should read as
+   genuinely different, not another card in the same rhythm (Von Restorff
+   effect — distinctiveness only registers when most things stay uniform,
+   so this is used sparingly, by design, not on every panel). */
+@keyframes livePulseGlow {
+  0%, 100% { box-shadow: 0 0 0 1px rgba(212,175,55,0.18), 0 0 36px rgba(212,175,55,0.10); }
+  50%      { box-shadow: 0 0 0 1px rgba(212,175,55,0.32), 0 0 54px rgba(212,175,55,0.18); }
+}
+.panel-live {
+  border-color: rgba(212,175,55,0.22);
+  animation: livePulseGlow 4.5s ease-in-out infinite;
+}
+
 /* Gold accent rule */
 .gold-rule {
   display: block;

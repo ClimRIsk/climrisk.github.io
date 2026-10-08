@@ -60,7 +60,11 @@ export default function LiveAssessWidget() {
   const maxLoss = scen ? Math.max(1, ...Object.values(scen).map((s: any) => s.p95 || 0)) : 1;
 
   return (
-    <div className="panel p-6 md:p-8">
+    <div className="panel panel-live p-6 md:p-8">
+      <div className="hero-drift inline-flex items-center gap-2 text-xs font-mono text-gold-200 border border-white/8 rounded-full px-3 py-1.5 mb-5">
+        <span className="w-1.5 h-1.5 rounded-full bg-terminal" style={{ animation: "pulseMono 1.4s ease-in-out infinite" }} />
+        LIVE ENGINE · NOT A SAMPLE FILE
+      </div>
       <form onSubmit={(e) => { e.preventDefault(); run(); }} className="flex flex-col sm:flex-row gap-3">
         <input
           type="text"

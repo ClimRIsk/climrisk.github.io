@@ -54,12 +54,13 @@ export default function Home() {
             CRI ENGINE · NGFS PHASE 5 · IPCC AR6
           </div>
           <h1 className="hero-drift animation-delay-200 heading-xl grad-text mb-6">
-            Command Your <span className="grad-gold">Climate Exposure.</span>
+            The Climate Risk You Haven&rsquo;t Priced <span className="grad-gold">Is Still on Your Books.</span>
           </h1>
           <p className="hero-drift animation-delay-400 text-lg text-zinc-400 max-w-2xl leading-relaxed mb-10">
-            The unified risk engine for institutional portfolios. We translate live climate hazards and
-            forward-looking projections into asset-level financial exposure: Capital-at-Risk, EBITDA compression,
-            and audit-ready disclosure under TCFD, SFDR, EU Taxonomy, PCAF, TNFD, IFRS&nbsp;S2, and Basel&nbsp;III.
+            Regulators, reinsurers, and your own credit committee are moving to asset-level physical risk
+            numbers under TCFD, IFRS&nbsp;S2, and Basel&nbsp;III. The CRI Engine prices yours now &mdash;
+            Capital-at-Risk, EBITDA compression, and audit-ready disclosure under SFDR, EU Taxonomy, PCAF
+            and TNFD too &mdash; before the gap becomes someone else&rsquo;s finding.
           </p>
           <div className="hero-drift animation-delay-600 flex flex-wrap items-center gap-4">
             <Link href="/contact" className="btn-primary">
