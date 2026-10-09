@@ -1,0 +1,17 @@
+chip: Apple M2
+ram_gb: 16
+ProductName:		macOS ProductVersion:		26.6.2 BuildVersion:		25G83 
+disk free:
+/dev/disk3s5   228Gi   149Gi    52Gi    74%    1.4M  550M    0%   /System/Volumes/Data
+python3.14 -> /Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14 Python 3.14.7
+python3 -> /Library/Frameworks/Python.framework/Versions/3.14/bin/python3 Python 3.14.7
+3.14
+Current
+brew: /opt/homebrew/bin/brew
+uv: 
+ollama: /opt/homebrew/bin/ollama
+NAME          ID              SIZE      MODIFIED     
+qwen2.5:7b    845dbda0ea48    4.7 GB    20 hours ago    
+{"models":[{"name":"qwen2.5:7b","model":"qwen2.5:7b","modified_at":"2026-10-07T22:22:34.173081948+05:30","size":4683087332,"digest":"845dbda0ea48ed749caafd9e6037047aa19acfcfd82e704d7ca97d631a0b697e","details":{"parent_model":"","format":"gguf","family":"qwen2","families":["qwen2"],"parameter_size":"7.6B","quantization_level":"Q4_K_M","context_length":32768,"embedding_length":3584,"runner":"ggml"},
+arch: arm64
+done

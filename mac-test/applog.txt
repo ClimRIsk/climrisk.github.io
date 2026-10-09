@@ -1,0 +1,94 @@
+== engine.log tail
+Tile z=14 x=12371 y=7153 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=12371 y=7153 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/numpy/_core/fromnumeric.py:3862: RuntimeWarning: Mean of empty slice
+  return _methods._mean(a, axis=axis, dtype=dtype,
+/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/numpy/_core/_methods.py:142: RuntimeWarning: invalid value encountered in scalar divide
+  ret = ret.dtype.type(ret / rcount)
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/terrain/hand.py:168: RuntimeWarning: Mean of empty slice
+  "share_below_3m": round(float((e < 3.0).mean()), 3),
+Tile z=14 x=11506 y=7313 attempt 1 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11507 y=7313 attempt 1 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11506 y=7313 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11507 y=7313 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11506 y=7313 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11507 y=7313 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11506 y=7313 attempt 1 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11506 y=7313 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11506 y=7313 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11507 y=7313 attempt 1 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11507 y=7313 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=14 x=11507 y=7313 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/asset_twin.py:324: RuntimeWarning: All-NaN slice encountered
+  z = np.where(np.isfinite(z), z, np.nanmedian(z))
+Sentinel-1 water history failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: self-signed certificate in certificate chain (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 attempt 1 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 attempt 1 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 attempt 1 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 attempt 1 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 attempt 2 failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+Tile z=12 x=2876 y=1828 permanently failed: <urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1082)>
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/hydraulics.py:287: RuntimeWarning: All-NaN slice encountered
+  med = np.nanmedian(vals, axis=1)
+
+── 2026-10-07T15:37:33.735Z starting engine on http://127.0.0.1:61376 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+
+── 2026-10-07T15:37:54.054Z starting engine on http://127.0.0.1:61418 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+apscheduler not installed — daily monitoring disabled. Run: pip install apscheduler
+pysheds failed for Ramco Cements Tulukkapatti Cement Plant: module 'numpy' has no attribute 'in1d' — acc metrics will be 0
+Sentinel-1 water history failed: The read operation timed out
+pysheds failed for Ramco Cements Tulukkapatti Cement Plant: module 'numpy' has no attribute 'in1d' — acc metrics will be 0
+pysheds failed for RamCements Jayanthipuram Cement Plant: module 'numpy' has no attribute 'in1d' — acc metrics will be 0
+
+── 2026-10-08T09:28:18.706Z starting engine on http://127.0.0.1:59594 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+apscheduler not installed — daily monitoring disabled. Run: pip install apscheduler
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/hydraulics.py:287: RuntimeWarning: All-NaN slice encountered
+  med = np.nanmedian(vals, axis=1)
+
+── 2026-10-08T09:41:16.554Z starting engine on http://127.0.0.1:59792 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+apscheduler not installed — daily monitoring disabled. Run: pip install apscheduler
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/hydraulics.py:287: RuntimeWarning: All-NaN slice encountered
+  med = np.nanmedian(vals, axis=1)
+
+── 2026-10-08T11:33:21.261Z starting engine on http://127.0.0.1:61342 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+
+── 2026-10-08T11:36:34.838Z starting engine on http://127.0.0.1:61570 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+== engine.env keys
+# ClimRisk local engine secrets — read only by the desktop app on this Mac.
+# Uncomment and fill in to enable the AI deep dive (free key: console.groq.com):
+# GROQ_API_KEY=<redacted>
+SSL_CERT_FILE=<redacted>
+REQUESTS_CA_BUNDLE=<redacted>
+== procs
+shrinivashdhamodharakannan 75526   0.0  0.3 469253200  49904   ??  S     5:03PM   0:00.20 /Applications/ClimRisk Intelligence.app/Contents/Frameworks/ClimRisk Intelligence Helper (GPU).app/Contents/MacOS/ClimRisk Intelli
+shrinivashdhamodharakannan 75525   0.0  0.7 1613159824 111232   ??  S     5:03PM   0:01.92 /Applications/ClimRisk Intelligence.app/Contents/MacOS/ClimRisk Intelligence
+shrinivashdhamodharakannan 21411   0.0  0.0 485700336   7328   ??  S    Wed10AM   0:00.10 /Applications/Claude.app/Contents/Frameworks/Electron Framework.framework/Helpers/chrome_crashpad_handler --no-rate-limit --monito
+shrinivashdhamodharakannan 75530   0.0  0.4 1621151168  64112   ??  S     5:03PM   0:00.10 /Applications/ClimRisk Intelligence.app/Contents/Frameworks/ClimRisk Intelligence Helper (Renderer).app/Contents/MacOS/ClimRisk I
+shrinivashdhamodharakannan 75527   0.0  0.2 469213968  32880   ??  S     5:03PM   0:00.10 /Applications/ClimRisk Intelligence.app/Contents/Frameworks/ClimRisk Intelligence Helper.app/Contents/MacOS/ClimRisk Intelligence 
+== listening
+== proxy env
+== app log dir
+/Users/shrinivashdhamodharakannan/.climrisk:
+total 8328
+drwx------   7 shrinivashdhamodharakannan  staff      224  8 Oct 15:57 .
+drwxr-x---+ 31 shrinivashdhamodharakannan  staff      992  8 Oct 17:14 ..
+drwxr-xr-x   6 shrinivashdhamodharakannan  staff      192  8 Oct 13:29 cache
+drwxr-xr-x   8 shrinivashdhamodharakannan  staff      256  7 Oct 11:45 engine-venv
+-rw-------   1 shrinivashdhamodharakannan  staff      416  8 Oct 15:10 engine.env
+drwxr-xr-x   4 shrinivashdhamodharakannan  staff      128  7 Oct 11:47 logs
+-rw-r--r--   1 shrinivashdhamodharakannan  staff  3813376  8 Oct 15:57 resident.db
+
+/Users/shrinivashdhamodharakannan/.climrisk/logs:
+total 168
+drwxr-xr-x  4 shrinivashdhamodharakannan  staff    128  7 Oct 11:47 .
+drwx------  7 shrinivashdhamodharakannan  staff    224  8 Oct 15:57 ..
+-rw-r--r--  1 shrinivashdhamodharakannan  staff  26738  8 Oct 17:06 engine.log
+-rw-r--r--  1 shrinivashdhamodharakannan  staff  54299  7 Oct 11:47 install.log
+== /Users/shrinivashdhamodharakannan/Library/Logs/ClimRisk Intelligence/*.log
+done

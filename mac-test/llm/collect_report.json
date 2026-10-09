@@ -1,0 +1,185 @@
+{
+ "sources_ok": 134,
+ "sources_failed": [
+  {
+   "url": "https://www.nhc.noaa.gov/surge/slosh.php",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.nhc.noaa.gov/prepare/ready.php",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://www.weather.gov/safety/flood-states",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.usgs.gov/special-topics/water-science-school/science/100-year-flood",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://www.usgs.gov/special-topics/water-science-school/science/floods-and-flooding",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://www.usgs.gov/programs/landslide-hazards/landslides-101",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://www.fema.gov/flood-maps/know-your-risk",
+   "why": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  {
+   "url": "https://www.fema.gov/glossary/flood-insurance-rate-map",
+   "why": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  {
+   "url": "https://www.fema.gov/glossary/base-flood-elevation",
+   "why": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  {
+   "url": "https://www.fema.gov/flood-insurance/risk/risk-rating",
+   "why": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  {
+   "url": "https://www.fema.gov/emergency-managers/practitioners/hazus",
+   "why": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  {
+   "url": "https://www.climate.gov/maps-data/climate-data-primer/predicting-climate/climate-models",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://www.epa.gov/environmental-economics/scghg",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climateimpacts/climate-change-impacts-society",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climateimpacts/climate-change-impacts-energy",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climateimpacts/climate-change-impacts-water-resources",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32022L2464",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32023R0956",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://eur-lex.europa.eu/legal-content/EN/TXT/HTML/?uri=CELEX:32020R0852",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://oasislmf.github.io/",
+   "why": "no readable text"
+  },
+  {
+   "url": "https://www.weather.gov/safety/flood-turn-around",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://science.nasa.gov/climate-change/global-warming-vs-climate-change/",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climate-indicators/climate-change-indicators-sea-level",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climate-indicators/climate-change-indicators-coastal-flooding",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climate-indicators/climate-change-indicators-heavy-precipitation",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climate-indicators/climate-change-indicators-river-flooding",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climate-indicators/climate-change-indicators-drought",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climate-indicators/climate-change-indicators-wildfires",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climate-indicators/climate-change-indicators-high-and-low-temperatures",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "https://www.epa.gov/climate-indicators/climate-change-indicators-tropical-cyclone-activity",
+   "why": "HTTPError: HTTP Error 404: Not Found"
+  },
+  {
+   "url": "Excess of loss reinsurance",
+   "why": "missing"
+  },
+  {
+   "url": "Exceedance probability",
+   "why": "missing"
+  },
+  {
+   "url": "Natural disaster risk reduction",
+   "why": "missing"
+  },
+  {
+   "url": "Damage function",
+   "why": "missing"
+  },
+  {
+   "url": "Hazus",
+   "why": "missing"
+  },
+  {
+   "url": "Holland model",
+   "why": "missing"
+  },
+  {
+   "url": "International Best Track Archive for Climate Stewardship",
+   "why": "missing"
+  },
+  {
+   "url": "Height Above Nearest Drainage",
+   "why": "missing"
+  },
+  {
+   "url": "Fragility curve",
+   "why": "missing"
+  },
+  {
+   "url": "IFRS Sustainability Disclosure Standards",
+   "why": "missing"
+  },
+  {
+   "url": "Climate-related financial risk",
+   "why": "missing"
+  },
+  {
+   "url": "Greenhouse Gas Protocol",
+   "why": "missing"
+  },
+  {
+   "url": "ISO 14040",
+   "why": "missing"
+  }
+ ],
+ "passages_train": 356,
+ "passages_retrieval_only": 1729,
+ "by_topic": {
+  "hazard": 100,
+  "scenario": 198,
+  "disclosure": 47,
+  "insurance": 11
+ }
+}

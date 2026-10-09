@@ -1,0 +1,351 @@
+{
+ "katrina-2005": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 39
+ },
+ "sandy-2012": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 61
+ },
+ "harvey-2017": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 62
+ },
+ "irma-2017": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 63
+ },
+ "maria-2017": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 46
+ },
+ "florence-2018": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 49
+ },
+ "michael-2018": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 60
+ },
+ "dorian-2019": {
+  "hits": 240,
+  "docs_tried": 140,
+  "docs_with_quotes": 59
+ },
+ "laura-2020": {
+  "hits": 230,
+  "docs_tried": 140,
+  "docs_with_quotes": 61
+ },
+ "ida-2021": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 81
+ },
+ "ian-2022": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 78
+ },
+ "idalia-2023": {
+  "hits": 36,
+  "docs_tried": 36,
+  "docs_with_quotes": 9
+ },
+ "beryl-2024": {
+  "hits": 144,
+  "docs_tried": 140,
+  "docs_with_quotes": 52
+ },
+ "helene-2024": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 65
+ },
+ "milton-2024": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 60
+ },
+ "uri-2021": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 87
+ },
+ "elliott-2022": {
+  "hits": 135,
+  "docs_tried": 135,
+  "docs_with_quotes": 49
+ },
+ "derecho-2020": {
+  "hits": 173,
+  "docs_tried": 140,
+  "docs_with_quotes": 29
+ },
+ "camp-2018": {
+  "hits": 86,
+  "docs_tried": 86,
+  "docs_with_quotes": 32
+ },
+ "tubbs-2017": {
+  "hits": 18,
+  "docs_tried": 18,
+  "docs_with_quotes": 5
+ },
+ "marshall-2021": {
+  "hits": 13,
+  "docs_tried": 13,
+  "docs_with_quotes": 1
+ },
+ "maui-2023": {
+  "hits": 141,
+  "docs_tried": 140,
+  "docs_with_quotes": 53
+ },
+ "la-fires-2025": {
+  "hits": 34,
+  "docs_tried": 34,
+  "docs_with_quotes": 4
+ },
+ "mcmurray-2016": {
+  "hits": 15,
+  "docs_tried": 15,
+  "docs_with_quotes": 5
+ },
+ "thailand-2011": {
+  "hits": 141,
+  "docs_tried": 140,
+  "docs_with_quotes": 29
+ },
+ "jebi-2018": {
+  "hits": 71,
+  "docs_tried": 71,
+  "docs_with_quotes": 40
+ },
+ "europe-floods-2021": {
+  "hits": 42,
+  "docs_tried": 42,
+  "docs_with_quotes": 25
+ },
+ "alberta-2013": {
+  "hits": 7,
+  "docs_tried": 7,
+  "docs_with_quotes": 5
+ },
+ "calgary-hail-2020": {
+  "error": "no hits"
+ },
+ "australia-floods-2022": {
+  "hits": 14,
+  "docs_tried": 14,
+  "docs_with_quotes": 8
+ },
+ "gabrielle-2023": {
+  "hits": 28,
+  "docs_tried": 28,
+  "docs_with_quotes": 15
+ },
+ "idai-2019": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "mississippi-2022": {
+  "error": "no hits"
+ },
+ "rhine-2018": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 0
+ },
+ "panama-2023": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 0
+ },
+ "heat-dome-2021": {
+  "error": "no hits"
+ },
+ "tx-hail-2023": {
+  "hits": 9,
+  "docs_tried": 9,
+  "docs_with_quotes": 3
+ },
+ "matthew-2016": {
+  "hits": 100,
+  "docs_tried": 100,
+  "docs_with_quotes": 44
+ },
+ "harvey-flood-ins": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 0
+ },
+ "ike-2008": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 28
+ },
+ "gustav-2008": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 12
+ },
+ "rita-2005": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 29
+ },
+ "wilma-2005": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 35
+ },
+ "irene-2011": {
+  "hits": 200,
+  "docs_tried": 140,
+  "docs_with_quotes": 43
+ },
+ "isaac-2012": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 43
+ },
+ "isaias-2020": {
+  "hits": 122,
+  "docs_tried": 122,
+  "docs_with_quotes": 43
+ },
+ "sally-2020": {
+  "hits": 43,
+  "docs_tried": 43,
+  "docs_with_quotes": 25
+ },
+ "delta-2020": {
+  "hits": 65,
+  "docs_tried": 65,
+  "docs_with_quotes": 22
+ },
+ "zeta-2020": {
+  "hits": 36,
+  "docs_tried": 36,
+  "docs_with_quotes": 19
+ },
+ "fiona-2022": {
+  "hits": 53,
+  "docs_tried": 53,
+  "docs_with_quotes": 15
+ },
+ "nicole-2022": {
+  "hits": 22,
+  "docs_tried": 22,
+  "docs_with_quotes": 4
+ },
+ "imelda-2019": {
+  "hits": 34,
+  "docs_tried": 34,
+  "docs_with_quotes": 12
+ },
+ "allison-2001": {
+  "hits": 88,
+  "docs_tried": 88,
+  "docs_with_quotes": 5
+ },
+ "colorado-2013": {
+  "hits": 4,
+  "docs_tried": 4,
+  "docs_with_quotes": 1
+ },
+ "midwest-2019": {
+  "hits": 15,
+  "docs_tried": 15,
+  "docs_with_quotes": 5
+ },
+ "tornado-2011": {
+  "hits": 9,
+  "docs_tried": 9,
+  "docs_with_quotes": 4
+ },
+ "joplin-2011": {
+  "hits": 4,
+  "docs_tried": 4,
+  "docs_with_quotes": 0
+ },
+ "tx-freeze-2011": {
+  "error": "no hits"
+ },
+ "polar-vortex-2014": {
+  "hits": 104,
+  "docs_tried": 104,
+  "docs_with_quotes": 8
+ },
+ "drought-2012": {
+  "hits": 56,
+  "docs_tried": 56,
+  "docs_with_quotes": 8
+ },
+ "drought-california": {
+  "hits": 151,
+  "docs_tried": 140,
+  "docs_with_quotes": 43
+ },
+ "woolsey-2018": {
+  "hits": 17,
+  "docs_tried": 17,
+  "docs_with_quotes": 11
+ },
+ "dixie-2021": {
+  "hits": 19,
+  "docs_tried": 19,
+  "docs_with_quotes": 9
+ },
+ "psps-2019": {
+  "hits": 46,
+  "docs_tried": 46,
+  "docs_with_quotes": 4
+ },
+ "canada-fires-2023": {
+  "hits": 16,
+  "docs_tried": 16,
+  "docs_with_quotes": 1
+ },
+ "australia-bushfire": {
+  "hits": 4,
+  "docs_tried": 4,
+  "docs_with_quotes": 0
+ },
+ "kenya-drought": {
+  "error": "no hits"
+ },
+ "india-heatwave-2022": {
+  "hits": 5,
+  "docs_tried": 5,
+  "docs_with_quotes": 1
+ },
+ "europe-heat-2022": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "china-drought-2022": {
+  "error": "no hits"
+ },
+ "pakistan-floods-2022": {
+  "error": "no hits"
+ },
+ "germany-hail": {
+  "hits": 29,
+  "docs_tried": 29,
+  "docs_with_quotes": 8
+ },
+ "cat-losses-generic": {
+  "hits": 12,
+  "docs_tried": 12,
+  "docs_with_quotes": 0
+ }
+}

@@ -1,0 +1,86 @@
+pid=76075
+  PID  PPID STAT ELAPSED  %CPU COMMAND
+76075 75525 S      00:26   0.0 /Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m uvicorn cri.api.main:app --host 127.0.0.1 --port 61845 --workers 1 --log-level warning
+== env of proc (keys)
+PATH=/usr/bin:/bin:/usr/sbin:/sbin
+SSL_CERT_FILE=/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/certifi/cacert.pem
+REQUESTS_CA_BUNDLE=/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/certifi/cacert.pem
+CRI_API_KEYS=<redacted>
+CRI_CACHE_DIR=/Users/shrinivashdhamodharakannan/.climrisk/cache
+PYTHONUNBUFFERED=1
+CLIMRISK_LOCAL=1
+== lsof
+COMMAND   PID                       USER   FD   TYPE             DEVICE SIZE/OFF                NODE NAME
+Python  76075 shrinivashdhamodharakannan  cwd    DIR               1,18      704                   2 /
+Python  76075 shrinivashdhamodharakannan  txt    REG               1,18  2562000 1152921500312573255 /usr/lib/dyld
+Python  76075 shrinivashdhamodharakannan    0r   CHR                3,2      0t0                 336 /dev/null
+Python  76075 shrinivashdhamodharakannan    1u  unix 0xc2b04f03673b7e9e      0t0                     ->0x2e6202642e14c09f
+Python  76075 shrinivashdhamodharakannan    2u  unix 0xd42c6f05b2146889      0t0                     ->0xa8c0b4598f2eb09c
+== sample
+Sampling process 76075 for 3 seconds with 1 millisecond of run time between samples
+Sampling completed, processing symbols...
+Analysis of sampling Python (pid 76075) every 1 millisecond
+Process:         Python [76075]
+Path:            /Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python
+Load Address:    0x100d70000
+Identifier:      org.python.python
+Version:         3.14.7 (3.14.7)
+Code Type:       ARM64
+Platform:        macOS
+Parent Process:  ClimRisk Intelligence [75525]
+Target Type:     live task
+
+Date/Time:       2026-10-08 17:15:03.528 +0530
+Launch Time:     2026-10-08 17:14:38.000 +0530
+OS Version:      macOS 26.6.2 (25G83)
+Report Version:  7
+Analysis Tool:   /usr/bin/sample
+
+Physical footprint:         5744K
+Physical footprint (peak):  5776K
+Idle exit:                  untracked
+----
+
+Call graph:
+    2581 Thread_8170183   DispatchQueue_1: com.apple.main-thread  (serial)
+      2581 start  (in dyld) + 6992  [0x18a06c4e4]
+        2581 Py_BytesMain  (in Python) + 44  [0x102042e10]
+          2581 pymain_main  (in Python) + 420  [0x102042c50]
+            2581 Py_InitializeFromConfig  (in Python) + 1576  [0x101fff82c]
+              2581 init_interp_main  (in Python) + 4580  [0x1020059f4]
+                2581 PyImport_Import  (in Python) + 260  [0x101fc44a4]
+                  2581 PyObject_CallFunction  (in Python) + 324  [0x101d83ba8]
+                    2581 builtin___import__  (in Python) + 260  [0x101ef2bec]
+                      2581 PyImport_ImportModuleLevelObject  (in Python) + 9032  [0x101fc6b5c]
+                        2581 import_find_and_load  (in Python) + 540  [0x101fc7250]
+                          2581 PyObject_CallMethodObjArgs  (in Python) + 116  [0x101d8545c]
+                            2581 object_vacall  (in Python) + 224  [0x101d855ec]
+                              2581 _PyObject_VectorcallTstate.831  (in Python) + 80  [0x101d81b20]
+                                2581 _PyEval_Vector  (in Python) + 568  [0x101efa1a8]
+                                  2581 _PyEval_EvalFrameDefault  (in Python) + 93508  [0x101f13afc]
+                                    2581 builtin_exec  (in Python) + 364  [0x101ef4548]
+                                      2581 PyEval_EvalCode  (in Python) + 160  [0x101ef9ecc]
+                                        2581 _PyEval_Vector  (in Python) + 568  [0x101efa1a8]
+                                          2581 _PyEval_EvalFrameDefault  (in Python) + 239040  [0x101f37378]
+                                            2581 PyImport_ImportModuleLevelObject  (in Python) + 9032  [0x101fc6b5c]
+                                              2581 import_find_and_load  (in Python) + 540  [0x101fc7250]
+                                                2581 PyObject_CallMethodObjArgs  (in Python) + 116  [0x101d8545c]
+                                                  2581 object_vacall  (in Python) + 224  [0x101d855ec]
+                                                    2581 _PyObject_VectorcallTstate.831  (in Python) + 80  [0x101d81b20]
+                                                      2581 _PyEval_Vector  (in Python) + 568  [0x101efa1a8]
+                                                        2581 _PyEval_EvalFrameDefault  (in Python) + 93508  [0x101f13afc]
+                                                          2581 os_listdir  (in Python) + 276  [0x10204ba50]
+                                                            2581 __opendir2  (in libsystem_c.dylib) + 44  [0x18a3160c4]
+                                                              2581 open$NOCANCEL  (in libsystem_kernel.dylib) + 64  [0x18a408c64]
+                                                                2581 __open_nocancel  (in libsystem_kernel.dylib) + 8  [0x18a3f4948]
+
+Total number in stack (recursive counted multiple, when >=5):
+
+Sort by top of stack, same collapsed (when >= 5):
+== log tail
+── 2026-10-08T11:33:21.261Z starting engine on http://127.0.0.1:61342 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+
+── 2026-10-08T11:36:34.838Z starting engine on http://127.0.0.1:61570 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+
+── 2026-10-08T11:44:37.999Z starting engine on http://127.0.0.1:61845 (/Users/shrinivashdhamodharakannan/.climrisk/engine-venv/bin/python)
+done

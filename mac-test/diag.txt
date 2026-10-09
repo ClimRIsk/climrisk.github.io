@@ -1,0 +1,27 @@
+== where cri comes from (no PYTHONPATH)
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/__init__.py 0.8.0
+
+real	0m0.283s
+user	0m0.113s
+sys	0m0.047s
+== import main
+ok
+
+real	0m1.089s
+user	0m0.700s
+sys	0m0.136s
+healthy after 2 s
+== uvicorn log
+INFO:     Started server process [75926]
+INFO:     Waiting for application startup.
+apscheduler not installed — daily monitoring disabled. Run: pip install apscheduler
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:61998 (Press CTRL+C to quit)
+INFO:     127.0.0.1:61829 - "GET /health HTTP/1.1" 200 OK
+== pip show
+cri                0.8.0       /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine
+fastapi            0.141.1
+numpy              2.5.3
+uvicorn            0.54.0
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/mac-test/Diag-Engine-Mac.command: line 22: 75926 Terminated: 15          CRI_API_KEYS=diagtoken PYTHONUNBUFFERED=1 CLIMRISK_LOCAL=1 "$PY" -m uvicorn cri.api.main:app --host 127.0.0.1 --port $PORT --workers 1 --log-level info > "$HERE/diag-uvicorn.txt" 2>&1
+done

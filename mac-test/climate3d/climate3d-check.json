@@ -1,0 +1,370 @@
+[
+ {
+  "site": "Chattogram",
+  "scenarios": [
+   [
+    "river_10",
+    0.0
+   ],
+   [
+    "river_20",
+    0.0
+   ],
+   [
+    "river_50",
+    0.0
+   ],
+   [
+    "river_75",
+    0.0
+   ],
+   [
+    "river_100",
+    0.0
+   ],
+   [
+    "river_200",
+    0.0
+   ],
+   [
+    "river_500",
+    0.0
+   ]
+  ],
+  "build_s": 35,
+  "runs": [
+   {
+    "ssp": "ssp245",
+    "year": 2050,
+    "band": "median",
+    "scenario": "river_100",
+    "add_m": 0.04,
+    "wind_scale": 1.022,
+    "now": {
+     "equipment_inundated": 1,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 1,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.0663681204596909,
+    "sea_median": 0.12660000000000002,
+    "secs": 15
+   },
+   {
+    "ssp": "ssp585",
+    "year": 2070,
+    "band": "median",
+    "scenario": "river_100",
+    "add_m": 0.08,
+    "wind_scale": 1.065,
+    "now": {
+     "equipment_inundated": 1,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 1,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.1422552172362597,
+    "sea_median": 0.3092,
+    "secs": 6
+   },
+   {
+    "ssp": "ssp585",
+    "year": 2090,
+    "band": "high",
+    "scenario": "river_100",
+    "add_m": 0.23,
+    "wind_scale": 1.177,
+    "now": {
+     "equipment_inundated": 1,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 1,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.1701172528475932,
+    "sea_median": 0.5532,
+    "secs": 6
+   }
+  ]
+ },
+ {
+  "site": "Houston",
+  "scenarios": [
+   [
+    "river_10",
+    1.99
+   ],
+   [
+    "river_20",
+    2.09
+   ],
+   [
+    "river_50",
+    2.19
+   ],
+   [
+    "river_75",
+    2.23
+   ],
+   [
+    "river_100",
+    2.26
+   ],
+   [
+    "river_200",
+    2.32
+   ],
+   [
+    "river_500",
+    2.41
+   ],
+   [
+    "coastal_2018_10",
+    0.0
+   ],
+   [
+    "coastal_2018_100",
+    0.0
+   ],
+   [
+    "coastal_2018_25",
+    0.0
+   ],
+   [
+    "coastal_2018_250",
+    0.0
+   ],
+   [
+    "coastal_2018_50",
+    0.0
+   ],
+   [
+    "coastal_2050_10",
+    0.0
+   ],
+   [
+    "coastal_2050_100",
+    0.0
+   ],
+   [
+    "coastal_2050_25",
+    0.0
+   ],
+   [
+    "coastal_2050_250",
+    0.0
+   ],
+   [
+    "coastal_2050_50",
+    0.0
+   ]
+  ],
+  "build_s": 17,
+  "runs": [
+   {
+    "ssp": "ssp245",
+    "year": 2050,
+    "band": "median",
+    "scenario": "coastal_2018_100",
+    "add_m": 0.29,
+    "wind_scale": 1.022,
+    "now": {
+     "equipment_inundated": 0,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 0,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.0224136156275987,
+    "sea_median": 0.2852,
+    "secs": 12
+   },
+   {
+    "ssp": "ssp585",
+    "year": 2070,
+    "band": "median",
+    "scenario": "coastal_2018_100",
+    "add_m": 0.55,
+    "wind_scale": 1.065,
+    "now": {
+     "equipment_inundated": 0,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 0,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.043184933552268,
+    "sea_median": 0.5548000000000001,
+    "secs": 0
+   },
+   {
+    "ssp": "ssp585",
+    "year": 2090,
+    "band": "high",
+    "scenario": "coastal_2018_100",
+    "add_m": 1.11,
+    "wind_scale": 1.177,
+    "now": {
+     "equipment_inundated": 0,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 0,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.0883294259030307,
+    "sea_median": 0.8694666666666666,
+    "secs": 0
+   }
+  ]
+ },
+ {
+  "site": "Rotterdam",
+  "scenarios": [
+   [
+    "river_10",
+    0.0
+   ],
+   [
+    "river_20",
+    0.0
+   ],
+   [
+    "river_50",
+    0.0
+   ],
+   [
+    "river_75",
+    0.0
+   ],
+   [
+    "river_100",
+    0.0
+   ],
+   [
+    "river_200",
+    0.0
+   ],
+   [
+    "river_500",
+    0.0
+   ],
+   [
+    "coastal_2018_10",
+    0.0
+   ],
+   [
+    "coastal_2018_100",
+    0.05
+   ],
+   [
+    "coastal_2018_25",
+    0.0
+   ],
+   [
+    "coastal_2018_250",
+    0.09
+   ],
+   [
+    "coastal_2018_50",
+    0.03
+   ],
+   [
+    "coastal_2050_10",
+    0.0
+   ],
+   [
+    "coastal_2050_100",
+    0.08
+   ],
+   [
+    "coastal_2050_25",
+    0.03
+   ],
+   [
+    "coastal_2050_250",
+    0.12
+   ],
+   [
+    "coastal_2050_50",
+    0.05
+   ]
+  ],
+  "build_s": 27,
+  "runs": [
+   {
+    "ssp": "ssp245",
+    "year": 2050,
+    "band": "median",
+    "scenario": "coastal_2018_100",
+    "add_m": 0.17,
+    "wind_scale": 1.0,
+    "now": {
+     "equipment_inundated": 0,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 0,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.0840225612369525,
+    "sea_median": 0.1738,
+    "secs": 37
+   },
+   {
+    "ssp": "ssp585",
+    "year": 2070,
+    "band": "median",
+    "scenario": "coastal_2018_100",
+    "add_m": 0.37,
+    "wind_scale": 1.0,
+    "now": {
+     "equipment_inundated": 0,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 0,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.1178136924908846,
+    "sea_median": 0.3668,
+    "secs": 17
+   },
+   {
+    "ssp": "ssp585",
+    "year": 2090,
+    "band": "high",
+    "scenario": "coastal_2018_100",
+    "add_m": 0.84,
+    "wind_scale": 1.0,
+    "now": {
+     "equipment_inundated": 0,
+     "wet": 0
+    },
+    "future": {
+     "equipment_inundated": 1,
+     "wet": 0,
+     "solver": true
+    },
+    "rain_median": 1.1548928859027403,
+    "sea_median": 0.6121333333333333,
+    "secs": 18
+   }
+  ]
+ }
+]

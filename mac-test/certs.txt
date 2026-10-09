@@ -1,0 +1,9 @@
+bundle: /Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/certifi/cacert.pem
+engine.env keys:
+# ClimRisk local engine secrets — read only by the desktop app on this Mac.
+# Uncomment and fill in to enable the AI deep dive (free key: console.groq.com):
+# GROQ_API_KEY
+SSL_CERT_FILE
+REQUESTS_CA_BUNDLE
+urllib.error.HTTPError: HTTP Error 406: Not Acceptable
+done

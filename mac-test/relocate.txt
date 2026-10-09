@@ -1,0 +1,8 @@
+synced: 331M
+cri from /Users/shrinivashdhamodharakannan/.climrisk/engine-src/src/cri/__init__.py
+main ok
+
+real	0m1.806s
+user	0m1.375s
+sys	0m0.216s
+done

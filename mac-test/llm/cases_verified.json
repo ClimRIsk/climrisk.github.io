@@ -1,0 +1,774 @@
+{
+ "pge-2019#src0": {
+  "fetch": "URLError"
+ },
+ "pge-2019#0": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "pge-2019#1": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "pge-2019#2": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "pge-2019#3": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "pge-2019#4": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "orsted-2023#src0": {
+  "fetch": "URLError"
+ },
+ "orsted-2023#src1": {
+  "fetch": "URLError"
+ },
+ "orsted-2023#0": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "orsted-2023#1": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "orsted-2023#2": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "orsted-2023#3": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "orsted-2023#4": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "orsted-2023#5": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "basf-rhine-2018#src0": {
+  "fetch": "URLError"
+ },
+ "basf-rhine-2018#src1": {
+  "fetch": "URLError"
+ },
+ "basf-rhine-2018#src2": {
+  "fetch": "URLError"
+ },
+ "basf-rhine-2018#0": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "basf-rhine-2018#1": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "basf-rhine-2018#2": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "basf-rhine-2018#3": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "basf-rhine-2018#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "basf-rhine-2018#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "uri-2021#src0": {
+  "fetch": "URLError"
+ },
+ "uri-2021#src1": {
+  "fetch": "URLError"
+ },
+ "uri-2021#src2": {
+  "fetch": "URLError"
+ },
+ "uri-2021#0": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "uri-2021#1": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "uri-2021#2": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "uri-2021#3": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "uri-2021#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "uri-2021#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "uri-2021#6": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "thailand-2011#src0": {
+  "fetch": "URLError"
+ },
+ "thailand-2011#src1": {
+  "fetch": "URLError"
+ },
+ "thailand-2011#src2": {
+  "fetch": "URLError"
+ },
+ "thailand-2011#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "thailand-2011#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "thailand-2011#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "thailand-2011#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "thailand-2011#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "thailand-2011#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "thailand-2011#6": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ian-2022#src0": {
+  "fetch": "URLError"
+ },
+ "ian-2022#src1": {
+  "fetch": "URLError"
+ },
+ "ian-2022#src2": {
+  "fetch": "URLError"
+ },
+ "ian-2022#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ian-2022#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ian-2022#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ian-2022#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ian-2022#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ian-2022#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "jebi-2018#src0": {
+  "fetch": "URLError"
+ },
+ "jebi-2018#src1": {
+  "fetch": "URLError"
+ },
+ "jebi-2018#src2": {
+  "fetch": "URLError"
+ },
+ "jebi-2018#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "jebi-2018#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "jebi-2018#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "jebi-2018#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "jebi-2018#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "jebi-2018#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ahr-2021#src0": {
+  "fetch": "URLError"
+ },
+ "ahr-2021#src1": {
+  "fetch": "URLError"
+ },
+ "ahr-2021#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ahr-2021#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ahr-2021#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ahr-2021#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ahr-2021#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maui-2023#src0": {
+  "fetch": "URLError"
+ },
+ "maui-2023#src1": {
+  "fetch": "URLError"
+ },
+ "maui-2023#src2": {
+  "fetch": "URLError"
+ },
+ "maui-2023#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maui-2023#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maui-2023#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maui-2023#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maui-2023#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maui-2023#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maui-2023#6": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "eaton-2025#src0": {
+  "fetch": "URLError"
+ },
+ "eaton-2025#src1": {
+  "fetch": "URLError"
+ },
+ "eaton-2025#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "eaton-2025#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "eaton-2025#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "eaton-2025#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "eaton-2025#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "eaton-2025#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ca-insurers-2023#src0": {
+  "fetch": "URLError"
+ },
+ "ca-insurers-2023#src1": {
+  "fetch": "URLError"
+ },
+ "ca-insurers-2023#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ca-insurers-2023#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ca-insurers-2023#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "ca-insurers-2023#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "panama-2023#src0": {
+  "fetch": "URLError"
+ },
+ "panama-2023#src1": {
+  "fetch": "URLError"
+ },
+ "panama-2023#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "panama-2023#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "panama-2023#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "panama-2023#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "panama-2023#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "panama-2023#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "edf-2022#src0": {
+  "fetch": "URLError"
+ },
+ "edf-2022#src1": {
+  "fetch": "URLError"
+ },
+ "edf-2022#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "edf-2022#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "edf-2022#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "edf-2022#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "edf-2022#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "tsmc-2021#src0": {
+  "fetch": "URLError"
+ },
+ "tsmc-2021#src1": {
+  "fetch": "URLError"
+ },
+ "tsmc-2021#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "tsmc-2021#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "tsmc-2021#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "tsmc-2021#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "kariba-2024#src0": {
+  "fetch": "URLError"
+ },
+ "kariba-2024#src1": {
+  "fetch": "URLError"
+ },
+ "kariba-2024#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "kariba-2024#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "kariba-2024#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "kariba-2024#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "kariba-2024#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "kariba-2024#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "suncorp-iag-2022#src0": {
+  "fetch": "URLError"
+ },
+ "suncorp-iag-2022#src1": {
+  "fetch": "URLError"
+ },
+ "suncorp-iag-2022#src2": {
+  "fetch": "URLError"
+ },
+ "suncorp-iag-2022#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "suncorp-iag-2022#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "suncorp-iag-2022#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "suncorp-iag-2022#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "suncorp-iag-2022#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "suncorp-iag-2022#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "chennai-2015#src0": {
+  "fetch": "URLError"
+ },
+ "chennai-2015#src1": {
+  "fetch": "URLError"
+ },
+ "chennai-2015#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "chennai-2015#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "chennai-2015#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "chennai-2015#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "valencia-2024#src0": {
+  "fetch": "URLError"
+ },
+ "valencia-2024#src1": {
+  "fetch": "URLError"
+ },
+ "valencia-2024#src2": {
+  "fetch": "URLError"
+ },
+ "valencia-2024#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "valencia-2024#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "valencia-2024#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "valencia-2024#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "valencia-2024#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "valencia-2024#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "idai-2019#src0": {
+  "fetch": "URLError"
+ },
+ "idai-2019#src1": {
+  "fetch": "URLError"
+ },
+ "idai-2019#src2": {
+  "fetch": "URLError"
+ },
+ "idai-2019#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "idai-2019#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "idai-2019#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "idai-2019#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "rs-brazil-2024#src0": {
+  "fetch": "URLError"
+ },
+ "rs-brazil-2024#src1": {
+  "fetch": "URLError"
+ },
+ "rs-brazil-2024#src2": {
+  "fetch": "URLError"
+ },
+ "rs-brazil-2024#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "rs-brazil-2024#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "rs-brazil-2024#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "rs-brazil-2024#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "rs-brazil-2024#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "rs-brazil-2024#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "rs-brazil-2024#6": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "pakistan-2022#src0": {
+  "fetch": "URLError"
+ },
+ "pakistan-2022#src1": {
+  "fetch": "URLError"
+ },
+ "pakistan-2022#src2": {
+  "fetch": "URLError"
+ },
+ "pakistan-2022#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "pakistan-2022#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "pakistan-2022#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "pakistan-2022#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "pakistan-2022#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "pakistan-2022#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "harvey-arkema-2017#src0": {
+  "fetch": "URLError"
+ },
+ "harvey-arkema-2017#src1": {
+  "fetch": "URLError"
+ },
+ "harvey-arkema-2017#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "harvey-arkema-2017#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "harvey-arkema-2017#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "harvey-arkema-2017#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "harvey-arkema-2017#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maria-baxter-2017#src0": {
+  "fetch": "URLError"
+ },
+ "maria-baxter-2017#src1": {
+  "fetch": "URLError"
+ },
+ "maria-baxter-2017#src2": {
+  "fetch": "URLError"
+ },
+ "maria-baxter-2017#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maria-baxter-2017#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maria-baxter-2017#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maria-baxter-2017#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maria-baxter-2017#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "maria-baxter-2017#5": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "coal-2016#src0": {
+  "fetch": "URLError"
+ },
+ "coal-2016#src1": {
+  "fetch": "URLError"
+ },
+ "coal-2016#src2": {
+  "fetch": "URLError"
+ },
+ "coal-2016#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "coal-2016#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "coal-2016#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "coal-2016#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "coal-2016#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "shell-hague#src0": {
+  "fetch": "URLError"
+ },
+ "shell-hague#src1": {
+  "fetch": "URLError"
+ },
+ "shell-hague#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "shell-hague#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "shell-hague#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "shell-hague#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "shell-hague#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "swissre-sigma#src0": {
+  "fetch": "URLError"
+ },
+ "swissre-sigma#src1": {
+  "fetch": "URLError"
+ },
+ "swissre-sigma#0": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "swissre-sigma#1": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "swissre-sigma#2": {
+  "status": "read",
+  "why": "source page could not be fetched"
+ },
+ "swissre-sigma#3": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "swissre-sigma#4": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ }
+}

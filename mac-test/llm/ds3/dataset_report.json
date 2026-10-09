@@ -1,0 +1,34 @@
+{
+ "train": {
+  "case": 2059,
+  "chain": 186,
+  "narr": 186,
+  "insurer": 560,
+  "qa": 589,
+  "case_gap": 100,
+  "refuse": 483,
+  "gold": 144
+ },
+ "valid": {
+  "refuse": 17,
+  "insurer": 48,
+  "case": 117,
+  "narr": 18,
+  "chain": 20,
+  "qa": 7,
+  "gold": 9,
+  "case_gap": 1
+ },
+ "test": {
+  "case": 399,
+  "insurer": 64,
+  "chain": 14,
+  "refuse": 20,
+  "narr": 16,
+  "gold": 9,
+  "qa": 18,
+  "case_gap": 19
+ },
+ "passages": 255,
+ "sources": 42
+}

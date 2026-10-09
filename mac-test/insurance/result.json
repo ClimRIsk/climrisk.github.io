@@ -1,0 +1,889 @@
+{
+ "n_sites": 6,
+ "tiv": 1100000000.0,
+ "n_years": 8000,
+ "seed": 11,
+ "stats": {
+  "gross": {
+   "rows": [
+    {
+     "rp": 2,
+     "oep": 0.0,
+     "aep": 0.0,
+     "reliable": true
+    },
+    {
+     "rp": 5,
+     "oep": 0.0,
+     "aep": 0.0,
+     "reliable": true
+    },
+    {
+     "rp": 10,
+     "oep": 1501160.149797813,
+     "aep": 1501160.149797813,
+     "reliable": true
+    },
+    {
+     "rp": 20,
+     "oep": 23280156.45802017,
+     "aep": 23280156.45802017,
+     "reliable": true
+    },
+    {
+     "rp": 50,
+     "oep": 82193632.92050348,
+     "aep": 82193632.92050348,
+     "reliable": true
+    },
+    {
+     "rp": 100,
+     "oep": 143964006.42693168,
+     "aep": 143964006.42693168,
+     "reliable": true
+    },
+    {
+     "rp": 250,
+     "oep": 216765710.74008933,
+     "aep": 216765710.74008933,
+     "reliable": true
+    },
+    {
+     "rp": 500,
+     "oep": 257696746.30284616,
+     "aep": 257696746.30284616,
+     "reliable": true
+    }
+   ],
+   "aal": 4996456.854371168,
+   "std": 25263738.553564426,
+   "se": 282457.1838577613,
+   "tvar99": 211298392.08034799,
+   "tvar995": 251650512.16281947,
+   "prob_loss": 0.117125
+  },
+  "by_peril": {
+   "wind": 4807731.713215448,
+   "flood": 188725.14115571976,
+   "river": 177875.20110607147,
+   "coast": 10849.940049648285
+  },
+  "ground_up": {
+   "aal": 6305040.071919241,
+   "wind": 6073364.930763521,
+   "flood": 231675.14115571976
+  },
+  "net": {
+   "rows": [
+    {
+     "rp": 2,
+     "oep": 0.0,
+     "aep": 0.0,
+     "reliable": true
+    },
+    {
+     "rp": 5,
+     "oep": 0.0,
+     "aep": 0.0,
+     "reliable": true
+    },
+    {
+     "rp": 10,
+     "oep": 1351044.1348180317,
+     "aep": 1351044.1348180317,
+     "reliable": true
+    },
+    {
+     "rp": 20,
+     "oep": 20000000.0,
+     "aep": 20000000.0,
+     "reliable": true
+    },
+    {
+     "rp": 50,
+     "oep": 20000000.0,
+     "aep": 20000000.0,
+     "reliable": true
+    },
+    {
+     "rp": 100,
+     "oep": 69567605.7842385,
+     "aep": 69567605.7842385,
+     "reliable": true
+    },
+    {
+     "rp": 250,
+     "oep": 135089139.6660804,
+     "aep": 135089139.6660804,
+     "reliable": true
+    },
+    {
+     "rp": 500,
+     "oep": 171927071.67256153,
+     "aep": 171927071.67256153,
+     "reliable": true
+    }
+   ],
+   "aal": 2681941.3694108278,
+   "std": 14627111.990308478,
+   "se": 163536.08362416,
+   "tvar99": 130168552.87231319,
+   "tvar995": 166485460.94653755,
+   "prob_loss": 0.117125
+  },
+  "ceded_aal": 2314515.48496034
+ },
+ "sites": [
+  {
+   "name": "Plant A, Chattogram",
+   "lat": 22.2645,
+   "lon": 91.805,
+   "country": "BGD",
+   "sector": "cement",
+   "tiv": 250000000.0,
+   "deductible": 5000000.0,
+   "limit": 250000000.0,
+   "covers": [
+    "wind",
+    "flood"
+   ],
+   "ground_up_aal": 3575354.747335796,
+   "aal": 3069912.5305656344,
+   "aal_wind": 3069912.5305656344,
+   "aal_river": 0.0,
+   "aal_coast": 0.0,
+   "rate_permille": 12.28,
+   "stand_alone_1in100": 99456288.21849832,
+   "stand_alone_1in250": 146237436.11574173,
+   "tail_contribution": 143412838.1125629,
+   "capital_proxy": 140342925.58199728,
+   "technical_premium": 19472450.44024264,
+   "premium_rate_permille": 77.89,
+   "hazard": {
+    "cyclone_rate": 0.435,
+    "cyclone_rp100_ms": 61.2,
+    "river_map": true,
+    "coast_map": true,
+    "river_protection_rp": 50.0,
+    "coast_protection_rp": 50.0
+   },
+   "notes": [],
+   "climate": null
+  },
+  {
+   "name": "Port terminal, Chattogram",
+   "lat": 22.31,
+   "lon": 91.8,
+   "country": "BGD",
+   "sector": "logistics",
+   "tiv": 120000000.0,
+   "deductible": 2400000.0,
+   "limit": 120000000.0,
+   "covers": [
+    "wind",
+    "flood"
+   ],
+   "ground_up_aal": 1691286.774453296,
+   "aal": 1450553.3234048632,
+   "aal_wind": 1450553.3234048632,
+   "aal_river": 0.0,
+   "aal_coast": 0.0,
+   "rate_permille": 12.088,
+   "stand_alone_1in100": 44939756.33382799,
+   "stand_alone_1in250": 72627062.41607663,
+   "tail_contribution": 66947000.665962696,
+   "capital_proxy": 65496447.34255783,
+   "technical_premium": 9113765.924199969,
+   "premium_rate_permille": 75.948,
+   "hazard": {
+    "cyclone_rate": 0.435,
+    "cyclone_rp100_ms": 60.7,
+    "river_map": true,
+    "coast_map": true,
+    "river_protection_rp": 50.0,
+    "coast_protection_rp": 50.0
+   },
+   "notes": [],
+   "climate": null
+  },
+  {
+   "name": "Refinery, Houston",
+   "lat": 29.72,
+   "lon": -95.24,
+   "country": "USA",
+   "sector": "refining",
+   "tiv": 400000000.0,
+   "deductible": 20000000.0,
+   "limit": 400000000.0,
+   "covers": [
+    "wind",
+    "flood"
+   ],
+   "ground_up_aal": 807084.705304363,
+   "aal": 341338.0182534456,
+   "aal_wind": 163462.81714737415,
+   "aal_river": 177875.20110607147,
+   "aal_coast": 0.0,
+   "rate_permille": 0.853,
+   "stand_alone_1in100": 134235.62049868022,
+   "stand_alone_1in250": 30537060.189247034,
+   "tail_contribution": 63599.07239675522,
+   "capital_proxy": 0.0,
+   "technical_premium": 500629.093438387,
+   "premium_rate_permille": 1.252,
+   "hazard": {
+    "cyclone_rate": 0.587,
+    "cyclone_rp100_ms": 47.1,
+    "river_map": true,
+    "coast_map": true,
+    "river_protection_rp": 500.0,
+    "coast_protection_rp": 500.0
+   },
+   "notes": [],
+   "climate": null
+  },
+  {
+   "name": "Warehouse, Manila",
+   "lat": 14.6,
+   "lon": 120.98,
+   "country": "PHL",
+   "sector": "logistics",
+   "tiv": 60000000.0,
+   "deductible": 1800000.0,
+   "limit": 60000000.0,
+   "covers": [
+    "wind",
+    "flood"
+   ],
+   "ground_up_aal": 80998.79839714906,
+   "aal": 31057.950182631612,
+   "aal_wind": 31057.950182631612,
+   "aal_river": 0.0,
+   "aal_coast": 0.0,
+   "rate_permille": 0.518,
+   "stand_alone_1in100": 0.0,
+   "stand_alone_1in250": 2198555.6298494004,
+   "tail_contribution": 0.0,
+   "capital_proxy": 0.0,
+   "technical_premium": 45551.6602678597,
+   "premium_rate_permille": 0.759,
+   "hazard": {
+    "cyclone_rate": 1.043,
+    "cyclone_rp100_ms": 55.4,
+    "river_map": true,
+    "coast_map": true,
+    "river_protection_rp": 0.0,
+    "coast_protection_rp": 0.0
+   },
+   "notes": [],
+   "climate": null
+  },
+  {
+   "name": "Plant, Rotterdam",
+   "lat": 51.9,
+   "lon": 4.3,
+   "country": "NLD",
+   "sector": "chemicals",
+   "tiv": 180000000.0,
+   "deductible": 1800000.0,
+   "limit": 180000000.0,
+   "covers": [
+    "wind",
+    "flood"
+   ],
+   "ground_up_aal": 11299.940049648285,
+   "aal": 10849.940049648285,
+   "aal_wind": 0.0,
+   "aal_river": 0.0,
+   "aal_coast": 10849.940049648285,
+   "rate_permille": 0.06,
+   "stand_alone_1in100": 0.0,
+   "stand_alone_1in250": 0.0,
+   "tail_contribution": 0.0,
+   "capital_proxy": 0.0,
+   "technical_premium": 15913.24540615082,
+   "premium_rate_permille": 0.088,
+   "hazard": {
+    "cyclone_rate": 0.0,
+    "cyclone_rp100_ms": 0.0,
+    "river_map": true,
+    "coast_map": true,
+    "river_protection_rp": 10000.0,
+    "coast_protection_rp": 10000.0
+   },
+   "notes": [],
+   "climate": null
+  },
+  {
+   "name": "Plant, Kolkata",
+   "lat": 22.55,
+   "lon": 88.35,
+   "country": "IND",
+   "sector": "steel",
+   "tiv": 90000000.0,
+   "deductible": 1800000.0,
+   "limit": 90000000.0,
+   "covers": [
+    "wind",
+    "flood"
+   ],
+   "ground_up_aal": 139015.10637898894,
+   "aal": 92745.09191494435,
+   "aal_wind": 92745.09191494435,
+   "aal_river": 0.0,
+   "aal_coast": 0.0,
+   "rate_permille": 1.031,
+   "stand_alone_1in100": 1446181.5912276509,
+   "stand_alone_1in250": 7969307.944178556,
+   "tail_contribution": 874954.2294256389,
+   "capital_proxy": 782209.1375106946,
+   "technical_premium": 219461.77614305913,
+   "premium_rate_permille": 2.438,
+   "hazard": {
+    "cyclone_rate": 0.348,
+    "cyclone_rp100_ms": 39.3,
+    "river_map": true,
+    "coast_map": true,
+    "river_protection_rp": 100.0,
+    "coast_protection_rp": 100.0
+   },
+   "notes": [],
+   "climate": null
+  }
+ ],
+ "accumulation": {
+  "zones": [
+   {
+    "zone": "+22\u00b0, +92\u00b0",
+    "sites": 2,
+    "tiv": 370000000.0,
+    "aal": 4520465.853970498,
+    "worst_year_loss": 318327402.56786346,
+    "pml100": 143394826.31385326,
+    "share_of_tail": 0.995558161647224
+   },
+   {
+    "zone": "+30\u00b0, -96\u00b0",
+    "sites": 1,
+    "tiv": 400000000.0,
+    "aal": 341338.0182534456,
+    "worst_year_loss": 114243106.84204102,
+    "pml100": 134235.62049868022,
+    "share_of_tail": 0.00030099174807052547
+   },
+   {
+    "zone": "+22\u00b0, +88\u00b0",
+    "sites": 1,
+    "tiv": 90000000.0,
+    "aal": 92745.09191494435,
+    "worst_year_loss": 59311568.212509155,
+    "pml100": 1446181.5912276509,
+    "share_of_tail": 0.004140846604705492
+   },
+   {
+    "zone": "+14\u00b0, +120\u00b0",
+    "sites": 1,
+    "tiv": 60000000.0,
+    "aal": 31057.950182631612,
+    "worst_year_loss": 29177504.25338745,
+    "pml100": 0.0,
+    "share_of_tail": 0.0
+   },
+   {
+    "zone": "+52\u00b0, +4\u00b0",
+    "sites": 1,
+    "tiv": 180000000.0,
+    "aal": 10849.940049648285,
+    "worst_year_loss": 48120651.91268921,
+    "pml100": 0.0,
+    "share_of_tail": 0.0
+   }
+  ],
+  "countries": [
+   {
+    "key": "BGD",
+    "sites": 2,
+    "tiv": 370000000.0,
+    "aal": 4520465.853970498
+   },
+   {
+    "key": "USA",
+    "sites": 1,
+    "tiv": 400000000.0,
+    "aal": 341338.0182534456
+   },
+   {
+    "key": "IND",
+    "sites": 1,
+    "tiv": 90000000.0,
+    "aal": 92745.09191494435
+   },
+   {
+    "key": "PHL",
+    "sites": 1,
+    "tiv": 60000000.0,
+    "aal": 31057.950182631612
+   },
+   {
+    "key": "NLD",
+    "sites": 1,
+    "tiv": 180000000.0,
+    "aal": 10849.940049648285
+   }
+  ],
+  "sectors": [
+   {
+    "key": "cement",
+    "sites": 1,
+    "tiv": 250000000.0,
+    "aal": 3069912.5305656344
+   },
+   {
+    "key": "logistics",
+    "sites": 2,
+    "tiv": 180000000.0,
+    "aal": 1481611.2735874949
+   },
+   {
+    "key": "refining",
+    "sites": 1,
+    "tiv": 400000000.0,
+    "aal": 341338.0182534456
+   },
+   {
+    "key": "steel",
+    "sites": 1,
+    "tiv": 90000000.0,
+    "aal": 92745.09191494435
+   },
+   {
+    "key": "chemicals",
+    "sites": 1,
+    "tiv": 180000000.0,
+    "aal": 10849.940049648285
+   }
+  ]
+ },
+ "deductible_ladder": [
+  {
+   "deductible_pct": 0.0,
+   "aal": 6305040.071919241,
+   "aep100": 153192089.9540838,
+   "oep100": 153192089.9540838,
+   "tvar99": 219509231.2282878
+  },
+  {
+   "deductible_pct": 1.0,
+   "aal": 5614092.128748866,
+   "aep100": 148562015.87841034,
+   "oep100": 148562015.87841034,
+   "tvar99": 215382570.69473618
+  },
+  {
+   "deductible_pct": 2.0,
+   "aal": 5167177.007809095,
+   "aep100": 143964006.42693168,
+   "oep100": 143964006.42693168,
+   "tvar99": 211448392.08034799
+  },
+  {
+   "deductible_pct": 5.0,
+   "aal": 4228276.877277531,
+   "aep100": 132559305.10640216,
+   "oep100": 132559305.10640216,
+   "tvar99": 200015263.84009048
+  },
+  {
+   "deductible_pct": 10.0,
+   "aal": 3186275.9797126055,
+   "aep100": 113803001.90746789,
+   "oep100": 113803001.90746789,
+   "tvar99": 181280117.46108532
+  }
+ ],
+ "premium": {
+  "technical_total": 29367772.139698066,
+  "rate_permille": 26.698,
+  "formula": "(AAL x (1 + 10% model-uncertainty load) + 8% cost of capital x capital proxy) / (1 - 25% expenses); capital proxy = the site's mean loss in the worst 1% of portfolio years minus its AAL",
+  "parameters": {
+   "cost_of_capital": 0.08,
+   "expense_ratio": 0.25,
+   "uncertainty_load": 0.1,
+   "capital_quantile": 0.99
+  },
+  "status": "indicative technical premium for discussion, not a quote"
+ },
+ "reinsurance": {
+  "quota_share_pct": 10.0,
+  "layers": [
+   {
+    "attach": 20000000.0,
+    "limit": 60000000.0,
+    "reinstatements": 1.0,
+    "expected_recovery": 1814869.7995232232,
+    "prob_attach": 0.051
+   }
+  ],
+  "ceded_aal": 2314515.48496034
+ },
+ "corr_scale": 1.0,
+ "correlation_km": {
+  "wind": 300.0,
+  "river": 100.0,
+  "coast": 60.0
+ },
+ "climate": {
+  "ssp": "ssp245",
+  "year": 2050,
+  "band": "median",
+  "stats": {
+   "gross": {
+    "rows": [
+     {
+      "rp": 2,
+      "oep": 0.0,
+      "aep": 0.0,
+      "reliable": true
+     },
+     {
+      "rp": 5,
+      "oep": 0.0,
+      "aep": 0.0,
+      "reliable": true
+     },
+     {
+      "rp": 10,
+      "oep": 2764209.2852294515,
+      "aep": 2764209.2852294515,
+      "reliable": true
+     },
+     {
+      "rp": 20,
+      "oep": 27863436.03700377,
+      "aep": 27863436.03700377,
+      "reliable": true
+     },
+     {
+      "rp": 50,
+      "oep": 88460333.26387371,
+      "aep": 88460333.26387371,
+      "reliable": true
+     },
+     {
+      "rp": 100,
+      "oep": 157989091.61913437,
+      "aep": 157989091.61913437,
+      "reliable": true
+     },
+     {
+      "rp": 250,
+      "oep": 225444251.70421594,
+      "aep": 225444251.70421594,
+      "reliable": true
+     },
+     {
+      "rp": 500,
+      "oep": 265013370.64028066,
+      "aep": 265013370.64028066,
+      "reliable": true
+     }
+    ],
+    "aal": 5499529.8767330125,
+    "std": 26629498.108564466,
+    "se": 297726.8398872611,
+    "tvar99": 219699909.07174534,
+    "tvar995": 258238372.87040424,
+    "prob_loss": 0.127375
+   },
+   "by_peril": {
+    "wind": 5308386.087274738,
+    "flood": 191143.78945827484,
+    "river": 179361.93466186523,
+    "coast": 11781.854796409607
+   },
+   "ground_up": {
+    "aal": 6916575.023243348,
+    "wind": 6682481.233785073,
+    "flood": 234093.78945827484
+   },
+   "net": {
+    "rows": [
+     {
+      "rp": 2,
+      "oep": 0.0,
+      "aep": 0.0,
+      "reliable": true
+     },
+     {
+      "rp": 5,
+      "oep": 0.0,
+      "aep": 0.0,
+      "reliable": true
+     },
+     {
+      "rp": 10,
+      "oep": 2487788.356706506,
+      "aep": 2487788.356706506,
+      "reliable": true
+     },
+     {
+      "rp": 20,
+      "oep": 20000000.0,
+      "aep": 20000000.0,
+      "reliable": true
+     },
+     {
+      "rp": 50,
+      "oep": 20005143.991637107,
+      "aep": 20005143.991637107,
+      "reliable": true
+     },
+     {
+      "rp": 100,
+      "oep": 82190182.45722093,
+      "aep": 82190182.45722093,
+      "reliable": true
+     },
+     {
+      "rp": 250,
+      "oep": 142899826.53379434,
+      "aep": 142899826.53379434,
+      "reliable": true
+     },
+     {
+      "rp": 500,
+      "oep": 178512033.5762526,
+      "aep": 178512033.5762526,
+      "reliable": true
+     }
+    ],
+    "aal": 2949799.107678831,
+    "std": 15477378.539110148,
+    "se": 173042.3526347334,
+    "tvar99": 137729918.1645708,
+    "tvar995": 172414535.58336383,
+    "prob_loss": 0.127375
+   },
+   "ceded_aal": 2549730.7690541814
+  },
+  "aal": {
+   "today": 4996456.854371168,
+   "scenario": 5499529.8767330125,
+   "change": 503073.0223618448,
+   "change_pct": 10.068595347155446
+  },
+  "tail": {
+   "oep20": {
+    "today": 23280156.45802017,
+    "scenario": 27863436.03700377,
+    "change": 4583279.578983601,
+    "change_pct": 19.687494743638766
+   },
+   "aep20": {
+    "today": 23280156.45802017,
+    "scenario": 27863436.03700377,
+    "change": 4583279.578983601,
+    "change_pct": 19.687494743638766
+   },
+   "oep100": {
+    "today": 143964006.42693168,
+    "scenario": 157989091.61913437,
+    "change": 14025085.192202687,
+    "change_pct": 9.742077579176751
+   },
+   "aep100": {
+    "today": 143964006.42693168,
+    "scenario": 157989091.61913437,
+    "change": 14025085.192202687,
+    "change_pct": 9.742077579176751
+   },
+   "oep250": {
+    "today": 216765710.74008933,
+    "scenario": 225444251.70421594,
+    "change": 8678540.964126617,
+    "change_pct": 4.003650270375341
+   },
+   "aep250": {
+    "today": 216765710.74008933,
+    "scenario": 225444251.70421594,
+    "change": 8678540.964126617,
+    "change_pct": 4.003650270375341
+   }
+  },
+  "premium_total_scenario": 30948478.689208005,
+  "per_site": [
+   {
+    "name": "Plant A, Chattogram",
+    "aal_today": 3069912.5305656344,
+    "aal_scenario": 3372818.4155514464,
+    "change_pct": 9.86692232986851,
+    "premium_today": 19472450.44024264,
+    "premium_scenario": 20482233.881808445,
+    "climate": {
+     "site": "Plant A, Chattogram",
+     "ok": true,
+     "river_depth_factor": 1.0393080518244646,
+     "sea_add_m": 0.12660000000000002,
+     "wind_scale": 1.0215833333333333,
+     "rain_ratio": 1.0663681204596909,
+     "sea_available": true,
+     "warming_k": 0.8633333333333334
+    }
+   },
+   {
+    "name": "Port terminal, Chattogram",
+    "aal_today": 1450553.3234048632,
+    "aal_scenario": 1591654.7157805415,
+    "change_pct": 9.727418502925007,
+    "premium_today": 9113765.924199969,
+    "premium_scenario": 9587683.368631214,
+    "climate": {
+     "site": "Port terminal, Chattogram",
+     "ok": true,
+     "river_depth_factor": 1.0393080518244646,
+     "sea_add_m": 0.12660000000000002,
+     "wind_scale": 1.0215833333333333,
+     "rain_ratio": 1.0663681204596909,
+     "sea_available": true,
+     "warming_k": 0.8633333333333334
+    }
+   },
+   {
+    "name": "Refinery, Houston",
+    "aal_today": 341338.0182534456,
+    "aal_scenario": 379017.0383453369,
+    "change_pct": 11.038623908548734,
+    "premium_today": 500629.093438387,
+    "premium_scenario": 555891.6562398275,
+    "climate": {
+     "site": "Refinery, Houston",
+     "ok": true,
+     "river_depth_factor": 1.013388507160208,
+     "sea_add_m": 0.2852,
+     "wind_scale": 1.0215833333333333,
+     "rain_ratio": 1.0224136156275987,
+     "sea_available": true,
+     "warming_k": 0.8633333333333334
+    }
+   },
+   {
+    "name": "Warehouse, Manila",
+    "aal_today": 31057.950182631612,
+    "aal_scenario": 35926.16869658232,
+    "change_pct": 15.674629153965016,
+    "premium_today": 45551.6602678597,
+    "premium_scenario": 52691.71408832073,
+    "climate": {
+     "site": "Warehouse, Manila",
+     "ok": true,
+     "river_depth_factor": 1.0441456404785994,
+     "sea_add_m": 0.3174,
+     "wind_scale": 1.0215833333333333,
+     "rain_ratio": 1.0746535209215833,
+     "sea_available": true,
+     "warming_k": 0.8633333333333334
+    }
+   },
+   {
+    "name": "Plant, Rotterdam",
+    "aal_today": 10849.940049648285,
+    "aal_scenario": 11781.854796409607,
+    "change_pct": 8.589123465170955,
+    "premium_today": 15913.24540615082,
+    "premium_scenario": 17280.05370140076,
+    "climate": {
+     "site": "Plant, Rotterdam",
+     "ok": true,
+     "river_depth_factor": 1.0529244709066492,
+     "sea_add_m": 0.1738,
+     "wind_scale": 1.0,
+     "rain_ratio": 1.0897545692649102,
+     "sea_available": true,
+     "warming_k": 0.8633333333333334
+    }
+   },
+   {
+    "name": "Plant, Kolkata",
+    "aal_today": 92745.09191494435,
+    "aal_scenario": 108331.68356269598,
+    "change_pct": 16.805839884277592,
+    "premium_today": 219461.77614305913,
+    "premium_scenario": 252698.01473879814,
+    "climate": {
+     "site": "Plant, Kolkata",
+     "ok": true,
+     "river_depth_factor": 1.0544232169206873,
+     "sea_add_m": -0.015600000000000006,
+     "wind_scale": 1.0215833333333333,
+     "rain_ratio": 1.0923410797830766,
+     "sea_available": true,
+     "warming_k": 0.8633333333333334
+    }
+   }
+  ],
+  "confidence": [
+   {
+    "factor": "Heavier extreme rain",
+    "level": "medium",
+    "why": "CMIP6 ensemble median +7 % (models range -8 to +21 %); delta method on the annual maximum; check the site's backtest in the rain study."
+   },
+   {
+    "factor": "River flood depth",
+    "level": "low",
+    "why": "depth change from the rainfall ratio through h \u221d Q^0.6 is a screening rule; catchment response (soil, drainage, snow) is not modelled."
+   },
+   {
+    "factor": "Sea-level rise",
+    "level": "medium",
+    "why": "IPCC AR6 at a one-degree grid point: local subsidence is only partly captured."
+   },
+   {
+    "factor": "Cyclone wind",
+    "level": "low",
+    "why": "Tropical cyclones reach this site; peak wind scaled by the published assessment (+5 % per 2 \u00b0C, range 1-10 %)."
+   },
+   {
+    "factor": "Extreme heat",
+    "level": "medium-high",
+    "why": "CMIP6 change in the annual maximum daily temperature; the site's backtest is in the heat study."
+   }
+  ],
+  "limits": [
+   "Scenarios are not forecasts: they depend on the emissions pathway, and the p10-p90 range covers model differences only.",
+   "The mapped flood event keeps its return period; the climate moves its level. Changes in how often the event occurs are not applied.",
+   "Wave setup, tide-surge interaction, drainage, defences and changes in catchment land use are not included."
+  ],
+  "attribution": [
+   "World Bank Climate Change Knowledge Portal (https://climateknowledgeportal.worldbank.org), CMIP6 0.25\u00b0 ensemble statistically downscaled from NASA NEX-GDDP-CMIP6 (Thrasher et al. 2021). We acknowledge the World Climate Research Programme, which, through its Working Group on Coupled Modelling, coordinated and promoted CMIP6, and the climate modelling groups who produced and shared their output (CC0).",
+   "IPCC AR6 sea-level projections (Fox-Kemper et al. 2021; Garner et al. 2021), CC BY 4.0.",
+   "Knutson, T. et al. (2020), Tropical Cyclones and Climate Change Assessment: Part II. Projected Response to Anthropogenic Warming, Bull. Amer. Meteor. Soc. 101, E303\u2013E322."
+  ],
+  "method": "The same random years are replayed with the pathway's hazard changes (river depth from the CMIP6 rain ratio, coastal depth plus AR6 sea-level rise, cyclone wind scaled per Knutson et al. 2020), so the difference is paired, not two noisy runs. Event frequency is not changed."
+ },
+ "method": [
+  "Hazard: tropical-cyclone rate and wind tail from NOAA IBTrACS (Holland wind field), river flood depths from JRC/CEMS-GloFAS, coastal from Deltares with sea-level rise, defences from FLOPROS; per-site damage from the Emanuel (2011) wind curve (Eberenz et al. 2021 regions) and JRC industrial depth-damage curves.",
+  "Years: each simulated year draws, per peril, one spatially correlated severity per site (Gaussian copula, correlation exp(-distance/L), L = 300 km wind, 100 km river, 60 km coast: assumed, not fitted). Cyclone years also add the other storms of the year, independently per site.",
+  "Policy terms: deductible and limit per peril group (wind, flood) applied to each site's annual loss from that peril, then the overall limit. Flood combines river and coast. This approximates per-event terms.",
+  "Reinsurance (optional): quota share first, then excess-of-loss layers on the retained peril-year loss, with annual aggregate = limit x (1 + reinstatements).",
+  "Occurrence (OEP) = the year's largest peril loss across the portfolio; aggregate (AEP) = all perils in the year.",
+  "Technical premium = AAL with a model-uncertainty load, plus cost of capital on each site's tail contribution, grossed up for expenses."
+ ],
+ "limits": [
+  "Not a vendor catastrophe model: damage curves are published and not calibrated to claims; they are for screening and for explaining differences, not for rating a single risk unaided.",
+  "Perils covered: tropical-cyclone wind, river flood, coastal flood. Not modelled: hail, tornado and convective storm, earthquake, wildfire, subsidence, storm surge beyond the mapped coastal floods, business interruption as a separate value.",
+  "Correlation lengths are assumed. PML and tail contributions depend on them: run corr_scale 0.5 and 2 to see the range.",
+  "Flood is one annual-maximum event per site per year; cyclone years stack the year's storms. Footprint mean damage uses a 250 m ring around the point; a precise building location can differ.",
+  "Flood maps give no frequency change under climate: a pathway moves the depth of a mapped return-period event, not how often it happens.",
+  "Return-period estimates need many years: values flagged not reliable have fewer than 10 simulated years per year of return period."
+ ],
+ "sources": [
+  "NOAA IBTrACS v04r01",
+  "JRC CEMS-GloFAS river flood hazard maps v2.1",
+  "Deltares Global Flood Maps",
+  "FLOPROS (Scussolini et al. 2016)",
+  "Emanuel 2011; Eberenz et al. 2021 (wind damage)",
+  "JRC depth-damage (Huizinga et al. 2017)",
+  "CMIP6 via World Bank CCKP (CC0); IPCC AR6 sea level (CC BY 4.0); Knutson et al. 2020"
+ ],
+ "elapsed_s": 283.1
+}

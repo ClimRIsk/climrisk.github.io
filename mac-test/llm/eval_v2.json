@@ -1,0 +1,178 @@
+{
+ "climrisk-llm-v2": {
+  "metrics": {
+   "chain.cites_all_needed": 0.833,
+   "chain.cites_valid": 1.0,
+   "chain.hedges_inference": 0.833,
+   "chain.no_invented_numbers": 1.0,
+   "gold.invented_numbers": 1.444,
+   "gold.length_ok": 1.0,
+   "gold.overlap_f1": 0.215,
+   "insurer.declines_unknown": 1.0,
+   "insurer.length_ok": 1.0,
+   "insurer.new_numbers": 0.0,
+   "insurer.numbers_ok": 1.0,
+   "narr.length_ok": 0.917,
+   "narr.numbers_ok": 1.0,
+   "narr.says_not_forecast": 1.0,
+   "qa.cited": 1.0,
+   "qa.cites_target": 0.333,
+   "qa.cites_valid": 1.0,
+   "qa.sent_cited": 0.972,
+   "refuse.cites_valid": 1.0,
+   "refuse.says_missing": 0.667
+  },
+  "n_rows": 69,
+  "seconds": 317,
+  "samples": [
+   {
+    "kind": "refuse",
+    "q": "passed 400 parts per million for the first time in human history . The last time levels were that high was about three to five million years ago, during the Pliocene Epoch. Because we are already committed to some level of climate change, responding to climate change involves a two-pronged approach:",
+    "out": "I cannot answer that from these sources: none of them discusses emissions overview. What they contain is Causes of climate change [1] and Glossary of terms [2]. A source on emissions overview is missing, so I will not guess."
+   },
+   {
+    "kind": "refuse",
+    "q": "fifteen categories?\n\nSources:\n[1] The site has elevated wildfire exposure and a modelled 1-in-100 year flood depth of 1.2 m.\n\n[2] Under the NGFS Delayed Transition scenario, carbon prices rise sharply after 2030.\n\n[3] Baseline water stress at the site is high and heat days are projected to increase.",
+    "out": "The sources provided do not cover any company disclosure or scope 3 inventory. They only state that the site has elevated wildfire exposure and a modelled 1-in-100 year flood depth of 1.2 m [1]; under the NGFS Delayed Transition scenario, carbon prices rise sharply after 2030 [2]. That is not enough to answer without guessing. To answer I would need the company's published scope 3 inventory."
+   },
+   {
+    "kind": "refuse",
+    "q": "Question: Is the transition plan aligned with the EU taxonomy?\n\nSources:\n[1] The EU Carbon Border Adjustment Mechanism phases in between 2026 and 2034.\n\n[2] Baseline water stress at the site is high and heat days are projected to increase.",
+    "out": "The sources provided do not cover the plan's content, targets or capital expenditure. They only state that the EU Carbon Border Adjustment Mechanism phases in between 2026 and 2034 [1]; the EU Carbon Border Adjustment Mechanism phases in between 2026 and 2034 [1]. That is not enough to answer without guessing. To answer I would need the plan itself and its capital expenditure breakdown."
+   },
+   {
+    "kind": "chain",
+    "q": " from 1 June to 30 November, and an average season has 14 named storms.\n\n[4] The steel plant at Port Klang has no capital budget allocated to emissions reduction in its current plan. About 65% of its output is exported to the European Union. Cooling water is drawn from seawater once-through cooling.",
+    "out": "According to [2], under Net Zero 2050 policy tightens early and smoothly so that net zero is reached around mid-century, and carbon prices rise steadily from the start, giving firms time to invest. This is an early, orderly cost signal. Source [4] says the plant has no capital allocated to emissions reduction, so it has little ability to avoid the cost, and the pressure would fall mostly on operating margin. That last step is an inference from the sources, not a figure."
+   },
+   {
+    "kind": "chain",
+    "q": "budget allocated to emissions reduction in its current plan. About 65% of its output is exported to the European Union. Cooling water is drawn from seawater once-through cooling.\n\n[4] Greenhouse gases trap heat in the atmosphere, and carbon dioxide is the largest contributor to human-caused warming.",
+    "out": "According to [1], the mechanism phases in between 2026 and 2034 as free allocation is phased out, so the share of embedded emissions that must be paid for rises each year. Source [3] says the plant has no capital allocated to emissions reduction, so it has no ability to avoid the cost, and the pressure would fall mostly on operating margin. That last step is an inference from the sources, not a figure."
+   },
+   {
+    "kind": "insurer",
+    "q": "30m to $225.54m. Climate SSP370 2030 high: average annual loss +1.6% to $23.14m; 1-in-100 occurrence +2.7% to $248.87m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: How bad is a bad year compared with the average?",
+    "out": "The tail is much heavier than the average: the 1-in-100 occurrence loss is $242.32m against an average annual loss of $22.78m, and tail value at risk at 99% is $370.69m. Other sites contributes the largest average loss at $17.23m, and river flood is the peril behind most of the total at $6.50m. Sites that share a storm or flood season tend to lose together, which widens the tail but not the average. This is a screening model, not a vendor catastrophe model, and its damage curves are not calibrated to claims."
+   },
+   {
+    "kind": "insurer",
+    "q": "100 occurrence loss $651.44m to $573.26m. Climate SSP126 2030 low: average annual loss +0.9% to $32.18m; 1-in-100 occurrence +1.0% to $629.35m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: Which site matters most?",
+    "out": "The largest site by average annual loss is Other sites at $16.57m, about 52% of the portfolio's $31.91m. That concentration matters for accumulation, because one event near that site can dominate a bad year. The facts do not break the other sites down, so I cannot rank them. This is a screening model, not a vendor catastrophe model, and its damage curves are not calibrated to claims."
+   },
+   {
+    "kind": "insurer",
+    "q": "$561.56m to $494.18m. Climate SSP245 2030 median: average annual loss +1.1% to $34.71m; 1-in-100 occurrence +1.5% to $560.15m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: What does this schedule's risk look like?",
+    "out": "The schedule of 3 sites, insured for $4.48bn, carries an average annual loss of $34.32m, or 0.77% of value. In a 1-in-100 year the largest event costs $551.75m, rising to $753.50m at 1-in-250. River flood drives most of the average at $3.31m, and Other sites is the largest site at $19.13m. The indicative technical premium is $78.32m, which is not a quote. Under SSP245 in 2030 the average loss moves +1.1% to $34.71m. This is a screening model, not a vendor catastrophe model, and its damage curves are not calibrated to claims."
+   },
+   {
+    "kind": "qa",
+    "q": "- courtesy of The COMET Program Tropical storm-force winds are strong enough to be dangerous to those caught in them. For this reason, emergency managers plan on having their evacuations complete and their personnel sheltered before the onset of tropical storm-force winds, not hurricane-force winds.",
+    "out": "Tropical Depression: A tropical cyclone in which the maximum sustained surface wind speed (using the U.S. 1-minute average) is 33 kt (38 mph or 62 km/hr) or less. [2] Tropical Storm: A tropical cyclone in which the maximum sustained surface wind speed (using the U.S. 1-minute average) ranges from 34 kt (39 mph or 63 km/hr) to 63 kt (73 mph or 118 km/hr). [2] Tropical Storm-force winds are strong enough to be dangerous to those caught in them. [3] For this reason, emergency managers plan on having their evacuations complete and their personnel sheltered before the onset of tropical storm-force "
+   },
+   {
+    "kind": "qa",
+    "q": " because the ocean floor gradually deepens offshore. Conversely, areas along Florida's southeast coast have a shelf that drops off very quickly, making it less vulnerable to storm surge. Surge animation of a steep continental shelf vs a gently sloping continental shelf (Click on image to play video)",
+    "out": "Greenhouse Gas Emissions and CBAM: A Simplified Animation. [2] Greenhouse Gas Emissions and Climate [1] Learn more about these compounds and climate change on our Basics of Climate Change page . [1] See Emissions Information and Reduction Strategies by Gas Carbon Dioxide Methane Nitrous Oxide Fluorinated Gases Greenhouse Gas Effects on Climate [1]"
+   },
+   {
+    "kind": "gold",
+    "q": "What is an internal or shadow carbon price?",
+    "out": "An internal or shadow carbon price is a policy tool used by companies to measure the cost of abatement, which is the reduction of emissions from their operations. It rests on the assumption that the price of allowances in a trading system is the cost of abatement, so it is a policy tool for weighing the costs and benefits of reducing emissions. It is a policy tool for weighing the costs and benefits of reducing emissions, not a market price, and should not be confused with the market price of allowances."
+   },
+   {
+    "kind": "gold",
+    "q": "Is a climate scenario a forecast?",
+    "out": "No. A climate scenario is a pathway assumption combined with the policy's hazard data, so published by the insurer view. It rests on the policy's hazard data and the insurer view of the future. Because published data and assumptions can change, the policy terms may be different in the future."
+   }
+  ]
+ },
+ "climrisk-llm": {
+  "metrics": {
+   "chain.cites_all_needed": 0.5,
+   "chain.cites_valid": 1.0,
+   "chain.hedges_inference": 0.0,
+   "chain.no_invented_numbers": 1.0,
+   "gold.invented_numbers": 0.889,
+   "gold.length_ok": 0.667,
+   "gold.overlap_f1": 0.202,
+   "insurer.declines_unknown": 1.0,
+   "insurer.length_ok": 1.0,
+   "insurer.new_numbers": 0.0,
+   "insurer.numbers_ok": 1.0,
+   "narr.length_ok": 1.0,
+   "narr.numbers_ok": 0.833,
+   "narr.says_not_forecast": 0.917,
+   "qa.cited": 1.0,
+   "qa.cites_target": 0.583,
+   "qa.cites_valid": 1.0,
+   "qa.sent_cited": 0.667,
+   "refuse.cites_valid": 1.0,
+   "refuse.says_missing": 1.0
+  },
+  "n_rows": 69,
+  "seconds": 375,
+  "samples": [
+   {
+    "kind": "refuse",
+    "q": "passed 400 parts per million for the first time in human history . The last time levels were that high was about three to five million years ago, during the Pliocene Epoch. Because we are already committed to some level of climate change, responding to climate change involves a two-pronged approach:",
+    "out": "I cannot answer that from these sources: none of them discusses emissions overview. What they contain is Causes of climate change [1] and Glossary of terms [2]. A source on emissions overview is missing, so I will not guess."
+   },
+   {
+    "kind": "refuse",
+    "q": "fifteen categories?\n\nSources:\n[1] The site has elevated wildfire exposure and a modelled 1-in-100 year flood depth of 1.2 m.\n\n[2] Under the NGFS Delayed Transition scenario, carbon prices rise sharply after 2030.\n\n[3] Baseline water stress at the site is high and heat days are projected to increase.",
+    "out": "The site has elevated wildfire exposure and a modelled 1-in-100 year flood depth of 1.2 m. [1] Under the NGFS Delayed Transition scenario, carbon prices rise sharply after 2030. [2] Baseline water stress at the site is high and heat days are projected to increase. [3] The site's scope 3 disclosure does not cover all fifteen categories. It only addresses scenario 1, which is not enough to reflect the site's full risk. To answer it I would need a source that addresses the company's scope 3 disclosure directly."
+   },
+   {
+    "kind": "refuse",
+    "q": "Question: Is the transition plan aligned with the EU taxonomy?\n\nSources:\n[1] The EU Carbon Border Adjustment Mechanism phases in between 2026 and 2034.\n\n[2] Baseline water stress at the site is high and heat days are projected to increase.",
+    "out": "The sources provided do not cover the transition plan aligned with the EU taxonomy. They deal with The EU Carbon Border Adjustment Mechanism phases in between 2026 and 2034. [1] and Baseline water stress at the site is high and heat days are projected to increase. [2] If you can point me to a document on the transition plan aligned with the EU taxonomy, I can answer from it."
+   },
+   {
+    "kind": "chain",
+    "q": " from 1 June to 30 November, and an average season has 14 named storms.\n\n[4] The steel plant at Port Klang has no capital budget allocated to emissions reduction in its current plan. About 65% of its output is exported to the European Union. Cooling water is drawn from seawater once-through cooling.",
+    "out": "The policy factor creating the largest cash-flow pressure for the steel plant under Net Zero 2050 is carbon prices. [2] Carbon prices rise steadily from the start, giving firms time to invest. [2] Under the NGFS Net Zero 2050 scenario, policy tightens early and smoothly so that net zero is reached around mid-century. [2]"
+   },
+   {
+    "kind": "chain",
+    "q": "budget allocated to emissions reduction in its current plan. About 65% of its output is exported to the European Union. Cooling water is drawn from seawater once-through cooling.\n\n[4] Greenhouse gases trap heat in the atmosphere, and carbon dioxide is the largest contributor to human-caused warming.",
+    "out": "The share of embedded emissions that importers must pay for rises each year until 2034. [1] The EU Carbon Border Adjustment Mechanism phases in between 2026 and 2034 as free allocation under the EU Emissions Trading System is phased out, so the share of embedded emissions that importers must pay for rises each year until 2034. [1] The share of embedded emissions that importers must pay for rises each year until 2034. [1]"
+   },
+   {
+    "kind": "insurer",
+    "q": "30m to $225.54m. Climate SSP370 2030 high: average annual loss +1.6% to $23.14m; 1-in-100 occurrence +2.7% to $248.87m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: How bad is a bad year compared with the average?",
+    "out": "The tail is much heavier than the average: the 1-in-100 occurrence loss is $242.32m against an average annual loss of $22.78m, and tail value at risk at 99% is $370.69m. Other sites contributes the largest average loss at $17.23m, and river flood is the peril behind most of the total at $6.50m. Sites that share a storm or flood season tend to lose together, which widens the tail but not the average. This is a screening model, not a vendor catastrophe model, and its damage curves are not calibrated to claims."
+   },
+   {
+    "kind": "insurer",
+    "q": "100 occurrence loss $651.44m to $573.26m. Climate SSP126 2030 low: average annual loss +0.9% to $32.18m; 1-in-100 occurrence +1.0% to $629.35m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: Which site matters most?",
+    "out": "The largest site by average annual loss is Other sites at $16.57m, about 52% of the portfolio's $31.91m. That concentration matters for accumulation, because one event near that site can dominate a bad year. The facts do not break the other sites down, so I cannot rank them. This is a screening model, not a vendor catastrophe model, and its damage curves are not calibrated to claims."
+   },
+   {
+    "kind": "insurer",
+    "q": "$561.56m to $494.18m. Climate SSP245 2030 median: average annual loss +1.1% to $34.71m; 1-in-100 occurrence +1.5% to $560.15m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: What does this schedule's risk look like?",
+    "out": "Across 3 sites with $4.48bn of insured value, the expected loss is $34.32m a year, 0.77% of insured value. In a 1-in-100 year the largest event costs $551.75m, rising to $753.50m at 1-in-250. River flood drives most of the average at $3.31m, and Other sites is the largest site at $19.13m. The indicative technical premium is $78.32m, which is not a quote. This is a screening model, not a vendor catastrophe model, and its damage curves are not calibrated to claims."
+   },
+   {
+    "kind": "qa",
+    "q": "- courtesy of The COMET Program Tropical storm-force winds are strong enough to be dangerous to those caught in them. For this reason, emergency managers plan on having their evacuations complete and their personnel sheltered before the onset of tropical storm-force winds, not hurricane-force winds.",
+    "out": "I cannot answer that from these sources: none of them discusses protect yourself and flood survivor. What they contain is Flood safety and flood types [1] and Glossary of terms [2]. A source on protect yourself and flood survivor is missing, so I will not guess."
+   },
+   {
+    "kind": "qa",
+    "q": " because the ocean floor gradually deepens offshore. Conversely, areas along Florida's southeast coast have a shelf that drops off very quickly, making it less vulnerable to storm surge. Surge animation of a steep continental shelf vs a gently sloping continental shelf (Click on image to play video)",
+    "out": "Hydrofluorocarbons, perfluorocarbons, sulfur hexafluoride, and nitrogen trifluoride are synthetic, powerful greenhouse gases that are emitted from a variety of household, commercial, and industrial applications and processes. [1] With global warming potentials (GWPs) that typically range from thousands to tens of thousands, they are sometimes referred to as high-GWP gases because, for a given amount of mass, they trap substantially more heat than CO 2 . [1] Additional compounds in the atmosphere including solid and liquid aerosol and other greenhouse gases, such as water vapor and ground-level"
+   },
+   {
+    "kind": "gold",
+    "q": "What is an internal or shadow carbon price?",
+    "out": "A shadow carbon price is the price of carbon dioxide, expressed in dollars or euros per tonne, that a company or country sets for its own use, rather than the price it pays for an allowance to emit carbon dioxide. Two companies with different cost of capital pay different prices for allowances, so the price of allowances is a reference point and not a reference point for the company's own price."
+   },
+   {
+    "kind": "gold",
+    "q": "Is a climate scenario a forecast?",
+    "out": "No, a climate scenario is not a forecast. It is a statement about how climate responds to a chosen pathway, which can be changed in a few ways. The climate responds slowly to emissions and other factors, so a chosen pathway can produce multiple possible climate paths. The climate responds slowly to emissions and other factors, so a chosen pathway can produce multiple possible climate paths. The climate responds slowly to emissions and other factors, so a chosen pathway can produce multiple possible climate paths."
+   }
+  ]
+ }
+}

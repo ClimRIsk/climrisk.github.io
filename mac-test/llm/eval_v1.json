@@ -1,0 +1,200 @@
+{
+ "climrisk-llm": {
+  "metrics": {
+   "gold.invented_numbers": 0.889,
+   "gold.length_ok": 0.667,
+   "gold.overlap_f1": 0.202,
+   "insurer.declines_unknown": 1.0,
+   "insurer.length_ok": 1.0,
+   "insurer.new_numbers": 0.0,
+   "insurer.numbers_ok": 1.0,
+   "qa.cited": 1.0,
+   "qa.cites_target": 0.667,
+   "qa.cites_valid": 1.0,
+   "qa.sent_cited": 0.583,
+   "refuse.cites_valid": 1.0,
+   "refuse.says_missing": 1.0
+  },
+  "n_rows": 44,
+  "seconds": 294,
+  "samples": [
+   {
+    "kind": "insurer",
+    "q": "ctible effect on average annual loss: 0% of TIV $184.1k, 10% of TIV $54.0k; on the 1-in-100 occurrence loss $1.51m to $1.33m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: What does reinsurance do to these numbers?",
+    "out": "The facts do not include a reinsurance programme, so I cannot say what is ceded or what the net result is. To answer it I would need the quota share percentage and the excess-of-loss layers, which can be entered in the insurer view."
+   },
+   {
+    "kind": "insurer",
+    "q": "urrence loss $207.79m to $182.85m. Climate SSP126 2100 high: average annual loss +7.7% to $9.16m; 1-in-100 occurrence +11.0% to $224.87m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: Explain the technical premium.",
+    "out": "The indicative technical premium is $22.81m, or 20.0 per mille of insured value. It is built from the $8.50m average annual loss, a load for model uncertainty, a cost of capital on the tail and an expense ratio, so it is a reference point and not a quote. A real price would also reflect reinsurance cost, competition and underwriting judgement. This is a screening model, not a vendor catastrophe model, and its damage curves are not calibrated to claims."
+   },
+   {
+    "kind": "insurer",
+    "q": ".33m. Climate SSP245 2050 high: average annual loss +7.9% to $1.82m; 1-in-100 occurrence +7.5% to $46.46m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: Would raising the deductible reduce our catastrophe exposure?",
+    "out": "Raising the deductible from 0% to 10% of insured value lowers the average annual loss from $1.93m to $567.2k, but the 1-in-100 occurrence loss only moves from $43.56m to $38.33m. A deductible removes many small claims, so it changes attritional cost far more than catastrophe capital. This is a screening model, not a vendor catastrophe model, and its damage curves are not calibrated to claims."
+   },
+   {
+    "kind": "refuse",
+    "q": "issolves others), and spray can propellants. FORCING: Something acting upon Earth's climate that causes a change in how energy flows through it (such as long-lasting, heat-trapping gases - also known as greenhouse gases). These gases slow outgoing heat in the atmosphere and cause the planet to warm.",
+    "out": "I cannot answer that from these sources: none of them discusses emissions overview and independent rounding. What they contain is Sources of greenhouse gas emissions [1] and Explanation of Units A million metric tons of CO 2 [2]."
+   },
+   {
+    "kind": "refuse",
+    "q": " the atmosphere by human activities are warming the planet. Global sea level is rising mainly from ocean warming and melting land ice due to climate change. Global sea level is rising faster today than it was 100 years ago. The Link to Climate Change Global Sea Level Rise Is Linked to Climate Change",
+    "out": "I cannot answer that from these sources: none of them discusses fluorinated gases and solid waste. What they contain is Global sea level [1] and Global sea level [2]. A source on fluorinated gases and solid waste is missing, so I will not guess."
+   },
+   {
+    "kind": "gold",
+    "q": "What data does an insurer need to provide for a good result?",
+    "out": "To produce a good result, an insurer needs data that covers the entire supply chain and includes the following: the hazard layers and their effects on the site, the damage curves and the expected annual loss, the site's flood history and the flood depth curve, the flood depth curve and the flood depth of the site, the flood depth curve and the flood depth of the site, the flood depth curve and the flood depth of the site, the flood depth curve and the flood depth of the site, the flood depth curve and the flood depth of the site, the flood depth curve and the flood depth of the site, the flood"
+   },
+   {
+    "kind": "gold",
+    "q": "What are the NGFS scenarios?",
+    "out": "The NGFS scenarios come from the 2016 TCFD report, which is used to test climate policies. It is a set of assumptions about emissions, damage and policy, which are used to test the damage caused by climate. The assumptions are:\n\n- Carbon price: $30-$70 per tonne\n- Emissions: 2% to 7% of 1990 emissions\n- Damage: $1.00 to $3.00 per tonne of carbon dioxide\n- Policy: A carbon price, a carbon price with a cap and a policy with a carbon price\n- Assumed damage curves: The damage curves are assumptions about how damage changes as emissions increase, and how damage changes as emissions decrease."
+   },
+   {
+    "kind": "qa",
+    "q": " story, including the town and state you were in and the year the event took place. Please note that NS will then have permission to use your story for educational campaigns. Sharing this information may help save someone’s life in the future. Read stories from survivors and learn how to stay safe .",
+    "out": "I cannot answer that from these sources: none of them discusses heat index. What they contain is Nuisance flooding [1] and Heat index [2]. A source on heat index is missing, so I will not guess."
+   },
+   {
+    "kind": "qa",
+    "q": " isn’t limited to heavy rains. High tide flooding, sometimes referred to as sunny day or nuisance flooding, is a rising problem for coastal communities. Learn how climate change is expected to make the problem worse and how communities are preparing in this video from NOAA's Ocean Today . Transcript",
+    "out": "The sources provided do not cover heat risk. They deal with Heat index [1] and Glossary of terms [2], which is not enough to answer this without guessing. To answer it I would need a source that addresses heat risk directly."
+   }
+  ]
+ },
+ "llama3.2:3b": {
+  "metrics": {
+   "gold.invented_numbers": 0.667,
+   "gold.length_ok": 0.889,
+   "gold.overlap_f1": 0.216,
+   "insurer.declines_unknown": 1.0,
+   "insurer.length_ok": 0.917,
+   "insurer.new_numbers": 0.25,
+   "insurer.numbers_ok": 0.833,
+   "qa.cited": 1.0,
+   "qa.cites_target": 0.667,
+   "qa.cites_valid": 1.0,
+   "qa.sent_cited": 0.477,
+   "refuse.cites_valid": 1.0,
+   "refuse.says_missing": 0.0
+  },
+  "n_rows": 44,
+  "seconds": 416,
+  "samples": [
+   {
+    "kind": "insurer",
+    "q": "ctible effect on average annual loss: 0% of TIV $184.1k, 10% of TIV $54.0k; on the 1-in-100 occurrence loss $1.51m to $1.33m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: What does reinsurance do to these numbers?",
+    "out": "This is a screening model, and the provided information does not contain specific details on reinsurance. To accurately determine the impact of reinsurance on these numbers, additional information would be needed, such as the reinsurance terms, coverage limits, and retention levels."
+   },
+   {
+    "kind": "insurer",
+    "q": "urrence loss $207.79m to $182.85m. Climate SSP126 2100 high: average annual loss +7.7% to $9.16m; 1-in-100 occurrence +11.0% to $224.87m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: Explain the technical premium.",
+    "out": "This is a screening model, and the provided information is limited. The technical premium is $22.81m, which is 20.0 per mille of the total insured value ($1.14bn). This calculation is based on the indicative technical premium rate, not a quote. The rate is not explicitly stated, but it can be inferred as 20.0 per mille, which is equivalent to 0.20%."
+   },
+   {
+    "kind": "insurer",
+    "q": ".33m. Climate SSP245 2050 high: average annual loss +7.9% to $1.82m; 1-in-100 occurrence +7.5% to $46.46m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: Would raising the deductible reduce our catastrophe exposure?",
+    "out": "This is a screening model, and the provided information is based on a hypothetical scenario. Raising the deductible would likely reduce the average annual loss, as the insurer would only pay for losses above the deductible amount. However, the deductible effect on the 1-in-100 occurrence loss is not clearly defined, and the provided range of $43.56m to $38.33m suggests that raising the deductible may not significantly impact the occurrence loss."
+   },
+   {
+    "kind": "refuse",
+    "q": "issolves others), and spray can propellants. FORCING: Something acting upon Earth's climate that causes a change in how energy flows through it (such as long-lasting, heat-trapping gases - also known as greenhouse gases). These gases slow outgoing heat in the atmosphere and cause the planet to warm.",
+    "out": "Emissions overview and independent rounding are not explicitly mentioned in the provided sources.\n\nHowever, the U.S. Energy Information Administration (Source [2]) does explain how greenhouse gas emissions are measured in carbon dioxide equivalent, which involves multiplying the emissions of a gas by its Global Warming Potential (GWP). This process is related to the concept of independent rounding, but the specific connection is not made.\n\nIndependent rounding refers to the practice of rounding emissions data to a specific level of precision, such as to the nearest million metric tons of CO2. "
+   },
+   {
+    "kind": "refuse",
+    "q": " the atmosphere by human activities are warming the planet. Global sea level is rising mainly from ocean warming and melting land ice due to climate change. Global sea level is rising faster today than it was 100 years ago. The Link to Climate Change Global Sea Level Rise Is Linked to Climate Change",
+    "out": "According to the sources, fluorinated gases are not mentioned at all. However, solid waste is mentioned in the context of climate change, but not specifically in relation to fluorinated gases.\n\nThe mechanism behind the rising sea levels is attributed to increased greenhouse gases, which lead to global sea level rise. This is due to human activities warming the planet, causing ocean warming and melting land ice.\n\nFor an asset owner or lender, this means that they need to consider the potential impacts of climate change on their investments, such as coastal properties or infrastructure. Rising s"
+   },
+   {
+    "kind": "gold",
+    "q": "What data does an insurer need to provide for a good result?",
+    "out": "To provide a good result, an insurer needs to provide a comprehensive dataset that captures the key characteristics of the assets or exposures they want to assess for climate risk. This typically includes:\n\n* Historical climate-related loss data, such as flood or wildfire records\n* Geospatial information, such as elevation, latitude, and longitude\n* Asset-specific data, such as building type, age, and condition\n* Industry-specific data, such as agricultural yield or forestry management practices\n* Scenario data, such as projected temperature increases or sea-level rise\n\nThe quality and quantit"
+   },
+   {
+    "kind": "gold",
+    "q": "What are the NGFS scenarios?",
+    "out": "The NGFS (Network of Global Financial Institutions) scenarios are a set of climate change scenarios developed by the Network of Global Financial Institutions to support climate risk assessment and planning. These scenarios are based on the TMR (Transition Risk Management) framework and are designed to provide a consistent and comparable framework for assessing climate-related risks.\n\nThe NGFS scenarios are based on the TMR framework, which considers three main scenarios: Low, Medium, and High. These scenarios are based on the IPCC (Intergovernmental Panel on Climate Change) Special Report on G"
+   },
+   {
+    "kind": "qa",
+    "q": " story, including the town and state you were in and the year the event took place. Please note that NS will then have permission to use your story for educational campaigns. Sharing this information may help save someone’s life in the future. Read stories from survivors and learn how to stay safe .",
+    "out": "Heat index matters for exposed assets because it can increase the risk of heat-related illnesses and damage to infrastructure and property. [2] The heat index, also known as the apparent temperature, is the temperature that a person feels when the air is humid, which can be up to 15°F higher than the actual temperature. [2] When exposed assets, such as buildings or equipment, are in direct sunlight, the heat index can increase, leading to overheating and potential damage. [2]\n\nThe mechanism behind this is the Wet Bulb Globe Temperature (WBGT), which takes into account temperature, humidity, wi"
+   },
+   {
+    "kind": "qa",
+    "q": " isn’t limited to heavy rains. High tide flooding, sometimes referred to as sunny day or nuisance flooding, is a rising problem for coastal communities. Learn how climate change is expected to make the problem worse and how communities are preparing in this video from NOAA's Ocean Today . Transcript",
+    "out": "Heat risk matters for exposed assets because it is expected to increase due to rising greenhouse gas emissions, which trap heat and make the planet warmer [3]. This is a consequence of human activities, such as burning fossil fuels for electricity, heat, and transportation, which are the largest source of greenhouse gas emissions in the United States [4]. As a result, the planet is warming, leading to more frequent and severe heat events.\n\nThe mechanism behind heat risk is the greenhouse effect, where greenhouse gases absorb heat energy and radiate it back into the atmosphere, trapping heat an"
+   }
+  ]
+ },
+ "qwen2.5:7b": {
+  "metrics": {
+   "gold.invented_numbers": 0.222,
+   "gold.length_ok": 1.0,
+   "gold.overlap_f1": 0.214,
+   "insurer.declines_unknown": 1.0,
+   "insurer.length_ok": 0.5,
+   "insurer.new_numbers": 0.083,
+   "insurer.numbers_ok": 0.917,
+   "qa.cited": 1.0,
+   "qa.cites_target": 0.917,
+   "qa.cites_valid": 1.0,
+   "qa.sent_cited": 0.337,
+   "refuse.cites_valid": 0.727,
+   "refuse.says_missing": 0.455
+  },
+  "n_rows": 44,
+  "seconds": 689,
+  "samples": [
+   {
+    "kind": "insurer",
+    "q": "ctible effect on average annual loss: 0% of TIV $184.1k, 10% of TIV $54.0k; on the 1-in-100 occurrence loss $1.51m to $1.33m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: What does reinsurance do to these numbers?",
+    "out": "Reinsurance would not directly alter the numbers provided in this screening model, as it is a screening model and does not include reinsurance effects. To incorporate reinsurance, specific reinsurance terms, including the reinsurance treaty structure, attachment points, and terms, would be needed. These factors would then influence the final risk profile and premiums."
+   },
+   {
+    "kind": "insurer",
+    "q": "urrence loss $207.79m to $182.85m. Climate SSP126 2100 high: average annual loss +7.7% to $9.16m; 1-in-100 occurrence +11.0% to $224.87m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: Explain the technical premium.",
+    "out": "The technical premium of $22.81m is calculated as 20.0 per mille of the total insured value ($1.14bn). This figure represents an estimate of the expected loss plus a margin for profit and risk, based on the model's simulations over 5000 years. It does not constitute a final quote but serves as a screening model to assess the overall risk exposure."
+   },
+   {
+    "kind": "insurer",
+    "q": ".33m. Climate SSP245 2050 high: average annual loss +7.9% to $1.82m; 1-in-100 occurrence +7.5% to $46.46m. Limits: screening-grade model, wind and flood only, damage curves not calibrated to claims, correlation lengths assumed.\n\nQuestion: Would raising the deductible reduce our catastrophe exposure?",
+    "out": "Raising the deductible could reduce catastrophe exposure by lowering the likelihood of small losses triggering claims. For instance, increasing the deductible from 0% to 10% of TIV reduced the average annual loss from $1.93m to $567.2k. However, this would also increase the risk of large losses not being covered, as seen in the 1-in-100 occurrence loss, which decreased from $43.23m to $38.33m. Tail value at risk remains high at $65.94m, indicating significant potential for large losses."
+   },
+   {
+    "kind": "refuse",
+    "q": "issolves others), and spray can propellants. FORCING: Something acting upon Earth's climate that causes a change in how energy flows through it (such as long-lasting, heat-trapping gases - also known as greenhouse gases). These gases slow outgoing heat in the atmosphere and cause the planet to warm.",
+    "out": "The sources do not provide specific information on emissions overview and independent rounding. However, they do offer insights into the mechanisms and implications of greenhouse gas emissions. Greenhouse gas emissions are often measured in carbon dioxide (CO2) equivalent, taking into account the Global Warming Potential (GWP) of different gases [1]. This conversion is necessary because some gases, like nitrous oxide, are more effective at warming the Earth than CO2, even in smaller quantities [2]. For an asset owner or lender, understanding these mechanisms is crucial for assessing the climat"
+   },
+   {
+    "kind": "refuse",
+    "q": " the atmosphere by human activities are warming the planet. Global sea level is rising mainly from ocean warming and melting land ice due to climate change. Global sea level is rising faster today than it was 100 years ago. The Link to Climate Change Global Sea Level Rise Is Linked to Climate Change",
+    "out": "The sources provided do not contain any information about fluorinated gases or solid waste. There is no data or discussion related to these topics in the given references, which focus on global sea level rise and its causes [1][2]."
+   },
+   {
+    "kind": "gold",
+    "q": "What data does an insurer need to provide for a good result?",
+    "out": "An insurer needs to provide detailed historical and projected climate data, including temperature trends, precipitation patterns, and extreme weather events. They should also offer information on current and future flood zones, storm risks, and heatwaves. Additionally, the insurer must supply data on the insured asset's vulnerability, such as its construction materials and age, and its location-specific climate risk. Screening models require this data to assess climate risks accurately, but they cannot predict specific future events or tailor detailed risk mitigation strategies."
+   },
+   {
+    "kind": "gold",
+    "q": "What are the NGFS scenarios?",
+    "out": "The NGFS (Network for Greening the Financial System) scenarios are stylized narratives of potential future economic conditions, developed to help financial institutions assess climate-related risks. These scenarios, such as \"Low Emission\" and \"High Emission,\" provide a range of plausible futures, including climate change impacts and policy responses. They enable asset owners, lenders, and insurers to better understand and prepare for climate-related financial risks, but they cannot predict exact outcomes or replace detailed risk assessments."
+   },
+   {
+    "kind": "qa",
+    "q": " story, including the town and state you were in and the year the event took place. Please note that NS will then have permission to use your story for educational campaigns. Sharing this information may help save someone’s life in the future. Read stories from survivors and learn how to stay safe .",
+    "out": "Heat index matters for exposed assets because it measures the combined effect of temperature and humidity, which can significantly impact the physical conditions of assets, especially those in outdoor environments. High heat index values can lead to increased evaporation rates, potentially causing damage to materials that are susceptible to moisture. Additionally, extreme heat can accelerate the degradation of certain materials, reduce the efficiency of cooling systems, and increase the risk of equipment failure. For an asset owner or lender, understanding the heat index is crucial for assessi"
+   },
+   {
+    "kind": "qa",
+    "q": " isn’t limited to heavy rains. High tide flooding, sometimes referred to as sunny day or nuisance flooding, is a rising problem for coastal communities. Learn how climate change is expected to make the problem worse and how communities are preparing in this video from NOAA's Ocean Today . Transcript",
+    "out": "HeatRisk matters for exposed assets because it indicates the potential for extreme heat conditions that can lead to significant damage and disruption. High temperatures can cause heat-related stress on infrastructure, leading to increased energy demand, potential equipment failures, and reduced productivity. For an asset owner or lender, understanding the HeatRisk can help in assessing the vulnerability of assets located in heat-prone areas, thereby informing decisions on insurance, maintenance, and operational strategies to mitigate risks. This is crucial for ensuring the resilience of assets"
+   }
+  ]
+ }
+}

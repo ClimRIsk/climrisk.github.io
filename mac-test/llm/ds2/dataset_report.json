@@ -1,0 +1,28 @@
+{
+ "train": {
+  "refuse": 483,
+  "narr": 186,
+  "qa": 589,
+  "insurer": 560,
+  "gold": 144,
+  "chain": 186
+ },
+ "valid": {
+  "chain": 20,
+  "narr": 18,
+  "refuse": 17,
+  "qa": 7,
+  "gold": 9,
+  "insurer": 48
+ },
+ "test": {
+  "refuse": 20,
+  "chain": 14,
+  "insurer": 64,
+  "qa": 18,
+  "gold": 9,
+  "narr": 16
+ },
+ "passages": 255,
+ "sources": 42
+}
