@@ -330,7 +330,7 @@
   "docs_with_quotes": 1
  },
  "europe-heat-2022": {
-  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+  "error": "no hits"
  },
  "china-drought-2022": {
   "error": "no hits"
@@ -465,7 +465,7 @@
   "docs_with_quotes": 7
  },
  "denver-hail-2017": {
-  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+  "error": "no hits"
  },
  "louisiana-2016": {
   "hits": 30,
@@ -478,7 +478,7 @@
   "docs_with_quotes": 3
  },
  "memorial-day-2015": {
-  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+  "error": "no hits"
  },
  "tax-day-2016": {
   "hits": 1,
@@ -529,5 +529,30 @@
   "hits": 300,
   "docs_tried": 140,
   "docs_with_quotes": 5
+ },
+ "rggi": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 23
+ },
+ "ca-cap-trade": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 36
+ },
+ "eu-ets": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 13
+ },
+ "coal-retire": {
+  "hits": 35,
+  "docs_tried": 34,
+  "docs_with_quotes": 4
+ },
+ "ev-mandate": {
+  "hits": 204,
+  "docs_tried": 140,
+  "docs_with_quotes": 2
  }
 }
