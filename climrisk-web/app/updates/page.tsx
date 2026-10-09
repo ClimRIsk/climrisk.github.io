@@ -6,7 +6,7 @@ import ModelLabGlobe from "../components/ModelLabGlobe";
 export const metadata: Metadata = {
   title: "Updates",
   description:
-    "What changed in the CRI Engine, as it ships. October 2026: the resident agent runs with no API key and an optional fully-local model, and a new Model Lab builds physics-based hazard models from scratch — validated across 37 cities worldwide.",
+    "What changed in the CRI Engine, as it ships. 9 October 2026: a 3D twin of every site, validated against the historical storm and wind record. 8 October 2026: the resident agent runs with no API key and an optional fully-local model, and a new Model Lab builds physics-based hazard models from scratch — validated across 37 cities worldwide.",
 };
 
 // Validated = report.md's "validated" + "validated after diagnosis"; No model = "no model" + "other (too few events to hindcast)".
@@ -43,6 +43,60 @@ export default function UpdatesPage() {
           style={{ left: "5px" }}
           aria-hidden
         />
+
+        {/* ── Entry: 9 October 2026 ───────────────────────────────────── */}
+        <div className="relative pl-10 pb-24">
+          <span className="absolute left-0 top-1.5 w-[11px] h-[11px] rounded-full bg-gold-200 shadow-[0_0_12px_rgba(212,175,55,0.7)]" />
+          <Reveal>
+            <p className="text-xs font-mono text-zinc-600 mb-2">9 October 2026 · App 1.2</p>
+            <h2 className="heading-lg grad-text mb-5">The site, not a dot on a map.</h2>
+            <p className="text-zinc-400 leading-relaxed max-w-2xl mb-14">
+              The Physical Risk Report now comes from somewhere real: a 3D twin of the site itself, built
+              from its own structure footprints and terrain rather than a generic block stand-in. You can
+              step through a flood or cyclone replay, check it against what the site has actually lived
+              through since 1980, and test a flood wall or raised equipment before anyone builds it.
+            </p>
+          </Reveal>
+
+          <Reveal delayMs={60}>
+            <div id="asset-twin" className="scroll-mt-28 mb-16">
+              <h3 className="text-sm font-mono text-gold-200 uppercase tracking-widest mb-4">Asset Twin</h3>
+              <div className="grid sm:grid-cols-3 gap-5">
+                <div className="panel p-6 h-full">
+                  <h4 className="text-sm font-semibold text-white mb-2">Built From the Site's Own Geometry</h4>
+                  <p className="text-xs text-zinc-500 leading-relaxed">
+                    Structures are placed on their real footprints over local terrain, not a generic block
+                    model — so a flood routed over the twin reaches the buildings actually in its path, in
+                    the order water would actually reach them.
+                  </p>
+                </div>
+                <div className="panel p-6 h-full">
+                  <h4 className="text-sm font-semibold text-white mb-2">Checked Against the Historical Record</h4>
+                  <p className="text-xs text-zinc-500 leading-relaxed">
+                    A tropical-storm track archive back to 1980 and an all-cause wind reanalysis to 1950
+                    are replayed against the twin, so a hazard scenario can be measured against what the
+                    site has already lived through, not only what a model projects.
+                  </p>
+                </div>
+                <div className="panel p-6 h-full">
+                  <h4 className="text-sm font-semibold text-white mb-2">A Protection Overlay You Can Test</h4>
+                  <p className="text-xs text-zinc-500 leading-relaxed">
+                    A flood wall, raised equipment or a drainage change gets added to the twin and re-run
+                    through the same solver — so "what remains" after a mitigation is a number from the
+                    model, not an assumption in a slide.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Reveal>
+
+          <Reveal delayMs={100}>
+            <div className="flex flex-wrap gap-4">
+              <Link href="/platform#asset-twin" className="btn-primary">See Asset Twin on the Platform page</Link>
+              <Link href="/contact" className="btn-ghost">Book a Technical Demo</Link>
+            </div>
+          </Reveal>
+        </div>
 
         {/* ── Entry: 8 October 2026 ───────────────────────────────────── */}
         <div className="relative pl-10 pb-24">
