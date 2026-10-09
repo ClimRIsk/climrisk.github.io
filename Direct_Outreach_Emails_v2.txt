@@ -1,0 +1,159 @@
+DIRECT HIRING MANAGER OUTREACH — REVISED TARGET LIST
+Shrinivash Dhamodhara Kannan | shrinivashdkannan@gmail.com
+Date: October 2026
+Status: Ready to send — review and send from your Gmail
+
+NOTE: MSCI, ISS, and WTW are removed (ghost positions / ghosted).
+New targets below all have CONFIRMED ACTIVE ROLES as of Oct 2026.
+
+==========================================================================
+
+CONTACT SHEET
+==========================================================================
+
+Company         | Name                | Title                              | Email                              | Role Applying For
+----------------|---------------------|------------------------------------|------------------------------------|--------------------------------------
+CRISIL          | Rahul Prithiani     | Head, ESG & Sustainability         | rahul.prithiani@crisil.com         | ESG Senior Analyst (Chennai)
+Aon             | Himavant Mulugu     | Asia R&D Lead, Impact Forecasting  | himavant.mulugu@aon.com            | Sr. Consultant R&D Atmospheric Peril (Bengaluru)
+Moody's         | Swami Venkataraman  | AMD, Sustainable Finance           | swami.venkataraman@moodys.com      | VP Sr. Analyst Sustainable Finance Credit (Bengaluru)
+Wood Mackenzie  | Hetal Gandhi        | Lead Carbon Mitigations, APAC      | hetal.gandhi@woodmac.com           | GHG Research Analyst
+
+Email patterns confirmed: firstname.lastname@crisil.com / @aon.com / @moodys.com / @woodmac.com
+
+==========================================================================
+EMAIL 1 — CRISIL | To: Rahul Prithiani | rahul.prithiani@crisil.com
+==========================================================================
+
+Subject: ESG Senior Analyst — Chennai | Direct Application | Shrinivash Kannan
+
+Hi Rahul,
+
+I am reaching out directly because my background maps precisely to what CRISIL's ESG practice is doing.
+
+Over the past year I built CRI Engine v0.4, an open-source climate financial risk platform integrating physical hazard assessment (WRI Aqueduct 4.0, ERA5-Land, CMIP6 downscaling), NGFS Phase 4 transition risk modelling, and DCF-based financial impact across 18 commodity sectors, with automated TCFD, IFRS S2 and CSRD report generation. At Ramco Systems I built the ESG data analytics and BRSR disclosure pipeline for SEBI-mandated reporting — both the quantitative infrastructure and the stakeholder-ready outputs.
+
+I saw the ESG Senior Analyst opening in Chennai and want to be considered. I am based in Chennai, available immediately, and can deliver on climate risk assessments, sustainability reporting and ESG research from day one.
+
+I have attached my CV. Would you have 20 minutes this week?
+
+Regards,
+Shrinivash Dhamodhara Kannan
++91 [your phone] | shrinivashdkannan@gmail.com
+GitHub: [your CRI Engine repo link]
+
+
+==========================================================================
+EMAIL 2 — AON IMPACT FORECASTING | To: Himavant Mulugu | himavant.mulugu@aon.com
+==========================================================================
+
+Subject: Climate Modeler — Sr. Consultant R&D Atmospheric Peril | Bengaluru | Direct Application
+
+Hi Himavant,
+
+I came across your work on integrating climate change projections into Aon's Asia catastrophe models and wanted to reach out directly.
+
+I spent the past year building a 5-layer physical hazard pipeline anchored on WRI Aqueduct 4.0 23-region baseline, SRTM v4.1 GIS flood resolution, sub-grid elevation downscaling (piecewise flood factor 0.20 to 1.25x and WMO heat lapse correction), NASA POWER MERRA-2 live asset-coordinate API, and Open-Meteo CMIP6 delta-downscaling using MRI-AGCM3.2-S bias-corrected to a 2010 reference with IPCC AR6 WG1 Table 4.5 SSP scaling. The flood methodology uses JRC Huizinga 2017 and Swiss Re sector damage fractions — the same family of methods underlying Asia nat-cat models. The pipeline runs on AWS Fargate with xarray and Dask processing ERA5-Land 30-year archives.
+
+I am applying for the Sr. Consultant R&D Atmospheric Peril role in Bengaluru. I hold a Master's in Climate Systems and can contribute immediately to Asia peril model development — flood, heat stress and wind.
+
+CV attached. Would you have 20 minutes this week?
+
+Regards,
+Shrinivash Dhamodhara Kannan
++91 [your phone] | shrinivashdkannan@gmail.com
+GitHub: [your CRI Engine repo link]
+
+
+==========================================================================
+EMAIL 3 — MOODY'S | To: Swami Venkataraman | swami.venkataraman@moodys.com
+==========================================================================
+
+Subject: Sustainable Finance Analyst — Bengaluru Team | Direct Application | Shrinivash Kannan
+
+Hi Swami,
+
+I am writing because your team's work on Net Zero Assessments and carbon transition plans is directly aligned with a platform I have built independently.
+
+CRI Engine v0.4 implements NGFS Phase 4 piecewise carbon price paths from the IIASA database, MACC abatement cost curves, EU ETS free allocation mechanics and WACC scenario premiums across 18 commodity sectors. It produces DCF-based enterprise value impacts under Net Zero 2050, Delayed Transition and Current Policies scenarios — validated against CDP and MSCI benchmarks for Shell, BHP and Rio Tinto. I have in effect built the quantitative infrastructure behind what your team produces in SPOs and NZAs: transition pathway credibility, abatement cost vs. carbon liability, and EV impact under each NGFS scenario. The engine generates TCFD and IFRS S2 compliant disclosures automatically from this model.
+
+I saw the VP Senior Analyst, Sustainable Finance Credit opening in Bengaluru and wanted to reach you directly. I hold a Master's in Climate Systems and 4+ years of quantitative climate-finance work.
+
+CV attached. Would you have 20 minutes this week?
+
+Regards,
+Shrinivash Dhamodhara Kannan
++91 [your phone] | shrinivashdkannan@gmail.com
+GitHub: [your CRI Engine repo link]
+
+
+==========================================================================
+EMAIL 4 — WOOD MACKENZIE | To: Hetal Gandhi | hetal.gandhi@woodmac.com
+==========================================================================
+
+Subject: Carbon/GHG Research Analyst — APAC | Direct Application | Shrinivash Kannan
+
+Hi Hetal,
+
+Your work on carbon mitigations in Asia Pacific directly overlaps with quantitative modelling I have been doing independently.
+
+I built a transition risk engine that implements NGFS Phase 4 carbon price trajectories sourced from the IIASA database, MACC abatement cost curves with sector-specific marginal cost thresholds, and EU ETS free allocation mechanics for 18 commodity sectors across Asia Pacific, Europe and North America. For steel, mining and oil and gas specifically, the model computes net carbon liability, abatement cost under each carbon price path, and stranded asset exposure under Net Zero 2050 and Delayed Transition scenarios through to 2050. This feeds directly into the kind of carbon mitigation strategy and carbon market forecasting research your team publishes on the Asia region.
+
+I am interested in the GHG Research Analyst role. Based in Chennai, with remote availability for the Bengaluru team, I can start immediately.
+
+CV attached. Would you have 20 minutes this week?
+
+Regards,
+Shrinivash Dhamodhara Kannan
++91 [your phone] | shrinivashdkannan@gmail.com
+GitHub: [your CRI Engine repo link]
+
+
+==========================================================================
+TIPS BEFORE SENDING
+==========================================================================
+
+1. Add your phone number where marked [your phone].
+2. Add your GitHub CRI Engine repo URL where marked [your CRI Engine repo link].
+3. Attach the correct PDF CV to each email before sending:
+   - CRISIL (Email 1): use Shrinivash_Climate_Unified_CV.pdf
+   - Aon (Email 2): use Shrinivash_Climate_Unified_CV.pdf
+   - Moody's (Email 3): use Shrinivash_Climate_Unified_CV.pdf
+   - Wood Mackenzie (Email 4): use Shrinivash_Climate_Unified_CV.pdf
+   (All use the Unified CV — it covers all these angles.)
+
+4. Send each from shrinivashdkannan@gmail.com. Do NOT BCC multiple contacts.
+
+5. If no reply in 7 days, send one short follow-up:
+   "Hi [Name], just following up on my message from [date]. Still very keen to talk
+    if you have 20 minutes — happy to work around your schedule."
+   That is it. One follow-up only.
+
+6. LinkedIn parallel: Connect with each person on LinkedIn the same day you email them.
+   Message note: "Hi [Name], I just sent you an email about [Role]. Happy to connect here too."
+   Short. No repeat of full pitch.
+
+==========================================================================
+COMPANIES WITH ACTIVE ROLES — APPLY VIA PORTAL AS BACKUP
+==========================================================================
+
+If direct email gets no response after one follow-up, apply via portal as backup:
+
+CRISIL ESG Senior Analyst Chennai:
+https://jobs.weekday.works/esg-senior-analyst-at-crisil-4388681668
+
+CRISIL ESG Senior Analyst Mumbai:
+https://jobs.weekday.works/esg-senior-analyst-at-crisil-4388678880
+
+CRISIL Senior Consultant Sustainability:
+https://www.terra.do/climate-jobs/job-board/senior-consultant-sustainability-consulting-8391937/
+
+Aon Sr. Consultant R&D Atmospheric Peril Bengaluru:
+https://joinsaarthi.com/jobs/aon/sr-consultant-rd-atmospheric-peril-bengaluru/
+
+Moody's VP Sr. Analyst Sustainable Finance Credit:
+https://careers.moodys.com/vp-senior-analyst-sustainable-finance-credit/job/28943253
+
+Moody's AVP Mgr Financial Data & Analytics (Sustainable Finance) Bengaluru:
+https://careers.moodys.com/avp-mgr-fin-data-and-analytics/job/28733106
+
+==========================================================================

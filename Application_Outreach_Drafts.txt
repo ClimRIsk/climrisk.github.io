@@ -1,0 +1,153 @@
+═══════════════════════════════════════════════════════════════════════════════
+SHRINIVASH — JOB APPLICATION OUTREACH DRAFTS
+Prepared: October 2026
+═══════════════════════════════════════════════════════════════════════════════
+
+NOTE: Attach Shrinivash_Climate_Unified_CV.pdf to all below.
+      For WTW roles, attach it to the Shankar Reddy email.
+      For MSCI / ISS portals, paste the cover statement into the portal field.
+
+───────────────────────────────────────────────────────────────────────────────
+[1] WTW — PERSONAL EMAIL TO SHANKAR REDDY
+     (Re: both WTW India climate roles open right now)
+     TO: [Shankar Reddy's WTW email — confirm before sending]
+     SUBJECT: Following up — Climate Transition Risk & Cat Risk roles at WTW
+───────────────────────────────────────────────────────────────────────────────
+
+Hi Shankar,
+
+Hope you're well. I've been meaning to follow up with you for a few weeks —
+I've been heads-down finishing a major build at ClimRisk B.V. but I'm now
+actively looking for my next role.
+
+I noticed WTW has two open positions right now that are a direct match for
+what I've been doing:
+
+  1. Analyst/Associate – Climate Transition Risk (Job 202604399)
+  2. Climate & Catastrophe Risk Associate/Analyst (Job 202601456)
+
+For context on what I've built at ClimRisk: I designed the full CRI Engine
+from scratch — a Python agentic AI that runs NGFS Phase 4 transition risk
+modelling (piecewise carbon price paths, MACC abatement curves, 18 sectors,
+full DCF 2026–2050) alongside a 5-layer physical hazard pipeline integrating
+WRI Aqueduct 4.0, SRTM v4.1 GIS, NASA POWER MERRA-2 and Open-Meteo CMIP6
+delta-downscaling. The financial modelling side — quantifying transition risk
+impact on company EV — is exactly what the WTW Climate Practice team does.
+Validated outputs on Tata Steel, Delta Air Lines, Carnival and UltraTech
+Cement; portfolio VaR $62.9B under Delayed Transition.
+
+I've applied through the WTW portal directly, but given we've spoken before,
+I wanted to flag my application personally. Happy to talk through the work
+whenever works for you.
+
+Best,
+Shrinivash
++91 7502501243
+linkedin.com/in/shrinivashdkannan
+
+───────────────────────────────────────────────────────────────────────────────
+[2] MSCI — PORTAL COVER STATEMENT (Pune, Climate Data Analyst — Ref 2026-4818)
+     Paste into the cover letter / additional information field on the portal
+     URL: https://careers.msci.com/job/data-and-operations/pune/climate-data-analyst/2026-4818
+───────────────────────────────────────────────────────────────────────────────
+
+I am applying for the Climate Data Analyst role in Pune (Ref 2026-4818).
+
+I bring 5 years of direct experience in climate data research, GHG accounting
+and climate disclosure — exactly the work your team does for the 14,000-company
+carbon metrics dataset. At The Ramco Cements, I built a GHG accounting
+framework across 4 facilities under ISO 14064/67, GHG Protocol and SBTi,
+quantifying approximately 450,000 tCO2e annually across Scope 1 and Scope 2
+sources, and produced BRSR-aligned sustainability disclosures for SEBI reporting.
+
+At ClimRisk B.V., I designed the CRI Engine — a Python-based platform that
+processes carbon footprint data, climate change targets (TCFD / IFRS S2 / CSRD),
+and NGFS Phase 4 transition scenarios for listed companies. I work daily with
+exactly the data types your role describes: sustainability reports, quantitative
+data feeds, and third-party data validation. My ISO 14067 Carbon Footprint
+accreditation and MSc in Urban Environment and Climate Change from Erasmus
+University Rotterdam complement this directly.
+
+I am particularly drawn to MSCI because your methodology is the industry
+standard I already validate against in my own work.
+
+───────────────────────────────────────────────────────────────────────────────
+[3] ISS — PORTAL / EMAIL COVER STATEMENT (Climate Research Analyst, Mumbai)
+     Apply via: https://to.indeed.com/aayftnkmxn7d
+───────────────────────────────────────────────────────────────────────────────
+
+I am applying for the Climate Research Analyst position at ISS in Mumbai.
+
+My background sits at the intersection of climate science and financial risk
+research — the core of this role. At ClimRisk B.V., I built the CRI Engine:
+a full-stack Python platform running NGFS Phase 4 climate scenarios and
+asset-level physical risk assessments across 25 hazard types. I produced
+validated research outputs — Tata Steel, Delta Air Lines, Carnival, UltraTech
+Cement — validated against CDP/MSCI climate ratings for Shell, BHP and Rio
+Tinto. These are exactly the kinds of company-level climate assessments your
+team produces.
+
+Before ClimRisk, I built GHG accounting frameworks for Ramco Cements across
+4 manufacturing facilities under ISO 14064/67 and GHG Protocol, and led
+climate risk GIS analysis across 250 municipal properties for the Municipality
+of Rotterdam under the C40 ICAR programme. I hold an MSc in Urban Environment,
+Sustainability and Climate Change from Erasmus University Rotterdam and an
+ISO 14067 Product Carbon Footprint accreditation.
+
+I am a fast, independently working researcher who is comfortable with both
+quantitative climate data and written climate risk analysis — I look forward to
+the opportunity to discuss.
+
+───────────────────────────────────────────────────────────────────────────────
+[4] CRISIL — COVER STATEMENT (ESG Senior Analyst, Mumbai/Chennai)
+     Apply via: https://jobs.weekday.works/esg-senior-analyst-at-crisil-4388678880
+───────────────────────────────────────────────────────────────────────────────
+
+I am applying for the ESG Senior Analyst position at CRISIL.
+
+I have 5 years of experience in climate risk assessment, GHG accounting and
+ESG disclosure — directly aligned to this role. At ClimRisk B.V. I built an
+end-to-end climate risk analytics engine that runs NGFS transition-risk
+scenarios, CDP/MSCI-validated company-level climate assessments, and automated
+TCFD/CSRD/IFRS S2 report outputs. I am deeply familiar with MSCI, CDP and
+Sustainalytics methodologies, which I use as calibration benchmarks.
+
+At Ramco Cements, I delivered GHG accounting (ISO 14064/67, GHG Protocol, SBTi)
+across 4 cement manufacturing facilities, produced BRSR sustainability disclosures
+under SEBI mandate, and developed NGFS Phase 4 transition-risk cost projections
+for carbon policy exposure. This gives me direct practitioner experience on both
+the data provider side and the corporate disclosure side.
+
+I hold an MSc from Erasmus University Rotterdam and am based in Chennai — the
+CRISIL Chennai office would be ideal. Happy to discuss at your convenience.
+
+───────────────────────────────────────────────────────────────────────────────
+[5] WOOD MACKENZIE — COVER STATEMENT (Research Analyst – GHG, Hyderabad)
+     Apply via: https://www.terra.do/climate-jobs/job-board/research-analyst-greenhouse-gases-8363941
+───────────────────────────────────────────────────────────────────────────────
+
+I am applying for the Research Analyst – Greenhouse Gases role at Wood Mackenzie.
+
+I combine deep GHG technical expertise with a data-science toolkit — exactly
+the combination this role requires. At ClimRisk B.V. I built Python-based
+NGFS Phase 4 transition-risk models covering carbon price paths, MACC abatement
+curves and EU ETS free allocation analysis across 18 commodity sectors. My
+financial modelling (full DCF 2026–2050 with WACC decomposed into base rate,
+scenario premium and exposure premium) gives me the ability to translate GHG
+analysis into direct business impact.
+
+At Ramco Cements, I delivered ISO 14064/67 GHG accounting across 4 manufacturing
+facilities (~450,000 tCO2e annually) and supported BEE PAT energy efficiency
+benchmarking. I hold an ISO 14067 Product Carbon Footprint accreditation and
+an MSc in Urban Environment, Sustainability and Climate Change from Erasmus
+University Rotterdam.
+
+Wood Mackenzie's energy transition research is the gold standard, and I am
+eager to contribute to it.
+
+═══════════════════════════════════════════════════════════════════════════════
+APPLICATION PRIORITY ORDER:
+  TODAY (T1): WTW Transition Risk, WTW Cat Risk, MSCI Pune, ISS Climate
+  THIS WEEK (T2): ISS ESG Controversies, CRISIL, Wood Mackenzie
+  HOLD (T3): Accenture, MSCI Client Service, WSP
+═══════════════════════════════════════════════════════════════════════════════

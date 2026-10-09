@@ -347,5 +347,187 @@
   "hits": 12,
   "docs_tried": 12,
   "docs_with_quotes": 0
+ },
+ "charley-2004": {
+  "hits": 272,
+  "docs_tried": 140,
+  "docs_with_quotes": 12
+ },
+ "frances-2004": {
+  "hits": 190,
+  "docs_tried": 140,
+  "docs_with_quotes": 10
+ },
+ "ivan-2004": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 15
+ },
+ "jeanne-2004": {
+  "hits": 117,
+  "docs_tried": 117,
+  "docs_with_quotes": 18
+ },
+ "dennis-2005": {
+  "hits": 123,
+  "docs_tried": 123,
+  "docs_with_quotes": 19
+ },
+ "dean-2007": {
+  "hits": 42,
+  "docs_tried": 42,
+  "docs_with_quotes": 6
+ },
+ "hanna-2020": {
+  "hits": 12,
+  "docs_tried": 12,
+  "docs_with_quotes": 6
+ },
+ "henri-2021": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 2
+ },
+ "nicholas-2021": {
+  "hits": 10,
+  "docs_tried": 10,
+  "docs_with_quotes": 2
+ },
+ "lee-2011": {
+  "hits": 68,
+  "docs_tried": 68,
+  "docs_with_quotes": 8
+ },
+ "fay-2008": {
+  "hits": 61,
+  "docs_tried": 61,
+  "docs_with_quotes": 13
+ },
+ "lane-2018": {
+  "hits": 12,
+  "docs_tried": 12,
+  "docs_with_quotes": 0
+ },
+ "debby-2024": {
+  "hits": 35,
+  "docs_tried": 35,
+  "docs_with_quotes": 15
+ },
+ "francine-2024": {
+  "hits": 21,
+  "docs_tried": 21,
+  "docs_with_quotes": 8
+ },
+ "otis-2023": {
+  "hits": 15,
+  "docs_tried": 15,
+  "docs_with_quotes": 4
+ },
+ "haiyan-2013": {
+  "hits": 12,
+  "docs_tried": 12,
+  "docs_with_quotes": 1
+ },
+ "hato-2017": {
+  "hits": 8,
+  "docs_tried": 8,
+  "docs_with_quotes": 3
+ },
+ "mangkhut-2018": {
+  "hits": 8,
+  "docs_tried": 8,
+  "docs_with_quotes": 6
+ },
+ "debbie-2017": {
+  "hits": 83,
+  "docs_tried": 83,
+  "docs_with_quotes": 35
+ },
+ "jonas-2016": {
+  "hits": 14,
+  "docs_tried": 14,
+  "docs_with_quotes": 2
+ },
+ "bomb-cyclone-2018": {
+  "hits": 5,
+  "docs_tried": 5,
+  "docs_with_quotes": 0
+ },
+ "tx-drought-2011": {
+  "error": "no hits"
+ },
+ "moore-2013": {
+  "error": "no hits"
+ },
+ "tuscaloosa-2011": {
+  "hits": 263,
+  "docs_tried": 140,
+  "docs_with_quotes": 7
+ },
+ "denver-hail-2017": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "louisiana-2016": {
+  "hits": 30,
+  "docs_tried": 30,
+  "docs_with_quotes": 8
+ },
+ "nashville-2010": {
+  "hits": 14,
+  "docs_tried": 14,
+  "docs_with_quotes": 3
+ },
+ "memorial-day-2015": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "tax-day-2016": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "missouri-2011": {
+  "hits": 15,
+  "docs_tried": 15,
+  "docs_with_quotes": 2
+ },
+ "midwest-2008": {
+  "hits": 17,
+  "docs_tried": 17,
+  "docs_with_quotes": 1
+ },
+ "carr-2018": {
+  "hits": 12,
+  "docs_tried": 12,
+  "docs_with_quotes": 7
+ },
+ "thomas-2017": {
+  "hits": 17,
+  "docs_tried": 17,
+  "docs_with_quotes": 3
+ },
+ "kincade-2019": {
+  "hits": 27,
+  "docs_tried": 27,
+  "docs_with_quotes": 8
+ },
+ "gatlinburg-2016": {
+  "hits": 13,
+  "docs_tried": 13,
+  "docs_with_quotes": 0
+ },
+ "waldo-2012": {
+  "hits": 5,
+  "docs_tried": 5,
+  "docs_with_quotes": 3
+ },
+ "ira-2022": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 27
+ },
+ "cpp-2015": {
+  "hits": 300,
+  "docs_tried": 140,
+  "docs_with_quotes": 5
  }
 }
