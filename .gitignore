@@ -84,3 +84,6 @@ mac-test/run.log
 mac-test/*.log
 mac-test/e2e.json
 mac-test/DONE
+
+# Private: reviewer pack, issued licences
+Investor_Reviewer_Pack/

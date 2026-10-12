@@ -48,6 +48,7 @@ contextBridge.exposeInMainWorld('climrisk', {
   // ── License ─────────────────────────────────────────────────────────────────
 
   /** Returns the stored license key synchronously (null if none). */
+  getLicenceStatus: () => ipcRenderer.invoke('get-licence-status'),
   getLicenseKeySync: () => ipcRenderer.sendSync('get-license-key-sync'),
 
   /** Returns full license info: { key, tier, email, expiresAt } */

@@ -43,7 +43,7 @@ say "Installing the ClimRisk engine (first run downloads ~300 MB of scientific l
 # ~/.climrisk/engine-src and installed from there. Re-run this script after pulling engine changes.
 SRC_COPY="$HOME_DIR/engine-src"
 case "$ENGINE_DIR" in
-  "$HOME"/Documents/*|"$HOME"/Desktop/*|"$HOME"/Downloads/*)
+  "$HOME"/Documents/*|"$HOME"/Desktop/*|"$HOME"/Downloads/*|*.app/*)
     say "Mirroring the engine to $SRC_COPY (macOS blocks apps from reading Documents)"
     mkdir -p "$SRC_COPY"
     rsync -a --delete --exclude .git --exclude __pycache__ --exclude '*.egg-info' --exclude build --exclude tests "$ENGINE_DIR/" "$SRC_COPY/"

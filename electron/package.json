@@ -55,6 +55,37 @@
       {
         "from": "setup-local-engine.sh",
         "to": "setup-local-engine.sh"
+      },
+      {
+        "from": "setup-local-engine.ps1",
+        "to": "setup-local-engine.ps1"
+      },
+      {
+        "from": "setup-local-llm.sh",
+        "to": "setup-local-llm.sh"
+      },
+      {
+        "from": "setup-local-llm.ps1",
+        "to": "setup-local-llm.ps1"
+      },
+      {
+        "from": "model",
+        "to": "model"
+      },
+      {
+        "from": "${env.CLIMRISK_ENGINE_SRC}",
+        "to": "engine",
+        "filter": [
+          "**/*",
+          "!**/tests/**",
+          "!**/__pycache__/**",
+          "!**/.cache/**",
+          "!**/data/training/**",
+          "!**/data/backtest/raw/**",
+          "!**/build/**",
+          "!**/.git/**",
+          "!**/*.egg-info/**"
+        ]
       }
     ],
     "mac": {
@@ -103,8 +134,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "createStartMenuShortcut": true,
-      "shortcutName": "ClimRisk Intelligence",
-      "installerSidebar": "assets/installer-sidebar.bmp"
+      "shortcutName": "ClimRisk Intelligence"
     }
   },
   "allowScripts": {

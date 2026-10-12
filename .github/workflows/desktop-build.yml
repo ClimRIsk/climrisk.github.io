@@ -1,0 +1,46 @@
+# Builds the ClimRisk desktop installers on real macOS and Windows machines. Manual run only (Actions tab > "Desktop installers" > Run workflow).
+# Needs a repository secret ENGINE_REPO_TOKEN: a fine-grained token with read access to ClimRIsk/climrisk-engine (the engine source is bundled into the installer).
+# The licence PUBLIC key must already be committed in the engine repo (src/cri/data/licence_public.pem); the private key never goes near CI.
+name: Desktop installers
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            target: --mac
+          - os: windows-latest
+            target: --win
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: ClimRIsk/climrisk-engine
+          token: ${{ secrets.ENGINE_REPO_TOKEN }}
+          path: engine-src
+      - name: Refuse to build without the licence public key
+        shell: bash
+        run: test -s engine-src/climate_risk_engine/src/cri/data/licence_public.pem
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Build installer
+        working-directory: electron
+        shell: bash
+        env:
+          CLIMRISK_ENGINE_SRC: ${{ github.workspace }}/engine-src/climate_risk_engine
+        run: |
+          npm ci
+          npx electron-builder ${{ matrix.target }} --publish never
+      - uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: |
+            electron/dist/*.dmg
+            electron/dist/*.exe

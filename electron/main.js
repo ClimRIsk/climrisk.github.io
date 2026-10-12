@@ -61,39 +61,34 @@ function resPath(filename) {
 
 // ── License helpers ───────────────────────────────────────────────────────────
 async function validateLicenseKey(key) {
-  if (!key || key.length < 4) return { valid: false, reason: 'Key too short' };
-
-  // Demo / owner keys — instant validation
-  const KNOWN = {
-    'CRI2026':      { tier: 'Professional', email: 'demo@climrisk.io', expiresAt: '2027-12-31' },
-    'OWNER':        { tier: 'Enterprise',   email: 'shri@climrisk.io', expiresAt: '2099-12-31' },
-    'CRI-ANALYST':  { tier: 'Analyst',      email: 'analyst@climrisk.io', expiresAt: '2027-06-30' }
-  };
-  if (KNOWN[key.toUpperCase()]) {
-    return { valid: true, ...KNOWN[key.toUpperCase()] };
-  }
-
-  // Unknown key — ask the local engine (offline grace if it is not running)
+  // Evaluation licences are signed by ClimRisk and verified offline by the local engine (cri.licence).
+  // There are no built-in keys and no "offline grace": an unverifiable key is simply refused.
+  if (!key || key.length < 40) return { valid: false, error: 'That does not look like a complete licence key. Paste the whole key from your email.' };
+  if (!engineInfo) return { valid: false, error: 'The local engine is not running yet. Wait a moment and try again.' };
   try {
-    if (!engineInfo) throw new Error('local engine not running');
-    const res = await fetch(`${engineInfo.url}/license/validate`, {
+    const res = await fetch(`${engineInfo.url}/licence/install`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-API-Key': key },
+      headers: { 'Content-Type': 'application/json', 'X-API-Key': engineInfo.token },
       body: JSON.stringify({ key }),
       signal: AbortSignal.timeout(15000)
     });
-    if (res.ok) {
-      const data = await res.json();
-      return { valid: true, tier: data.tier, email: data.email, expiresAt: data.expires_at };
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data.allowed) {
+      return { valid: true, tier: 'Evaluation', email: data.licensee, expiresAt: data.ends, daysLeft: data.days_left, remaining: data.remaining };
     }
-    if (res.status === 403) return { valid: false, reason: 'License key not recognised' };
-    return { valid: false, reason: `Server error ${res.status}` };
+    const d = data.detail || data;
+    return { valid: false, error: d.message || 'The licence key was rejected.' };
   } catch (err) {
-    // If server is unreachable, allow offline grace with a warning
-    console.warn('[CRI] License server unreachable — offline grace:', err.message);
-    return { valid: true, tier: 'Professional', email: 'offline@climrisk.io',
-             expiresAt: null, offline: true };
+    return { valid: false, error: 'Could not reach the local engine: ' + err.message };
   }
+}
+
+async function engineLicenceStatus() {
+  if (!engineInfo) return { allowed: false, state: 'none' };
+  try {
+    const res = await fetch(`${engineInfo.url}/licence/status`, { headers: { 'X-API-Key': engineInfo.token }, signal: AbortSignal.timeout(8000) });
+    return await res.json();
+  } catch (_) { return { allowed: false, state: 'none' }; }
 }
 
 // ── License window ────────────────────────────────────────────────────────────
@@ -350,9 +345,12 @@ function closeSplash() {
 }
 
 // Packaged: shipped outside the asar archive (extraResources) so Terminal can run it
-const SETUP_SCRIPT = IS_DEV ? path.join(__dirname, 'setup-local-engine.sh')
-                            : path.join(process.resourcesPath, 'setup-local-engine.sh');
-const SETUP_CMD = 'bash "' + SETUP_SCRIPT + '"';
+const SETUP_DIR = IS_DEV ? __dirname : process.resourcesPath;
+const ENGINE_SRC_ARG = IS_DEV ? '' : ' "' + path.join(process.resourcesPath, 'engine') + '"';      // packaged builds carry the engine source
+const SETUP_CMD = IS_WIN
+  ? 'powershell -NoProfile -ExecutionPolicy Bypass -File "' + path.join(SETUP_DIR, 'setup-local-engine.ps1') + '"' + ENGINE_SRC_ARG
+  : 'bash "' + path.join(SETUP_DIR, 'setup-local-engine.sh') + '"' + ENGINE_SRC_ARG;
+const SETUP_SHELL = IS_WIN ? 'PowerShell' : 'Terminal';
 
 async function startLocalEngine() {
   for (;;) {
@@ -368,7 +366,7 @@ async function startLocalEngine() {
       title: 'ClimRisk engine',
       message: r.setupRequired ? 'The local analysis engine is not installed yet.' : 'The local analysis engine could not start.',
       detail: r.setupRequired
-        ? 'One-time setup (about 5 minutes). In Terminal run:\n\n' + SETUP_CMD +
+        ? 'One-time setup (about 5 minutes). In ' + SETUP_SHELL + ' run:\n\n' + SETUP_CMD +
           '\n\nThen choose Retry.'
         : r.error
     });
@@ -376,7 +374,7 @@ async function startLocalEngine() {
     if (choice === 'Quit') { isQuitting = true; app.quit(); return false; }
     if (choice === 'Show setup steps') {
       await dialog.showMessageBox({ type: 'info', title: 'Set up the local engine',
-        message: 'Run this once in Terminal, then choose Retry:', detail: SETUP_CMD +
+        message: 'Run this once in ' + SETUP_SHELL + ', then choose Retry:', detail: SETUP_CMD +
         '\n\nOptional: put GROQ_API_KEY=... in ' + path.join(HOME_DIR, 'engine.env') + ' to enable AI deep dive.' });
     }
     if (choice === 'Open log' && r.logFile) shell.openPath(r.logFile);
@@ -426,6 +424,8 @@ ipcMain.handle('validate-and-save-license', async (_, key) => {
   return result;
 });
 
+ipcMain.handle('get-licence-status', () => engineLicenceStatus());
+
 ipcMain.handle('clear-license', () => {
   store.delete('licenseKey');
   store.delete('licenseTier');
@@ -469,11 +469,13 @@ app.whenReady().then(async () => {
   closeSplash();
   if (!ready) return;               // user chose Quit
 
-  const storedKey = store.get('licenseKey');
-  if (storedKey) {
+  const lic = await engineLicenceStatus();
+  if (lic.allowed) {
+    store.set('licenseTier', 'Evaluation'); store.set('licenseEmail', lic.licensee || '');
+    if (!store.get('licenseKey')) store.set('licenseKey', 'evaluation');
     createMainWindow();
   } else {
-    createLicenseWindow();
+    createLicenseWindow();      // none, expired, exhausted, tampered or invalid: the activation screen says which
   }
 
   createTray();
@@ -482,8 +484,7 @@ app.whenReady().then(async () => {
   // Re-create main window on dock click (Mac)
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
-      if (store.get('licenseKey')) createMainWindow();
-      else createLicenseWindow();
+      engineLicenceStatus().then(l => (l.allowed ? createMainWindow() : createLicenseWindow()));
     } else {
       showMainWindow();
     }

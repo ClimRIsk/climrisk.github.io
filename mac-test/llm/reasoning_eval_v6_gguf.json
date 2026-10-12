@@ -1,0 +1,356 @@
+{
+ "_meta": {
+  "rows": 140,
+  "seed": 3,
+  "limit": 120
+ },
+ "oracle (rule-based teacher)": {
+  "metrics": {
+   "n": 140,
+   "verdict_accuracy": 1.0,
+   "ood_verdict_accuracy": 1.0,
+   "near_limit_verdict_accuracy": 1.0,
+   "ablation_not_computable": 1.0,
+   "distractor_verdict_ok": 1.0,
+   "distractor_ignored": 1.0,
+   "sensitivity_pairs": 24,
+   "sensitivity_flip_pairs": 5,
+   "sensitivity_follows_change": 1.0,
+   "sensitivity_consistent_when_no_flip": 1.0,
+   "format": 1.0,
+   "numbers_in_sources": 1.0,
+   "citations_exist": 1.0,
+   "facts_cited": 1.0,
+   "inferences_grounded": 1.0,
+   "attribution_correct": 1.0,
+   "all_checks_pass": 1.0
+  },
+  "composite": 1.0
+ },
+ "_baselines": {
+  "always_the_commonest_verdict": {
+   "verdict": "BREACH",
+   "verdict_accuracy": 0.5
+  },
+  "ignore_the_change": {
+   "sensitivity_follows_change": 0.0,
+   "note": "answering the base verdict for the variant is wrong on every pair whose true verdict changes"
+  },
+  "verdict_counts": {
+   "PASS": 23,
+   "PASS-TIGHT": 12,
+   "NO-COVENANT": 11,
+   "BREACH": 46
+  }
+ },
+ "climrisk-llm-v6-gguf": {
+  "metrics": {
+   "n": 140,
+   "verdict_accuracy": 1.0,
+   "ood_verdict_accuracy": 1.0,
+   "near_limit_verdict_accuracy": 1.0,
+   "ablation_not_computable": 1.0,
+   "distractor_verdict_ok": 1.0,
+   "distractor_ignored": 0.958,
+   "sensitivity_pairs": 24,
+   "sensitivity_flip_pairs": 5,
+   "sensitivity_follows_change": 1.0,
+   "sensitivity_consistent_when_no_flip": 1.0,
+   "format": 1.0,
+   "numbers_in_sources": 0.993,
+   "citations_exist": 1.0,
+   "facts_cited": 0.979,
+   "inferences_grounded": 1.0,
+   "attribution_correct": 0.802,
+   "all_checks_pass": 0.8
+  },
+  "composite": 0.9726,
+  "seconds": 7070,
+  "failures": [
+   {
+    "pair": "p5-979",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation"
+    ]
+   },
+   {
+    "pair": "p5-3938",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2220",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2220",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3040",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NOT-COMPUTABLE",
+    "problems": [
+     "numbers not in the sources: ['72.6']"
+    ]
+   },
+   {
+    "pair": "p5-119",
+    "role": "distractor",
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "cited a source that does not bear on the question"
+    ]
+   },
+   {
+    "pair": "p5-1283",
+    "role": "distractor",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1775",
+    "role": "distractor",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-630",
+    "role": "distractor",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1456",
+    "role": "distractor",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3634",
+    "role": "distractor",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1225",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-71",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-131",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation"
+    ]
+   },
+   {
+    "pair": "p5-3895",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2988",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation"
+    ]
+   },
+   {
+    "pair": "ood5-275",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-214",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-49",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-190",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-290",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-267",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-55",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   }
+  ],
+  "samples": [
+   {
+    "expected": "PASS",
+    "got": "PASS",
+    "answer": "STEP 1 [FACT] Westmere Chemicals Group faces a earthquake loss with asset damage of 242.0, insured recovery of 126.7 and extra costs of 7.6 [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 115.3 and the EBITDA hit at 7.6, so the pre-tax loss is 122.9, which is 72.4% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is very large: it exceeds half a year of EBITDA; it is driven by uninsured damage, and insurance covers only part of the damage.\nSTEP 4 [FACT] After the loss EBITDA is 162.1 and net debt is 191.6; net debt/EBITDA moves from 0.40x to 1.18x [6].\nSTEP 5 [FACT] The net debt/EBITDA test is 1.18x against a limit of at most 2.28x: pass with headroom of 48.2%; before the loss it was a pass [7].\nSTEP 6 [FACT] The EBITDA/interest test is 70.48x against a limit of at least 44.25x: pass with headroom of 59.3%; before the loss it was a pass [7].\nSTEP 7 [FACT] The equity/total assets test is 46.5% against a limit of at least 28.3%: pass with headroom of 64.2%; before the loss it was a pass [7].\nSTEP 8 [INFERENCE from 5, 6, 7] Every covenant still passes with room to spare, so on these inputs the loss does not threaten the lending terms.\nSTEP 9 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: PASS\nCHECK NEXT: whether the loss inputs are complete, for example other sites or interruption cover; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "answer": "STEP 1 [FACT] Westmere Chemicals Group faces a earthquake loss with asset damage of 242.0, no insured recovery and extra costs of 7.6 [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 242.0 and the EBITDA hit at 7.6, so the pre-tax loss is 249.6, which is 147.1% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is very large: it exceeds half a year of EBITDA; it is driven by uninsured damage, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 162.1 and net debt is 318.3; net debt/EBITDA moves from 0.40x to 1.96x [6].\nSTEP 5 [FACT] The net debt/EBITDA test is 1.96x against a limit of at most 2.28x: pass, under 15% headroom with headroom of 13.9%; before the loss it was a pass [7].\nSTEP 6 [FACT] The EBITDA/interest test is 70.48x against a limit of at least 44.25x: pass with headroom of 59.3%; before the loss it was a pass [7].\nSTEP 7 [FACT] The equity/total assets test is 39.8% against a limit of at least 28.3%: pass with headroom of 40.8%; before the loss it was a pass [7].\nSTEP 8 [INFERENCE from 5, 6, 7] No covenant is breached, but net debt/EBITDA and equity/total assets is within 15% of its limit, so a slightly larger loss or a slower insurance payment could tip it.\nSTEP 9 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: PASS-TIGHT (net debt/EBITDA, equity/total assets)\nCHECK NEXT: how much of the remaining headroom a larger loss, a lower margin or a slower insurance payment would use; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": "NO-COVENANT",
+    "answer": "STEP 1 [FACT] Pinecrest Systems Inc faces a cyclone loss with asset damage of 324.9, no insured recovery, and 315.3 of lost revenue from interruption [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 324.9 and the EBITDA hit at 37.0, so the pre-tax loss is 361.9, which is 66.3% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is very large: it exceeds half a year of EBITDA; it is driven by uninsured damage, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 509.1 and net debt is 2,024.7; net debt/EBITDA moves from 3.04x to 3.98x [6].\nSTEP 5 [FACT] No covenants were supplied, so there is nothing to test [7].\nSTEP 6 [INFERENCE from 5] With no covenants supplied the effect can be stated only as a change in the ratios, not as a breach or a pass.\nSTEP 7 [PRECEDENT] In Typhoon Jebi: the driver was typhoon storm surge and wind in the Osaka Bay area [9].\nSTEP 8 [INFERENCE from 7, 3] Analysis (not stated in the sources): past cases suggest checking physical damage to buildings and equipment, disruption passed on through suppliers and customers and lost revenue while the site or service is closed as well as direct damage.\nSTEP 9 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: NO-COVENANT\nCHECK NEXT: which financial tests the lenders actually apply, then rerun this analysis with them; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": "NO-COVENANT",
+    "answer": "STEP 1 [FACT] Pinecrest Systems Inc faces a cyclone loss with asset damage of 97.5, no insured recovery, and 94.6 of lost revenue from interruption [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 97.5 and the EBITDA hit at 11.1, so the pre-tax loss is 108.6, which is 19.9% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is large relative to annual earnings; it is driven by uninsured damage, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 535.0 and net debt is 1,771.4; net debt/EBITDA moves from 3.04x to 3.31x [6].\nSTEP 5 [FACT] No covenants were supplied, so there is nothing to test [7].\nSTEP 6 [INFERENCE from 5] With no covenants supplied the effect can be stated only as a change in the ratios, not as a breach or a pass.\nSTEP 7 [PRECEDENT] In Typhoon Jebi: the driver was typhoon storm surge and wind in the Osaka Bay area [9].\nSTEP 8 [INFERENCE from 7, 3] Analysis (not stated in the sources): past cases suggest checking physical damage to buildings and equipment, lost revenue while the site or service is closed and disruption passed on through suppliers and customers as well as direct damage.\nSTEP 9 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: NO-COVENANT\nCHECK NEXT: which financial tests the lenders actually apply, then rerun this analysis with them; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "answer": "STEP 1 [FACT] Pinecrest Materials Holdings faces a cold loss with asset damage of 12.1, no insured recovery and 9.8 of lost revenue from interruption [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 12.1 and the EBITDA hit at 1.5, so the pre-tax loss is 13.6, which is 37.5% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is large relative to annual earnings; it is driven by uninsured damage, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 34.9 and net debt is 116.2; net debt/EBITDA moves from 2.82x to 3.33x [6].\nSTEP 5 [FACT] The net debt/EBITDA test is 3.33x against a limit of at most 3.37x: pass, under 15% headroom with headroom of 1.1%; before the loss it was a pass [7].\nSTEP 6 [FACT] The EBITDA/interest test is 4.01x against a limit of at least 3.79x: pass, under 15% headroom with headroom of 5.7%; before the loss it was a pass [7].\nSTEP 7 [INFERENCE from 5, 6] No covenant is breached, but net debt/EBITDA and EBITDA/interest is within 15% of its limit, so a slightly larger loss or a slower insurance payment could tip it.\nSTEP 8 [PRECEDENT] In Typhoon Jebi: the driver was typhoon storm surge and wind in the Osaka Bay area [9].\nSTEP 9 [INFERENCE from 8, 3] Analysis (not stated in the sources): past cases suggest checking physical damage to buildings and equipment, lost revenue while the site or service is closed and disruption passed on through suppliers and customers as well as direct damage.\nSTEP 10 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: PASS-TIGHT (net debt/EBITDA, EBITDA/interest)\nCHECK NEXT: how much of the remaining headroom a larger loss, a lower margin or a slower insurance payment would use; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "PASS",
+    "got": "PASS",
+    "answer": "STEP 1 [FACT] Pinecrest Materials Holdings faces a cold loss with asset damage of 12.1, no insured recovery and 9.8 of lost revenue from interruption [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 12.1 and the EBITDA hit at 1.5, so the pre-tax loss is 13.6, which is 37.5% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is large relative to annual earnings; it is driven by uninsured damage, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 34.9 and net debt is 116.2; net debt/EBITDA moves from 2.82x to 3.33x [6].\nSTEP 5 [FACT] The net debt/EBITDA test is 3.33x against a limit of at most 4.04x: pass with headroom of 17.5%; before the loss it was a pass [7].\nSTEP 6 [FACT] The EBITDA/interest test is 4.01x against a limit of at least 3.16x: pass with headroom of 26.8%; before the loss it was a pass [7].\nSTEP 7 [INFERENCE from 5, 6] Every covenant still passes with room to spare, so on these inputs the loss does not threaten the lending terms.\nSTEP 8 [PRECEDENT] In Typhoon Jebi: the driver was typhoon storm surge and wind in the Osaka Bay area [9].\nSTEP 9 [INFERENCE from 8, 3] Analysis (not stated in the sources): past cases suggest checking physical damage to buildings and equipment, disruption passed on through suppliers and customers and lost revenue while the site or service is closed as well as direct damage.\nSTEP 10 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: PASS\nCHECK NEXT: whether the loss inputs are complete, for example other sites or interruption cover; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   }
+  ]
+ }
+}

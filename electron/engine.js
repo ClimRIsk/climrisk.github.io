@@ -100,6 +100,7 @@ class LocalEngine {
       CRI_CACHE_DIR: path.join(HOME_DIR, 'cache'),
       PYTHONUNBUFFERED: '1',
       CLIMRISK_LOCAL: '1',
+      CRI_LICENCE_MODE: 'required',          // trial limits are enforced by the engine (cri.licence)
     };
     delete env.API_KEYS;
 

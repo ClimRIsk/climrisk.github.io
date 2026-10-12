@@ -209,8 +209,7 @@
 
     <h2>Activate your licence</h2>
     <p class="subtitle">
-      Enter the licence key from your confirmation email to unlock the full platform.
-      Your key is bound to this device.
+      Paste the whole licence key from your email. It is verified on this computer and starts your evaluation period; it is not sent anywhere.
     </p>
 
     <div class="field">
@@ -219,7 +218,7 @@
         <input
           type="text"
           id="licenseInput"
-          placeholder="e.g. CRI2026 or CRI-XXXX-XXXX"
+          placeholder="CRILIC1.…"
           autocomplete="off"
           spellcheck="false"
         />
@@ -253,7 +252,7 @@
     }
 
     async function activate() {
-      const key = input.value.trim().toUpperCase();
+      const key = input.value.replace(/\s+/g, '');      // keys are case-sensitive: never change case
       if (!key) { setStatus('Please enter a licence key.', 'error'); return; }
 
       btn.disabled = true;
@@ -263,14 +262,14 @@
       try {
         const result = await window.climrisk.validateAndSaveLicense(key);
         if (result.valid) {
-          setStatus(`✓ Activated — ${result.tier} (${result.email})`, 'success');
+          setStatus(`✓ Activated for ${result.email}. ${result.daysLeft} days left; ${result.remaining.runs} analysis runs and ${result.remaining.ai} AI questions available.`, 'success');
           setTimeout(() => window.climrisk.openDashboard(), 900);
         } else {
           setStatus(result.error || 'Invalid or expired licence key.', 'error');
           btn.disabled = false;
         }
       } catch (err) {
-        setStatus('Could not reach the licence server. Check your connection.', 'error');
+        setStatus('Could not verify the key: ' + (err && err.message || err), 'error');
         btn.disabled = false;
       }
     }
