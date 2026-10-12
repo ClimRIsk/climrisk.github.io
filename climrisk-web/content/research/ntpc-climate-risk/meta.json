@@ -1,0 +1,81 @@
+{
+  "slug": "ntpc-climate-risk",
+  "tier": "case-study",
+  "kicker": "Company Risk · India Power",
+  "title": "The Price That Isn't There Yet: NTPC's Climate Risk Is a Carbon Bill, Not a Weather Bill",
+  "detail": "NTPC, with about 17% of India's installed capacity, screens clean on floods and cyclones, yet the ClimRisk engine shows its coal fleet carrying a $3bn to $58bn median carbon exposure to 2050, depending on when a price arrives.",
+  "status": "published",
+  "date": "2026-10-12",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/ntpc-climate-risk/cover.png",
+  "sources": [
+    {
+      "title": "Down To Earth: Power demand tracker, India meets all-time high 270.8 GW",
+      "url": "https://www.downtoearth.org.in/amp/story/energy/power-demand-tracker-india-meets-all-time-high-power-demand-of-2708-gw-renewable-energy-share-34"
+    },
+    {
+      "title": "Angel One: NTPC research report, 10 Sep 2026",
+      "url": "https://www.angelone.in/news/research/ntpc-research-report-sep-10-2026-power-generation-capacity-expansion-and-renewable-energy-focus"
+    },
+    {
+      "title": "NTPC Ltd Business Responsibility and Sustainability Report FY2025-26",
+      "url": "https://www.sustainabilityreports.com/ntpc/2026/business-responsibility-and-sustainability-report-brsr"
+    },
+    {
+      "title": "SolarQuarter: NTPC strengthens energy backbone with 9,619 MW addition in FY26",
+      "url": "https://solarquarter.com/2026/04/03/ntpc-limited-strengthens-energy-backbone-with-9619-mw-addition-in-fy26-advances-circular-practices-and-green-portfolio/"
+    },
+    {
+      "title": "ICAP: India notifies emission intensity targets for nine sectors under the Carbon Credit Trading Scheme",
+      "url": "https://icapcarbonaction.com/en/news/india-notifies-emission-intensity-targets-nine-sectors-under-carbon-credit-trading-scheme"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios via IIASA",
+      "url": "https://data.ece.iiasa.ac.at/ngfs/"
+    },
+    {
+      "title": "WRI Aqueduct 4.0",
+      "url": "https://www.wri.org/aqueduct"
+    },
+    {
+      "title": "Climate TRACE",
+      "url": "https://climatetrace.org/"
+    }
+  ],
+  "images": [
+    {
+      "file": "satellite-singrauli.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2C_44QPM_20260414, via AWS Earth Search"
+    },
+    {
+      "file": "key-figures.png",
+      "kind": "infographic",
+      "source": "NTPC BRSR FY26; Angel One 10 Sep 2026; Down To Earth; SolarQuarter 3 Apr 2026; World Bank Carbon Pricing Dashboard"
+    },
+    {
+      "file": "top-sites.png",
+      "kind": "chart",
+      "source": "Climate TRACE v6; ClimRisk engine hazard screen"
+    },
+    {
+      "file": "ngfs-carbon-price.png",
+      "kind": "chart",
+      "source": "NGFS Phase 5 via IIASA; World Bank Carbon Pricing Dashboard"
+    },
+    {
+      "file": "scenario-loss.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (NGFS Phase 5, Climate TRACE v6)"
+    },
+    {
+      "file": "assets-map.png",
+      "kind": "map",
+      "source": "ClimRisk asset register on Natural Earth"
+    }
+  ]
+}
