@@ -49,6 +49,8 @@ say "3/6 held-out loss"
 "$V/bin/python" -m mlx_lm lora --model "$BASE" --adapter-path "$OUT/adapters" --data "$DS" --test --test-batches 25 --mask-prompt 2>&1 | tail -3
 
 say "4/6 fuse adapters into the model"
+FREE_GB=$(df -k "$HOME" | awk 'NR==2{printf "%d", $4/1048576}'); NEED_GB="${NEED_GB:-16}"
+[ -f "$OUT/fused/config.json" ] || [ "$FREE_GB" -ge "$NEED_GB" ] || fail "disk: only ${FREE_GB} GB free, fusing needs about ${NEED_GB} GB. The trained adapters are kept in $OUT/adapters. Free space (Cleanup-Storage-Mac.command) and run again; training is not repeated."
 [ -f "$OUT/fused/config.json" ] || "$V/bin/python" -m mlx_lm fuse --model "$BASE" --adapter-path "$OUT/adapters" --save-path "$OUT/fused" --dequantize || fail "fuse"
 
 say "5/6 import into Ollama as $NAME"

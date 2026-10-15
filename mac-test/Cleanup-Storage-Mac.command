@@ -6,8 +6,8 @@
 # Refuses to run while v7 is still training/evaluating (marker mac-test/llm/V7_DONE missing), unless you run it with FORCE=1.
 HERE="$(cd "$(dirname "$0")" && pwd)"; L="$HERE/llm"; export PATH="/opt/homebrew/bin:$PATH"
 ROOT="$(cd "$HERE/.." && pwd)"; ENG="$HOME/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine"; CR="$HOME/.climrisk"
-if [ ! -f "$L/V7_DONE" ] && [ "$FORCE" != 1 ]; then echo "v7 has not finished (no V7_DONE). Training/evaluation still need v6 and the datasets. Run this again when it is done."; exit 1; fi
-if [ -d "$HOME/.climrisk/llm.lock" ]; then echo "A training/evaluation job holds the lock. Try again when it has finished."; exit 1; fi
+if [ ! -f "$L/V7_DONE" ] && [ "$FORCE" != 1 ] && [ "$WHILE_TRAINING" != 1 ]; then echo "v7 has not finished (no V7_DONE). Training/evaluation still need v6 and the datasets. Run this again when it is done."; exit 1; fi
+if [ -d "$HOME/.climrisk/llm.lock" ] && [ "$WHILE_TRAINING" != 1 ]; then echo "A training/evaluation job holds the lock. Try again when it has finished."; exit 1; fi
 hsize(){ du -sh "$1" 2>/dev/null | cut -f1; }
 ACTIVE="$(cat "$CR/active_model" 2>/dev/null | tr -d '[:space:]')"; echo "Model the app currently uses: ${ACTIVE:-none} (it is never deleted)"
 A=()   # items for step A: path or "ollama:NAME"

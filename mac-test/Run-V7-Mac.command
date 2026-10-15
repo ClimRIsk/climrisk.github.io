@@ -47,7 +47,7 @@ say "5/10 train v7 (starts from the v6 adapters; stops at the first NaN)"
 if ! ollama list | grep -q "^climrisk-llm-v7"; then
   RES=""; "$V/bin/python" -c "$FIN" "$B6" && RES="$B6"
   ITERS=1200 LR=5e-5 RESUME="$RES" TAG=v7 DS="$L/ds7" NAME=climrisk-llm-v7 bash "$HERE/Train-LLM-Safe-Mac.command"
-  if [ -f "$L/TRAIN_FAILED_v7" ]; then
+  if [ -f "$L/TRAIN_FAILED_v7" ] && grep -qiE "loss became|non-finite|NaN|discarded" "$L/TRAIN_FAILED_v7"; then
     say "first attempt failed ($(cat "$L/TRAIN_FAILED_v7")); retrying once at lr 2.5e-5"
     rm -rf "$OUT/adapters" "$OUT/adapters_nonfinite"
     ITERS=1200 LR=2.5e-5 RESUME="$RES" TAG=v7 DS="$L/ds7" NAME=climrisk-llm-v7 bash "$HERE/Train-LLM-Safe-Mac.command"
