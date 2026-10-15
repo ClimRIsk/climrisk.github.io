@@ -554,5 +554,385 @@
   "hits": 204,
   "docs_tried": 140,
   "docs_with_quotes": 2
+ },
+ "hagibis-2019": {
+  "hits": 42,
+  "docs_tried": 38,
+  "docs_with_quotes": 12
+ },
+ "faxai-2019": {
+  "hits": 36,
+  "docs_tried": 24,
+  "docs_with_quotes": 6
+ },
+ "japan-rain-2018": {
+  "error": "no hits"
+ },
+ "lekima-2019": {
+  "hits": 3,
+  "docs_tried": 2,
+  "docs_with_quotes": 1
+ },
+ "yagi-2024": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "doksuri-2023": {
+  "hits": 1,
+  "docs_tried": 0,
+  "docs_with_quotes": 0
+ },
+ "henan-2021": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "ketsana-2009": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "odette-2021": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 1
+ },
+ "jakarta-2020": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "chennai-2015": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 1
+ },
+ "kerala-2018": {
+  "hits": 2,
+  "docs_tried": 0,
+  "docs_with_quotes": 0
+ },
+ "amphan-2020": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 1
+ },
+ "fani-2019": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 0
+ },
+ "biparjoy-2023": {
+  "error": "no hits"
+ },
+ "yasi-2011": {
+  "hits": 78,
+  "docs_tried": 77,
+  "docs_with_quotes": 12
+ },
+ "qld-floods-2011": {
+  "hits": 13,
+  "docs_tried": 13,
+  "docs_with_quotes": 5
+ },
+ "seroja-2021": {
+  "error": "no hits"
+ },
+ "winston-2016": {
+  "error": "no hits"
+ },
+ "xynthia-2010": {
+  "hits": 115,
+  "docs_tried": 115,
+  "docs_with_quotes": 30
+ },
+ "kyrill-2007": {
+  "hits": 103,
+  "docs_tried": 103,
+  "docs_with_quotes": 29
+ },
+ "ciara-2020": {
+  "error": "no hits"
+ },
+ "eunice-2022": {
+  "hits": 4,
+  "docs_tried": 3,
+  "docs_with_quotes": 0
+ },
+ "desmond-2015": {
+  "error": "no hits"
+ },
+ "boris-2024": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "emilia-2023": {
+  "hits": 6,
+  "docs_tried": 6,
+  "docs_with_quotes": 0
+ },
+ "daniel-2023": {
+  "error": "no hits"
+ },
+ "valencia-2024": {
+  "error": "no hits"
+ },
+ "elbe-2013": {
+  "hits": 5,
+  "docs_tried": 5,
+  "docs_with_quotes": 3
+ },
+ "rs-brazil-2024": {
+  "hits": 19,
+  "docs_tried": 18,
+  "docs_with_quotes": 5
+ },
+ "brazil-drought-2021": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "chile-megadrought": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 0
+ },
+ "argentina-drought-2023": {
+  "hits": 4,
+  "docs_tried": 4,
+  "docs_with_quotes": 0
+ },
+ "la-nina-colombia": {
+  "hits": 14,
+  "docs_tried": 14,
+  "docs_with_quotes": 0
+ },
+ "day-zero-2018": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 0
+ },
+ "kzn-2022": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "freddy-2023": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 0
+ },
+ "kariba-2024": {
+  "error": "no hits"
+ },
+ "dubai-2024": {
+  "hits": 6,
+  "docs_tried": 2,
+  "docs_with_quotes": 2
+ },
+ "bc-floods-2021": {
+  "error": "no hits"
+ },
+ "lytton-2021": {
+  "hits": 24,
+  "docs_tried": 24,
+  "docs_with_quotes": 0
+ },
+ "cbam": {
+  "hits": 71,
+  "docs_tried": 71,
+  "docs_with_quotes": 5
+ },
+ "china-ets": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "uk-ets": {
+  "hits": 5,
+  "docs_tried": 5,
+  "docs_with_quotes": 0
+ },
+ "hagibis-2019@fpi": {
+  "hits": 10,
+  "docs_tried": 10,
+  "docs_with_quotes": 3
+ },
+ "faxai-2019@fpi": {
+  "hits": 7,
+  "docs_tried": 6,
+  "docs_with_quotes": 1
+ },
+ "japan-rain-2018@fpi": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "lekima-2019@fpi": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "yagi-2024@fpi": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 1
+ },
+ "doksuri-2023@fpi": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "henan-2021@fpi": {
+  "error": "no hits"
+ },
+ "ketsana-2009@fpi": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "odette-2021@fpi": {
+  "hits": 17,
+  "docs_tried": 17,
+  "docs_with_quotes": 7
+ },
+ "jakarta-2020@fpi": {
+  "error": "no hits"
+ },
+ "chennai-2015@fpi": {
+  "hits": 7,
+  "docs_tried": 7,
+  "docs_with_quotes": 0
+ },
+ "kerala-2018@fpi": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "amphan-2020@fpi": {
+  "error": "no hits"
+ },
+ "fani-2019@fpi": {
+  "error": "no hits"
+ },
+ "biparjoy-2023@fpi": {
+  "error": "no hits"
+ },
+ "yasi-2011@fpi": {
+  "hits": 8,
+  "docs_tried": 8,
+  "docs_with_quotes": 0
+ },
+ "qld-floods-2011@fpi": {
+  "hits": 6,
+  "docs_tried": 6,
+  "docs_with_quotes": 2
+ },
+ "seroja-2021@fpi": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "winston-2016@fpi": {
+  "error": "no hits"
+ },
+ "xynthia-2010@fpi": {
+  "hits": 4,
+  "docs_tried": 4,
+  "docs_with_quotes": 2
+ },
+ "kyrill-2007@fpi": {
+  "hits": 17,
+  "docs_tried": 17,
+  "docs_with_quotes": 1
+ },
+ "ciara-2020@fpi": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "eunice-2022@fpi": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 1
+ },
+ "desmond-2015@fpi": {
+  "error": "no hits"
+ },
+ "boris-2024@fpi": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 1
+ },
+ "emilia-2023@fpi": {
+  "hits": 4,
+  "docs_tried": 4,
+  "docs_with_quotes": 2
+ },
+ "daniel-2023@fpi": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 1
+ },
+ "valencia-2024@fpi": {
+  "error": "no hits"
+ },
+ "elbe-2013@fpi": {
+  "error": "no hits"
+ },
+ "rs-brazil-2024@fpi": {
+  "hits": 181,
+  "docs_tried": 100,
+  "docs_with_quotes": 8
+ },
+ "brazil-drought-2021@fpi": {
+  "error": "HTTPError: HTTP Error 500: Internal Server Error"
+ },
+ "chile-megadrought@fpi": {
+  "error": "no hits"
+ },
+ "argentina-drought-2023@fpi": {
+  "hits": 6,
+  "docs_tried": 6,
+  "docs_with_quotes": 1
+ },
+ "la-nina-colombia@fpi": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 0
+ },
+ "day-zero-2018@fpi": {
+  "hits": 3,
+  "docs_tried": 3,
+  "docs_with_quotes": 0
+ },
+ "kzn-2022@fpi": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 0
+ },
+ "freddy-2023@fpi": {
+  "hits": 1,
+  "docs_tried": 1,
+  "docs_with_quotes": 0
+ },
+ "kariba-2024@fpi": {
+  "hits": 2,
+  "docs_tried": 2,
+  "docs_with_quotes": 0
+ },
+ "dubai-2024@fpi": {
+  "hits": 6,
+  "docs_tried": 6,
+  "docs_with_quotes": 1
+ },
+ "bc-floods-2021@fpi": {
+  "hits": 9,
+  "docs_tried": 9,
+  "docs_with_quotes": 2
+ },
+ "lytton-2021@fpi": {
+  "hits": 19,
+  "docs_tried": 19,
+  "docs_with_quotes": 0
+ },
+ "cbam@fpi": {
+  "hits": 106,
+  "docs_tried": 100,
+  "docs_with_quotes": 12
+ },
+ "china-ets@fpi": {
+  "hits": 11,
+  "docs_tried": 9,
+  "docs_with_quotes": 0
+ },
+ "uk-ets@fpi": {
+  "hits": 20,
+  "docs_tried": 20,
+  "docs_with_quotes": 4
  }
 }

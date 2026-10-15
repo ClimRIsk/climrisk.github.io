@@ -16,7 +16,7 @@ Company         | Name                | Title                              | Ema
 CRISIL          | Rahul Prithiani     | Head, ESG & Sustainability         | rahul.prithiani@crisil.com         | ESG Senior Analyst (Chennai)
 Aon             | Himavant Mulugu     | Asia R&D Lead, Impact Forecasting  | himavant.mulugu@aon.com            | Sr. Consultant R&D Atmospheric Peril (Bengaluru)
 Moody's         | Swami Venkataraman  | AMD, Sustainable Finance           | swami.venkataraman@moodys.com      | VP Sr. Analyst Sustainable Finance Credit (Bengaluru)
-Wood Mackenzie  | Hetal Gandhi        | Lead Carbon Mitigations, APAC      | hetal.gandhi@woodmac.com           | GHG Research Analyst
+Wood Mackenzie  | Hetal Gandhi        | Lead Carbon Mitigations, APAC      | hetal.gandhi@woodmac.com           | Research Analyst GHG (Hyderabad)
 
 Email patterns confirmed: firstname.lastname@crisil.com / @aon.com / @moodys.com / @woodmac.com
 
@@ -28,13 +28,13 @@ Subject: ESG Senior Analyst — Chennai | Direct Application | Shrinivash Kannan
 
 Hi Rahul,
 
-I am reaching out directly because my background maps precisely to what CRISIL's ESG practice is doing.
+I am reaching out directly because my work maps precisely to what your team does for clients.
 
-Over the past year I built CRI Engine v0.4, an open-source climate financial risk platform integrating physical hazard assessment (WRI Aqueduct 4.0, ERA5-Land, CMIP6 downscaling), NGFS Phase 4 transition risk modelling, and DCF-based financial impact across 18 commodity sectors, with automated TCFD, IFRS S2 and CSRD report generation. At Ramco Systems I built the ESG data analytics and BRSR disclosure pipeline for SEBI-mandated reporting — both the quantitative infrastructure and the stakeholder-ready outputs.
+I built CRI Engine v0.4, which runs climate risk and transition assessments for corporates — assessing emissions profiles, climate targets, governance frameworks and alignment with NGFS Phase 4, IPCC AR6, IFRS S2 and CSRD. The engine performs sectoral benchmarking across 18 commodity sectors and generates TCFD and IFRS S2 compliant disclosure outputs automatically. At Ramco Systems I built the BRSR disclosure pipeline for SEBI-mandated reporting, working directly with corporate ESG data and stakeholder-facing outputs.
 
-I saw the ESG Senior Analyst opening in Chennai and want to be considered. I am based in Chennai, available immediately, and can deliver on climate risk assessments, sustainability reporting and ESG research from day one.
+I saw the ESG Senior Analyst opening in Chennai and want to be considered. I am based in Chennai, available immediately.
 
-I have attached my CV. Would you have 20 minutes this week?
+CV attached. Would you be open to a quick conversation this week?
 
 Regards,
 Shrinivash Dhamodhara Kannan
@@ -90,17 +90,17 @@ GitHub: [your CRI Engine repo link]
 EMAIL 4 — WOOD MACKENZIE | To: Hetal Gandhi | hetal.gandhi@woodmac.com
 ==========================================================================
 
-Subject: Carbon/GHG Research Analyst — APAC | Direct Application | Shrinivash Kannan
+Subject: Research Analyst, GHG — Hyderabad | Direct Application | Shrinivash Kannan
 
 Hi Hetal,
 
-Your work on carbon mitigations in Asia Pacific directly overlaps with quantitative modelling I have been doing independently.
+I am applying for the Research Analyst, Greenhouse Gases role in Hyderabad and wanted to reach you directly.
 
-I built a transition risk engine that implements NGFS Phase 4 carbon price trajectories sourced from the IIASA database, MACC abatement cost curves with sector-specific marginal cost thresholds, and EU ETS free allocation mechanics for 18 commodity sectors across Asia Pacific, Europe and North America. For steel, mining and oil and gas specifically, the model computes net carbon liability, abatement cost under each carbon price path, and stranded asset exposure under Net Zero 2050 and Delayed Transition scenarios through to 2050. This feeds directly into the kind of carbon mitigation strategy and carbon market forecasting research your team publishes on the Asia region.
+My work maps closely to what the Carbon team does. I built a transition risk engine that models GHG emissions across 18 commodity sectors including oil and gas, steel, metals and mining — keeping cross-commodity assumptions consistent with NGFS Phase 4 carbon price trajectories from the IIASA database. The engine computes assets' value at risk from emissions under Net Zero 2050, Delayed Transition and Current Policies scenarios through to 2050, and calibrates against CDP and MSCI benchmarks using Shell, BHP and Rio Tinto as validation cases. On the carbon pricing side it implements MACC abatement cost curves and EU ETS free allocation mechanics — the same inputs your team integrates into commodity models.
 
-I am interested in the GHG Research Analyst role. Based in Chennai, with remote availability for the Bengaluru team, I can start immediately.
+I have 4+ years of quantitative climate-finance work, am proficient in Python and can start immediately.
 
-CV attached. Would you have 20 minutes this week?
+CV attached. Happy to connect when convenient.
 
 Regards,
 Shrinivash Dhamodhara Kannan

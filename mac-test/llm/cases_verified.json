@@ -1,65 +1,61 @@
 {
- "pge-2019#src0": {
-  "fetch": "URLError"
- },
  "pge-2019#0": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 1.0
  },
  "pge-2019#1": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 1.0
  },
  "pge-2019#2": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 0.92
  },
  "pge-2019#3": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
  },
  "pge-2019#4": {
-  "status": "read",
-  "why": "source page could not be fetched"
- },
- "orsted-2023#src0": {
-  "fetch": "URLError"
- },
- "orsted-2023#src1": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 1.0
  },
  "orsted-2023#0": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 1.0
  },
  "orsted-2023#1": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 0.87
  },
  "orsted-2023#2": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "5/5",
+  "words": 0.8
  },
  "orsted-2023#3": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 1.0
  },
  "orsted-2023#4": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 1.0
  },
  "orsted-2023#5": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
  },
  "basf-rhine-2018#src0": {
-  "fetch": "URLError"
- },
- "basf-rhine-2018#src1": {
-  "fetch": "URLError"
- },
- "basf-rhine-2018#src2": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 404: Not Found"
  },
  "basf-rhine-2018#0": {
   "status": "read",
@@ -78,21 +74,17 @@
   "why": "source page could not be fetched"
  },
  "basf-rhine-2018#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 0.0
  },
  "basf-rhine-2018#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 0.78
  },
  "uri-2021#src0": {
-  "fetch": "URLError"
- },
- "uri-2021#src1": {
-  "fetch": "URLError"
- },
- "uri-2021#src2": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "uri-2021#0": {
   "status": "read",
@@ -111,78 +103,78 @@
   "why": "source page could not be fetched"
  },
  "uri-2021#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.67
  },
  "uri-2021#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 0.93
  },
  "uri-2021#6": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "thailand-2011#src0": {
-  "fetch": "URLError"
- },
- "thailand-2011#src1": {
-  "fetch": "URLError"
- },
- "thailand-2011#src2": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "2/3",
+  "words": 0.6
  },
  "thailand-2011#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 0.91
  },
  "thailand-2011#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 0.8
  },
  "thailand-2011#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 0.8
  },
  "thailand-2011#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.44
  },
  "thailand-2011#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.38
  },
  "thailand-2011#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.82
  },
  "thailand-2011#6": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.8
  },
  "ian-2022#src0": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "ian-2022#src1": {
-  "fetch": "URLError"
- },
- "ian-2022#src2": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "ian-2022#0": {
   "status": "unfetchable",
   "why": "source page could not be fetched"
  },
  "ian-2022#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.8
  },
  "ian-2022#2": {
   "status": "unfetchable",
   "why": "source page could not be fetched"
  },
  "ian-2022#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.45
  },
  "ian-2022#4": {
   "status": "unfetchable",
@@ -192,107 +184,101 @@
   "status": "unfetchable",
   "why": "source page could not be fetched"
  },
- "jebi-2018#src0": {
-  "fetch": "URLError"
- },
- "jebi-2018#src1": {
-  "fetch": "URLError"
- },
- "jebi-2018#src2": {
-  "fetch": "URLError"
- },
  "jebi-2018#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 0.86
  },
  "jebi-2018#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.6
  },
  "jebi-2018#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.43
  },
  "jebi-2018#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 0.62
  },
  "jebi-2018#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "1/2",
+  "words": 0.75
  },
  "jebi-2018#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "ahr-2021#src0": {
-  "fetch": "URLError"
- },
- "ahr-2021#src1": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 1.0
  },
  "ahr-2021#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 0.83
  },
  "ahr-2021#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.91
  },
  "ahr-2021#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
  },
  "ahr-2021#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.73
  },
  "ahr-2021#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "maui-2023#src0": {
-  "fetch": "URLError"
- },
- "maui-2023#src1": {
-  "fetch": "URLError"
- },
- "maui-2023#src2": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "2/3",
+  "words": 0.89
  },
  "maui-2023#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "1/2",
+  "words": 0.67
  },
  "maui-2023#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
  },
  "maui-2023#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 0.71
  },
  "maui-2023#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.86
  },
  "maui-2023#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 1.0
  },
  "maui-2023#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.8
  },
  "maui-2023#6": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "1/2",
+  "words": 1.0
  },
  "eaton-2025#src0": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "eaton-2025#src1": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "eaton-2025#0": {
   "status": "unfetchable",
@@ -318,265 +304,251 @@
   "status": "unfetchable",
   "why": "source page could not be fetched"
  },
- "ca-insurers-2023#src0": {
-  "fetch": "URLError"
- },
  "ca-insurers-2023#src1": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "ca-insurers-2023#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.85
  },
  "ca-insurers-2023#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.7
  },
  "ca-insurers-2023#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 1.0
  },
  "ca-insurers-2023#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "panama-2023#src0": {
-  "fetch": "URLError"
- },
- "panama-2023#src1": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.89
  },
  "panama-2023#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.57
  },
  "panama-2023#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 1.0
  },
  "panama-2023#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 1.0
  },
  "panama-2023#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
  },
  "panama-2023#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "1/2",
+  "words": 0.8
  },
  "panama-2023#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "edf-2022#src0": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 1.0
  },
  "edf-2022#src1": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "edf-2022#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.0
  },
  "edf-2022#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 0.0
  },
  "edf-2022#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "1/3",
+  "words": 0.0
  },
  "edf-2022#3": {
   "status": "unfetchable",
   "why": "source page could not be fetched"
  },
  "edf-2022#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "tsmc-2021#src0": {
-  "fetch": "URLError"
- },
- "tsmc-2021#src1": {
-  "fetch": "URLError"
+  "status": "unverified",
+  "numbers": "1/3",
+  "words": 0.2
  },
  "tsmc-2021#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "1/2",
+  "words": 0.0
  },
  "tsmc-2021#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.67
  },
  "tsmc-2021#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
  },
  "tsmc-2021#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "kariba-2024#src0": {
-  "fetch": "URLError"
- },
- "kariba-2024#src1": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
  },
  "kariba-2024#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.78
  },
  "kariba-2024#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.8
  },
  "kariba-2024#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 1.0
  },
  "kariba-2024#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 0.86
  },
  "kariba-2024#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.75
  },
  "kariba-2024#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "suncorp-iag-2022#src0": {
-  "fetch": "URLError"
- },
- "suncorp-iag-2022#src1": {
-  "fetch": "URLError"
- },
- "suncorp-iag-2022#src2": {
-  "fetch": "URLError"
+  "status": "unverified",
+  "numbers": "1/2",
+  "words": 0.5
  },
  "suncorp-iag-2022#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/5",
+  "words": 0.0
  },
  "suncorp-iag-2022#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 0.0
  },
  "suncorp-iag-2022#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/3",
+  "words": 0.0
  },
  "suncorp-iag-2022#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "5/5",
+  "words": 0.89
  },
  "suncorp-iag-2022#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/3",
+  "words": 0.1
  },
  "suncorp-iag-2022#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "chennai-2015#src0": {
-  "fetch": "URLError"
- },
- "chennai-2015#src1": {
-  "fetch": "URLError"
+  "status": "unverified",
+  "numbers": "0/3",
+  "words": 0.0
  },
  "chennai-2015#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.89
  },
  "chennai-2015#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.5
  },
  "chennai-2015#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.0
  },
  "chennai-2015#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "valencia-2024#src0": {
-  "fetch": "URLError"
- },
- "valencia-2024#src1": {
-  "fetch": "URLError"
- },
- "valencia-2024#src2": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.9
  },
  "valencia-2024#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "5/5",
+  "words": 1.0
  },
  "valencia-2024#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "5/5",
+  "words": 1.0
  },
  "valencia-2024#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.86
  },
  "valencia-2024#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.78
  },
  "valencia-2024#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.8
  },
  "valencia-2024#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "idai-2019#src0": {
-  "fetch": "URLError"
- },
- "idai-2019#src1": {
-  "fetch": "URLError"
- },
- "idai-2019#src2": {
-  "fetch": "URLError"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.0
  },
  "idai-2019#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/2",
+  "words": 0.0
  },
  "idai-2019#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.8
  },
  "idai-2019#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.67
  },
  "idai-2019#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "rs-brazil-2024#src0": {
-  "fetch": "URLError"
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 0.33
  },
  "rs-brazil-2024#src1": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 404: Not Found"
  },
  "rs-brazil-2024#src2": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "rs-brazil-2024#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.9
  },
  "rs-brazil-2024#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.83
  },
  "rs-brazil-2024#2": {
   "status": "unfetchable",
@@ -599,13 +571,10 @@
   "why": "source page could not be fetched"
  },
  "pakistan-2022#src0": {
-  "fetch": "URLError"
+  "fetch": "URLError: <urlopen error timed out>"
  },
  "pakistan-2022#src1": {
-  "fetch": "URLError"
- },
- "pakistan-2022#src2": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "pakistan-2022#0": {
   "status": "unfetchable",
@@ -628,147 +597,307 @@
   "why": "source page could not be fetched"
  },
  "pakistan-2022#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "harvey-arkema-2017#src0": {
-  "fetch": "URLError"
- },
- "harvey-arkema-2017#src1": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.75
  },
  "harvey-arkema-2017#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.64
  },
  "harvey-arkema-2017#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.78
  },
  "harvey-arkema-2017#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 1.0
  },
  "harvey-arkema-2017#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
  },
  "harvey-arkema-2017#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "maria-baxter-2017#src0": {
-  "fetch": "URLError"
- },
- "maria-baxter-2017#src1": {
-  "fetch": "URLError"
- },
- "maria-baxter-2017#src2": {
-  "fetch": "URLError"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.33
  },
  "maria-baxter-2017#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.83
  },
  "maria-baxter-2017#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.43
  },
  "maria-baxter-2017#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.83
  },
  "maria-baxter-2017#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 1.0
  },
  "maria-baxter-2017#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 0.22
  },
  "maria-baxter-2017#5": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "coal-2016#src0": {
-  "fetch": "URLError"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.5
  },
  "coal-2016#src1": {
-  "fetch": "URLError"
- },
- "coal-2016#src2": {
-  "fetch": "URLError"
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
  },
  "coal-2016#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/4",
+  "words": 0.75
  },
  "coal-2016#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.08
  },
  "coal-2016#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "unverified",
+  "numbers": "1/2",
+  "words": 0.33
  },
  "coal-2016#3": {
   "status": "unfetchable",
   "why": "source page could not be fetched"
  },
  "coal-2016#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "shell-hague#src0": {
-  "fetch": "URLError"
- },
- "shell-hague#src1": {
-  "fetch": "URLError"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.62
  },
  "shell-hague#0": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "5/5",
+  "words": 0.57
  },
  "shell-hague#1": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "3/4",
+  "words": 0.8
  },
  "shell-hague#2": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.86
  },
  "shell-hague#3": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.8
  },
  "shell-hague#4": {
-  "status": "unfetchable",
-  "why": "source page could not be fetched"
- },
- "swissre-sigma#src0": {
-  "fetch": "URLError"
- },
- "swissre-sigma#src1": {
-  "fetch": "URLError"
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.0
  },
  "swissre-sigma#0": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 1.0
  },
  "swissre-sigma#1": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 1.0
  },
  "swissre-sigma#2": {
-  "status": "read",
-  "why": "source page could not be fetched"
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 0.88
  },
  "swissre-sigma#3": {
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 0.83
+ },
+ "swissre-sigma#4": {
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 1.0
+ },
+ "mcmurray-2016#src2": {
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
+ },
+ "mcmurray-2016#0": {
+  "status": "verified",
+  "numbers": "2/3",
+  "words": 0.73
+ },
+ "mcmurray-2016#1": {
+  "status": "unverified",
+  "numbers": "1/3",
+  "words": 1.0
+ },
+ "mcmurray-2016#2": {
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.83
+ },
+ "mcmurray-2016#3": {
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
+ },
+ "mcmurray-2016#4": {
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.62
+ },
+ "mcmurray-2016#5": {
+  "status": "verified",
+  "numbers": "2/3",
+  "words": 0.75
+ },
+ "gabrielle-2023#src1": {
+  "fetch": "HTTPError: HTTP Error 401: HTTP Forbidden"
+ },
+ "gabrielle-2023#src2": {
+  "fetch": "HTTPError: HTTP Error 401: HTTP Forbidden"
+ },
+ "gabrielle-2023#0": {
+  "status": "verified",
+  "numbers": "4/4",
+  "words": 1.0
+ },
+ "gabrielle-2023#1": {
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 1.0
+ },
+ "gabrielle-2023#2": {
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.57
+ },
+ "gabrielle-2023#3": {
   "status": "unfetchable",
   "why": "source page could not be fetched"
  },
- "swissre-sigma#4": {
+ "gabrielle-2023#4": {
   "status": "unfetchable",
   "why": "source page could not be fetched"
+ },
+ "gabrielle-2023#5": {
+  "status": "verified",
+  "numbers": "0/0",
+  "words": 0.75
+ },
+ "china-drought-2022#0": {
+  "status": "unverified",
+  "numbers": "1/3",
+  "words": 0.29
+ },
+ "china-drought-2022#1": {
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.25
+ },
+ "china-drought-2022#2": {
+  "status": "unverified",
+  "numbers": "0/1",
+  "words": 0.0
+ },
+ "china-drought-2022#3": {
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.43
+ },
+ "china-drought-2022#4": {
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.12
+ },
+ "china-drought-2022#5": {
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.17
+ },
+ "kzn-2022#0": {
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 0.86
+ },
+ "kzn-2022#1": {
+  "status": "unverified",
+  "numbers": "1/2",
+  "words": 1.0
+ },
+ "kzn-2022#2": {
+  "status": "unverified",
+  "numbers": "0/0",
+  "words": 0.38
+ },
+ "kzn-2022#3": {
+  "status": "unverified",
+  "numbers": "2/4",
+  "words": 0.75
+ },
+ "kzn-2022#4": {
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 1.0
+ },
+ "tata-port-talbot#src0": {
+  "fetch": "HTTPError: HTTP Error 403: Forbidden"
+ },
+ "tata-port-talbot#0": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "tata-port-talbot#1": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "tata-port-talbot#2": {
+  "status": "unfetchable",
+  "why": "source page could not be fetched"
+ },
+ "tata-port-talbot#3": {
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.67
+ },
+ "tata-port-talbot#4": {
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.8
+ },
+ "tata-port-talbot#5": {
+  "status": "verified",
+  "numbers": "3/3",
+  "words": 0.92
+ },
+ "uk-freeze-2022#0": {
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 1.0
+ },
+ "uk-freeze-2022#1": {
+  "status": "verified",
+  "numbers": "2/2",
+  "words": 1.0
+ },
+ "uk-freeze-2022#2": {
+  "status": "verified",
+  "numbers": "1/1",
+  "words": 0.89
  }
 }

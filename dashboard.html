@@ -1016,7 +1016,7 @@ function renderAssessments() {
     var sm = a.analyst && a.analyst.summary;
     var flag;
     if (sm) {
-      flag = '<span class="score-badge '+(sevCls[sm.worst]||'score-low')+'" title="Worst physical hazard severity">Hazard '+_escH(sm.worst||'LOW')+'</span>' +
+      flag = '<span class="score-badge '+(sevCls[sm.worst]||'score-low')+'" title="Worst severity among cyclone wind, river flood and coastal flood only. Heat, water stress, wildfire, earthquake and landslide are not in this badge; open the site profile for those.">Hazard '+_escH(sm.worst||'LOW')+'</span><div style="font-size:10px;color:var(--faint);margin-top:2px">cyclone, river, coast only</div>' +
         (sm.meanPct != null ? '<div style="font-size:11px;color:'+(sm.meanPct>=5?'var(--amber)':'var(--muted)')+';margin-top:3px" title="Delayed transition scenario: mean and 95th-percentile present-value loss (physical + carbon cost) as % of value">Loss '+
           sm.meanPct.toFixed(1)+'% of value · p95 '+(sm.p95Pct != null ? sm.p95Pct.toFixed(1) : '—')+'%</div>' : '');
     } else if (a.physScore) {
@@ -1031,7 +1031,7 @@ function renderAssessments() {
     return '<tr><td><strong>'+_escH(_nm)+'</strong></td>'+
       '<td style="color:var(--muted)">'+_escH(a.sector && a.sector !== 'Other' ? a.sector : '—')+'</td>'+
       '<td>'+flag+'</td>'+
-      '<td style="color:var(--muted);font-size:12px">'+_escH(a.topHazard||'—')+'</td>'+
+      '<td style="color:var(--muted);font-size:12px">'+_escH(a.topHazard || (sm ? 'none material of those three' : '—'))+'</td>'+
       '<td style="color:var(--faint);font-size:12px">'+new Date(a.date).toLocaleDateString('en-GB',{day:'numeric',month:'short',year:'numeric'})+'</td>'+
       '<td style="font-size:12px;color:var(--muted)">'+sHTML+'</td>'+
       '<td><div class="ass-actions">'+
