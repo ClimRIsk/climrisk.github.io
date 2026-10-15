@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Reveal from "./components/Reveal";
-import CounterUp from "./components/CounterUp";
 import GlobeBackground from "./components/GlobeBackground";
 import IsometricShowcase from "./components/IsometricShowcase";
 import LiveAssessWidget from "./components/LiveAssessWidget";
@@ -95,7 +94,7 @@ export default function Home() {
       <section className="px-6 pt-12 pb-20 border-b border-white/8">
         <div className="max-w-4xl mx-auto text-center mb-10">
           <Reveal>
-            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Live, Not a Mockup</p>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;01 &middot; Live, Not a Mockup</p>
             <h2 className="heading-lg grad-text mb-4">Analyse a real company, right now.</h2>
             <p className="text-zinc-400 leading-relaxed max-w-2xl mx-auto">
               Type a company with industrial sites. The engine finds its mapped facilities, reads flood maps and
@@ -153,46 +152,41 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Stats strip */}
-      <section className="px-6 py-16 border-y border-white/8">
-        <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-8">
-          {[
-            { value: 18, suffix: "", label: "Commodities modelled" },
-            { value: 25, suffix: "", label: "Parametric hazard functions" },
-            { value: 7, suffix: "", label: "NGFS Phase 4 scenarios" },
-            { value: 94, suffix: "", label: "Carbon-pricing instruments mapped" },
-          ].map((s) => (
-            <Reveal key={s.label}>
-              <div className="text-center md:text-left">
-                <CounterUp value={s.value} suffix={s.suffix} className="text-4xl font-bold text-white" />
-                <p className="text-sm text-zinc-500 mt-2">{s.label}</p>
-              </div>
-            </Reveal>
-          ))}
-        </div>
-      </section>
-
-      {/* Scale strip — how wide, not just how deep */}
-      <section className="px-6 py-16 border-b border-white/8 bg-white/[0.015]">
-        <div className="max-w-6xl mx-auto">
-          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-8">
-            Any Coordinate, Not a Pre-Mapped Database
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {[
-              { value: "0.1°", label: "downscaled resolution, worldwide" },
-              { value: "Any", label: "lat/lon on Earth — no fixed asset list to miss you" },
-              { value: "3", label: "live data tiers (CMIP6, ERA5, NASA POWER, WRI Aqueduct) — not a static lookup" },
-              { value: "2100", label: "scenario horizon across 7 NGFS Phase 4 pathways" },
-            ].map((s) => (
-              <Reveal key={s.label}>
-                <div className="text-center md:text-left">
-                  <div className="text-3xl font-bold grad-text">{s.value}</div>
-                  <p className="text-sm text-zinc-500 mt-2 leading-snug">{s.label}</p>
+      {/* Scale & coverage — a single ledger, not two stacked stat grids */}
+      <section className="px-6 py-24 border-y border-white/8 bg-white/[0.015]">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-[minmax(0,300px)_1fr] gap-10 md:gap-16">
+          <Reveal>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;02 &middot; Scale &amp; Coverage</p>
+            <h2 className="heading-lg grad-text mb-4">Any coordinate on Earth, not a pre-mapped database.</h2>
+            <p className="text-zinc-400 leading-relaxed text-sm">
+              No fixed asset list to miss you. The engine downscales live hazard data worldwide, running on a
+              stack built for both depth of modelling and width of coverage.
+            </p>
+          </Reveal>
+          <Reveal delayMs={100}>
+            <div className="border-t border-white/8">
+              {[
+                { value: "18", label: "Commodities modelled" },
+                { value: "25", label: "Parametric hazard functions" },
+                { value: "7", label: "NGFS Phase 4 scenario pathways" },
+                { value: "94", label: "Carbon-pricing instruments mapped" },
+                { value: "0.1°", label: "Downscaled resolution, worldwide" },
+                { value: "Any", label: "Lat/lon on Earth — no fixed asset list to miss you" },
+                { value: "3", label: "Live data tiers (CMIP6, ERA5, NASA POWER, WRI Aqueduct) — not a static lookup" },
+                { value: "2100", label: "Scenario horizon across the 7 NGFS Phase 4 pathways" },
+              ].map((s) => (
+                <div
+                  key={s.label}
+                  className="flex items-baseline justify-between gap-6 py-4 border-b border-white/8"
+                >
+                  <span className="text-sm text-zinc-400 leading-snug">{s.label}</span>
+                  <span className="text-xl md:text-2xl font-bold grad-text font-mono shrink-0 tabular-nums">
+                    {s.value}
+                  </span>
                 </div>
-              </Reveal>
-            ))}
-          </div>
+              ))}
+            </div>
+          </Reveal>
         </div>
       </section>
 
@@ -200,7 +194,7 @@ export default function Home() {
       <section className="px-6 py-24 border-b border-white/8">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <Reveal>
-            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Interactive</p>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;03 &middot; Interactive</p>
             <h2 className="heading-lg grad-text mb-4">Drag the year. Change the scenario.</h2>
             <p className="text-zinc-400 leading-relaxed max-w-2xl mx-auto">
               The same Monte Carlo loss distribution every Story Report runs on, exposed as something you can
@@ -216,32 +210,43 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Three mandates */}
+      {/* Three mandates — a ledger of practices, not a feature-card grid */}
       <section className="px-6 py-24 max-w-6xl mx-auto">
         <Reveal>
-          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Our Mandate</p>
+          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;04 &middot; Our Mandate</p>
           <h2 className="heading-lg grad-text mb-16 max-w-2xl">
             Three practices. One discipline: translating physical reality into financial language.
           </h2>
         </Reveal>
-        <div className="grid md:grid-cols-3 gap-6">
+        <div className="border-t border-white/8">
           {MANDATES.map((m, i) => (
             <Reveal key={m.title} delayMs={i * 120}>
-              <Link href={m.href} className="panel panel-hover block p-8 h-full">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-mono text-zinc-600">{m.tag}</span>
-                  <span className="mandate-spec text-[10px] font-mono text-terminal/80 border border-terminal/25 bg-terminal/5 rounded px-2 py-1 tracking-wide">
+              <Link
+                href={m.href}
+                className="group grid md:grid-cols-[88px_1fr_auto] items-center gap-4 md:gap-8 py-10 border-b border-white/8 px-2 md:px-4 -mx-2 md:-mx-4 rounded-lg transition-colors duration-300 hover:bg-white/[0.02]"
+              >
+                <span
+                  aria-hidden="true"
+                  className="hidden md:block text-7xl font-bold leading-none select-none text-white/[0.04] group-hover:text-gold/10 transition-colors duration-500"
+                >
+                  {m.tag}
+                </span>
+                <div>
+                  <span className="md:hidden text-xs font-mono text-zinc-600 block mb-2">{m.tag}</span>
+                  <h3 className="heading-md text-white mb-3">{m.title}</h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed max-w-xl">{m.body}</p>
+                </div>
+                <div className="flex md:flex-col items-start md:items-end justify-start gap-3 md:gap-4 shrink-0">
+                  <span className="mandate-spec text-[10px] font-mono text-terminal/80 border border-terminal/25 bg-terminal/5 rounded px-2 py-1 tracking-wide whitespace-nowrap">
                     {m.specCode}
                   </span>
+                  <span className="inline-flex items-center gap-1.5 text-sm text-gold-200 whitespace-nowrap group-hover:gap-2.5 transition-all duration-300">
+                    Learn more
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                      <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                  </span>
                 </div>
-                <h3 className="heading-md text-white mt-4 mb-3">{m.title}</h3>
-                <p className="text-sm text-zinc-400 leading-relaxed">{m.body}</p>
-                <span className="inline-flex items-center gap-1.5 text-sm text-gold-200 mt-6">
-                  Learn more
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                    <path d="M5 12h14M12 5l7 7-7 7"/>
-                  </svg>
-                </span>
               </Link>
             </Reveal>
           ))}
@@ -252,7 +257,7 @@ export default function Home() {
       <section className="px-6 py-24 border-t border-white/8">
         <div className="max-w-6xl mx-auto">
           <Reveal>
-            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Under the Hood</p>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;05 &middot; Under the Hood</p>
             <h2 className="heading-lg grad-text mb-6 max-w-2xl">The CRI Engine, at a glance.</h2>
             <p className="text-zinc-400 leading-relaxed mb-12 max-w-2xl">
               Every conclusion we deliver traces back to a geospatial pipeline built on IPCC AR6 hazard
@@ -279,7 +284,7 @@ export default function Home() {
         <Reveal>
           <div className="flex items-end justify-between mb-16 flex-wrap gap-4">
             <div>
-              <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Recent Intelligence</p>
+              <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;06 &middot; Recent Intelligence</p>
               <h2 className="heading-lg grad-text">Research from the desk</h2>
             </div>
             <Link href="/research" className="btn-ghost">View all research</Link>
