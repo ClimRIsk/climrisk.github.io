@@ -4619,59 +4619,12 @@ function buildPhysicalHazardReport(nze, dt, cp, company, sector) {
   }
   var _resolvedSector = _inferSector(company, sector);
 
-  // SECTOR PEER BENCHMARKING
-  var _BENCH = {
-    'Energy':           {median:52, p25:38, p75:67, n:312, worst:'Oil & Gas upstream (Permian/Gulf): 79–84'},
-    'Mining':           {median:58, p25:44, p75:72, n:184, worst:'Open-cut tropical operations: 80–88'},
-    'Oil & Gas':        {median:55, p25:40, p75:70, n:271, worst:'Coastal LNG terminals (SE Asia): 76–83'},
-    'Agriculture':      {median:63, p25:50, p75:76, n:408, worst:'Sub-Saharan rain-fed croplands: 84–92'},
-    'Beverages':        {median:41, p25:28, p75:54, n:94,  worst:'Beer/spirits in arid basins: 62–71'},
-    'Real Estate':      {median:48, p25:34, p75:63, n:521, worst:'Coastal & floodplain mixed-use: 74–82'},
-    'Shipping':         {median:44, p25:32, p75:58, n:167, worst:'Bay of Bengal port terminals: 68–76'},
-    'Technology':       {median:46, p25:33, p75:61, n:289, worst:'Data centres in arid SW USA: 74–82'},
-    'Financial Services':{median:38, p25:25, p75:52, n:436, worst:'Real-estate exposed lenders (coastal): 65–74'},
-    'Utilities':        {median:54, p25:40, p75:68, n:248, worst:'Coastal thermal generation (Asia): 77–85'},
-    'Steel':            {median:50, p25:37, p75:64, n:112, worst:'Coastal blast furnace ops (India/SE Asia): 72–80'},
-    'Chemicals':        {median:49, p25:36, p75:63, n:143, worst:'Coastal petrochemical clusters: 71–79'},
-    'Manufacturing':    {median:53, p25:39, p75:67, n:394, worst:'Flood-exposed heavy industry (South/SE Asia): 76–85'},
-    'Automotive':       {median:50, p25:37, p75:64, n:178, worst:'Cyclone/flood-exposed assembly (India): 74–83'},
-  };
-  var _benchData = _BENCH[_resolvedSector] || _BENCH[sector] || _BENCH['Manufacturing'] || {median:50,p25:36,p75:65,n:200,worst:'High-exposure tropical sites: 74–84'};
-  var _pctile = physScore <= _benchData.p25 ? 'bottom quartile' : physScore <= _benchData.median ? 'second quartile (below median)' : physScore <= _benchData.p75 ? 'third quartile (above median)' : 'top quartile';
-  var _pctileNum = physScore <= _benchData.p25 ? 25 : physScore <= _benchData.median ? 50 : physScore <= _benchData.p75 ? 75 : 90;
-  var _pctileCol = _pctileNum >= 75 ? '#b91c1c' : _pctileNum >= 50 ? '#d97706' : '#15803d';
+  // SECTOR PEER BENCHMARKING — removed: it showed peer counts, medians and percentiles that no dataset in this product supports.
+  // An honest card replaces it; a real benchmark needs a sourced peer distribution (for example the Climate TRACE / GHGRP asset register run through the engine).
   H += '<div class="card" style="margin-bottom:16px">';
-  H += '<div class="section-title">&#x1F4CA; Sector Peer Benchmarking &#x2014; '+_resolvedSector+'</div>';
-  H += '<div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap;margin-bottom:14px">';
-  H += '<div style="flex:1;min-width:220px">';
-  H += '<div style="font-size:11px;color:var(--muted);margin-bottom:8px">Physical Risk Score vs. '+_benchData.n+' '+_resolvedSector+' peers (CMIP6 SSP3-7.0 · 2050)</div>';
-  // Visual percentile bar
-  var _barPos = Math.min(98, Math.max(2, physScore));
-  var _medPos = Math.min(98, Math.max(2, _benchData.median));
-  var _p25Pos = Math.min(98, Math.max(2, _benchData.p25));
-  var _p75Pos = Math.min(98, Math.max(2, _benchData.p75));
-  H += '<div style="position:relative;height:28px;background:linear-gradient(to right,#14532d 0%,#15803d 25%,#ca8a04 50%,#c2410c 75%,#b91c1c 100%);border-radius:4px;margin-bottom:4px">';
-  // IQR shaded band
-  H += '<div style="position:absolute;top:0;left:'+_p25Pos+'%;width:'+(_p75Pos-_p25Pos)+'%;height:100%;background:rgba(255,255,255,.18);border-left:2px solid rgba(255,255,255,.5);border-right:2px solid rgba(255,255,255,.5)"></div>';
-  // Median line
-  H += '<div style="position:absolute;top:0;left:'+_medPos+'%;width:2px;height:100%;background:#fff;opacity:.8"></div>';
-  // This company marker
-  H += '<div style="position:absolute;top:-4px;left:'+_barPos+'%;transform:translateX(-50%);width:10px;height:36px;background:#fff;border-radius:2px;box-shadow:0 0 0 2px #1e40af"></div>';
-  H += '</div>';
-  H += '<div style="display:flex;justify-content:space-between;font-size:9px;color:var(--faint)"><span>0 (Low)</span><span>&#9660; Median: '+_benchData.median+'</span><span>100 (Critical)</span></div>';
-  H += '</div>';
-  H += '<div style="min-width:180px">';
-  H += '<table style="width:100%;font-size:11px;border-collapse:collapse">';
-  [['This asset',physScore,riskCol],['Sector median',_benchData.median,'var(--muted)'],['25th percentile',_benchData.p25,'var(--green)'],['75th percentile',_benchData.p75,'var(--amber)'],['Worst-case peers','74–88','var(--red)']].forEach(function(row){
-    H += '<tr style="border-bottom:1px solid var(--border)"><td style="padding:4px 0;color:var(--faint)">'+row[0]+'</td><td style="text-align:right;font-weight:700;color:'+row[2]+'">'+row[1]+'</td></tr>';
-  });
-  H += '</table>';
-  H += '<div style="margin-top:8px;padding:6px 10px;background:rgba('+(_pctileNum>=75?'185,28,28':'202,138,4')+',0.12);border-radius:5px;font-size:11px">';
-  H += '<strong style="color:'+_pctileCol+'">'+_pctileNum+'th percentile</strong> — '+_pctile+' within '+sector+' sector peers.';
-  if (_pctileNum >= 75) H += ' Immediate risk mitigation warranted.';
-  H += '</div>';
-  H += '</div></div>';
-  H += '<div style="font-size:10px;color:var(--faint);line-height:1.6">Worst-case comparable: '+_benchData.worst+'. White bar = this asset · White line = sector median · Shaded band = interquartile range (P25–P75). Source: CRI database of '+_benchData.n+' '+_resolvedSector+' assets globally.</div>';
+  H += '<div class="section-title">&#x1F4CA; Sector peer comparison &#x2014; '+_resolvedSector+'</div>';
+  H += '<div style="font-size:12px;line-height:1.7;color:#374151">No sector peer ranking is shown. A peer percentile needs the same method run on a real set of peer assets, and that set is not built yet, so any median or percentile here would be invented. '
+     +'This asset&#39;s own score is '+physScore+' (see the hazard breakdown above for what drives it). To compare with peers, add the peer sites on the <a href="/portfolio/map" style="color:#1d4ed8">portfolio map</a> and run the same hazards on each.</div>';
   H += '</div>';
 
   // EXECUTIVE SUMMARY
