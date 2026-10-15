@@ -14,39 +14,21 @@ const MANDATES = [
     title: "Carbon Auditing & Data Assurance",
     body: "Activity data turned into a GHG Protocol / ISO 14064-1 inventory — Scope 1, 2 and all 15 Scope 3 categories — with an assurance pack that traces every tonne to its evidence.",
     href: "/capabilities#carbon-auditing",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M9 3h6a1 1 0 0 1 1 1v1H8V4a1 1 0 0 1 1-1Z" />
-        <path d="M6 6h12v14a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V6Z" />
-        <path d="m9 13 2 2 4-4" />
-      </svg>
-    ),
+    specCode: "GHG-14064-1",
   },
   {
     tag: "02",
     title: "Dynamic Life Cycle Assessments",
     body: "Cradle-to-gate product carbon footprints (ISO 14067-aligned) for cement, steel, aluminium, ammonia or any product, with uncertainty bands, an EU CBAM cost view and 2050 grid pathways.",
     href: "/capabilities#lca",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M17 2v4M17 2 14 5" />
-        <path d="M3 12a9 9 0 0 1 15.3-6.4" />
-        <path d="M7 22v-4M7 22l3-3" />
-        <path d="M21 12a9 9 0 0 1-15.3 6.4" />
-      </svg>
-    ),
+    specCode: "ISO-14067",
   },
   {
     tag: "03",
     title: "Regulatory Transition & Physical Stress Testing",
     body: "NGFS-aligned scenario execution, translated into PD & LGD credit-risk terms, and defended at the collateral level.",
     href: "/capabilities#stress-testing",
-    icon: (
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-        <path d="M12 2 4 5v6c0 5 3.4 8.6 8 11 4.6-2.4 8-6 8-11V5l-8-3Z" />
-        <path d="M9 12.5 11 15l4.5-5" />
-      </svg>
-    ),
+    specCode: "NGFS-P4 · PD/LGD",
   },
 ];
 
@@ -74,7 +56,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto relative" style={{ zIndex: 2 }}>
           <div className="hero-drift inline-flex items-center gap-2 text-xs font-mono text-gold-200 border border-white/8 rounded-full px-3 py-1.5 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-terminal" />
-            CRI ENGINE · NGFS PHASE 5 · IPCC AR6
+            CRI ENGINE · NGFS PHASE 4 · IPCC AR6
           </div>
           <h1 className="hero-drift animation-delay-200 heading-xl grad-text mb-6">
             The Climate Risk You Haven&rsquo;t Priced <span className="grad-gold">Is Still on Your Books.</span>
@@ -177,7 +159,7 @@ export default function Home() {
           {[
             { value: 18, suffix: "", label: "Commodities modelled" },
             { value: 25, suffix: "", label: "Parametric hazard functions" },
-            { value: 7, suffix: "", label: "NGFS Phase 5 scenarios" },
+            { value: 7, suffix: "", label: "NGFS Phase 4 scenarios" },
             { value: 94, suffix: "", label: "Carbon-pricing instruments mapped" },
           ].map((s) => (
             <Reveal key={s.label}>
@@ -201,7 +183,7 @@ export default function Home() {
               { value: "0.1°", label: "downscaled resolution, worldwide" },
               { value: "Any", label: "lat/lon on Earth — no fixed asset list to miss you" },
               { value: "3", label: "live data tiers (CMIP6, ERA5, NASA POWER, WRI Aqueduct) — not a static lookup" },
-              { value: "2100", label: "scenario horizon across 7 NGFS Phase 5 pathways" },
+              { value: "2100", label: "scenario horizon across 7 NGFS Phase 4 pathways" },
             ].map((s) => (
               <Reveal key={s.label}>
                 <div className="text-center md:text-left">
@@ -248,7 +230,9 @@ export default function Home() {
               <Link href={m.href} className="panel panel-hover block p-8 h-full">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-mono text-zinc-600">{m.tag}</span>
-                  <span className="text-gold-200/70 mandate-icon">{m.icon}</span>
+                  <span className="mandate-spec text-[10px] font-mono text-terminal/80 border border-terminal/25 bg-terminal/5 rounded px-2 py-1 tracking-wide">
+                    {m.specCode}
+                  </span>
                 </div>
                 <h3 className="heading-md text-white mt-4 mb-3">{m.title}</h3>
                 <p className="text-sm text-zinc-400 leading-relaxed">{m.body}</p>
@@ -272,7 +256,7 @@ export default function Home() {
             <h2 className="heading-lg grad-text mb-6 max-w-2xl">The CRI Engine, at a glance.</h2>
             <p className="text-zinc-400 leading-relaxed mb-12 max-w-2xl">
               Every conclusion we deliver traces back to a geospatial pipeline built on IPCC AR6 hazard
-              matrices and NGFS Phase 5 scenarios. Asset coordinates in, Capital-at-Risk out, with full
+              matrices and NGFS Phase 4 scenarios. Asset coordinates in, Capital-at-Risk out, with full
               methodological transparency at every step. The same engine also forecasts where that score
               moves through 2050, scans a company's own disclosures for the gap between claims and capex,
               and can work through an entire watchlist unattended. This is a look at three of the modules

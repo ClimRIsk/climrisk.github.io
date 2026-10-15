@@ -15,7 +15,7 @@ const DNA = [
   },
   {
     label: "Scientific Standard",
-    body: "Built on peer-reviewed IPCC AR6 physical hazard data and NGFS Phase 5 transition scenarios. Nothing in the hazard layer is proprietary weather data of unknown provenance.",
+    body: "Built on peer-reviewed IPCC AR6 physical hazard data and NGFS Phase 4 transition scenarios. Nothing in the hazard layer is proprietary weather data of unknown provenance.",
   },
   {
     label: "Auditing Standard",

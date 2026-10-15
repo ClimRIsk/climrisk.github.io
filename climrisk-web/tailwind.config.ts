@@ -33,7 +33,7 @@ const config: Config = {
         terminal: "#10B981",
       },
       fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
+        sans: ["Archivo", "system-ui", "sans-serif"],
         mono: ["'JetBrains Mono'", "monospace"],
       },
       transitionTimingFunction: {

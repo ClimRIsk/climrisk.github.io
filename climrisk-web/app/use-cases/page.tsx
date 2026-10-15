@@ -30,7 +30,7 @@ const SECTORS: {
     capabilities: [
       {
         title: "Loan Book Stress-Testing",
-        body: "Model portfolio-level asset impairment and stress-test lending exposure across 2030, 2040, and 2050. Simulate portfolio resilience under NGFS Phase 5 scenarios.",
+        body: "Model portfolio-level asset impairment and stress-test lending exposure across 2030, 2040, and 2050. Simulate portfolio resilience under NGFS Phase 4 scenarios.",
       },
       {
         title: "High-Resolution Collateral Revaluation",
@@ -42,7 +42,7 @@ const SECTORS: {
       },
     ],
     metrics: [
-      { label: "Scenarios Modeled", value: "NGFS Phase 5 & IPCC AR6" },
+      { label: "Scenario Analysis", value: "NGFS Phase 4 & IPCC AR6" },
       { label: "Credit Metrics Adjusted", value: "PD, LGD, VaR" },
       { label: "Output Format", value: "Single CSV & IFRS S2 Reports" },
     ],
@@ -103,7 +103,7 @@ const SECTORS: {
     ],
     metrics: [
       { label: "Valuation Metrics", value: "Climate-Adjusted EV, Stressed NPV, Adaptation ROI" },
-      { label: "Scenarios Assessed", value: "NGFS Phase 5 & IPCC AR6" },
+      { label: "Scenario Analysis", value: "NGFS Phase 4 & IPCC AR6" },
       { label: "Output Format", value: "Single CSV & LP-Ready TCFD Disclosures" },
     ],
     visual: "waterfall",

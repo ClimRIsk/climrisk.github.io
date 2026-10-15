@@ -47,7 +47,7 @@ const PRACTICES = [
       },
       {
         title: "Dynamic to 2050 & CBAM",
-        body: "The footprint is re-run for every year to 2050 as the grid decarbonises under each NGFS Phase 5 scenario, with an optional decarbonisation plan, and an EU CBAM view prices embedded emissions against the free-allocation phase-out.",
+        body: "The footprint is re-run for every year to 2050 as the grid decarbonises under each NGFS Phase 4 scenario, with an optional decarbonisation plan, and an EU CBAM view prices embedded emissions against the free-allocation phase-out.",
       },
     ],
   },
@@ -60,7 +60,7 @@ const PRACTICES = [
     points: [
       {
         title: "NGFS-Aligned Scenario Execution",
-        body: "Stress tests are run against the NGFS Phase 5 scenario suite — seven pathways from three models — not a single simplified pathway.",
+        body: "Stress tests are run against the NGFS Phase 4 scenario suite — seven pathways from three models — not a single simplified pathway.",
       },
       {
         title: "Credit Risk Translation (PD & LGD)",

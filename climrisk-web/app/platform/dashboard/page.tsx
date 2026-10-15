@@ -683,7 +683,7 @@ export default function DashboardPage() {
 
         {/* Footer */}
         <p className="text-xs text-gray-400 text-center pb-4">
-          ClimRisk Engine · IPCC AR6 · NGFS Phase 5 · TCFD / ISSB IFRS S2 · CSRD ESRS E1 ·
+          ClimRisk Engine · IPCC AR6 · NGFS Phase 4 · TCFD / ISSB IFRS S2 · CSRD ESRS E1 ·
           Sources: GLEIF · SEC EDGAR · CDP · SBTi · EU EUTL · WRI Aqueduct · NASA FIRMS
         </p>
       </div>

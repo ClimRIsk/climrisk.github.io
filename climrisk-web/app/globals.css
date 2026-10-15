@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
 :root {
   --bg:         #0A0B0E;
@@ -34,7 +34,7 @@ html {
 body {
   background: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, sans-serif;
+  font-family: 'Archivo', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
@@ -124,18 +124,21 @@ body {
   animation: livePulseGlow 4.5s ease-in-out infinite;
 }
 
-/* Mandate card icons — stroke-draws in once the card scrolls into view,
-   instead of just appearing with the card's fade-up (Reveal toggles
-   .is-visible on the wrapping .reveal div these icons live inside). */
-.mandate-icon path,
-.mandate-icon circle {
-  stroke-dasharray: 48;
-  stroke-dashoffset: 48;
-  transition: stroke-dashoffset 0.9s var(--ease-inst) 0.15s;
+/* Mandate card spec codes — a terminal cursor flickers the mono spec tag
+   into place once the card scrolls into view (Reveal toggles .is-visible
+   on the wrapping .reveal div), instead of a generic icon fading in. */
+@keyframes specFlicker {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  30%  { opacity: 0.2; }
+  45%  { opacity: 1; }
+  100% { opacity: 1; }
 }
-.reveal.is-visible .mandate-icon path,
-.reveal.is-visible .mandate-icon circle {
-  stroke-dashoffset: 0;
+.mandate-spec {
+  opacity: 0;
+}
+.reveal.is-visible .mandate-spec {
+  animation: specFlicker 0.6s steps(1, end) 0.2s forwards;
 }
 
 /* Scenario Explorer — interactive year slider + scenario toggle */

@@ -97,7 +97,7 @@ const TESTS: Test[] = [
 ];
 
 const SOURCES = [
-  "NGFS Phase 5 (IIASA)",
+  "NGFS Phase 4 (IIASA)",
   "IPCC AR6",
   "NOAA IBTrACS v04r01",
   "NOAA ISD station winds",

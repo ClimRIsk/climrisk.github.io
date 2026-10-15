@@ -73,7 +73,7 @@ const DATA_GROUPS = [
   {
     group: "Financial Transition Scenarios",
     items: [
-      { name: "NGFS Phase 5", detail: "7 scenario pathways from 3 models (GCAM, MESSAGEix-GLOBIOM, REMIND-MAgPIE), with carbon prices, sector activity and grid intensity." },
+      { name: "NGFS Phase 4 Scenario Analysis", detail: "7 scenario pathways from 3 models (GCAM, MESSAGEix-GLOBIOM, REMIND-MAgPIE), with carbon prices, sector activity and grid intensity." },
       { name: "World Bank Carbon Pricing Dashboard", detail: "94 carbon taxes and trading systems, matched to each asset's jurisdiction and sector." },
     ],
   },
