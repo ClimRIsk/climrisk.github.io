@@ -386,19 +386,18 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="openNewAssessment();return false"><span class="sb-icon"><i class="ph ph-plus-circle"></i></span>New Assessment</a>
   <div class="sb-section">Analytics &amp; Maps</div>
   <a class="sb-item" href="#" onclick="scrollToSection('recent');return false"><span class="sb-icon"><i class="ph ph-chart-bar"></i></span>My Reports <span class="sb-badge green" id="sb-rpt-cnt">0</span></a>
-  <a class="sb-item" href="#" onclick="scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-link"></i></span>Latest Results</a>
-  <a class="sb-item" href="#" onclick="scrollToSection('recent');return false"><span class="sb-icon"><i class="ph ph-map-trifold"></i></span>Risk Map</a>
+  <a class="sb-item" href="#" onclick="openResultsTab(null);return false"><span class="sb-icon"><i class="ph ph-link"></i></span>Latest Results</a>
+  <a class="sb-item" href="#" onclick="openEngineTool('portfolio');return false" title="All your sites on one map with hazard layers; missing data stays visible as missing"><span class="sb-icon"><i class="ph ph-map-trifold"></i></span>Risk Map</a>
   <div class="sb-section">Platform Pillars</div>
   <a class="sb-item" href="#" onclick="openAddCompanyModal();return false"><span class="sb-icon"><i class="ph ph-building-office"></i></span>Add Company <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
   <a class="sb-item" href="#" onclick="openBatchUploadModal();return false"><span class="sb-icon"><i class="ph ph-upload-simple"></i></span>Batch Upload <span class="sb-badge" style="background:rgba(37,99,235,.3);color:#93c5fd">P2</span></a>
-  <a class="sb-item" href="#" onclick="switchCRITab('decision',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-lightning"></i></span>Decision Brief <span class="sb-badge green">P1</span></a>
+  <a class="sb-item" href="#" onclick="openResultsTab('decision');return false"><span class="sb-icon"><i class="ph ph-lightning"></i></span>Decision Brief <span class="sb-badge green">P1</span></a>
   <div class="sb-section">Deep Analysis</div>
   <a class="sb-item" href="#" onclick="openAssetIntel();return false"><span class="sb-icon"><i class="ph ph-mountains"></i></span>Asset Intelligence 3D <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
   <a class="sb-item" href="#" onclick="openAssetIntel(null,null,null,null,{mode:'company'});return false"><span class="sb-icon"><i class="ph ph-globe-hemisphere-east"></i></span>Company Asset Map <span class="sb-badge" style="background:rgba(16,185,129,.2);color:#6ee7b7">New</span></a>
   <a class="sb-item" href="#" onclick="openAssetIntel(null,null,null,null,{mode:'company',analyst:'1'});return false" title="Physical risk → current policies → NGFS transition → loss distribution"><span class="sb-icon"><i class="ph ph-brain"></i></span>AI Risk Analyst <span class="sb-badge" style="background:rgba(167,139,250,.2);color:#c4b5fd">New</span></a>
   <a class="sb-item" href="#" onclick="openEngineTool('carbon');return false" title="GHG inventory from activity data with an audit trail and assurance pack"><span class="sb-icon"><i class="ph ph-scales"></i></span>Carbon Accounting <span class="sb-badge" style="background:rgba(56,189,248,.2);color:#7dd3fc">GHG</span></a>
   <a class="sb-item" href="#" onclick="openPhysicalReport();return false" title="Physical risk report by sector: site, hazard zones, construction year, what will go wrong, what to do"><span class="sb-icon"><i class="ph ph-cloud-lightning"></i></span>Physical Risk Report <span class="sb-badge" style="background:rgba(249,115,22,.2);color:#fdba74">REPORT</span></a>
-  <a class="sb-item" href="#" onclick="openEngineTool('portfolio');return false" title="All your sites on one map with hazard layers; missing data stays visible as missing"><span class="sb-icon"><i class="ph ph-map-trifold"></i></span>Hazard Portfolio Map <span class="sb-badge" style="background:rgba(56,189,248,.2);color:#7dd3fc">NEW</span></a>
   <a class="sb-item" href="#" onclick="openAssetTwin();return false" title="3D model of a real site: replay floods and cyclone winds, see what fails and how to protect it"><span class="sb-icon"><i class="ph ph-cube"></i></span>Asset Twin 3D <span class="sb-badge" style="background:rgba(56,189,248,.2);color:#7dd3fc">3D</span></a>
   <a class="sb-item" href="#" onclick="openEngineTool('stories');return false" title="Story-format reports: physical, transition, financial, LCA, ISO 14067, carbon audit, CBAM — customised per client"><span class="sb-icon"><i class="ph ph-article"></i></span>Story Reports <span class="sb-badge" style="background:rgba(249,115,22,.2);color:#fdba74">NEW</span></a>
   <a class="sb-item" href="#" onclick="openEngineTool('agent');return false" title="The engine's own agent: builds twins and scenarios, researches live hazards, drafts LinkedIn posts — runs inside the engine"><span class="sb-icon"><i class="ph ph-robot"></i></span>ClimRisk Agent <span class="sb-badge" style="background:rgba(167,139,250,.2);color:#c4b5fd">AI</span></a>
@@ -408,12 +407,12 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="openEngineTool('realestate');return false" title="Operational carbon, stranding year and EPC/MEPS checks for buildings"><span class="sb-icon"><i class="ph ph-buildings"></i></span>Real Estate</a>
   <a class="sb-item" href="#" onclick="openEngineTool('materiality');return false" title="CSRD double materiality IRO register"><span class="sb-icon"><i class="ph ph-scales"></i></span>Double Materiality</a>
   <a class="sb-item" href="#" onclick="openEngineTool('markets');return false" title="EU ETS compliance position and carbon-credit screen"><span class="sb-icon"><i class="ph ph-coins"></i></span>Carbon Markets</a>
-  <a class="sb-item" href="#" onclick="switchCRITab('physical',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-wave"></i></span>Physical Risk (25 Hz)</a>
-  <a class="sb-item" href="#" onclick="switchCRITab('financial',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-trend-up"></i></span>Financial / EBITDA</a>
-  <a class="sb-item" href="#" onclick="switchCRITab('livemet',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-cloud-sun"></i></span>Live Met (climrisk.io)</a>
-  <a class="sb-item" href="#" onclick="switchCRITab('map',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-globe-hemisphere-west"></i></span>Portfolio Map</a>
-  <a class="sb-item" href="#" onclick="switchCRITab('disclosure',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-scales"></i></span>Disclosures</a>
-  <a class="sb-item" href="#" onclick="switchCRITab('loanbook',null);scrollToSection('results-panel');return false"><span class="sb-icon"><i class="ph ph-bank"></i></span>Loan Book</a>
+  <a class="sb-item" href="#" onclick="openResultsTab('operational');return false"><span class="sb-icon"><i class="ph ph-wave"></i></span>Physical Risk (25 Hz)</a>
+  <a class="sb-item" href="#" onclick="openResultsTab('capital');return false"><span class="sb-icon"><i class="ph ph-trend-up"></i></span>Financial / EBITDA</a>
+  <a class="sb-item" href="#" onclick="openResultsTab('siteintel');return false"><span class="sb-icon"><i class="ph ph-cloud-sun"></i></span>Live Met (climrisk.io)</a>
+  <a class="sb-item" href="#" onclick="openResultsTab('siteintel');return false"><span class="sb-icon"><i class="ph ph-globe-hemisphere-west"></i></span>Site Map &amp; Live Met</a>
+  <a class="sb-item" href="#" onclick="openResultsTab('reports');return false"><span class="sb-icon"><i class="ph ph-scales"></i></span>Disclosures</a>
+  <a class="sb-item" href="#" onclick="openResultsTab('reports');return false"><span class="sb-icon"><i class="ph ph-bank"></i></span>Loan Book</a>
   <div class="sb-section">Regulatory</div>
   <a class="sb-item" href="#" onclick="scrollToSection('automation');return false"><span class="sb-icon"><i class="ph ph-buildings"></i></span>CSRD Hub <span class="sb-badge" id="sb-csrd-urgency">!</span></a>
   <a class="sb-item" href="#" onclick="scrollToSection('automation');return false"><span class="sb-icon"><i class="ph ph-flag"></i></span>Regulatory Calendar</a>
@@ -4181,6 +4180,18 @@ function buildCRITabs() {
   return '<div class="cri-tabs">'+TABS.map(function(t,i){
     return '<button class="cri-tab'+(i===0?' active':'')+'" onclick="switchCRITab(\''+t.id+'\',this)">'+t.label+'</button>';
   }).join('')+'</div>';
+}
+function openResultsTab(id) {   // sidebar entry for a results tab: show it when an analysis is open, otherwise say so instead of leaving a blank screen
+  var rp = document.getElementById('results-panel');
+  if (!document.getElementById('cri-tab-decision')) {
+    if (rp) rp.innerHTML = '<div class="card" style="text-align:center;padding:28px"><div style="font-weight:700;font-size:15px;margin-bottom:6px">No analysis is open</div>' +
+      '<div style="color:var(--muted);font-size:13px;line-height:1.6;max-width:520px;margin:0 auto 14px">This view shows the results of an assessment. Run one, or reopen one from Recent Assessments below. Nothing is shown here until there is a result, and no placeholder numbers are used.</div>' +
+      '<button class="btn-new" onclick="openNewAssessment()" style="font-size:12px;padding:6px 14px">New assessment</button> ' +
+      '<button class="btn-new" onclick="scrollToSection(\'recent\')" style="font-size:12px;padding:6px 14px;background:transparent;border:1px solid var(--border)">Recent assessments</button></div>';
+    scrollToSection('results-panel'); return;
+  }
+  if (id) { var tabs = document.querySelectorAll('.cri-tab'); var btn = null; tabs.forEach(function(t){ if ((t.getAttribute('onclick')||'').indexOf("'"+id+"'") > -1) btn = t; }); switchCRITab(id, btn); }
+  scrollToSection('results-panel');
 }
 function switchCRITab(id, btn) {
   document.querySelectorAll('.cri-tab').forEach(function(t){ t.classList.remove('active'); });
