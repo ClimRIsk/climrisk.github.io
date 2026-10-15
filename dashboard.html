@@ -7039,7 +7039,11 @@ function buildCBAMPanel(data, nze, dt, cp, company, sector) {
       btn.onclick = function() {
         if (a.type === 'say') craiSend(a.text);
         else if (a.type === 'intent') craiSend(a.text);
-        else if (a.type === 'open') window.open(_ENGINE + a.url + (a.url.indexOf('#') < 0 && _apiKey ? '#key=' + encodeURIComponent(_apiKey) : ''), '_blank');
+        else if (a.type === 'open') {
+          var _p = a.url.split('#')[0].split('?'), _k = Object.keys(_ENGINE_TOOLS).filter(function(x) { return _ENGINE_TOOLS[x].path === _p[0]; })[0];
+          if (_k) openEngineTool(_k, _p[1] || '');       // engine pages open inside the app, not in the system browser
+          else window.open(_ENGINE + a.url + (a.url.indexOf('#') < 0 && _apiKey ? '#key=' + encodeURIComponent(_apiKey) : ''), '_blank');
+        }
         else if (a.type === 'copy' && b_post(blocks)) { navigator.clipboard && navigator.clipboard.writeText(b_post(blocks).text); btn.textContent = 'Copied'; }
         else if (a.type === 'publish') _addMsg('Publishing needs your explicit approval in the Agent page: open “ClimRisk Agent” in the sidebar.', 'ai');
       };
