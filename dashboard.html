@@ -407,6 +407,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="openEngineTool('realestate');return false" title="Operational carbon, stranding year and EPC/MEPS checks for buildings"><span class="sb-icon"><i class="ph ph-buildings"></i></span>Real Estate</a>
   <a class="sb-item" href="#" onclick="openEngineTool('materiality');return false" title="CSRD double materiality IRO register"><span class="sb-icon"><i class="ph ph-scales"></i></span>Double Materiality</a>
   <a class="sb-item" href="#" onclick="openEngineTool('markets');return false" title="EU ETS compliance position and carbon-credit screen"><span class="sb-icon"><i class="ph ph-coins"></i></span>Carbon Markets</a>
+  <a class="sb-item" href="#" onclick="openEngineTool('stress');return false" title="One scenario through storm, plant, supplier, freight, tariff and cash — or any piece alone"><span class="sb-icon"><i class="ph ph-lightning"></i></span>Stress Test</a>
   <a class="sb-item" href="#" onclick="openResultsTab('operational');return false"><span class="sb-icon"><i class="ph ph-wave"></i></span>Physical Risk (25 Hz)</a>
   <a class="sb-item" href="#" onclick="openResultsTab('capital');return false"><span class="sb-icon"><i class="ph ph-trend-up"></i></span>Financial / EBITDA</a>
   <a class="sb-item" href="#" onclick="openResultsTab('siteintel');return false"><span class="sb-icon"><i class="ph ph-cloud-sun"></i></span>Live Met (climrisk.io)</a>
@@ -557,7 +558,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
         <div class="auto-item"><span class="check">✓</span><span style="flex:1">Carbon pricing instruments in force at the site</span></div>
         <div class="auto-item"><span class="check">✓</span><span style="flex:1">NGFS scenario carbon prices and sector output paths</span></div>
         <div class="auto-item"><span class="check">✓</span><span style="flex:1">Monte Carlo loss distribution (mean, p95, p99, expected shortfall)</span></div>
-        <div class="auto-next">Other workbenches in the sidebar: Carbon Accounting, Product Carbon Footprint, Transition Plan, Real Estate, Double Materiality, Carbon Markets.</div>
+        <div class="auto-next">Other workbenches in the sidebar: Carbon Accounting, Product Carbon Footprint, Transition Plan, Real Estate, Double Materiality, Carbon Markets, Stress Test.</div>
       </div>
       <div class="auto-card" id="automation">
         <div class="auto-head"><div class="auto-title"><i class="ph ph-calendar" style="margin-right:6px;color:#06b6d4"></i>Regulatory Calendar</div><div id="reg-upcoming" style="font-size:11px;color:var(--amber);font-weight:600;font-family:'JetBrains Mono',monospace"></div></div>
@@ -3405,7 +3406,8 @@ var _ENGINE_TOOLS = {
   plan:        {path: '/transition-plan/dashboard', title: 'Transition Plan',           sub: 'Targets → levers → capex → emissions path · ESRS E1-1 · TPT', icon: 'ph-path'},
   realestate:  {path: '/real-estate/dashboard',     title: 'Real Estate Decarbonisation', sub: 'Operational carbon · stranding year · EPC / MEPS checks', icon: 'ph-buildings'},
   materiality: {path: '/materiality/dashboard',     title: 'Double Materiality',         sub: 'CSRD IRO register · ESRS 1 ch.3', icon: 'ph-scales'},
-  markets:     {path: '/carbon-markets/dashboard',  title: 'Carbon Markets',             sub: 'EU ETS position · CBAM phase-out · carbon-credit screen', icon: 'ph-coins'}
+  markets:     {path: '/carbon-markets/dashboard',  title: 'Carbon Markets',             sub: 'EU ETS position · CBAM phase-out · carbon-credit screen', icon: 'ph-coins'},
+  stress:      {path: '/stress-test/dashboard',     title: 'Stress Test',                sub: 'Storm · plant · supplier · freight · tariff · cash in one linked run — each piece also runs alone', icon: 'ph-lightning'}
 };
 function openEngineTool(key, query) {
   var t = _ENGINE_TOOLS[key]; if (!t) return;
