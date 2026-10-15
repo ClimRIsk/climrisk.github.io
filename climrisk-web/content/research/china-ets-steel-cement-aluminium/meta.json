@@ -1,0 +1,101 @@
+{
+  "slug": "china-ets-steel-cement-aluminium",
+  "tier": "regulatory",
+  "kicker": "Carbon Pricing · China",
+  "title": "Cheap Carbon, Expensive Option: What China's ETS Costs a Steel Plant Today, and in 2040",
+  "detail": "China's carbon market now covers steel, cement and aluminium at about US$12 a tonne; the ClimRisk engine shows what the same plants face if the price follows the NGFS scenarios instead.",
+  "status": "published",
+  "date": "2026-10-15",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/china-ets-steel-cement-aluminium/cover.png",
+  "sources": [
+    {
+      "title": "MEE Notice on 2026 national carbon market work, No. 32 [2026], 27 Jan 2026",
+      "url": "https://www.mee.gov.cn/xxgk2018/xxgk/xxgk06/202602/t20260209_1143900.html"
+    },
+    {
+      "title": "Xinhua: MEE issues 2025-26 allowance allocation plan, 3 Sep 2026",
+      "url": "https://www.news.cn/fortune/20260903/c6112a2e525b45dfa75820794e75ae1f/c.html"
+    },
+    {
+      "title": "Mysteel: China issues 2026 carbon allowance plan for steel, cement, aluminum, 4 Sep 2026",
+      "url": "https://www.mysteel.net/news/5139652-china-issues-2026-carbon-allowance-plan-for-steel-cement-aluminum-sectors"
+    },
+    {
+      "title": "Sxcoal: China sets carbon allowance quotas for power, steel, cement, aluminium sectors, Sep 2026",
+      "url": "https://en.sxcoal.com/news/detail/2095692428031315970"
+    },
+    {
+      "title": "Carbon Herald: China expands carbon market to heavy industries, 28 Mar 2025",
+      "url": "https://carbonherald.com/china-expands-carbon-trading-market-to-heavy-industries-targeting-emissions-reduction/"
+    },
+    {
+      "title": "Carbon Herald: China carbon prices hit two-year low, 10 Oct 2025",
+      "url": "https://carbonherald.com/china-carbon-prices-two-year-low-market-oversupply/"
+    },
+    {
+      "title": "Mysteel: China tightens national ETS oversight, 3 Jul 2025",
+      "url": "https://www.mysteel.net/analysis/5091130-china-tightens-national-ets-oversight-amid-countdown-to-2027-allowance-buffer-"
+    },
+    {
+      "title": "Discovery Alert: China carbon market pricing, Sep 2026 (secondary, cites MEE Environmental Planning Institute)",
+      "url": "https://discoveryalert.com/analysis/china-carbon-market-pricing-record-september-2026/"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "SteelOrbis: EU CBAM certificate price rises to 82.32 for Q3 2026, 6 Oct 2026",
+      "url": "https://www.steelorbis.com/steel-news/latest-news/eu-cbam-certificate-price-rises-to-8232-for-q3-2026-1481786.htm"
+    },
+    {
+      "title": "Reed Smith: EU Carbon Border Adjustment Mechanism",
+      "url": "https://www.reedsmith.com/articles/eu-carbon-border-adjustment-mechanism/"
+    },
+    {
+      "title": "Climease: CBAM certificate price 2026",
+      "url": "https://climease.com/en/cbam-certificate-price-2026/"
+    },
+    {
+      "title": "Regulation (EU) 2023/956 (CBAM), Art. 9 deduction for carbon price paid in country of origin",
+      "url": "https://eur-lex.europa.eu/eli/reg/2023/956/oj"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios",
+      "url": "https://www.ngfs.net/ngfs-scenarios-portal/"
+    }
+  ],
+  "images": [
+    {
+      "file": "key-figures.png",
+      "kind": "infographic",
+      "source": "Figures as stated beside each number: MEE, Carbon Herald, World Bank, European Commission via SteelOrbis"
+    },
+    {
+      "file": "echeng-steel-sentinel2.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2A_50RKU_20261007_0_L2A, 7 Oct 2026, via AWS Earth Search"
+    },
+    {
+      "file": "tongling-cement-sentinel2.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_50RNV_20261007_0_L2A, 7 Oct 2026, via AWS Earth Search"
+    },
+    {
+      "file": "china-price-paths.png",
+      "kind": "chart",
+      "source": "World Bank Carbon Pricing Dashboard (observed); NGFS Phase 5 via ClimRisk engine"
+    },
+    {
+      "file": "plant-annual-cost.png",
+      "kind": "chart",
+      "source": "ClimRisk engine, NGFS Phase 5, unabated emissions"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 scene S2A_50RKU_20261007_0_L2A (Copernicus), via AWS Earth Search"
+    }
+  ]
+}
