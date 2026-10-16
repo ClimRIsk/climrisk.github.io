@@ -1,0 +1,71 @@
+PASS   16.17s  case/model      event_summary    Summarise what happened to the finances in Taiwan's 2021 drought and c
+PASS   70.01s  case/model      event_response   How did the companies and institutions respond in Taiwan's 2021 drough
+PASS   38.76s  case/model      event_summary    Summarise what happened to the finances in 2011 Thailand floods and th
+PASS  908.32s  case/model      event_response   How did the companies and institutions respond in 2011 Thailand floods
+PASS   23.80s  case/model      event_summary    Summarise what happened to the finances in 2015 Chennai floods and the
+PASS  922.54s  case/model      event_response   How did the companies and institutions respond in 2015 Chennai floods 
+PASS   11.00s  case/model      event_summary    Summarise what happened to the finances in Fort McMurray wildfire and 
+PASS   25.54s  case/model      event_response   How did the companies and institutions respond in Fort McMurray wildfi
+PASS  914.79s  case/model      event_summary    Summarise what happened to the finances in Ørsted US offshore wind imp
+PASS   20.76s  case/model      event_response   How did the companies and institutions respond in Ørsted US offshore w
+PASS  907.87s  case/model      event_summary    Summarise what happened to the finances in BASF and the 2018 low Rhine
+PASS   15.07s  case/model      event_response   How did the companies and institutions respond in BASF and the 2018 lo
+PASS    2.60s  case/assembled  company          What did Renaissancere Holdings Ltd report about Storm Kyrill?
+PASS    5.38s  case/assembled  company          What did Berkley W R Corp report about Hurricane Florence?
+PASS    3.00s  case/assembled  company          What did Partnerre Ltd report about Hurricane Wilma?
+PASS    2.76s  case/assembled  company          What did HSN, Inc. report about Hurricane Irma?
+PASS    3.18s  case/assembled  company          What did Nstar Electric Co report about the Regional Greenhouse Gas In
+PASS    4.88s  case/assembled  company          What did Valley National Bancorp report about Hurricane Helene?
+PASS    3.94s  case/assembled  company          What did Occidental Petroleum Corp /De/ report about Hurricane Harvey?
+PASS    4.92s  case/assembled  company          What did SpartanNash Co report about Hurricane Florence?
+PASS    3.85s  case/assembled  company          What did Cincinnati Financial Corp report about the 2011 tornado outbr
+PASS    0.05s  case/assembled  company_unknown  What did Bally's Corp report about coal plant retirements and stranded
+PASS    0.03s  case/assembled  company_unknown  What did Mammoth Energy Services, Inc. report about the 2024 Rio Grand
+PASS    0.01s  case/assembled  company_unknown  What did Palomar Holdings, Inc. report about Hurricane Michael?
+PASS    0.00s  case/assembled  company_unknown  What did American Airlines Group Inc. report about Hurricane Zeta?
+PASS    8.80s  case/model      analog           Which past cases are closest to a flood at a chemical plant on a river
+PASS    6.65s  case/model      analog           What precedents exist for a wildfire hitting a utility's network, and 
+PASS    8.63s  case/model      analog           Our asset is a coastal refinery exposed to a hurricane. What do the ca
+PASS    7.20s  general         outside_library  What did the 1998 North American ice storm cost Hydro-Quebec?
+PASS    4.84s  case/model      outside_library  How did the 2013 Colorado floods affect Anadarko's production guidance
+{
+ "questions": 30,
+ "passed": 30,
+ "pass_rate": 1.0,
+ "median_s": 6.93,
+ "p95_s": 914.79,
+ "max_s": 922.54,
+ "warm": {
+  "warmed": true,
+  "model": "climrisk-llm-v5:latest",
+  "seconds": 2.8
+ },
+ "index": {
+  "items": 4672,
+  "events": 131,
+  "curated_cards": 25,
+  "company_event_cases": 1259,
+  "company_climate_reports": 12,
+  "kinds": {
+   "frame": 25,
+   "fact": 94,
+   "resp": 39,
+   "filing": 3482,
+   "xbrl": 1032
+  },
+  "path": "/Users/shrinivashdhamodharakannan/.climrisk/case_index.jsonl"
+ },
+ "by_kind": {
+  "analog": "3/3",
+  "company": "9/9",
+  "company_unknown": "4/4",
+  "event_response": "6/6",
+  "event_summary": "6/6",
+  "outside_library": "2/2"
+ },
+ "by_path": {
+  "case/assembled": 13,
+  "case/model": 16,
+  "general": 1
+ }
+}

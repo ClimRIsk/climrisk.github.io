@@ -1,0 +1,11 @@
+{
+ "changed": true,
+ "active": "climrisk-llm-v6",
+ "scores": {
+  "climrisk-llm-v6": 0.9063,
+  "climrisk-llm-v5b": 0.2688,
+  "climrisk-llm-v5": 0.2834,
+  "climrisk-llm-v2": 0.3346,
+  "qwen2.5:7b": 0.6191
+ }
+}

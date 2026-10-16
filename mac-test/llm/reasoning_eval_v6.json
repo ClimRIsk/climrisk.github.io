@@ -1,0 +1,2359 @@
+{
+ "_meta": {
+  "rows": 140,
+  "seed": 3,
+  "limit": 120
+ },
+ "oracle (rule-based teacher)": {
+  "metrics": {
+   "n": 140,
+   "verdict_accuracy": 1.0,
+   "ood_verdict_accuracy": 1.0,
+   "near_limit_verdict_accuracy": 1.0,
+   "ablation_not_computable": 1.0,
+   "distractor_verdict_ok": 1.0,
+   "distractor_ignored": 1.0,
+   "sensitivity_pairs": 24,
+   "sensitivity_flip_pairs": 5,
+   "sensitivity_follows_change": 1.0,
+   "sensitivity_consistent_when_no_flip": 1.0,
+   "format": 1.0,
+   "numbers_in_sources": 1.0,
+   "citations_exist": 1.0,
+   "facts_cited": 1.0,
+   "inferences_grounded": 1.0,
+   "attribution_correct": 1.0,
+   "all_checks_pass": 1.0
+  },
+  "composite": 1.0
+ },
+ "_baselines": {
+  "always_the_commonest_verdict": {
+   "verdict": "BREACH",
+   "verdict_accuracy": 0.5
+  },
+  "ignore_the_change": {
+   "sensitivity_follows_change": 0.0,
+   "note": "answering the base verdict for the variant is wrong on every pair whose true verdict changes"
+  },
+  "verdict_counts": {
+   "PASS": 23,
+   "PASS-TIGHT": 12,
+   "NO-COVENANT": 11,
+   "BREACH": 46
+  }
+ },
+ "climrisk-llm-v6": {
+  "metrics": {
+   "n": 140,
+   "verdict_accuracy": 0.978,
+   "ood_verdict_accuracy": 1.0,
+   "near_limit_verdict_accuracy": 0.969,
+   "ablation_not_computable": 0.667,
+   "distractor_verdict_ok": 1.0,
+   "distractor_ignored": 0.958,
+   "sensitivity_pairs": 24,
+   "sensitivity_flip_pairs": 5,
+   "sensitivity_follows_change": 0.8,
+   "sensitivity_consistent_when_no_flip": 0.947,
+   "format": 0.957,
+   "numbers_in_sources": 1.0,
+   "citations_exist": 1.0,
+   "facts_cited": 0.993,
+   "inferences_grounded": 0.971,
+   "attribution_correct": 0.828,
+   "all_checks_pass": 0.757
+  },
+  "composite": 0.9063,
+  "seconds": 2530,
+  "failures": [
+   {
+    "pair": "p5-979",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": "PASS",
+    "problems": [
+     "verdict PASS but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-3938",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2220",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2220",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3040",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NO-COVENANT",
+    "problems": [
+     "verdict NO-COVENANT but the engine numbers imply NOT-COMPUTABLE"
+    ]
+   },
+   {
+    "pair": "p5-229",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NO-COVENANT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict NO-COVENANT but the engine numbers imply NOT-COMPUTABLE"
+    ]
+   },
+   {
+    "pair": "p5-202",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NO-COVENANT",
+    "problems": [
+     "verdict NO-COVENANT but the engine numbers imply NOT-COMPUTABLE"
+    ]
+   },
+   {
+    "pair": "p5-1245",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NO-COVENANT",
+    "problems": [
+     "verdict NO-COVENANT but the engine numbers imply NOT-COMPUTABLE"
+    ]
+   },
+   {
+    "pair": "p5-3454",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NO-COVENANT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict NO-COVENANT but the engine numbers imply NOT-COMPUTABLE"
+    ]
+   },
+   {
+    "pair": "p5-2370",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NO-COVENANT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict NO-COVENANT but the engine numbers imply NOT-COMPUTABLE"
+    ]
+   },
+   {
+    "pair": "p5-1483",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NO-COVENANT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict NO-COVENANT but the engine numbers imply NOT-COMPUTABLE"
+    ]
+   },
+   {
+    "pair": "p5-1279",
+    "role": "ablation",
+    "expected": "NOT-COMPUTABLE",
+    "got": "NO-COVENANT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict NO-COVENANT but the engine numbers imply NOT-COMPUTABLE"
+    ]
+   },
+   {
+    "pair": "p5-615",
+    "role": "distractor",
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "cited a source that does not bear on the question"
+    ]
+   },
+   {
+    "pair": "p5-630",
+    "role": "distractor",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1456",
+    "role": "distractor",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3634",
+    "role": "distractor",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-71",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3895",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-275",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-214",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-49",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-190",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-236",
+    "role": "base",
+    "expected": "PASS",
+    "got": "PASS",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number"
+    ]
+   },
+   {
+    "pair": "ood5-141",
+    "role": "base",
+    "expected": "PASS",
+    "got": "PASS",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number"
+    ]
+   },
+   {
+    "pair": "ood5-290",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-267",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "ood5-55",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   }
+  ],
+  "samples": [
+   {
+    "expected": "PASS",
+    "got": "PASS",
+    "answer": "STEP 1 [FACT] Westmere Chemicals Group faces a earthquake loss with asset damage of 242.0, insured recovery of 126.7 and extra costs of 7.6 [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 115.3 and the EBITDA hit at 7.6, so the pre-tax loss is 122.9, which is 72.4% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is very large: it exceeds half a year of EBITDA; it is driven by uninsured damage, and insurance covers only part of the damage.\nSTEP 4 [FACT] After the loss EBITDA is 162.1 and net debt is 191.6; net debt/EBITDA moves from 0.40x to 1.18x [6].\nSTEP 5 [FACT] The net debt/EBITDA test is 1.18x against a limit of at most 2.28x: pass with headroom of 48.2%; before the loss it was a pass [7].\nSTEP 6 [FACT] The EBITDA/interest test is 70.48x against a limit of at least 44.25x: pass with headroom of 59.3%; before the loss it was a pass [7].\nSTEP 7 [FACT] The equity/total assets test is 46.5% against a limit of at least 28.3%: pass with headroom of 64.2%; before the loss it was a pass [7].\nSTEP 8 [INFERENCE from 5, 6, 7] Every covenant still passes with room to spare, so on these inputs the loss does not threaten the lending terms.\nSTEP 9 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: PASS\nCHECK NEXT: whether the loss inputs are complete, for example other sites or interruption cover; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "answer": "STEP 1 [FACT] Westmere Chemicals Group faces a earthquake loss with asset damage of 242.0, no insured recovery and extra costs of 7.6 [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 242.0 and the EBITDA hit at 7.6, so the pre-tax loss is 249.6, which is 147.1% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is very large: it exceeds half a year of EBITDA; it is driven by uninsured damage, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 162.1 and net debt is 318.3; net debt/EBITDA moves from 0.40x to 1.96x [6].\nSTEP 5 [FACT] The net debt/EBITDA test is 1.96x against a limit of at most 2.28x: pass, under 15% headroom with headroom of 13.9%; before the loss it was a pass [7].\nSTEP 6 [FACT] The EBITDA/interest test is 70.48x against a limit of at least 44.25x: pass with headroom of 59.3%; before the loss it was a pass [7].\nSTEP 7 [FACT] The equity/total assets test is 39.8% against a limit of at least 28.3%: pass with headroom of 40.8%; before the loss it was a pass [7].\nSTEP 8 [INFERENCE from 5, 6, 7] No covenant is breached, but net debt/EBITDA and equity/total assets is within 15% of its limit, so a slightly larger loss or a slower insurance payment could tip it.\nSTEP 9 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: PASS-TIGHT (net debt/EBITDA, equity/total assets)\nCHECK NEXT: how much of the remaining headroom a larger loss, a lower margin or a slower insurance payment would use; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": "NO-COVENANT",
+    "answer": "STEP 1 [FACT] Pinecrest Systems Inc faces a cyclone loss with asset damage of 324.9, no insured recovery and 315.3 of lost revenue from interruption [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 324.9 and the EBITDA hit at 37.0, so the pre-tax loss is 361.9, which is 66.3% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is very large: it exceeds half a year of EBITDA; it is driven by uninsured damage, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 509.1 and net debt is 2,024.7; net debt/EBITDA moves from 3.04x to 3.98x [6].\nSTEP 5 [FACT] No covenants were supplied, so there is nothing to test [7].\nSTEP 6 [INFERENCE from 5] With no covenants supplied the effect can be stated only as a change in the ratios, not as a breach or a pass.\nSTEP 7 [PRECEDENT] In Typhoon Jebi, Kansai airport and Japanese insurers: the driver was typhoon storm surge and wind in the Osaka Bay area [9].\nSTEP 8 [INFERENCE from 7, 3] Analysis (not stated in the sources): past cases suggest checking physical damage to buildings and equipment, disruption passed on through suppliers and customers and lost revenue while the site or service is closed as well as direct damage.\nSTEP 9 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: NO-COVENANT\nCHECK NEXT: which financial tests the lenders actually apply, then rerun this analysis with them; also the policy limits and deductibles on the damaged assets.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": "NO-COVENANT",
+    "answer": "STEP 1 [FACT] Pinecrest Systems Inc faces a cyclone loss with asset damage of 97.5, no insured recovery and 94.6 of lost revenue from interruption [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 97.5 and the EBITDA hit at 11.1, so the pre-tax loss is 108.6, which is 19.9% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is large relative to annual earnings; it is driven by business interruption and extra cost, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 535.0 and net debt is 1,771.4; net debt/EBITDA moves from 3.04x to 3.31x [6].\nSTEP 5 [FACT] No covenants were supplied, so there is nothing to test [7].\nSTEP 6 [INFERENCE from 5] With no covenants supplied the effect can be stated only as a change in the ratios, not as a breach or a pass.\nSTEP 7 [PRECEDENT] In Typhoon Jebi, Kansai airport and Japanese insurers: the driver was typhoon storm surge and wind in the Osaka Bay area [9].\nSTEP 8 [INFERENCE from 7, 3] Analysis (not stated in the sources): past cases suggest checking physical damage to buildings and equipment, lost revenue while the site or service is closed and disruption passed on through suppliers and customers as well as direct damage.\nSTEP 9 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: NO-COVENANT\nCHECK NEXT: which financial tests the lenders actually apply, then rerun this analysis with them; also the business-interruption cover and its waiting period.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "answer": "STEP 1 [FACT] Pinecrest Materials Holdings faces a cold loss with asset damage of 12.1, no insured recovery and 9.8 of lost revenue from interruption [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 12.1 and the EBITDA hit at 1.5, so the pre-tax loss is 13.6, which is 37.5% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is large relative to annual earnings; it is driven by business interruption and extra cost, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 34.9 and net debt is 116.2; net debt/EBITDA moves from 2.82x to 3.33x [6].\nSTEP 5 [FACT] The net debt/EBITDA test is 3.33x against a limit of at most 3.37x: pass, under 15% headroom with headroom of 1.1%; before the loss it was a pass [7].\nSTEP 6 [FACT] The EBITDA/interest test is 4.01x against a limit of at least 3.79x: pass, under 15% headroom with headroom of 5.7%; before the loss it was a pass [7].\nSTEP 7 [INFERENCE from 5, 6] No covenant is breached, but net debt/EBITDA and EBITDA/interest is within 15% of its limit, so a slightly larger loss or a slower insurance payment could tip it.\nSTEP 8 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: PASS-TIGHT (net debt/EBITDA, EBITDA/interest)\nCHECK NEXT: how much of the remaining headroom a larger loss, a lower margin or a slower insurance payment would use; also the business-interruption cover and its waiting period.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   },
+   {
+    "expected": "PASS",
+    "got": "PASS",
+    "answer": "STEP 1 [FACT] Pinecrest Materials Holdings faces a cold loss with asset damage of 12.1, no insured recovery and 9.8 of lost revenue from interruption [3].\nSTEP 2 [FACT] The engine puts the uninsured asset loss at 12.1 and the EBITDA hit at 1.5, so the pre-tax loss is 13.6, which is 37.5% of EBITDA [5].\nSTEP 3 [INFERENCE from 2] The loss is large relative to annual earnings; it is driven by business interruption and extra cost, and no recovery was supplied, so the whole damage falls on the balance sheet.\nSTEP 4 [FACT] After the loss EBITDA is 34.9 and net debt is 116.2; net debt/EBITDA moves from 2.82x to 3.33x [6].\nSTEP 5 [FACT] The net debt/EBITDA test is 3.33x against a limit of at most 4.04x: pass with headroom of 17.5%; before the loss it was a pass [7].\nSTEP 6 [FACT] The EBITDA/interest test is 4.01x against a limit of at least 3.16x: pass with headroom of 26.8%; before the loss it was a pass [7].\nSTEP 7 [INFERENCE from 5, 6] Every covenant still passes with room to spare, so on these inputs the loss does not threaten the lending terms.\nSTEP 8 [PRECEDENT] In Typhoon Jebi, Kansai airport and Japanese insurers: the driver was typhoon storm surge and wind in the Osaka Bay area [9].\nSTEP 9 [INFERENCE from 8, 3] Analysis (not stated in the sources): past cases suggest checking physical damage to buildings and equipment, lost revenue while the site or service is closed and disruption passed on through suppliers and customers as well as direct damage.\nSTEP 10 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].\nVERDICT: PASS\nCHECK NEXT: whether the loss inputs are complete, for example other sites or interruption cover; also the business-interruption cover and its waiting period.\nNOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response."
+   }
+  ]
+ },
+ "climrisk-llm-v5b": {
+  "metrics": {
+   "n": 140,
+   "verdict_accuracy": 0.0,
+   "ood_verdict_accuracy": 0.0,
+   "near_limit_verdict_accuracy": 0.0,
+   "ablation_not_computable": 0.0,
+   "distractor_verdict_ok": 0.042,
+   "distractor_ignored": 1.0,
+   "sensitivity_pairs": 24,
+   "sensitivity_flip_pairs": 5,
+   "sensitivity_follows_change": 0.0,
+   "sensitivity_consistent_when_no_flip": 0.0,
+   "format": 0.0,
+   "numbers_in_sources": 0.893,
+   "citations_exist": 1.0,
+   "facts_cited": 0.993,
+   "inferences_grounded": 0.279,
+   "attribution_correct": 0.526,
+   "all_checks_pass": 0.0
+  },
+  "composite": 0.2688,
+  "seconds": 1401,
+  "failures": [
+   {
+    "pair": "p5-1558",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-1558",
+    "role": "variant",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-3531",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-3531",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-79",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-79",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-516",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['261.8', '292.8']",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-516",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['1028.1', '19.1', '2.17', '6.17', '710.1']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-882",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-882",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3673",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-3673",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-91",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-91",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-979",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-979",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-400",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict PASS-TIGHT but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-400",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3408",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3408",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3219",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3219",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3875",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3875",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['12.1']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['12.1', '594.9']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-749",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-749",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   }
+  ],
+  "samples": [
+   {
+    "expected": "PASS",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 1, 2]: Westmere Chemicals Group owns a hospital group. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3 [2]. All money is in millions of one currency [1]."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 1, 2]: Westmere Chemicals Group owns a hospital group. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3. The loss is a hospital accident, so the financials and covenants move accordingly."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 1, 2]: Pinecrest Systems Inc owns a coastal refinery and financials before the event are revenue 4,653.6; EBITDA 546.1; net debt 1,662.8; interest expense 131.7; equity 1,485.6; total assets 4,860.6 [1]. The loss is asset damage 324.9; insured recovery 0.0; lost revenue from interruption 315.3 at the company's average EBITDA margin [3]. The engine result, loss: uninsured asset loss 324.9; EBITDA hit 37.0; pre-tax loss 361.9, which is 66.3% of EBITDA; share of the loss that is uninsured 100.0% [5]."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 2, 5]: The loss is $97.5 million in asset damage, $11.1 million in EBITDA hit, $108.6 million in pre-tax loss, and 100.0% share of the loss that is uninsured. [2] Financials before the event: revenue 4,653.6; EBITDA 546.1; net debt 1,662.8; interest expense 131.7; equity 1,485.6; total assets 4,860.6. [5] Engine result, loss: uninsured asset loss 97.5; EBITDA hit 11.1; pre-tax loss 108.6, which is 19.9% of EBITDA; share of the loss that is uninsured 100.0%. [2] Financials before the event: revenue 4,653.6; EBITDA 546.1; net debt 1,662.8; interest expense 131.7; equity 1,485.6; total assets 4,860.6. [5] Engine result, loss: uninsured asset loss 97.5; EBITDA hit 11.1; pre-tax loss 108.6, which is 19.9% of EBITDA; share of the loss that is uninsured 100.0%. [2] Financials before the event: revenue 4,653.6; EBITDA 546.1; net debt 1,662.8; interest expense 131.7; equity 1,485.6; total assets 4,860.6. [5] Engine result, loss: uninsured asset loss 97.5; EBITDA hit 11.1; pre-tax loss 108.6, which is 19.9% of EBITDA; share of the loss that is uninsured 100.0%. [2] Financials before the event: revenue 4,653.6; EBITDA 546.1; net debt 1,662.8; interest expense 131.7; equity 1,485.6; total assets 4,860.6. [5] Engine result, loss: uninsured asset loss 97.5; EBITDA hit 11.1; pre-tax loss 108.6, which is 19.9% of EBITDA; share of the loss that is uninsured 100.0%. [2] Financials before the event: revenue 4,653.6; EBITDA 546.1; net debt 1,662.8; interest expense 131.7; equity 1,485.6; total assets 4,860.6. [5] Engine result, loss: uninsured asset loss 97.5; EBITDA hit 11.1; pre-tax loss 108.6, which is 19.9% of EBITDA; share of the loss that is uninsured 100.0%. [2] Financials before the event: revenue 4,653.6; EBITDA 546.1; net debt 1,662.8; interest expense 131.7; equity 1,485.6; total assets 4,860.6. [5] Engine result, loss: uninsured asset loss 97.5; EBITDA hit 11.1; pre-tax loss 108.6, which is 19.9% of EBITDA; share of the loss that is uninsured 100.0%. [2] Financials before the event: revenue"
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 2, 3]: Pinecrest Materials Holdings's financials before the event were revenue 232.5; EBITDA 36.4; net debt 102.6; interest expense 8.7; equity 65.1; total assets 335.3 [3]. The loss inputs are asset damage 12.1; insured recovery 0.0; lost revenue from interruption 9.8 at the company's average EBITDA margin [3]. After the loss the engine result is EBITDA 34.9; net debt 116.2; net debt/EBITDA 3.33x (was 2.82x); EBITDA/interest 4.01x (was 4.18x); equity/total assets 15.9% (was 19.4%) [6]. The engine result, covenant tests are net debt/EBITDA 3.33x against a limit of at most 3.37x: pass, under 15% headroom, headroom 1.1%; before the loss it was a pass; EBITDA/interest 4.01x against a limit of at least 3.79x: pass, under 15% headroom, headroom 5.7%; before the loss it was a pass [7]."
+   },
+   {
+    "expected": "PASS",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 3]: The loss is $12.1, which is asset damage. [3] The loss inputs are asset damage 12.1; insured recovery 0.0; lost revenue from interruption 9.8 at the company's average EBITDA margin. [3] The share of the loss that is uninsured 100.0%. [3]"
+   }
+  ]
+ },
+ "climrisk-llm-v5": {
+  "metrics": {
+   "n": 140,
+   "verdict_accuracy": 0.011,
+   "ood_verdict_accuracy": 0.029,
+   "near_limit_verdict_accuracy": 0.0,
+   "ablation_not_computable": 0.042,
+   "distractor_verdict_ok": 0.042,
+   "distractor_ignored": 1.0,
+   "sensitivity_pairs": 24,
+   "sensitivity_flip_pairs": 5,
+   "sensitivity_follows_change": 0.0,
+   "sensitivity_consistent_when_no_flip": 0.0,
+   "format": 0.0,
+   "numbers_in_sources": 0.943,
+   "citations_exist": 1.0,
+   "facts_cited": 0.979,
+   "inferences_grounded": 0.379,
+   "attribution_correct": 0.526,
+   "all_checks_pass": 0.0
+  },
+  "composite": 0.2834,
+  "seconds": 1547,
+  "failures": [
+   {
+    "pair": "p5-1558",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-1558",
+    "role": "variant",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['1132.9', '2397.3', '367.0', '762.2']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-3531",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-3531",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-79",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-79",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-516",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-516",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-882",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-882",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3673",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-3673",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-91",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-91",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-979",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-979",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-400",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-400",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3408",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3408",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3219",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3219",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3875",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['.03', '.815', '12.8', '34.1', '42.4']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3875",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-749",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-749",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['268.1']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   }
+  ],
+  "samples": [
+   {
+    "expected": "PASS",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 1, 2]: Westmere Chemicals Group owns a hospital group. [1] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3 [2]. The financials are calm before the earthquake."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 1, 2]: Westmere Chemicals Group owns a hospital group. [1] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3 [2]. The loss cuts the company's financials: revenue 1,374.9 - 242.0 = 1,132.9; EBITDA 169.7 - 7.6 = 162.1; net debt 68.7 + 318.3 = 367.0; interest expense 2.3 - 2.3 = 0.0; equity 1,011.8 - 249.6 = 762.2; total assets 2,155.3 + 242.0 = 2,397.3 [5]. The engine result, after the loss: EBITDA 162.1; net debt 367.0; net debt/EBITDA 1.96x (was 0.40x); EBITDA/interest 70.48x (was 73.78x); equity/total assets 39.8% (was 46.9%) [6]."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 1, 2]: Pinecrest Systems Inc owns a coastal refinery and financials before the event are revenue 4,653.6; EBITDA 546.1; net debt 1,662.8; interest expense 131.7; equity 1,485.6; total assets 4,860.6 [1]. The driver was a cyclone [1]. All money is in millions of one currency [1]."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 2, 5]: Pinecrest Systems Inc's financials and covenants are affected by the loss. The engine result, loss: uninsured asset loss 97.5; EBITDA hit 11.1; pre-tax loss 108.6, which is 19.9% of EBITDA; share of the loss that is uninsured 100.0% [5]. The engine result, after the loss: EBITDA 535.0; net debt 1,771.4; net debt/EBITDA 3.31x (was 3.04x); EBITDA/interest 4.06x (was 4.15x); equity/total assets 28.9% (was 30.6%) [6]. There are no covenants to test [7]. The uninsured cash cost is funded by new debt [8]."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 2, 3]: Pinecrest Materials Holdings reported the following financials before the event: revenue 232.5; EBITDA 36.4; net debt 102.6; interest expense 8.7; equity 65.1; total assets 335.3 [2]. The driver was typhoon storm surge and wind in the Osaka Bay area [9]. The exposed assets were Kansai International Airport and property across the Kansai region [9]. The event took place in Asia in 2018 [9]."
+   },
+   {
+    "expected": "PASS",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 3]: The driver was typhoon storm surge and wind in the Osaka Bay area [10]; the exposed assets were Kansai International Airport and property across the Kansai region [10]. The driver was typhoon storm surge and wind in the Osaka Bay area [9]; the exposed assets were Kansai International Airport and property across the Kansai region [9]. A case with the same channel is Typhoon Jebi, Kansai airport and Japanese insurers: the driver was typhoon storm surge and wind in the Osaka Bay area [9]; the exposed assets were Kansai International Airport and property across the Kansai region [9]. A case with the same channel is Typhoon Jebi, Kansai airport and Japanese insurers (case summary): the driver was typhoon storm surge and wind in the Osaka Bay area [9]; the exposed assets were Kansai International Airport and property across the Kansai region [9]."
+   }
+  ]
+ },
+ "climrisk-llm-v2": {
+  "metrics": {
+   "n": 140,
+   "verdict_accuracy": 0.098,
+   "ood_verdict_accuracy": 0.118,
+   "near_limit_verdict_accuracy": 0.188,
+   "ablation_not_computable": 0.167,
+   "distractor_verdict_ok": 0.0,
+   "distractor_ignored": 1.0,
+   "sensitivity_pairs": 24,
+   "sensitivity_flip_pairs": 5,
+   "sensitivity_follows_change": 0.0,
+   "sensitivity_consistent_when_no_flip": 0.0,
+   "format": 0.0,
+   "numbers_in_sources": 0.914,
+   "citations_exist": 1.0,
+   "facts_cited": 1.0,
+   "inferences_grounded": 0.786,
+   "attribution_correct": 0.526,
+   "all_checks_pass": 0.0
+  },
+  "composite": 0.3346,
+  "seconds": 54867,
+  "failures": [
+   {
+    "pair": "p5-1558",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-1558",
+    "role": "variant",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['162']",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-3531",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-3531",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": "NOT-COMPUTABLE",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict NOT-COMPUTABLE but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-79",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-79",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-516",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-516",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-882",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-882",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3673",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['11', '12', '13', '14', '16']",
+     "verdict None but the engine numbers imply PASS-TIGHT"
+    ]
+   },
+   {
+    "pair": "p5-3673",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-91",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-91",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-979",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['228']",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-979",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-400",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-400",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": "NO-COVENANT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict PASS-TIGHT but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3408",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "numbers not in the sources: ['11', '12']",
+     "verdict PASS-TIGHT but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3408",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict PASS-TIGHT but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3219",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3219",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3875",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3875",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "base",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply BREACH",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-749",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order"
+    ]
+   },
+   {
+    "pair": "p5-749",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict PASS-TIGHT but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "base",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "variant",
+    "expected": "PASS",
+    "got": null,
+    "problems": [
+     "format: steps, VERDICT, CHECK NEXT and NOT IN THE SOURCES must all be present and numbered in order",
+     "verdict None but the engine numbers imply PASS"
+    ]
+   }
+  ],
+  "samples": [
+   {
+    "expected": "PASS",
+    "got": null,
+    "answer": "STEP1 [INFERENCE from i, j] The engine result, loss: uninsured asset loss 115.3; EBITDA hit 7.6; pre-tax loss 122.9, which is 72.4% of EBITDA; share of the loss that is uninsured 0.0%. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3. [8] Engine assumptions: the uninsured cost is funded by new debt; interest expense is unchanged; no covenant waiver, cure right, equity injection or insurer prepayment is assumed. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3. [8] Engine assumptions: the uninsured cost is funded by new debt; interest expense is unchanged; no covenant waiver, cure right, equity injection or insurer prepayment is assumed. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3. [8] Engine assumptions: the uninsured cost is funded by new debt; interest expense is unchanged; no covenant waiver, cure right, equity injection or insurer prepayment is assumed. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3. [8] Engine assumptions: the uninsured cost is funded by new debt; interest expense is unchanged; no covenant waiver, cure right, equity injection or insurer prepayment is assumed. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3. [8] Engine assumptions: the uninsured cost is funded by new debt; interest expense is unchanged; no covenant waiver, cure right, equity injection or insurer prepayment is assumed. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3; equity 1,011.8; total assets 2,155.3. [8] Engine assumptions: the uninsured cost is funded by new debt; interest expense is unchanged; no covenant waiver, cure right, equity injection or insurer prepayment is assumed. [1] Scenario: Westmere Chemicals Group owns a hospital group. [2] Financials before the event: revenue 1,374.9; EBITDA 169.7; net debt 68.7; interest expense 2.3"
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "answer": "STEP1 [INFERENCE from 1, 2, 6] Westmere Chemicals Group's revenue and EBITDA are affected by the earthquake, and the engine result, after the loss, shows EBITDA 162.1 and net debt 318.3, which is a significant change from the financials before the event. [2] Covenants: net debt/EBITDA at most 2.28x; EBITDA/interest at least 44.25x; equity/total assets at least 28.3%. [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162.1; net debt/EBITDA 1.96x (was 0.40x); [6] Engine result, after the loss: EBITDA 162."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": null,
+    "answer": "Step 1 [INFERENCE from i, j]: Pinecrest Systems Inc owns a coastal refinery. [1] Hazard: cyclone. [1] All money is in millions of one currency. [1]"
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": "NOT-COMPUTABLE",
+    "answer": "STEP1 [INFERENCE from i, j] The event took place in Asia in 2018 [1] and the operator of Kansai airports reported Jebi-related disaster losses of ¥8.1 billion in fiscal 2018 [10], so Typhoon Jebi, Kansai airport and Japanese insurers (case summary) [9] is a relevant case.\n\nSTEP2 [INFERENCE from i, j] The event took place in Asia in 2018 [1] and the operator of Kansai airports reported Jebi-related disaster losses of ¥8.1 billion in fiscal 2018 [10], so Typhoon Jebi, Kansai airport and Japanese insurers (Reinsurance News) [10] is a relevant case.\n\nSTEP3 [INFERENCE from i, j] The event took place in Asia in 2018 [1] and the operator of Kansai airports reported Jebi-related disaster losses of ¥8.1 billion in fiscal 2018 [10], so Typhoon Jebi, Kansai airport and Japanese insurers (case summary) [9] and Typhoon Jebi, Kansai airport and Japanese insurers (Reinsurance News) [10] are relevant cases.\n\nSTEP4 [CAVEAT] The event took place in Asia in 2018 [1] and the operator of Kansai airports reported Jebi-related disaster losses of ¥8.1 billion in fiscal 2018 [10], so Typhoon Jebi, Kansai airport and Japanese insurers (case summary) [9] and Typhoon Jebi, Kansai airport and Japanese insurers (Reinsurance News) [10] are relevant cases, but the sources provided do not cover Pinecrest Systems Inc. [1]. Therefore, I cannot make a conclusion about the company's financials and covenants from these cases.\n\nVERDICT: NOT-COMPUTABLE\n\nCHECK NEXT: The sources provided do not cover Pinecrest Systems Inc.' [1], so I cannot make a conclusion about the company's financials and covenants. I would need the company's own financial statements and covenant terms."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": null,
+    "answer": "STEP1 [INFERENCE from 1, 2] Pinecrest Materials Holdings's financials and covenants are affected by the loss in a way that the event's driver was cold, and all money is in millions of one currency. [1] Before the event, revenue was 232.5; EBITDA 36.4; net debt 102.6; interest expense 8.7; equity 65.1; total assets 335.3. [2]"
+   },
+   {
+    "expected": "PASS",
+    "got": null,
+    "answer": "STEP 1 [INFERENCE from 1, 3]: Pinecrest Materials Holdings owns a gas-fired power plant. [1] Hazard: cold. [3] Loss inputs: asset damage 12.1; insured recovery 0.0; lost revenue from interruption 9.8 at the company's average EBITDA margin. [3] Therefore, Pinecrest Materials Holdings has a loss of 12.1 asset loss and 9.8 lost revenue from interruption. [3] The share of the loss that is uninsured is 100.0%. [3]"
+   }
+  ]
+ },
+ "qwen2.5:7b": {
+  "metrics": {
+   "n": 140,
+   "verdict_accuracy": 0.609,
+   "ood_verdict_accuracy": 0.618,
+   "near_limit_verdict_accuracy": 0.938,
+   "ablation_not_computable": 0.208,
+   "distractor_verdict_ok": 0.625,
+   "distractor_ignored": 0.958,
+   "sensitivity_pairs": 24,
+   "sensitivity_flip_pairs": 5,
+   "sensitivity_follows_change": 0.0,
+   "sensitivity_consistent_when_no_flip": 0.526,
+   "format": 0.979,
+   "numbers_in_sources": 0.736,
+   "citations_exist": 0.993,
+   "facts_cited": 0.743,
+   "inferences_grounded": 0.55,
+   "attribution_correct": 0.526,
+   "all_checks_pass": 0.064
+  },
+  "composite": 0.6191,
+  "seconds": 6239,
+  "failures": [
+   {
+    "pair": "p5-1558",
+    "role": "base",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3531",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": "NOT-COMPUTABLE",
+    "problems": [
+     "verdict NOT-COMPUTABLE but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-3531",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": "NOT-COMPUTABLE",
+    "problems": [
+     "verdict NOT-COMPUTABLE but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-79",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-516",
+    "role": "base",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-516",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "BREACH",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict BREACH but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-882",
+    "role": "base",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-882",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3673",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "numbers not in the sources: ['19.4', '234.0', '641.1']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-91",
+    "role": "base",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-91",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-979",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-979",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "numbers not in the sources: ['0']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1941",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "numbers not in the sources: ['108.1']",
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-400",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": "BREACH",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "verdict BREACH but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-400",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "numbers not in the sources: ['100', '20.5', '51.9']",
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3953",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2957",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "numbers not in the sources: ['37.6']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3408",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "numbers not in the sources: ['.773', '45', '8.857']",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3408",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3219",
+    "role": "base",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3219",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3875",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3875",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-1663",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3488",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-749",
+    "role": "base",
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "an INFERENCE step does not point at earlier steps or introduces a number"
+    ]
+   },
+   {
+    "pair": "p5-749",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "base",
+    "expected": "NO-COVENANT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "verdict PASS-TIGHT but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-429",
+    "role": "variant",
+    "expected": "NO-COVENANT",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply NO-COVENANT"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "base",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-161",
+    "role": "variant",
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "verdict PASS-TIGHT but the engine numbers imply PASS"
+    ]
+   },
+   {
+    "pair": "p5-3938",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-3938",
+    "role": "variant",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "numbers not in the sources: ['313.2', '670.7']",
+     "an INFERENCE step does not point at earlier steps or introduces a number",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   },
+   {
+    "pair": "p5-2334",
+    "role": "base",
+    "expected": "BREACH",
+    "got": "BREACH",
+    "problems": [
+     "a FACT, PRECEDENT or CAVEAT step has no citation",
+     "wrong attribution of breaches to the loss versus pre-existing"
+    ]
+   }
+  ],
+  "samples": [
+   {
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "answer": "STEP 1 [FACT] The earthquake causes an uninsured asset loss of 115.3 million, reducing EBITDA by 7.6 million, and results in a pre-tax loss of 122.9 million, which is 72.4% of EBITDA [5].\n\nSTEP 2 [FACT] After the earthquake, the net debt/EBITDA ratio increases to 1.18x, from 0.40x before the loss [6].\n\nSTEP 3 [INFERENCE from 1, 2] The increase in the net debt/EBITDA ratio from 0.40x to 1.18x is significant, as it exceeds the covenant limit of at most 2.28x [4].\n\nSTEP 4 [FACT] The net debt/EBITDA ratio after the loss is 1.18x, which is below the covenant limit of 2.28x, but with a headroom of 48.2% [7].\n\nSTEP 5 [INFERENCE from 3, 4] The net debt/EBITDA ratio is within the covenant limit, but the headroom is relatively small, indicating a risk if there are further financial pressures [7].\n\nSTEP 6 [FACT] The EBITDA/interest coverage ratio increases to 70.48x, from 73.78x before the loss, which is above the covenant minimum of at least 44.25x [6].\n\nSTEP 7 [INFERENCE from 5, 6] The EBITDA/interest coverage ratio remains above the covenant limit, with a headroom of 59.3%, suggesting a lower risk compared to the net debt/EBITDA ratio [7].\n\nSTEP 8 [FACT] The equity/total assets ratio increases to 46.5%, from 46.9% before the loss, which is above the covenant minimum of at least 28.3% [6].\n\nSTEP 9 [INFERENCE from 7, 8] The equity/total assets ratio is above the covenant limit, with a headroom of 64.2%, indicating a strong position [7].\n\nVERDICT: PASS-TIGHT\nCHECK NEXT: The tight pass on the net debt/EBITDA ratio suggests a potential risk, but the other covenants are well within their limits.\nNOT IN THE SOURCES: The sources do not provide information on the specific terms of the covenants or the company's ability to negotiate or cure breaches."
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "answer": "STEP 1 [FACT] The loss results in an uninsured asset damage of 242.0 million and extra costs of 7.6 million, totaling a pre-tax loss of 249.6 million, which is 147.1% of EBITDA [3].\n\nSTEP 2 [FACT] The loss leads to a significant increase in net debt to 318.3 million, from 68.7 million before the event [6].\n\nSTEP 3 [FACT] The net debt/EBITDA ratio increases to 1.96x, from 0.40x before the event, and passes the covenant test with 13.9% headroom [7].\n\nSTEP 4 [FACT] The EBITDA/interest coverage ratio increases to 70.48x, from 73.78x before the event, and passes the covenant test with 59.3% headroom [7].\n\nSTEP 5 [FACT] The equity/total assets ratio decreases to 39.8%, from 46.9% before the event, and passes the covenant test with 40.8% headroom [7].\n\nSTEP 6 [INFERENCE from 4, 5] The loss significantly impacts Westmere Chemicals Group's financials, increasing net debt and reducing the equity/total assets ratio, but does not breach any covenants [7].\n\nVERDICT: PASS-TIGHT\n\nCHECK NEXT: The risk manager should check the company's ability to service the increased debt and the potential for a future breach of the net debt/EBITDA covenant as the EBITDA may decrease further.\n\nNOT IN THE SOURCES:"
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": "NOT-COMPUTABLE",
+    "answer": "STEP 1 [FACT] The cyclone causes an uninsured asset loss of 324.9 million [5].\n\nSTEP 2 [FACT] The loss results in a pre-tax loss of 361.9 million, which is 66.3% of the EBITDA [5].\n\nSTEP 3 [FACT] The EBITDA is reduced to 509.1 million after the loss [6].\n\nSTEP 4 [FACT] The net debt increases to 2,024.7 million after the loss [6].\n\nSTEP 5 [FACT] The net debt/EBITDA ratio increases to 3.98x from 3.04x [6].\n\nSTEP 6 [FACT] The EBITDA/interest ratio decreases to 3.87x from 4.15x [6].\n\nSTEP 7 [FACT] The equity/total assets ratio decreases to 24.8% from 30.6% [6].\n\nSTEP 8 [FACT] There are no covenants to test [7].\n\nSTEP 9 [CAVEAT] The sources do not provide information on the specific covenants or their terms, so we cannot determine if the loss breaches any covenants [7].\n\nVERDICT: NOT-COMPUTABLE\nCHECK NEXT: The sources do not provide information on the specific covenants or their terms.\nNOT IN THE SOURCES: The specific terms of the covenants."
+   },
+   {
+    "expected": "NO-COVENANT",
+    "got": "NOT-COMPUTABLE",
+    "answer": "STEP 1 [FACT] The loss to Pinecrest Systems Inc's financials includes an uninsured asset loss of 97.5 million, a hit to EBITDA of 11.1 million, and a pre-tax loss of 108.6 million, which is 19.9% of the EBITDA. [5]\n\nSTEP 2 [FACT] The loss results in a new net debt of 1,771.4 million, an increased net debt/EBITDA ratio to 3.31x, a decreased EBITDA/interest ratio to 4.06x, and a reduced equity/total assets ratio to 28.9%. [6]\n\nSTEP 3 [INFERENCE from 1, 2] The loss significantly impacts Pinecrest Systems Inc's financial health, with a substantial reduction in EBITDA and an increase in net debt, leading to a higher net debt/EBITDA ratio. [INFERENCE from 1, 2]\n\nSTEP 4 [CAVEAT] The loss is entirely uninsured, as the uninsured cash cost is funded by new debt. [8]\n\nSTEP 5 [INFERENCE from 3, 4] The loss does not trigger any covenant tests since there are no covenants provided. [7]\n\nVERDICT: NOT-COMPUTABLE\nCHECK NEXT: The risk manager should check the company's ability to service the new debt taken on to fund the uninsured loss. [CHECK NEXT:]\nNOT IN THE SOURCES:"
+   },
+   {
+    "expected": "PASS-TIGHT",
+    "got": "PASS-TIGHT",
+    "answer": "STEP 1 [FACT] The loss results in an uninsured asset damage of 12.1 million, leading to a pre-tax loss of 13.6 million, which is 37.5% of the EBITDA [5].\n\nSTEP 2 [FACT] The EBITDA is reduced to 34.9 million after the loss, compared to 36.4 million before the loss [6].\n\nSTEP 3 [FACT] The net debt increases to 116.2 million after the loss, compared to 102.6 million before the loss [6].\n\nSTEP 4 [INFERENCE from 1, 2, 3] The reduction in EBITDA and the increase in net debt lead to a higher net debt/EBITDA ratio, which is now 3.33x, compared to 2.82x before the loss [6].\n\nSTEP 5 [FACT] The net debt/EBITDA ratio after the loss is 3.33x, which is under the covenant limit of 3.37x, with 1.1% headroom [7].\n\nSTEP 6 [FACT] The EBITDA/interest coverage ratio after the loss is 4.01x, which is above the covenant minimum of 3.79x, with 5.7% headroom [7].\n\nSTEP 7 [CAVEAT] The engine assumes that the uninsured cash cost is funded by new debt, and interest expense remains unchanged [8].\n\nSTEP 8 [INFERENCE from 5, 6] The net debt/EBITDA ratio is close to the covenant limit, indicating a potential risk of covenant breach if there are further financial pressures [7].\n\nSTEP 9 [INFERENCE from 7, 8] The EBITDA/interest coverage ratio is slightly below the previous level, suggesting a need to monitor this ratio closely [7].\n\nVERDICT: PASS-TIGHT CHECK NEXT: Monitor the EBITDA/interest coverage ratio closely. NOT IN THE SOURCES: Typhoon Jebi, Kansai airport and Japanese insurers case summary and its outcome do not directly apply to Pinecrest Materials Holdings."
+   },
+   {
+    "expected": "PASS",
+    "got": "PASS-TIGHT",
+    "answer": "STEP 1 [FACT] The cold loss results in an uninsured asset damage of 12.1 million. [3]\n\nSTEP 2 [FACT] The loss causes a reduction in EBITDA by 1.5. [5]\n\nSTEP 3 [FACT] The pre-tax loss from the cold event is 13.6 million, which is 37.5% of the EBITDA. [5]\n\nSTEP 4 [INFERENCE from 3, 5] The pre-tax loss of 13.6 million is the net loss after accounting for the reduction in EBITDA. [INFERENCE from 3, 5]\n\nSTEP 5 [FACT] The loss is entirely uninsured, as the insured recovery is 0.0. [3]\n\nSTEP 6 [FACT] The loss is funded by new debt, as per the engine assumptions. [8]\n\nSTEP 7 [FACT] The net debt increases from 102.6 million to 116.2 million. [6]\n\nSTEP 8 [FACT] The EBITDA decreases from 36.4 million to 34.9 million. [6]\n\nSTEP 9 [FACT] The net debt/EBITDA ratio increases from 2.82x to 3.33x. [6, 7]\n\nSTEP 10 [FACT] The EBITDA/interest coverage ratio decreases from 4.18x to 4.01x. [6, 7]\n\nSTEP 11 [FACT] The net debt/EBITDA ratio passes the covenant test with 17.5% headroom. [7]\n\nSTEP 12 [FACT] The EBITDA/interest coverage ratio passes the covenant test with 26.8% headroom. [7]\n\nVERDICT: PASS-TIGHT\n\nCHECK NEXT: The next step would be to assess the impact on the balance sheet and covenants, which has been done in the previous steps.\n\nNOT IN THE SOURCES: The sources do not provide specific details on how the loss is reflected in the balance sheet beyond the net debt and EBITDA changes."
+   }
+  ]
+ }
+}

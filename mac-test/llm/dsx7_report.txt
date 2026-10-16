@@ -1,0 +1,24 @@
+{
+ "train": {
+  "stress": 900,
+  "gold": 228,
+  "chat": 300,
+  "siteprofile": 300,
+  "scenario": 264
+ },
+ "valid": {
+  "stress": 112,
+  "chat": 30,
+  "scenario": 24,
+  "gold": 15,
+  "siteprofile": 30
+ },
+ "test": {
+  "siteprofile": 40,
+  "stress": 148,
+  "chat": 40,
+  "scenario": 48,
+  "gold": 15
+ },
+ "test_prompts_also_in_train": 0
+}

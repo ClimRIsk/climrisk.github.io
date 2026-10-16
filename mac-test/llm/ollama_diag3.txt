@@ -1,0 +1,33 @@
+== pid 41220
+== lsof cwd/txt/dirs
+COMMAND   PID                       USER   FD      TYPE             DEVICE SIZE/OFF                NODE NAME
+ollama  41220 shrinivashdhamodharakannan  cwd       DIR               1,18     1088              269929 /Users/shrinivashdhamodharakannan
+ollama  41220 shrinivashdhamodharakannan  txt       REG               1,18 25353090            27061114 /opt/homebrew/Cellar/ollama/0.40.0/libexec/ollama
+ollama  41220 shrinivashdhamodharakannan  txt       REG               1,18  2562000 1152921500312573255 /usr/lib/dyld
+ollama  41220 shrinivashdhamodharakannan  txt       REG               1,18    72984            24476530 /Library/Preferences/Logging/.plist-cache.LldBBJDq
+ollama  41220 shrinivashdhamodharakannan  txt       REG               1,18   234224            18729294 /private/var/db/timezone/tz/2026c.1.0/icutz/icutz44l.dat
+ollama  41220 shrinivashdhamodharakannan  txt       REG               1,18 35444880 1152921500312583756 /usr/share/icu/icudt78l.dat
+ollama  41220 shrinivashdhamodharakannan    1w      REG               1,18  3984815            27069715 /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/mac-test/ollama.log
+ollama  41220 shrinivashdhamodharakannan    2w      REG               1,18  3984815            27069715 /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/mac-test/ollama.log
+ollama  41220 shrinivashdhamodharakannan    8   NPOLICY                                                 
+ollama  41220 shrinivashdhamodharakannan    9u    systm 0x23adbfae317551d9      0t0                     [ctl com.apple.netsrc id 7 unit 55]
+== curl tags
+{"models":[{"name":"climrisk-llm-v6:latest","model":"climrisk-llm-v6:latest","modified_at":"2026-10-10T05:25:05.02627114+05:30","size":2831514333,"digest":"1b6611af57078750ad82837cb08cbcf8f122f8737a75184528a236ad442a7516","details":{"parent_model":"","format":"safetensors","family":"","families":null,"parameter_size":"","quantization_level":"int4","runner":"mlx"},"capabilities":["completion","tools"]},{"name":"climrisk-llm-v5b:latest","model":"climrisk-llm-v5b:latest","modified_at":"2026-10-09T22:17:51.182914139+05:30","size":2831514333,"digest":"04ee0dc3e21b1c9ce1be6b5807c71eac29bc571c6275b92829a92c9dd35ae316","details":{"parent_model":"","format":"safetensors","family":"","families":null,"parameter_size":"","quantization_level":"int4","runner":"mlx"},"capabilities":["completion","tools"]},{"name":"climrisk-llm-v5:latest","model":"climrisk-llm-v5:latest","modified_at":"2026-10-09T19:55:41.621872823+05:30","size":2831514333,"digest":"54115d6dbcf2d817a865d4d7cdf8c0a501207ccb5857d696ad002914d4139489","details":{"parent_model":"","format":"safetensors","family":"","families":null,"parameter_size":"","quantization_level":"int4","runner":"mlx"},"capabilities":["completion","tools"]},{"name":"climrisk-llm-v2:latest","model":"climrisk-llm-v2:latest","modified_at":"2026-10-09T01:31:37.171389722+05:30","size":2831514333,"digest":"600c84c61eecd0be9d2f696997e0bffda98880b00659149ce0bd8eeed8b7fef3","details":{"parent_model":"","format":"safetensors","family":"","families":null,"parameter_
+== ollama --version
+ollama version is 0.40.0
+== home dirs
+total 0
+drwxr-xr-x   5 root                        admin   160 24 Aug 12:49 .
+drwxr-xr-x  22 root                        wheel   704 13 Aug 08:21 ..
+-rw-r--r--   1 root                        wheel     0 13 Aug 08:21 .localized
+drwxrwxrwt  16 root                        wheel   512 24 Aug 12:49 Shared
+drwxr-x---+ 34 shrinivashdhamodharakannan  staff  1088 12 Oct 10:57 shrinivashdhamodharakannan
+== whoami
+shrinivashdhamodharakannan
+== OLLAMA_HOST=
+== spotlight
+== plist
+/opt/homebrew/opt/ollama:
+sh.brew.ollama.plist
+sh.brew.ollama.service
+done

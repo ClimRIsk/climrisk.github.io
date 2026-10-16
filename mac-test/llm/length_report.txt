@@ -1,0 +1,46 @@
+[transformers] PyTorch was not found. Models won't be available and only tokenizers, configuration and file/data utilities can be used.
+{
+ "max_seq": 1536,
+ "margin": 36,
+ "min_target": 8,
+ "train": {
+  "in": 6362,
+  "kept": 6313,
+  "dropped": {
+   "ok": 6313,
+   "too_long": 49
+  },
+  "dropped_by_kind": {
+   "qa": 33,
+   "case": 9,
+   "case_gap": 3,
+   "refuse": 4
+  },
+  "longest_kept_tokens": 1499
+ },
+ "valid": {
+  "in": 454,
+  "kept": 451,
+  "dropped": {
+   "ok": 451,
+   "too_long": 3
+  },
+  "dropped_by_kind": {
+   "case": 3
+  },
+  "longest_kept_tokens": 1480
+ },
+ "test": {
+  "in": 1016,
+  "kept": 1014,
+  "dropped": {
+   "ok": 1014,
+   "too_long": 2
+  },
+  "dropped_by_kind": {
+   "qa": 1,
+   "case_gap": 1
+  },
+  "longest_kept_tokens": 1478
+ }
+}

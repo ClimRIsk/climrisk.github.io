@@ -1,0 +1,516 @@
+{
+ "summary": {
+  "questions": 22,
+  "passed": 22,
+  "pass_rate": 1.0,
+  "median_s": 6.61,
+  "p95_s": 25.63,
+  "max_s": 25.78,
+  "warm": {
+   "warmed": true,
+   "model": "climrisk-llm-v5b:latest",
+   "seconds": 0.0,
+   "unloaded": []
+  },
+  "index": {
+   "items": 4672,
+   "events": 131,
+   "curated_cards": 25,
+   "company_event_cases": 1259,
+   "company_climate_reports": 12,
+   "kinds": {
+    "frame": 25,
+    "fact": 94,
+    "resp": 39,
+    "filing": 3482,
+    "xbrl": 1032
+   },
+   "path": "/Users/shrinivashdhamodharakannan/.climrisk/case_index.jsonl"
+  },
+  "by_kind": {
+   "analog": "3/3",
+   "company": "6/6",
+   "company_unknown": "3/3",
+   "event_response": "4/4",
+   "event_summary": "4/4",
+   "outside_library": "2/2"
+  },
+  "by_path": {
+   "case/assembled": 10,
+   "case/model": 11,
+   "declined": 1
+  },
+  "failures": [],
+  "slowest": [
+   {
+    "s": 25.78,
+    "q": "How did the companies and institutions respond in 2015 Chennai floods and the au",
+    "timing": {
+     "wall": 25.71,
+     "load": 0.0,
+     "prompt_eval": 4.11,
+     "generate": 21.57,
+     "total": 25.71,
+     "prompt_tokens": 723,
+     "output_tokens": 380
+    }
+   },
+   {
+    "s": 25.63,
+    "q": "Summarise what happened to the finances in 2011 Thailand floods and the electron",
+    "timing": {
+     "wall": 25.57,
+     "load": 0.0,
+     "prompt_eval": 2.35,
+     "generate": 23.2,
+     "total": 25.57,
+     "prompt_tokens": 426,
+     "output_tokens": 380
+    }
+   },
+   {
+    "s": 24.89,
+    "q": "What precedents exist for a wildfire hitting a utility's network, and how did th",
+    "timing": null
+   }
+  ]
+ },
+ "rows": [
+  {
+   "kind": "event_summary",
+   "question": "Summarise what happened to the finances in Taiwan's 2021 drought and chipmakers.",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 4.4,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The sources provided do not cover what happened to the finances of Taiwan's 2021 drought and chipmakers. They only state that Taiwan's government began rationing water as the island experienced no monsoon rains for the first time since the 1950s [1]; TSMC trucked in water and cut its own water use as a precaution, and said production was not affected [2]. To answer I would need the company's later filings or an official statement on it.",
+   "wall_s": 4.39,
+   "llm_timing": {
+    "wall": 4.37,
+    "load": 0.01,
+    "prompt_eval": 1.05,
+    "generate": 3.27,
+    "total": 4.37,
+    "prompt_tokens": 400,
+    "output_tokens": 97
+   },
+   "llm_note": null
+  },
+  {
+   "kind": "event_response",
+   "question": "How did the companies and institutions respond in Taiwan's 2021 drought and chipmakers?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 17.2,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "TSMC trucked in water and cut its own water use as a precaution, and said production was not affected [1]. Taiwan's government began rationing water as the island experienced no monsoon rains for the first time since the 1950s [2]. the driver was a drought after no monsoon rains refilled reservoirs; the exposed assets were semiconductor fabs that use large volumes of water; the event took place in Asia in 2021 [3]. Ships could reserve a slot in advance or buy one through an auction process [4].",
+   "wall_s": 17.18,
+   "llm_timing": {
+    "wall": 17.15,
+    "load": 0.0,
+    "prompt_eval": 1.52,
+    "generate": 15.61,
+    "total": 17.15,
+    "prompt_tokens": 405,
+    "output_tokens": 292
+   },
+   "llm_note": "the model's answer failed the honesty check: uncited sentences"
+  },
+  {
+   "kind": "event_summary",
+   "question": "Summarise what happened to the finances in 2011 Thailand floods and the electronics and auto supply chains.",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 25.6,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "The 2011 Thailand floods reached 61 of Thailand's 77 provinces, breached defences around seven industrial parks and affected about 1,300 factories [4]. Insurance claims from the 2011 Thailand floods had reached about $3.3 billion, against estimated economic damage of roughly $5 billion [2]. Western Digital relied on its plants in Malaysia, Singapore and the United States while the Thai plants were shut [3]. Response used: Western Digital filed an insurance claim expected to lower the net impact of its flood damage [5]. A second response used: the driver was the worst flooding in Thailand in mo",
+   "wall_s": 25.63,
+   "llm_timing": {
+    "wall": 25.57,
+    "load": 0.0,
+    "prompt_eval": 2.35,
+    "generate": 23.2,
+    "total": 25.57,
+    "prompt_tokens": 426,
+    "output_tokens": 380
+   },
+   "llm_note": null
+  },
+  {
+   "kind": "event_response",
+   "question": "How did the companies and institutions respond in 2011 Thailand floods and the electronics and auto supply chains?",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 11.9,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The companies and institutions responded differently. Western Digital relied on its plants in Malaysia, Singapore and the United States while the Thai plants were shut [1]. Western Digital filed an insurance claim expected to lower the net impact of its flood damage [2]. Analysts forecast that Thai auto production would fall by about 130,000 units in 2011 because of the flooding [3]. Insurance claims from the 2011 Thailand floods had reached about $3.3 billion, against estimated economic damage of roughly $5 billion [4]. The floods reached 61 of Thailand's 77 provinces, breached defences aroun",
+   "wall_s": 11.88,
+   "llm_timing": {
+    "wall": 11.82,
+    "load": 0.0,
+    "prompt_eval": 2.66,
+    "generate": 9.14,
+    "total": 11.82,
+    "prompt_tokens": 425,
+    "output_tokens": 155
+   },
+   "llm_note": null
+  },
+  {
+   "kind": "event_summary",
+   "question": "Summarise what happened to the finances in 2015 Chennai floods and the auto cluster.",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 7.7,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The sources provided do not cover what happened to the finances in 2015 Chennai floods and the auto cluster. They only state that Hyundai, Ford and Renault-Nissan suspended production in Chennai on 2 December 2015 after rain flooded their sites or cut off their workers [1]. To answer I would need the company's later filings or an official statement on it.",
+   "wall_s": 7.65,
+   "llm_timing": {
+    "wall": 7.59,
+    "load": 0.0,
+    "prompt_eval": 4.47,
+    "generate": 3.1,
+    "total": 7.59,
+    "prompt_tokens": 724,
+    "output_tokens": 74
+   },
+   "llm_note": null
+  },
+  {
+   "kind": "event_response",
+   "question": "How did the companies and institutions respond in 2015 Chennai floods and the auto cluster?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 25.8,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "Hyundai and other makers worked extra shifts, including Sundays, to make up the lost production [1]. Hyundai, Ford and Renault-Nissan suspended production in Chennai on 2 December 2015 after rain flooded their sites or cut off their workers [2]. Insurers expected about 10 billion rupees in immediate claims, with most coming from residents who lost property such as vehicles [3]. the driver was heaviest rainfall in a century in Tamil Nadu; the exposed assets were auto assembly plants and suppliers in the Chennai cluster; the event took place in Asia in 2015 [4].",
+   "wall_s": 25.78,
+   "llm_timing": {
+    "wall": 25.71,
+    "load": 0.0,
+    "prompt_eval": 4.11,
+    "generate": 21.57,
+    "total": 25.71,
+    "prompt_tokens": 723,
+    "output_tokens": 380
+   },
+   "llm_note": "the model's answer failed the honesty check: uncited sentences"
+  },
+  {
+   "kind": "event_summary",
+   "question": "Summarise what happened to the finances in Fort McMurray wildfire and Suncor oil sands shut-in.",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 6.2,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The sources provided do not cover the financials of Fort McMurray wildfire and Suncor oil sands shut-in. They only state that by mid-July 2016 production at all of Suncor's oil sands operations had returned to normal [1]. To answer I would need the company's later filings or an official statement on it.",
+   "wall_s": 6.16,
+   "llm_timing": {
+    "wall": 6.1,
+    "load": 0.0,
+    "prompt_eval": 3.17,
+    "generate": 2.92,
+    "total": 6.1,
+    "prompt_tokens": 551,
+    "output_tokens": 69
+   },
+   "llm_note": null
+  },
+  {
+   "kind": "event_response",
+   "question": "How did the companies and institutions respond in Fort McMurray wildfire and Suncor oil sands shut-in?",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 23.0,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "The companies and institutions responded in Fort McMurray wildfire and Suncor oil sands shut-in as follows. By mid-July 2016 production at all of Suncor's oil sands operations had returned to normal [2]. Suncor and Syncrude restarted oil sands operations in stages and had them back at normal output by mid-July 2016 [1]. Response used: operational. A second case summary says the driver was wildfire that forced evacuation and shut-in of oil sands operations and the exposed assets were oil sands mining, upgrading and the Syncrude joint venture [3]. A Renaissancere Holdings Ltd Form 8-K filed 2016",
+   "wall_s": 22.97,
+   "llm_timing": {
+    "wall": 22.9,
+    "load": 0.0,
+    "prompt_eval": 2.57,
+    "generate": 20.32,
+    "total": 22.9,
+    "prompt_tokens": 494,
+    "output_tokens": 346
+   },
+   "llm_note": null
+  },
+  {
+   "kind": "company",
+   "question": "What did Martin Midstream Partners Lp report about Hurricane Harvey?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 6.2,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "Martin Midstream Partners Lp reported: Some scheduled fourth quarter maintenance capital expenditures will likely be preceded in priority by Hurricane Harvey related repairs and maintenance [1]. Martin Midstream Partners Lp's annual SEC financial data show: operating income was $72.7 million in the fiscal year ended 2016-12-31, $45.6 million in the fiscal year ended 2017-12-31, $45.1 million in the fiscal year ended 2018-12-31; net income was $31.7 million in the fiscal year ended 2016-12-31, $19.9 million in the fiscal year ended 2017-12-31, $55.7 million in the fiscal year ended 2018-12-31 (",
+   "wall_s": 6.18,
+   "llm_timing": {
+    "wall": 6.09,
+    "load": 0.0,
+    "prompt_eval": 2.65,
+    "generate": 3.43,
+    "total": 6.09,
+    "prompt_tokens": 435,
+    "output_tokens": 76
+   },
+   "llm_note": "the model's answer failed the honesty check: uncited sentences"
+  },
+  {
+   "kind": "company",
+   "question": "What did American International Group Inc report about Hurricane Maria?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 5.2,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "American International Group Inc reported: Hurricane Irma, $600 million to $700 million from Hurricane Maria, and approximately $150 million in additional catastrophe losses including Mexico earthquakes [1]. American International Group Inc reported: Hurricane Irma, $600 million to $700 million from Hurricane Maria, and approximately $150 million in additional catastrophe losses including Mexico earthquakes [2].",
+   "wall_s": 5.15,
+   "llm_timing": {
+    "wall": 5.04,
+    "load": 0.0,
+    "prompt_eval": 1.03,
+    "generate": 3.99,
+    "total": 5.04,
+    "prompt_tokens": 205,
+    "output_tokens": 69
+   },
+   "llm_note": "the model's answer failed the honesty check: uncited sentences"
+  },
+  {
+   "kind": "company",
+   "question": "What did Renaissancere Holdings Ltd report about Storm Kyrill?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 4.2,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "Renaissancere Holdings Ltd reported: Company recorded $45.3 million of net negative impact from Kyrill [1]. Renaissancere Holdings Ltd reported: The net negative impact from Kyrill is all attributable to the Company’s Reinsurance segment [2].",
+   "wall_s": 4.16,
+   "llm_timing": {
+    "wall": 4.08,
+    "load": 0.0,
+    "prompt_eval": 1.09,
+    "generate": 2.97,
+    "total": 4.08,
+    "prompt_tokens": 194,
+    "output_tokens": 54
+   },
+   "llm_note": "the model's answer failed the honesty check: uncited sentences"
+  },
+  {
+   "kind": "company",
+   "question": "What did Berkley W R Corp report about Hurricane Florence?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 6.9,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "Berkley W R Corp reported: Underwriting results included $39 million of estimated catastrophe losses from Hurricane Florence, Typhoon Jebi and a number of other smaller Property Claims Services (PCS) defined catastrophe events [1]. Berkley W R Corp's annual SEC financial data show: revenue was $7.68 billion in the fiscal year ended 2017-12-31, $7.69 billion in the fiscal year ended 2018-12-31, $7.90 billion in the fiscal year ended 2019-12-31 (a change of +0.1% in the year of the event); net income was $549.1 million in the fiscal year ended 2017-12-31, $640.7 million in the fiscal year ended ",
+   "wall_s": 6.87,
+   "llm_timing": {
+    "wall": 6.77,
+    "load": 0.0,
+    "prompt_eval": 2.51,
+    "generate": 4.23,
+    "total": 6.77,
+    "prompt_tokens": 402,
+    "output_tokens": 85
+   },
+   "llm_note": "the model's answer failed the honesty check: uncited sentences"
+  },
+  {
+   "kind": "company",
+   "question": "What did Partnerre Ltd report about Hurricane Wilma?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 5.4,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "Partnerre Ltd reported: The Company estimates total insured industry losses for Hurricane Wilma are more than $2 billion in Mexico and between $10-$12 billion in Florida [1]. Partnerre Ltd reported: The Non-Life technical result was a loss of $115 million for the fourth quarter of 2005, primarily reflecting the impact of Hurricane Wilma [2].",
+   "wall_s": 5.38,
+   "llm_timing": {
+    "wall": 5.29,
+    "load": 0.0,
+    "prompt_eval": 1.1,
+    "generate": 4.17,
+    "total": 5.29,
+    "prompt_tokens": 208,
+    "output_tokens": 74
+   },
+   "llm_note": "the model's answer failed the honesty check: uncited sentences"
+  },
+  {
+   "kind": "company",
+   "question": "What did HSN, Inc. report about Hurricane Irma?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 4.8,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "HSN, Inc. reported: The impact of Hurricane Irma on Adjusted EBITDA is estimated to be $5 million [1]. HSN, Inc. reported: HSN incurred approximately $1.6 million in expenses related to Hurricane Irma and approximately $0.9 million in allocated transaction costs related to the merger [2].",
+   "wall_s": 4.84,
+   "llm_timing": {
+    "wall": 4.75,
+    "load": 0.0,
+    "prompt_eval": 1.09,
+    "generate": 3.64,
+    "total": 4.75,
+    "prompt_tokens": 202,
+    "output_tokens": 66
+   },
+   "llm_note": "the model's answer failed the honesty check: uncited sentences"
+  },
+  {
+   "kind": "company_unknown",
+   "question": "What did Nstar Electric Co report about KwaZulu-Natal floods and the Durban port?",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 6.4,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The sources provided do not cover what Nstar Electric Co reported about KwaZulu-Natal floods and the Durban port. They only state that those spending increases are expected to be funded partially through proceeds from the Regional Greenhouse Gas Initiative and through NSTAR Electric’s participation in the Forward Capacity Market [1]. To answer I would need the company's own filing for KwaZulu-Natal floods and the Durban port.",
+   "wall_s": 6.35,
+   "llm_timing": {
+    "wall": 6.29,
+    "load": 0.0,
+    "prompt_eval": 1.33,
+    "generate": 4.94,
+    "total": 6.28,
+    "prompt_tokens": 223,
+    "output_tokens": 87
+   },
+   "llm_note": null
+  },
+  {
+   "kind": "company_unknown",
+   "question": "What did Valley National Bancorp report about Typhoon Faxai?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 0.1,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The sources provided do not cover what Valley National Bancorp reported about Typhoon Faxai. They only show what it reported about a different event. On Hurricane Helene it reported: The third quarter 2024 provision reflects, among other factors, increased quantitative reserves allocated to commercial real estate loans, significant commercial and industrial loan growth and $8.0 million of qualitative reserves related to the estimated impact of Hurricane Helene, which hit Florida in late September 2024 [1]. To answer I would need Valley National Bancorp's own filing for Typhoon Faxai.",
+   "wall_s": 0.06,
+   "llm_timing": null,
+   "llm_note": null
+  },
+  {
+   "kind": "company_unknown",
+   "question": "What did Occidental Petroleum Corp /De/ report about the EU Emissions Trading System?",
+   "ok": true,
+   "path": "case/assembled",
+   "seconds": 0.0,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The sources provided do not cover what Occidental Petroleum Corp /De/ reported about the EU Emissions Trading System. They only show what it reported about a different event. On Hurricane Harvey it reported: Hurricane Harvey impacted third quarter income by $70 million in the Chemical and Midstream segments and reduced average daily production by 1,000 barrels of oil equivalent (BOE) in our Permian Resources operations [1]. To answer I would need Occidental Petroleum Corp /De/'s own filing for the EU Emissions Trading System.",
+   "wall_s": 0.03,
+   "llm_timing": null,
+   "llm_note": null
+  },
+  {
+   "kind": "analog",
+   "question": "Which past cases are closest to a flood at a chemical plant on a river, and what worked?",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 16.9,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "The closest case is BASF and the 2018 low Rhine water, where the driver was prolonged low river levels during the 2018 drought [1]. BASF Group EBIT before special items in the third quarter of 2018 was €1.5 billion, down €232 million, mainly because of a significantly lower contribution from the Chemicals segment [2]. In the Chemicals segment, EBIT before special items fell by €251 million to €851 million, primarily because of lower margins for isocyanates and steam cracker products, and higher fixed costs [3]. Response used: BASF cut production at Ludwigshafen and paid higher transport costs ",
+   "wall_s": 16.9,
+   "llm_timing": null,
+   "llm_note": null
+  },
+  {
+   "kind": "analog",
+   "question": "What precedents exist for a wildfire hitting a utility's network, and how did the company cope?",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 24.9,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "The closest case is PG&E wildfire liabilities and Chapter 11, where the driver was wildfire ignited by utility equipment and the exposed assets were electricity transmission and distribution network [1]. PG&E agreed a settlement valued at approximately $13.5 billion with the Official Committee of Tort Claimants and firms representing individual claimants from the 2015 Butte Fire, the 2017 Northern California wildfires and the 2018 Camp Fire [3]. PG&E settled with each major claimant group, which fixed the total wildfire liability before the plan was finalised [4]. Response used: PG&E agreed a ",
+   "wall_s": 24.89,
+   "llm_timing": null,
+   "llm_note": null
+  },
+  {
+   "kind": "analog",
+   "question": "Our asset is a coastal refinery exposed to a hurricane. What do the cases suggest about how the loss reaches the financials?",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 15.4,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": false,
+   "reply": "The closest case is Typhoon Jebi, where the driver was typhoon storm surge and wind in the Osaka Bay area [1]. The exposed assets were Kansai International Airport and property across the Kansai region [1]. RMS estimated Japan's insured loss from Typhoon Jebi at between $3 billion and $5.5 billion, with about 80% of the loss in the Kansai region [2]. The airport operator recovered most of its loss through disaster insurance proceeds [4]. Response used: transfer, which recovered most of its loss through disaster insurance proceeds [4]. A second case with the same channel is Cyclone Idai and the",
+   "wall_s": 15.41,
+   "llm_timing": null,
+   "llm_note": null
+  },
+  {
+   "kind": "outside_library",
+   "question": "What did the 1998 North American ice storm cost Hydro-Quebec?",
+   "ok": true,
+   "path": "declined",
+   "seconds": 0.0,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The sources I hold do not mention Hydro-Quebec, so I do not cover that and will not guess. Give me a page to read (say \"learn from <web address>\") or ask about something the sources do cover.",
+   "wall_s": 0.07,
+   "llm_timing": null,
+   "llm_note": null
+  },
+  {
+   "kind": "outside_library",
+   "question": "How did the 2013 Colorado floods affect Anadarko's production guidance?",
+   "ok": true,
+   "path": "case/model",
+   "seconds": 10.4,
+   "numbers_not_in_sources": [],
+   "bad_citations": [],
+   "says_missing": true,
+   "reply": "The sources provided do not cover that event. They only show that Alleghany Corp /De reported $22.4 million during the period, primarily from the Colorado floods [1]; TreeHouse Foods, Inc., Form 8-K/A filed 2019-05-02: Adjusted EPS of $0.13 was toward the top end of our guidance, helped by lower than anticipated health care costs, favorable SG&A expenses, and higher production levels as we built inventory in anticipation of potential Midwest flooding.” [3]. To answer I would need the company's later filings or an official statement on it.",
+   "wall_s": 10.37,
+   "llm_timing": {
+    "wall": 10.34,
+    "load": 0.0,
+    "prompt_eval": 4.17,
+    "generate": 6.13,
+    "total": 10.33,
+    "prompt_tokens": 687,
+    "output_tokens": 123
+   },
+   "llm_note": null
+  }
+ ]
+}

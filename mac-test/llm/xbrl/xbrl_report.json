@@ -1,0 +1,12 @@
+{
+ "companies": 624,
+ "company_event_financials": 1032,
+ "errors": 40,
+ "sample_errors": {
+  "0000086104": "HTTPError: HTTP Error 404: Not Found",
+  "0000732713": "HTTPError: HTTP Error 404: Not Found",
+  "0000743532": "HTTPError: HTTP Error 404: Not Found",
+  "0001325177": "HTTPError: HTTP Error 404: Not Found",
+  "0000879554": "HTTPError: HTTP Error 404: Not Found"
+ }
+}

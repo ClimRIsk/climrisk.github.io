@@ -1,0 +1,26 @@
+shrinivashdhamodharakannan  2207   3.6  0.5 435384496  92192   ??  S    11:01AM   0:07.97 /opt/homebrew/Cellar/python@3.14/3.14.8/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Content
+shrinivashdhamodharakannan  3600   0.0  0.0 435300352   1392 s001  S+   11:05AM   0:00.00 grep -E [p]ip|[c]onvert_hf|[l]lama-quantize|[G]G_CHILD|Export-GGUF
+shrinivashdhamodharakannan  1377   0.0  0.0 435300288   1056   ??  S    10:58AM   0:00.02 bash /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/mac-test/Exp
+shrinivashdhamodharakannan  1382   0.0  0.0 435301744   1920   ??  S    10:58AM   0:00.01 caffeinate -dimsu bash /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Mode
+ls: /Users/shrinivashdhamodharakannan/.climrisk/gguf-venv/lib/python3*/site-packages: No such file or directory
+735M	/Users/shrinivashdhamodharakannan/.climrisk/gguf-venv
+463M	/Users/shrinivashdhamodharakannan/Library/Caches/pip
+total 0
+drwxr-xr-x   2 shrinivashdhamodharakannan  staff    64 12 Oct 10:45 .
+drwxr-x---+ 34 shrinivashdhamodharakannan  staff  1088 12 Oct 11:05 ..
+/Users/shrinivashdhamodharakannan/.climrisk/llm/v6:
+adapters
+fused
+Modelfile
+Modelfile.tail
+
+/Users/shrinivashdhamodharakannan/.climrisk/llm/v6/fused:
+chat_template.jinja
+config.json
+model-00001-of-00002.safetensors
+model-00002-of-00002.safetensors
+model.safetensors.index.json
+README.md
+tokenizer_config.json
+tokenizer.json
+done

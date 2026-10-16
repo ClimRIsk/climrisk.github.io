@@ -1,0 +1,51 @@
+{
+ "train": {
+  "rows": 5218,
+  "kinds": {
+   "reason_base": 3009,
+   "reason_ablation": 544,
+   "reason_distractor": 479,
+   "reason_variant": 1186
+  },
+  "verdicts": {
+   "BREACH": 1545,
+   "NO-COVENANT": 663,
+   "PASS": 1573,
+   "PASS-TIGHT": 892,
+   "NOT-COMPUTABLE": 1
+  },
+  "analog_events": 16
+ },
+ "valid": {
+  "rows": 1009,
+  "kinds": {
+   "reason_base": 566,
+   "reason_variant": 248,
+   "reason_ablation": 102,
+   "reason_distractor": 93
+  },
+  "verdicts": {
+   "PASS-TIGHT": 181,
+   "PASS": 324,
+   "BREACH": 297,
+   "NO-COVENANT": 105
+  },
+  "analog_events": 2
+ },
+ "test": {
+  "rows": 1077,
+  "kinds": {
+   "reason_base": 758,
+   "reason_ablation": 70,
+   "reason_variant": 180,
+   "reason_distractor": 69
+  },
+  "verdicts": {
+   "PASS-TIGHT": 199,
+   "PASS": 349,
+   "BREACH": 306,
+   "NO-COVENANT": 153
+  },
+  "analog_events": 2
+ }
+}

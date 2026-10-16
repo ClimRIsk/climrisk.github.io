@@ -1,0 +1,65 @@
+{
+ "index": {
+  "items": 4672,
+  "events": 131,
+  "curated_cards": 25,
+  "company_event_cases": 1259,
+  "company_climate_reports": 12,
+  "kinds": {
+   "frame": 25,
+   "fact": 94,
+   "resp": 39,
+   "filing": 3482,
+   "xbrl": 1032
+  },
+  "path": "/Users/shrinivashdhamodharakannan/.climrisk/case_index.jsonl"
+ },
+ "curated_fact_status": {
+  "unverified": 52,
+  "unfetchable": 27,
+  "read": 8,
+  "verified": 90
+ },
+ "world_bank": {
+  "events": 79,
+  "country_events": 101,
+  "errors": 0,
+  "sample_errors": {}
+ },
+ "dataset_v5": {
+  "train": {
+   "case": 3659,
+   "refuse": 483,
+   "qa": 589,
+   "insurer": 560,
+   "case_gap": 555,
+   "chain": 186,
+   "narr": 186,
+   "gold": 144
+  },
+  "valid": {
+   "case": 324,
+   "narr": 18,
+   "insurer": 48,
+   "qa": 7,
+   "chain": 20,
+   "refuse": 17,
+   "gold": 9,
+   "case_gap": 11
+  },
+  "test": {
+   "case": 728,
+   "case_gap": 147,
+   "gold": 9,
+   "narr": 16,
+   "chain": 14,
+   "insurer": 64,
+   "refuse": 20,
+   "qa": 18
+  },
+  "passages": 255,
+  "sources": 42
+ },
+ "company_event_cases_total": 1259,
+ "meets_1000_minimum": true
+}

@@ -1,0 +1,47 @@
+{
+ "max_seq": 1536,
+ "margin": 36,
+ "min_target": 8,
+ "train": {
+  "in": 5218,
+  "kept": 5148,
+  "dropped": {
+   "ok": 5148,
+   "too_long": 70
+  },
+  "dropped_by_kind": {
+   "reason_distractor": 37,
+   "reason_base": 30,
+   "reason_variant": 3
+  },
+  "longest_kept_tokens": 1500
+ },
+ "valid": {
+  "in": 1009,
+  "kept": 992,
+  "dropped": {
+   "ok": 992,
+   "too_long": 17
+  },
+  "dropped_by_kind": {
+   "reason_distractor": 8,
+   "reason_base": 7,
+   "reason_variant": 2
+  },
+  "longest_kept_tokens": 1500
+ },
+ "test": {
+  "in": 1077,
+  "kept": 1061,
+  "dropped": {
+   "ok": 1061,
+   "too_long": 16
+  },
+  "dropped_by_kind": {
+   "reason_distractor": 4,
+   "reason_base": 10,
+   "reason_variant": 2
+  },
+  "longest_kept_tokens": 1500
+ }
+}

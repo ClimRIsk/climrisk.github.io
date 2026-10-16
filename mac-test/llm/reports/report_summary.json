@@ -1,0 +1,128 @@
+{
+ "summary": {
+  "documents": 30,
+  "documents_with_quotes": 13,
+  "companies": 12,
+  "quotes": 88,
+  "failed": [
+   "Alliander 2023",
+   "BHP 2025",
+   "BHP 2026",
+   "Borregaard 2023",
+   "Duke Energy 2023",
+   "Equinix 2025",
+   "Florida Power & Light 2023",
+   "Hitachi High-Tech 2024",
+   "Merck KGaA 2022",
+   "NextEra Energy 2025",
+   "Nomad Foods 2024",
+   "Prologis 2024"
+  ]
+ },
+ "report": {
+  "Duke Energy 2024": {
+   "quotes": 12,
+   "bytes": 13626591
+  },
+  "Duke Energy 2023": {
+   "error": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  "Prologis 2024": {
+   "error": "HTTPError: HTTP Error 405: Method Not Allowed"
+  },
+  "BASF 2021": {
+   "quotes": 1,
+   "bytes": 148935
+  },
+  "BASF 2024": {
+   "quotes": 5,
+   "bytes": 409363
+  },
+  "Swiss Re 2021": {
+   "quotes": 0,
+   "bytes": 138937
+  },
+  "Swiss Re 2017": {
+   "quotes": 0,
+   "bytes": 466103
+  },
+  "SL Green 2023": {
+   "quotes": 10,
+   "bytes": 1214300
+  },
+  "PSP Swiss Property 2025": {
+   "quotes": 8,
+   "bytes": 3438823
+  },
+  "Borregaard 2023": {
+   "error": "HTTPError: HTTP Error 404: Not Found"
+  },
+  "TSMC 2021": {
+   "quotes": 6,
+   "bytes": 9471907
+  },
+  "Entergy 2019": {
+   "quotes": 8,
+   "bytes": 11059396
+  },
+  "Entergy 2022": {
+   "quotes": 0,
+   "bytes": 90871
+  },
+  "NextEra Energy 2025": {
+   "error": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  "Florida Power & Light 2023": {
+   "error": "URLError: <urlopen error [Errno 54] Connection reset by peer>"
+  },
+  "Equinix 2025": {
+   "error": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  "Digital Realty 2022": {
+   "quotes": 3,
+   "bytes": 2003316
+  },
+  "Texas Instruments 2022": {
+   "quotes": 2,
+   "bytes": 166266
+  },
+  "TE Connectivity 2025": {
+   "quotes": 6,
+   "bytes": 409786
+  },
+  "Nomad Foods 2024": {
+   "error": "HTTPError: HTTP Error 404: Not Found"
+  },
+  "Verisk 2022": {
+   "quotes": 12,
+   "bytes": 15564184
+  },
+  "Zurich Insurance Malaysia 2025": {
+   "quotes": 12,
+   "bytes": 1426432
+  },
+  "BHP 2025": {
+   "error": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  "BHP 2026": {
+   "error": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  "Alliander 2023": {
+   "error": "HTTPError: HTTP Error 404: Not Found"
+  },
+  "Merck KGaA 2022": {
+   "error": "TimeoutError: The read operation timed out"
+  },
+  "Sun Pharma 2023": {
+   "quotes": 3,
+   "bytes": 437185
+  },
+  "Hitachi High-Tech 2024": {
+   "error": "HTTPError: HTTP Error 403: Forbidden"
+  },
+  "Lancashire Group 2023": {
+   "quotes": 0,
+   "bytes": 1915
+  }
+ }
+}

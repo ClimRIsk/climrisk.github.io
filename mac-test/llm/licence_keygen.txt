@@ -1,0 +1,13 @@
+{
+ "private_key": "/Users/shrinivashdhamodharakannan/.climrisk-signing/licence_private.pem",
+ "public_key": "/Users/shrinivashdhamodharakannan/.climrisk-signing/licence_public.pem",
+ "note": "Keep the private key offline and out of every repository. Anyone holding it can issue licences."
+}
+-rw-r--r--  1 shrinivashdhamodharakannan  staff  113 12 Oct 10:40 /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/data/licence_public.pem
+
+/Users/shrinivashdhamodharakannan/.climrisk-signing:
+total 16
+drwxr-xr-x   4 shrinivashdhamodharakannan  staff   128 12 Oct 10:40 .
+drwxr-x---+ 33 shrinivashdhamodharakannan  staff  1056 12 Oct 10:40 ..
+-rw-------   1 shrinivashdhamodharakannan  staff   119 12 Oct 10:40 licence_private.pem
+-rw-r--r--   1 shrinivashdhamodharakannan  staff   113 12 Oct 10:40 licence_public.pem

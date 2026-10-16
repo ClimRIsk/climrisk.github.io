@@ -1,0 +1,13 @@
+Mon Oct 12 12:18:24 IST 2026
+shrinivashdhamodharakannan  4230   4.9 14.6 443607520 2455920   ??  S    11:17AM   9:30.41 /opt/homebrew/Cellar/ollama/0.40.0/libexec/lib/ollama/llama-server --model /Users/shriniv
+shrinivashdhamodharakannan  4228   0.0  0.0 435319728   8192   ??  S    11:17AM   0:00.61 /Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Pyt
+shrinivashdhamodharakannan  3734   0.0  0.0 435308176    896   ??  S    11:07AM   0:00.07 bash /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Mo
+shrinivashdhamodharakannan  3738   0.0  0.0 435301744   1744   ??  S    11:07AM   0:00.01 caffeinate -dimsu bash /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate
+shrinivashdhamodharakannan 41220   0.0  0.1 436819968  20320   ??  S    Wed09PM   4:17.97 /opt/homebrew/bin/ollama serve
+shrinivashdhamodharakannan  6918   0.0  0.0 435299584   1392 s001  S+   12:18PM   0:00.01 grep -E [r]easoning_eval|[o]llama|[c]affeinate|Export-GGUF
+total 8
+drwxr-xr-x   3 shrinivashdhamodharakannan  staff   96 12 Oct 11:17 .
+drwx------  19 shrinivashdhamodharakannan  staff  608 12 Oct 11:17 ..
+-rw-r--r--   1 shrinivashdhamodharakannan  staff    5 12 Oct 11:17 pid
+3734
+{"models":[{"name":"climrisk-llm-v6-gguf:latest","model":"climrisk-llm-v6-gguf:latest","size":2548417166,"digest":"b2cc8e1849c2c7703db600c7ad325484f68e2edbbb8f0a4b0d6da520002928fe","details":{"parent_model":"","format":"gguf","family":"llama","families":["llama"],"parameter_size":"3.2B","quantization_level":"Q4_K_M"},"expires_at":"2026-10-12T12:36:56.599917+05:30","size_vram":2548417166,"context_length":4096,"runner":"llamacpp"}]}done

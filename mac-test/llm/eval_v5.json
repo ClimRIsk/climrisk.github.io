@@ -1,0 +1,194 @@
+{
+ "climrisk-llm-v5": {
+  "metrics": {
+   "case.cites_needed": 0.883,
+   "case.cites_valid": 1.0,
+   "case.flags_inference": 0.35,
+   "case.numbers_ok": 1.0,
+   "case.sent_cited": 0.69,
+   "case_gap.cites_valid": 1.0,
+   "case_gap.numbers_ok": 1.0,
+   "case_gap.says_missing": 0.95,
+   "chain.cites_all_needed": 0.929,
+   "chain.cites_valid": 1.0,
+   "chain.hedges_inference": 1.0,
+   "chain.no_invented_numbers": 1.0,
+   "gold.invented_numbers": 0.667,
+   "gold.length_ok": 0.889,
+   "gold.overlap_f1": 0.184,
+   "insurer.declines_unknown": 1.0,
+   "insurer.length_ok": 1.0,
+   "insurer.new_numbers": 0.0,
+   "insurer.numbers_ok": 1.0,
+   "narr.length_ok": 0.938,
+   "narr.numbers_ok": 1.0,
+   "narr.says_not_forecast": 1.0,
+   "qa.cited": 1.0,
+   "qa.cites_target": 0.588,
+   "qa.cites_valid": 1.0,
+   "qa.sent_cited": 0.725,
+   "refuse.cites_valid": 1.0,
+   "refuse.says_missing": 0.95
+  },
+  "n_rows": 136,
+  "seconds": 820,
+  "samples": [
+   {
+    "kind": "case",
+    "q": "ent); total assets was $482.6 million in the fiscal year ended 2010-12-31, $480.8 million in the fiscal year ended 2011-12-31, $561.2 million in the fiscal year ended 2012-12-31; long-term debt was $74.4 million in the fiscal year ended 2011-12-31, $153.5 million in the fiscal year ended 2012-12-31.",
+    "out": "Hagerty, Inc.'s annual financial data from its SEC Form 10-K filings around Hurricane Ian: revenue was $619.1 million in the fiscal year ended 2021-12-31, $787.6 million in the fiscal year ended 2022-12-31, $1.03 billion in the fiscal year ended 2023-12-31 (a change of +27.2% in the year of the event); operating income was negative $10.1 million in the fiscal year ended 2021-12-31, negative $67.6 million in the fiscal year ended 2022-12-31, $10.4 million in the fiscal year ended 2023-12-31; net income was negative $46.4 million in the fiscal year ended 2021-12-31, $32.1 million in the fiscal y"
+   },
+   {
+    "kind": "case",
+    "q": "al year ended 2022-12-31, negative $9.9 million in the fiscal year ended 2023-12-31 (a change of -120.9% in the year of the event); total assets was $17.7 million in the fiscal year ended 2021-12-31, $16.6 million in the fiscal year ended 2022-12-31, $8.3 million in the fiscal year ended 2023-12-31.",
+    "out": "Greenlight Capital Re, Ltd.'s annual financial data from its SEC Form 10-K filings around Hurricane Ian: revenue was $588.6 million in the fiscal year ended 2021-12-31, $526.7 million in the fiscal year ended 2022-12-31, $667.1 million in the fiscal year ended 2023-12-31 (a change of -10.5% in the year of the event); net income was $17.6 million in the fiscal year ended 2021-12-31, $25.3 million in the fiscal year ended 2022-12-31, $86.8 million in the fiscal year ended 2023-12-31 (a change of +44.2% in the year of the event); total assets was $1.43 billion in the fiscal year ended 2021-12-31,"
+   },
+   {
+    "kind": "case",
+    "q": "vely.\n\n[4] Arch Capital Group Ltd., Form 10-Q filed 2019-05-07: The estimated net adverse development in the 2019 first quarter included an increase in reserves on Typhoon Jebi of $16.0 million, or 4.6 points, based on receipt of updated information from cedents and additional updated industry data.",
+    "out": "The companies describe Typhoon Jebi differently. Renaissancere Holdings Ltd: The estimated losses for these events are primarily driven by Typhoon Jebi and Hurricane Florence, which will have an estimated net negative impact of approximately $70 million and $55 million, respectively [3]. Arch Capital Group Ltd.: The estimated net adverse development in the 2019 first quarter included an increase in reserves on Typhoon Jebi of $16.0 million, or 4.6 points, based on receipt of updated information from cedents and additional updated industry data [4]. Argo Group International Holdings, Ltd.: Cata"
+   },
+   {
+    "kind": "case",
+    "q": "e losses include $117 million related to Thailand floods.\n\n[3] Cts Corp, Form 8-K filed 2012-07-24: EMS: EMS second quarter 2012 sales decreased $1.4 million, or 2%, from the second quarter of 2011, due primarily to the impact from the Thailand floods, partially offset by new customer program ramps.",
+    "out": "ACE Ltd reported the following about the 2011 Thailand floods. For Q4 2011, catastrophe losses include $117 million related to Thailand floods [2]."
+   },
+   {
+    "kind": "case_gap",
+    "q": "we around the 2024 Kariba low water: real GDP growth was 5.4% in 2023, 1.7% in 2024, 8.1% in 2025.\n\n[3] World Bank data for Zambia around the 2024 Kariba low water: real GDP growth was 5.4% in 2023, 3.8% in 2024, 3.8% in 2025; consumer-price inflation was 10.9% in 2023, 15.0% in 2024, 13.9% in 2025.",
+    "out": "The sources provided do not cover Japan around the 2021 Henan floods. They only show Japan around Typhoon Jebi: real GDP growth was 1.6% in 2017, 0.8% in 2018, -0.3% in 2019; consumer-price inflation was 0.5% in 2017, 1.0% in 2018, 0.5% in 2019 [1]. To answer I would need World Bank figures for the relevant years."
+   },
+   {
+    "kind": "case_gap",
+    "q": "e of the unpaid balance, about $2.5 billion, with 30-year bonds.\n\n[5] Winter Storm Uri and the Texas power market (Power Engineering, 28 April 2021): ERCOT reported close to 52 GW of power generation outages from weatherization issues, impaired gas delivery and other factors during Winter Storm Uri.",
+    "out": "The sources provided do not cover the total economic loss of the storm. What they do report is this. Texas authorised ERCOT to recover $2.1 billion of upfront storm costs through securitization, and cooperatives could securitize their share of the unpaid balance, about $2.5 billion, with 30-year bonds [4]. ERCOT reported close to 52 GW of power generation outages from weatherization issues, impaired gas delivery and other factors during Winter Storm Uri [5]. To answer the question I would need the company's later filings or an official statement on it."
+   },
+   {
+    "kind": "case_gap",
+    "q": "e than half of its market value, and its credit ratings were cut to junk.\n\n[5] 2011 Thailand floods and the electronics and auto supply chains (Business Insurance): Insurance claims from the 2011 Thailand floods had reached about $3.3 billion, against estimated economic damage of roughly $5 billion.",
+    "out": "The sources provided do not cover insured losses broken down by company. What they do report is this. Insurance claims from the 2011 Thailand floods had reached about $3.3 billion, against estimated economic damage of roughly $5 billion [5]. To answer the question I would need the company's later filings or an official statement on it."
+   },
+   {
+    "kind": "case_gap",
+    "q": "2021-12-31, negative $11.6 million in the fiscal year ended 2022-12-31, negative $2.2 million in the fiscal year ended 2023-12-31; total assets was $50.4 million in the fiscal year ended 2021-12-31, $48.8 million in the fiscal year ended 2022-12-31, $49.4 million in the fiscal year ended 2023-12-31.",
+    "out": "The sources provided do not cover Mid America Apartment Communities Inc.'s financials around Hurricane Idalia. They only show its figures around Winter Storm Uri: revenue was $1.68 billion in the fiscal year ended 2020-12-31, $1.78 billion in the fiscal year ended 2021-12-31, $2.02 billion in the fiscal year ended 2022-12-31 (a change of +6.0% in the year of the event); net income was $255.0 million in the fiscal year ended 2020-12-31, $533.8 million in the fiscal year ended 2021-12-31, $637.4 million in the fiscal year ended 2022-12-31 (a change of +109.4% in the year of the event); total ass"
+   },
+   {
+    "kind": "gold",
+    "q": "What does ESRS E1 require about climate risk?",
+    "out": "ESRS E1 is a standard for climate risk management. It requires the identification of physical damage from climate hazards: acute events such as floods and storms, and chronic changes such as heat and sea-level rise. The standard also states that the loss model must be calibrated against claims, which is why the loss model is calibrated against claims and the loss model is calibrated against claims."
+   },
+   {
+    "kind": "gold",
+    "q": "What is an indicative technical premium?",
+    "out": "The indicative technical premium is the difference between the premium of an insurance policy and its expected loss in a year, without the cost of capital. It is the cost of the cover and the cost of the loss, which is why it is called indicative. A small indicative technical premium is good for the insurer because it is the cost of the cover and the cost of the loss, which is why it is called indicative. A small indicative technical premium is good for the insurer because it is the cost of the loss, which is why it is called indicative. A small indicative technical premium is good for the ins"
+   },
+   {
+    "kind": "narr",
+    "q": "Facts: [Asset: Refinery, Scenario: SSP5-8.5, Year: 2040, Expected Loss: 21.8%, Capital-at-Risk: $429.32m, AAL: $6.24m]\n\nWrite a risk disclosure paragraph.",
+    "out": "Under the SSP5-8.5 scenario, the expected loss for the refinery reaches 21.8% by 2040. This corresponds to a Capital-at-Risk of $429.32m. The average annual loss is $6.24m. These are scenario results, not forecasts, and they depend on the pathway assumptions and the data behind them."
+   },
+   {
+    "kind": "narr",
+    "q": "Facts: [Asset: Aluminium smelter, Scenario: NGFS Delayed Transition, Year: 2040, Expected Loss: 3.8%, Capital-at-Risk: $560.41m]\n\nWrite a risk disclosure paragraph.",
+    "out": "Under the NGFS Delayed Transition scenario, the expected loss for the aluminium smelter reaches 3.8% by 2040. This corresponds to a Capital-at-Risk of $560.41m. These are scenario results, not forecasts, and they depend on the pathway assumptions and the data behind them."
+   }
+  ]
+ },
+ "climrisk-llm-v2": {
+  "metrics": {
+   "case.cites_needed": 0.45,
+   "case.cites_valid": 1.0,
+   "case.flags_inference": 0.1,
+   "case.numbers_ok": 1.0,
+   "case.sent_cited": 0.45,
+   "case_gap.cites_valid": 1.0,
+   "case_gap.numbers_ok": 1.0,
+   "case_gap.says_missing": 1.0,
+   "chain.cites_all_needed": 0.857,
+   "chain.cites_valid": 1.0,
+   "chain.hedges_inference": 0.857,
+   "chain.no_invented_numbers": 1.0,
+   "gold.invented_numbers": 1.444,
+   "gold.length_ok": 1.0,
+   "gold.overlap_f1": 0.219,
+   "insurer.declines_unknown": 1.0,
+   "insurer.length_ok": 1.0,
+   "insurer.new_numbers": 0.0,
+   "insurer.numbers_ok": 1.0,
+   "narr.length_ok": 0.938,
+   "narr.numbers_ok": 1.0,
+   "narr.says_not_forecast": 1.0,
+   "qa.cited": 1.0,
+   "qa.cites_target": 0.412,
+   "qa.cites_valid": 1.0,
+   "qa.sent_cited": 0.941,
+   "refuse.cites_valid": 1.0,
+   "refuse.says_missing": 0.7
+  },
+  "n_rows": 136,
+  "seconds": 781,
+  "samples": [
+   {
+    "kind": "case",
+    "q": "ent); total assets was $482.6 million in the fiscal year ended 2010-12-31, $480.8 million in the fiscal year ended 2011-12-31, $561.2 million in the fiscal year ended 2012-12-31; long-term debt was $74.4 million in the fiscal year ended 2011-12-31, $153.5 million in the fiscal year ended 2012-12-31.",
+    "out": "The sources provided do not cover Hagerty, Inc.'s before-and-after financial figures around Hurricane Ian. They only state that Hagerty, Inc.'s annual financial data from its SEC Form 10-K filings around Hurricane Ian: revenue was $619.1 million in the fiscal year ended 2021-12-31, $787.6 million in the fiscal year ended 2022-12-31, $1.03 billion in the fiscal year ended 2023-12-31 (a change of +27.2% in the year of the event); operating income was negative $10.1 million in the fiscal year ended 2021-12-31, negative $67.6 million in the fiscal year ended 2022-12-31, $10.4 million in the fiscal"
+   },
+   {
+    "kind": "case",
+    "q": "al year ended 2022-12-31, negative $9.9 million in the fiscal year ended 2023-12-31 (a change of -120.9% in the year of the event); total assets was $17.7 million in the fiscal year ended 2021-12-31, $16.6 million in the fiscal year ended 2022-12-31, $8.3 million in the fiscal year ended 2023-12-31.",
+    "out": "Greenlight Capital Re, Ltd.'s before-and-after financial figures around Hurricane Ian are as follows:\n\nRevenue:\n- Fiscal year ended 2021-12-31: $588.6 million\n- Fiscal year ended 2022-12-31: $526.7 million\n- Fiscal year ended 2023-12-31: $667.1 million\n\nNet income:\n- Fiscal year ended 2021-12-31: $17.6 million\n- Fiscal year ended 2022-12-31: $25.3 million\n- Fiscal year ended 2023-12-31: $86.8 million\n\nTotal assets:\n- Fiscal year ended 2021-12-31: $1.43 billion\n- Fiscal year ended 2022-12-31: $1.58 billion\n- Fiscal year ended 2023-12-31: $1.74 billion\n\nLong-term debt:\n- Fiscal year ended 2022-1"
+   },
+   {
+    "kind": "case",
+    "q": "vely.\n\n[4] Arch Capital Group Ltd., Form 10-Q filed 2019-05-07: The estimated net adverse development in the 2019 first quarter included an increase in reserves on Typhoon Jebi of $16.0 million, or 4.6 points, based on receipt of updated information from cedents and additional updated industry data.",
+    "out": "The sources provided do not cover different companies' descriptions of the impact of Typhoon Jebi. They only state that Typhoon Jebi, along with Hurricane Florence, and other events, contributed to the losses of Argo Group International Holdings, Ltd. [2] and the estimated net negative impact of approximately $70 million and $55 million, respectively. [3] That is not enough to answer without guessing. To answer I would need the companies' own words."
+   },
+   {
+    "kind": "case",
+    "q": "e losses include $117 million related to Thailand floods.\n\n[3] Cts Corp, Form 8-K filed 2012-07-24: EMS: EMS second quarter 2012 sales decreased $1.4 million, or 2%, from the second quarter of 2011, due primarily to the impact from the Thailand floods, partially offset by new customer program ramps.",
+    "out": "ACE Ltd donated no figures or actions were disclosed. They only stated that for Q4 2011, catastrophe losses include $117 million related to Thailand floods [2]. That is the only figure they disclosed."
+   },
+   {
+    "kind": "case_gap",
+    "q": "we around the 2024 Kariba low water: real GDP growth was 5.4% in 2023, 1.7% in 2024, 8.1% in 2025.\n\n[3] World Bank data for Zambia around the 2024 Kariba low water: real GDP growth was 5.4% in 2023, 3.8% in 2024, 3.8% in 2025; consumer-price inflation was 10.9% in 2023, 15.0% in 2024, 13.9% in 2025.",
+    "out": "The sources provided do not cover Japan's GDP growth around the 2021 Henan floods. They only state World Bank data for Japan around Typhoon Jebi, which is not enough to answer this without guessing. To answer it I would need a source that addresses Japan's GDP growth around the 2021 Henan floods directly."
+   },
+   {
+    "kind": "case_gap",
+    "q": "e of the unpaid balance, about $2.5 billion, with 30-year bonds.\n\n[5] Winter Storm Uri and the Texas power market (Power Engineering, 28 April 2021): ERCOT reported close to 52 GW of power generation outages from weatherization issues, impaired gas delivery and other factors during Winter Storm Uri.",
+    "out": "The sources provided do not cover the total economic loss of the storm. They only state that the operator of Kansai airports reported Jebi-related disaster losses of ¥8.1 billion in fiscal 2018, and Texas authorised ERCOT to recover $2.1 billion of upfront storm costs through securitization, and cooperatives could securitize their share of the unpaid balance, about $2.5 billion, with 30-year bonds. That is not enough to answer without guessing. Analysis (not stated in the sources): the total economic loss of the storm."
+   },
+   {
+    "kind": "case_gap",
+    "q": "e than half of its market value, and its credit ratings were cut to junk.\n\n[5] 2011 Thailand floods and the electronics and auto supply chains (Business Insurance): Insurance claims from the 2011 Thailand floods had reached about $3.3 billion, against estimated economic damage of roughly $5 billion.",
+    "out": "The sources provided do not cover any insured losses broken down by company. They only state that insurance claims from the 2011 Thailand floods had reached about $3.3 billion, against estimated economic damage of roughly $5 billion [5]; Hyundai, Ford and Renault-Nissan suspended production in Chennai on 2 December 2015 after rain flooded their sites or cut off their workers [2]. That is not enough to answer without guessing. To answer I would need the company's names and the amount of loss for each."
+   },
+   {
+    "kind": "case_gap",
+    "q": "2021-12-31, negative $11.6 million in the fiscal year ended 2022-12-31, negative $2.2 million in the fiscal year ended 2023-12-31; total assets was $50.4 million in the fiscal year ended 2021-12-31, $48.8 million in the fiscal year ended 2022-12-31, $49.4 million in the fiscal year ended 2023-12-31.",
+    "out": "I cannot answer that from these sources: none of them discusses Mid America Apartment Communities Inc.'s revenue. What they contain is Mid America Apartment Communities Inc.'s annual financial data from its SEC Form 10-K filings around Winter Storm Uri [1] and Rli Corp's annual financial data from its SEC Form 10-K filings around Hurricane Ian [2]. A source on Mid America Apartment Communities Inc.'s revenue is missing, so I will not guess."
+   },
+   {
+    "kind": "gold",
+    "q": "What does ESRS E1 require about climate risk?",
+    "out": "ESRS E1, the European Sustainability Reporting Reporting Directive, requires companies to report their climate risk under the sustainability reporting section. It covers the following: (1) the sources and targets of greenhouse gas emissions, (2) the measures taken to reduce emissions, (3) the expected loss and the scenario assumptions, and (4) the management approach. Scope, targets, emissions, reduction measures and the expected loss are the key elements."
+   },
+   {
+    "kind": "gold",
+    "q": "What is an indicative technical premium?",
+    "out": "An indicative technical premium is the cost of insuring a loss, expressed as a percentage of the value of the insured asset. It rests on the average loss and the number of years it has been observed, so published figures are usually the average of many years, and should not be taken as the price of insurance for a particular asset. For example, the average loss for a given type of asset, such as a car, is 3,000 dollars per year, so an indicative technical premium would be 3,000/100,000 = 3%. It is a reference point and not a price of insurance."
+   },
+   {
+    "kind": "narr",
+    "q": "Facts: [Asset: Refinery, Scenario: SSP5-8.5, Year: 2040, Expected Loss: 21.8%, Capital-at-Risk: $429.32m, AAL: $6.24m]\n\nWrite a risk disclosure paragraph.",
+    "out": "Under the SSP5-8.5 scenario, the expected loss for the refinery reaches 21.8% by 2040. This corresponds to a Capital-at-Risk of $429.32m. The average annual loss is $6.24m. These are scenario results, not forecasts, and they depend on the pathway assumptions and the data behind them."
+   },
+   {
+    "kind": "narr",
+    "q": "Facts: [Asset: Aluminium smelter, Scenario: NGFS Delayed Transition, Year: 2040, Expected Loss: 3.8%, Capital-at-Risk: $560.41m]\n\nWrite a risk disclosure paragraph.",
+    "out": "Under the NGFS Delayed Transition scenario, the expected loss for the aluminium smelter reaches 3.8% by 2040. This corresponds to a Capital-at-Risk of $560.41m. These are scenario results, not forecasts, and they depend on the pathway assumptions and the data behind them."
+   }
+  ]
+ }
+}

@@ -1,0 +1,2 @@
+/Users/shrinivashdhamodharakannan/.ollama/models/manifests/registry.ollama.ai/library/qwen2.5/7b
+/Users/shrinivashdhamodharakannan/.ollama/models/manifests/registry.ollama.ai/library/llama3.2/3b

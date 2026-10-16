@@ -1,0 +1,13 @@
+== serve env
+== big blobs
+/Users/shrinivashdhamodharakannan/.ollama/models/blobs/sha256-dde5aa3fc5ffc17176b5e8bdc82f587b24b2678c6c66101bf7da77af9f7ccdff
+/Users/shrinivashdhamodharakannan/.ollama/models/blobs/sha256-2bada8a7450677000f678be90653b85d364de7db25eb5ea54136ada5f3933730
+/Users/shrinivashdhamodharakannan/.ollama/models/blobs/sha256-08c90df53dbb91a557f4e9507e0657055661d50a7d2a4891fc560b4e3cd763ca
+== manifests dirs
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/climate_risk_engine/frontend/node_modules/next/dist/esm/build/manifests
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/climate_risk_engine/frontend/node_modules/next/dist/build/manifests
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/climrisk-web/node_modules/next/dist/esm/build/manifests
+/Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/climrisk-web/node_modules/next/dist/build/manifests
+/Users/shrinivashdhamodharakannan/.ollama/models/manifests
+== climrisk manifests
+done

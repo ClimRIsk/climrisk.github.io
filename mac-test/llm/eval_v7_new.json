@@ -1,0 +1,272 @@
+{
+ "climrisk-llm-v7": {
+  "metrics": {
+   "chat.length_ok": 0.975,
+   "chat.names_nulls": 0.833,
+   "chat.null_not_called_low": 0.958,
+   "chat.numbers_ok": 1.0,
+   "chat.says_not_assessed": 0.875,
+   "gold.invented_numbers": 0.2,
+   "gold.length_ok": 0.867,
+   "gold.overlap_f1": 0.205,
+   "scenario.flags_unverified_input": 1.0,
+   "scenario.length_ok": 1.0,
+   "scenario.numbers_ok": 1.0,
+   "scenario.says_no_location": 1.0,
+   "scenario.says_not_assessed": 1.0,
+   "siteprofile.length_ok": 1.0,
+   "siteprofile.names_nulls": 0.928,
+   "siteprofile.null_not_called_low": 1.0,
+   "siteprofile.numbers_ok": 1.0,
+   "siteprofile.says_not_assessed": 1.0,
+   "stress.length_ok": 1.0,
+   "stress.numbers_ok": 0.975,
+   "stress.says_not_modelled": 0.964,
+   "stress.says_screening": 1.0
+  },
+  "n_rows": 175,
+  "seconds": 1842,
+  "samples": [
+   {
+    "kind": "siteprofile",
+    "q": "0 (absent here); earthquake shaking modelled 0.5 g; drought constructed 1; cyclone wind modelled 33.5 m/s; wildfire weather (FWI) modelled 89.1; coastal flood depth none_found 0 (absent here); water stress none_found 0 (absent here)\n\nQuestion: Can I say a data centre in Chennai has low climate risk?",
+    "out": "Not on this profile alone. Modelled: earthquake shaking 0.5 g, cyclone wind 33.5 m/s, wildfire weather (FWI) 89.1. Built from a fallback, so lower confidence: drought. Established absent here: extreme rain, coastal flood depth, water stress. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a cement works in Kanpur: earthquake shaking null (null); drought modelled 0.5; river flood depth constructed 0.6 m; coastal flood depth constructed 3.2 m; extreme heat (WBGT) modelled 39.9 C\n\nQuestion: Can I say a cement works in Kanpur has low climate risk?",
+    "out": "Not on this profile alone. Modelled: drought 0.5, extreme heat (WBGT) 39.9 C. Built from a fallback, so lower confidence: river flood depth, coastal flood depth. Null, meaning not assessed: earthquake shaking. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ry in Virudhunagar: coastal flood depth null (null); cyclone wind modelled 56.5 m/s; drought constructed 0.9; earthquake shaking modelled 0.4 g; wildfire weather (FWI) none_found 0 (absent here); extreme heat (WBGT) modelled 37.7 C\n\nQuestion: Can I say a factory in Virudhunagar has low climate risk?",
+    "out": "Not on this profile alone. Modelled: cyclone wind 56.5 m/s, earthquake shaking 0.4 g. Built from a fallback, so lower confidence: drought. Established absent here: wildfire weather (FWI). Null, meaning not assessed: extreme heat (WBGT). These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": " m; extreme heat (WBGT) none_found 0 (absent here); extreme rain constructed 145.1 mm per day; water stress constructed 2.2 of 5; landslide modelled 10.2 % unstable; coastal flood depth modelled 3.3 m; cyclone wind modelled 26 m/s\n\nQuestion: Summarise the hazard profile for a data centre in Chennai.",
+    "out": "Modelled: river flood depth 1.1 m, landslide 10.2 % unstable, coastal flood depth 3.3 m. Built from a fallback, so lower confidence: extreme rain. Established absent here: extreme heat (WBGT). Null, meaning not assessed: drought. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a port terminal in Durban: extreme heat (WBGT) modelled 31.9 C; landslide none_found 0 (absent here); drought none_found 0 (absent here); water stress none_found 0 (absent here); river flood depth modelled 0.9 m\n\nQuestion: Summarise the hazard profile for a port terminal in Durban.",
+    "out": "Modelled: extreme heat (WBGT) 31.9 C. Established absent here: landslide, drought, water stress. No hazard in this profile is null."
+   },
+   {
+    "kind": "siteprofile",
+    "q": ".2 m; extreme heat (WBGT) none_found 0 (absent here); water stress modelled 3.6 of 5; extreme rain modelled 122.4 mm per day; earthquake shaking constructed 0.3 g; wildfire weather (FWI) modelled 63.9\n\nQuestion: Which hazards are missing for a data centre in Chennai, and what should I do about them?",
+    "out": "Modelled: cyclone wind, coastal flood depth, water stress, extreme rain. Built from a fallback, so lower confidence: earthquake shaking. Established absent here: extreme heat (WBGT). No hazard in this profile is null."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "elled 4.8 of 5; extreme heat (WBGT) modelled 30.2 C; coastal flood depth null (null); earthquake shaking modelled 0.2 g; landslide null (null); extreme rain modelled 95.6 mm per day; river flood depth null (null); drought modelled 0.3\n\nQuestion: Can I say a farm co-op in Punjab has low climate risk?",
+    "out": "Not on this profile alone. Modelled: water stress, extreme heat (WBGT), earthquake shaking. Null, meaning not assessed: coastal flood depth, landslide, river flood depth. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ion near Christchurch: river flood depth none_found 0 (absent here); wildfire weather (FWI) null (null); coastal flood depth modelled 2.3 m; earthquake shaking modelled 0 g; drought modelled 0.6\n\nQuestion: Which hazards are missing for a substation near Christchurch, and what should I do about them?",
+    "out": "Modelled: coastal flood depth 2.3 m, earthquake shaking 0 g. Established absent here: river flood depth. Null, meaning not assessed: wildfire weather (FWI). These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "stress",
+    "q": "nd\",\"value\":48.8,\"unit\":\"m/s\",\"severity\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":7,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":500000,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[]}\n\nQuestion: Would our component buffer survive the supplier delay?",
+    "out": "Buffer held: 21 days. Supplier delay 21–42 days. Production stops 0–16 days for lack of the component (best known alternate starts day 49). To ride through you would need 16–37 days of buffer, i.e. 0–16 days more than you hold. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "stress",
+    "q": "erity\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":1,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":null,\"cash_buffer_usd\":1500000,\"cash_share_pct\":null,\"inputs_missing\":[\"inventory.component_buffer_days\"]}\n\nQuestion: Would our component buffer survive the supplier delay?",
+    "out": "Not known: the days of component buffer you hold were not given, so the shortfall is not computed. The delay itself is 14–21 days. Not modelled until given: inventory.component_buffer_days. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "stress",
+    "q": "ty\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":2,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":null,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[]}\n\nQuestion: How quickly would we know the Tier-2 supplier is offline, and do we have approved alternates?",
+    "out": "Before the storm: the engine already rates the supplier site's cyclone hazard HIGH (54.6 m/s 1-in-100 wind), so its exposure is knowable in advance rather than discovered on Day 4. Actual detection: 2 days after the event (your input). Alternate components: 1 listed, 0 pre-approved. None is pre-approved, so the engine counts qualification time before any alternate can ship. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "stress",
+    "q": "imit_usd\":null,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[\"supplier coordinates (needed to know in advance that the supplier is in the same storm path)\",\"detection_lag_days\",\"alternate suppliers\"]}\n\nQuestion: What does the stress test say about visibility of the supplier problem?",
+    "out": "Actual detection: 1/100. Alternate components: supplier coordinates (needed to know in advance that the supplier is in the same storm path), detection_lag_days, supplier coordinates (needed to know in advance that the supplier is in the same storm path). Screening-grade, not a forecast."
+   }
+  ]
+ },
+ "climrisk-llm-v6": {
+  "metrics": {
+   "chat.length_ok": 0.725,
+   "chat.names_nulls": 0.486,
+   "chat.null_not_called_low": 1.0,
+   "chat.numbers_ok": 0.85,
+   "chat.says_not_assessed": 0.208,
+   "gold.invented_numbers": 0.2,
+   "gold.length_ok": 0.6,
+   "gold.overlap_f1": 0.194,
+   "scenario.flags_unverified_input": 0.0,
+   "scenario.length_ok": 0.4,
+   "scenario.numbers_ok": 0.975,
+   "scenario.says_no_location": 0.675,
+   "scenario.says_not_assessed": 0.075,
+   "siteprofile.length_ok": 0.85,
+   "siteprofile.names_nulls": 0.497,
+   "siteprofile.null_not_called_low": 0.967,
+   "siteprofile.numbers_ok": 0.9,
+   "siteprofile.says_not_assessed": 0.467,
+   "stress.length_ok": 0.575,
+   "stress.numbers_ok": 1.0,
+   "stress.says_not_modelled": 0.679,
+   "stress.says_screening": 0.2
+  },
+  "n_rows": 175,
+  "seconds": 2926,
+  "samples": [
+   {
+    "kind": "siteprofile",
+    "q": "0 (absent here); earthquake shaking modelled 0.5 g; drought constructed 1; cyclone wind modelled 33.5 m/s; wildfire weather (FWI) modelled 89.1; coastal flood depth none_found 0 (absent here); water stress none_found 0 (absent here)\n\nQuestion: Can I say a data centre in Chennai has low climate risk?",
+    "out": "No, I cannot say that. The extreme rain is absent here, so it has no value. The earthquake shaking reaches 0.5 g, which is a small loss, but the depth of coastal flood depth is absent here, so it has no value. The water stress is absent here, so it has no value. The cyclone wind reaches 33.5 m/s, the wildfire weather reaches 89.1, and the drought reaches 1. A data centre in Chennai has a mix of modelled hazards, but no null values, so it has some risk."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a cement works in Kanpur: earthquake shaking null (null); drought modelled 0.5; river flood depth constructed 0.6 m; coastal flood depth constructed 3.2 m; extreme heat (WBGT) modelled 39.9 C\n\nQuestion: Can I say a cement works in Kanpur has low climate risk?",
+    "out": "The cement works in Kanpur has a few issues. River flood depth is constructed with a depth of 0.6 m, and coastal flood depth is constructed with a depth of 3.2 m. These are a couple of scenarios, not a guarantee. Drought is modelled at 0.5, so it has some chance of being severe. Extreme heat is modelled at 39.9 C, so it has some chance of being very hot. The engine returned for one place has a null earthquake shaking, but no assessment was done, so no value was built."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ry in Virudhunagar: coastal flood depth null (null); cyclone wind modelled 56.5 m/s; drought constructed 0.9; earthquake shaking modelled 0.4 g; wildfire weather (FWI) none_found 0 (absent here); extreme heat (WBGT) modelled 37.7 C\n\nQuestion: Can I say a factory in Virudhunagar has low climate risk?",
+    "out": "The factory in Virudhunagar has a cyclone wind modelled at 56.5 m/s, which is very high. A state fund, CLCS, has assigned a high hazard to this location. The sources give a 1% chance of being exceeded in any year. The sources give a 1% chance of being exceeded in any year. The sources give a 1% chance of being exceeded in any year. The sources give a 1% chance of being exceeded in any year. The sources give a 1% chance of being exceeded in any year. The sources give a 1% chance of being exceeded in any year. The sources give a 1% chance of being exceeded in any year. The sources give a 1% chan"
+   },
+   {
+    "kind": "siteprofile",
+    "q": " m; extreme heat (WBGT) none_found 0 (absent here); extreme rain constructed 145.1 mm per day; water stress constructed 2.2 of 5; landslide modelled 10.2 % unstable; coastal flood depth modelled 3.3 m; cyclone wind modelled 26 m/s\n\nQuestion: Summarise the hazard profile for a data centre in Chennai.",
+    "out": "The data centre in Chennai has a few significant hazards. River flood depth is modelled at 1.1 m, and coastal flood depth is modelled at 3.3 m, so the centre is at risk of being flooded from the river and the sea. Extreme rain is constructed at 145.1 mm per day, and water stress is constructed at 2.2 out of 5, so the centre faces water scarcity. River flood depth and coastal flood depth are the most concerning, and they need to be tested."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a port terminal in Durban: extreme heat (WBGT) modelled 31.9 C; landslide none_found 0 (absent here); drought none_found 0 (absent here); water stress none_found 0 (absent here); river flood depth modelled 0.9 m\n\nQuestion: Summarise the hazard profile for a port terminal in Durban.",
+    "out": "The profile for a port terminal in Durban states that extreme heat: modelled 31.9 C. Landside, drought and water stress are absent here, 0 each. River flood depth is modelled 0.9 m. The engine returned for one place."
+   },
+   {
+    "kind": "siteprofile",
+    "q": ".2 m; extreme heat (WBGT) none_found 0 (absent here); water stress modelled 3.6 of 5; extreme rain modelled 122.4 mm per day; earthquake shaking constructed 0.3 g; wildfire weather (FWI) modelled 63.9\n\nQuestion: Which hazards are missing for a data centre in Chennai, and what should I do about them?",
+    "out": "The extreme heat (WBGT) hazard is missing, with 0.0 (absent here). I cannot answer that from these results."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "elled 4.8 of 5; extreme heat (WBGT) modelled 30.2 C; coastal flood depth null (null); earthquake shaking modelled 0.2 g; landslide null (null); extreme rain modelled 95.6 mm per day; river flood depth null (null); drought modelled 0.3\n\nQuestion: Can I say a farm co-op in Punjab has low climate risk?",
+    "out": "No, the farm co-op in Punjab has several high-risk layers. Water stress modelled 4.8 of 5, extreme heat (WBGT) modelled 30.2 C, and extreme rain modelled 95.6 mm per day. Drought modelled 0.3. The sources that could have contributed to this were not assessed, so they do not have a value."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ion near Christchurch: river flood depth none_found 0 (absent here); wildfire weather (FWI) null (null); coastal flood depth modelled 2.3 m; earthquake shaking modelled 0 g; drought modelled 0.6\n\nQuestion: Which hazards are missing for a substation near Christchurch, and what should I do about them?",
+    "out": "The river flood depth is absent here, but it can be established through local knowledge. The wildfire weather is null, so I will not build a model, but I will note that it has no data and was not assessed. The same is true for wildfire weather: it has no data and was not assessed."
+   },
+   {
+    "kind": "stress",
+    "q": "nd\",\"value\":48.8,\"unit\":\"m/s\",\"severity\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":7,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":500000,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[]}\n\nQuestion: Would our component buffer survive the supplier delay?",
+    "out": "Component buffer days: 21. Supplier delay days if delay max:16. Buffer gap days if delay min:0. Preapproved alternates: 1. Earliest alternate day: 49."
+   },
+   {
+    "kind": "stress",
+    "q": "erity\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":1,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":null,\"cash_buffer_usd\":1500000,\"cash_share_pct\":null,\"inputs_missing\":[\"inventory.component_buffer_days\"]}\n\nQuestion: Would our component buffer survive the supplier delay?",
+    "out": "Component buffer days is null, so it is not modelled. To answer it I would need the supplier delay result."
+   },
+   {
+    "kind": "stress",
+    "q": "ty\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":2,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":null,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[]}\n\nQuestion: How quickly would we know the Tier-2 supplier is offline, and do we have approved alternates?",
+    "out": "The detection lag days is 2. This is not a forecast, but a screening layer. The sources that share a storm or a component are not modelled, so no change in the status is applied. The sources that share a supplier are modelled, so the status is updated accordingly. The sources that share a freight or a tariff are not modelled, so no change in the status is applied."
+   },
+   {
+    "kind": "stress",
+    "q": "imit_usd\":null,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[\"supplier coordinates (needed to know in advance that the supplier is in the same storm path)\",\"detection_lag_days\",\"alternate suppliers\"]}\n\nQuestion: What does the stress test say about visibility of the supplier problem?",
+    "out": "The supplier is not modelled, so there is no visibility. The term \"visibility\" here is not a forecast, but a screening result."
+   }
+  ]
+ },
+ "climrisk-llm-v5b": {
+  "metrics": {
+   "chat.length_ok": 0.95,
+   "chat.names_nulls": 0.271,
+   "chat.null_not_called_low": 1.0,
+   "chat.numbers_ok": 0.825,
+   "chat.says_not_assessed": 0.333,
+   "gold.invented_numbers": 0.0,
+   "gold.length_ok": 0.867,
+   "gold.overlap_f1": 0.211,
+   "scenario.flags_unverified_input": 0.575,
+   "scenario.length_ok": 1.0,
+   "scenario.numbers_ok": 1.0,
+   "scenario.says_no_location": 0.75,
+   "scenario.says_not_assessed": 0.175,
+   "siteprofile.length_ok": 1.0,
+   "siteprofile.names_nulls": 0.511,
+   "siteprofile.null_not_called_low": 1.0,
+   "siteprofile.numbers_ok": 1.0,
+   "siteprofile.says_not_assessed": 0.533,
+   "stress.length_ok": 0.8,
+   "stress.numbers_ok": 1.0,
+   "stress.says_not_modelled": 0.643,
+   "stress.says_screening": 0.075
+  },
+  "n_rows": 175,
+  "seconds": 1978,
+  "samples": [
+   {
+    "kind": "siteprofile",
+    "q": "0 (absent here); earthquake shaking modelled 0.5 g; drought constructed 1; cyclone wind modelled 33.5 m/s; wildfire weather (FWI) modelled 89.1; coastal flood depth none_found 0 (absent here); water stress none_found 0 (absent here)\n\nQuestion: Can I say a data centre in Chennai has low climate risk?",
+    "out": "No, the profile does not cover extreme rain, coastal flood depth and water stress, so these are not modelled and cannot be assessed. What they do show is that earthquake shaking is modelled at 0.5 g, cyclone wind is modelled at 33.5 m/s and wildfire weather is modelled at 89.1. To answer I would need the profile for the whole country."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a cement works in Kanpur: earthquake shaking null (null); drought modelled 0.5; river flood depth constructed 0.6 m; coastal flood depth constructed 3.2 m; extreme heat (WBGT) modelled 39.9 C\n\nQuestion: Can I say a cement works in Kanpur has low climate risk?",
+    "out": "No, the profile does not say that the cement works in Kanpur has low climate risk. What it does show is that the extreme heat is modelled at 39.9 C, which is very high. To answer it I would need the company's hazard profile."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ry in Virudhunagar: coastal flood depth null (null); cyclone wind modelled 56.5 m/s; drought constructed 0.9; earthquake shaking modelled 0.4 g; wildfire weather (FWI) none_found 0 (absent here); extreme heat (WBGT) modelled 37.7 C\n\nQuestion: Can I say a factory in Virudhunagar has low climate risk?",
+    "out": "The profile for the factory in Virudhunagar is as follows. Cyclone wind modelled 56.5 m/s; drought constructed 0.9; extreme heat (WBGT) modelled 37.7 C. Cyclone wind is modelled, so it has a status. Extreme heat is modelled, so it has a status. Cyclone wind is 56.5 m/s, drought is 0.9 and extreme heat is 37.7 C. These are reference points, not values. The factory has a cyclone wind modelled, so it is assessed. The factory has a drought constructed, so it is assessed. The factory has an extreme heat modelled, so it is assessed."
+   },
+   {
+    "kind": "siteprofile",
+    "q": " m; extreme heat (WBGT) none_found 0 (absent here); extreme rain constructed 145.1 mm per day; water stress constructed 2.2 of 5; landslide modelled 10.2 % unstable; coastal flood depth modelled 3.3 m; cyclone wind modelled 26 m/s\n\nQuestion: Summarise the hazard profile for a data centre in Chennai.",
+    "out": "The profile for a data centre in Chennai is as follows. River flood depth is modelled at 1.1 m, and landslide is modelled at 10.2 % unstable. Extreme rain is constructed at 145.1 mm per day. Water stress is constructed at 2.2 of 5. Coastal flood depth is modelled at 3.3 m, and cyclone wind modelled at 26 m/s. Drought is null, so it was not assessed."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a port terminal in Durban: extreme heat (WBGT) modelled 31.9 C; landslide none_found 0 (absent here); drought none_found 0 (absent here); water stress none_found 0 (absent here); river flood depth modelled 0.9 m\n\nQuestion: Summarise the hazard profile for a port terminal in Durban.",
+    "out": "The profile for a port terminal in Durban is as follows. Modelled extreme heat reaches 31.9 C. Landslide is absent, drought is absent and water stress is absent, all with a value of 0. River flood depth is modelled at 0.9 m."
+   },
+   {
+    "kind": "siteprofile",
+    "q": ".2 m; extreme heat (WBGT) none_found 0 (absent here); water stress modelled 3.6 of 5; extreme rain modelled 122.4 mm per day; earthquake shaking constructed 0.3 g; wildfire weather (FWI) modelled 63.9\n\nQuestion: Which hazards are missing for a data centre in Chennai, and what should I do about them?",
+    "out": "The profile for a data centre in Chennai is as follows. Cyclone wind constructed 52.3 m/s; coastal flood depth modelled 0.2 m; extreme rain modelled 122.4 mm per day; earthquake shaking constructed 0.3 g; wildfire weather (FWI) modelled 63.9. Extreme heat (WBGT) is none_found 0 (absent here); water stress modelled 3.6 of 5; coastal wind modelled 0.2 of 5."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "elled 4.8 of 5; extreme heat (WBGT) modelled 30.2 C; coastal flood depth null (null); earthquake shaking modelled 0.2 g; landslide null (null); extreme rain modelled 95.6 mm per day; river flood depth null (null); drought modelled 0.3\n\nQuestion: Can I say a farm co-op in Punjab has low climate risk?",
+    "out": "No, the profile does not say that the farm co-op in Punjab has low climate risk. In fact, the water stress modelled 4.8 of 5, extreme heat (WBGT) modelled 30.2 C, and extreme rain modelled 95.6 mm per day are all high values. To answer it I would need the farm co-op's climate modelled values."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ion near Christchurch: river flood depth none_found 0 (absent here); wildfire weather (FWI) null (null); coastal flood depth modelled 2.3 m; earthquake shaking modelled 0 g; drought modelled 0.6\n\nQuestion: Which hazards are missing for a substation near Christchurch, and what should I do about them?",
+    "out": "The river flood depth is absent here, with a value of 0. It is established absent, so it does not need to be built. The wildfire weather is null, so it was not assessed and has no value."
+   },
+   {
+    "kind": "stress",
+    "q": "nd\",\"value\":48.8,\"unit\":\"m/s\",\"severity\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":7,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":500000,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[]}\n\nQuestion: Would our component buffer survive the supplier delay?",
+    "out": "The engine results do not contain a component buffer delay, so they cannot be compared. What they do show is that the delay days range from 21 to 42, so the delay is modelled but not modelled in a way that allows the decision to make a value."
+   },
+   {
+    "kind": "stress",
+    "q": "erity\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":1,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":null,\"cash_buffer_usd\":1500000,\"cash_share_pct\":null,\"inputs_missing\":[\"inventory.component_buffer_days\"]}\n\nQuestion: Would our component buffer survive the supplier delay?",
+    "out": "The component buffer days are missing, so they are not modelled and are not modelled. To answer it I would need the component buffer days."
+   },
+   {
+    "kind": "stress",
+    "q": "ty\":\"HIGH\",\"reason\":null,\"caveat\":null}}],\"detection_lag_days\":2,\"wind_return_period_label\":\"1-in-100\",\"authority_limit_usd\":null,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[]}\n\nQuestion: How quickly would we know the Tier-2 supplier is offline, and do we have approved alternates?",
+    "out": "The detection lag is 2 days, so we would know the Tier-2 supplier is offline after 2 days. The earliest alternate day is 79, so we have approved alternates."
+   },
+   {
+    "kind": "stress",
+    "q": "imit_usd\":null,\"cash_buffer_usd\":null,\"cash_share_pct\":null,\"inputs_missing\":[\"supplier coordinates (needed to know in advance that the supplier is in the same storm path)\",\"detection_lag_days\",\"alternate suppliers\"]}\n\nQuestion: What does the stress test say about visibility of the supplier problem?",
+    "out": "The stress test reports the following about visibility of the supplier problem. The supplier coordinates are not modelled, so they are not visible."
+   }
+  ]
+ }
+}

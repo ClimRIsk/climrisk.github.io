@@ -21,6 +21,6 @@ echo; echo "Disk now:"; df -h / | tail -1; echo
 echo "STEP A: superseded versions and intermediates (safe)"; show "${A[@]}"; echo
 echo "STEP B: optional, re-downloadable or rebuildable"; echo "   (raw data re-downloads with the collect scripts; dist/node_modules/.next come back with npm install and electron/build-mac.sh)"; show "${B[@]}"; echo
 del(){ for x in "$@"; do case "$x" in ollama:*) ollama rm "${x#ollama:}";; *) [ -e "$x" ] && rm -rf "$x" && echo "removed $x";; esac; done; }
-read -r -p "Type YES to delete everything listed under STEP A: " a; if [ "$a" = "YES" ]; then del "${A[@]}"; else echo "Step A skipped."; fi
-read -r -p "Type YES to delete everything listed under STEP B: " b; if [ "$b" = "YES" ]; then del "${B[@]}"; else echo "Step B skipped."; fi
+read -r -p "Type YES to delete everything listed under STEP A: " a; if [ "$(echo "$a" | tr a-z A-Z)" = "YES" ]; then del "${A[@]}"; else echo "Step A skipped."; fi
+read -r -p "Type YES to delete everything listed under STEP B: " b; if [ "$(echo "$b" | tr a-z A-Z)" = "YES" ]; then del "${B[@]}"; else echo "Step B skipped."; fi
 echo; echo "Disk now:"; df -h / | tail -1; echo "Done."

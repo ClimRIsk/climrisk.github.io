@@ -1,0 +1,12 @@
+language model (climrisk-llm-v6:latest, running on this computer); every step checked by code against the engine results | verdict: BREACH | checks ok: True | 34.6 s | note: None
+Step 1 [FACT] Harbor Chemicals faces a flood loss with asset damage of 300.0, insured recovery of 120.0, 200.0 of lost revenue from interruption and extra costs of 10.0 [3].
+Step 2 [FACT] The engine puts the uninsured asset loss at 180.0 and the EBITDA hit at 50.0, so the pre-tax loss is 230.0, which is 95.8% of EBITDA [5].
+Step 3 [INFERENCE from 2] The loss is very large: it exceeds half a year of EBITDA; it is driven by business interruption and extra cost, and insurance covers only part of the damage.
+Step 4 [FACT] After the loss EBITDA is 190.0 and net debt is 830.0; net debt/EBITDA moves from 2.50x to 4.37x [6].
+Step 5 [FACT] The net debt/EBITDA test is 4.37x against a limit of at most 3.50x: breach with headroom of -24.8%; before the loss it was a pass [7].
+Step 6 [FACT] The EBITDA/interest test is 4.75x against a limit of at least 4.00x: pass with headroom of 18.8%; before the loss it was a pass [7].
+Step 7 [INFERENCE from 5, 6] On these inputs the loss pushes net debt/EBITDA into breach.
+Step 8 [CAVEAT] The engine assumes the uninsured cost is debt-funded and that no waiver, cure right or equity injection is available [8].
+VERDICT: BREACH (net debt/EBITDA)
+CHECK NEXT: whether a waiver, cure period or equity injection is available, and when the insurer would pay; also the business-interruption cover and its waiting period.
+NOT IN THE SOURCES: the insurer's payment timing, any covenant waiver, and the company's actual response.
