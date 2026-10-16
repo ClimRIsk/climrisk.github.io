@@ -31,10 +31,8 @@ contextBridge.exposeInMainWorld('CLIMRISK_API', ENGINE_URL);
       // Mark the session as authenticated so dashboard.html renders normally.
       // The value is the local engine's per-session token (sent as X-API-Key).
       sessionStorage.setItem('cri_auth', (ENGINE && ENGINE.token) || 'OWNER');
-      // Also set the localStorage license token the page checks for premium features.
-      localStorage.setItem('cri_license_token_v1', 'climrisk-owner-shri-permanent-9x7k2m');
-      localStorage.setItem('cri_user_email',
-        key.toUpperCase() === 'OWNER' ? 'shri@climrisk.io' : 'user@climrisk.io');
+      // Licence checks are made by the local engine from the signed licence key; no token is kept in the page.
+      localStorage.setItem('cri_user_email', 'user@climrisk.io');
     }
   } catch (e) {
     // Non-fatal — the page will show the auth prompt instead

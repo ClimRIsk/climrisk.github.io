@@ -264,7 +264,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--navy);color:va
   var auth = sessionStorage.getItem('cri_auth');
   var p = new URLSearchParams(window.location.search);
   if (p.get('unlock') === 'climrisk-owner') {
-    try { localStorage.setItem('cri_license_token_v1', 'climrisk-owner-shri-permanent-9x7k2m'); sessionStorage.setItem('cri_auth','OWNER'); } catch(e) {}
+    try { localStorage.setItem('cri_license_token_v1', 'unused'); sessionStorage.setItem('cri_auth','OWNER'); } catch(e) {}
     window.location.replace('dashboard.html');
     return;
   }
