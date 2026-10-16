@@ -333,10 +333,14 @@ function showSplash() {
   const html = `<html><body style="margin:0;background:#05070d;color:#dce8ff;font-family:-apple-system,sans-serif;
     display:flex;flex-direction:column;align-items:center;justify-content:center;height:100vh">
     <div style="font-weight:800;letter-spacing:3px;color:#38bdf8;font-size:18px">CLIMRISK</div>
-    <div style="margin-top:14px;font-size:13px">Starting the local analysis engine…</div>
+    <div id="msg" style="margin-top:14px;font-size:13px;text-align:center;padding:0 24px">Starting the local analysis engine…</div>
     <div style="margin-top:6px;font-size:11px;color:#7a8bb0">Runs on this Mac only — nothing is sent to a server</div>
     </body></html>`;
   splashWin.loadURL('data:text/html;charset=utf-8,' + encodeURIComponent(html));
+}
+
+function setSplash(text) {
+  if (splashWin && !splashWin.isDestroyed()) splashWin.webContents.executeJavaScript('document.getElementById("msg").textContent=' + JSON.stringify(text)).catch(() => {});
 }
 
 function closeSplash() {
@@ -352,9 +356,33 @@ const SETUP_CMD = IS_WIN
   : 'bash "' + path.join(SETUP_DIR, 'setup-local-engine.sh') + '"' + ENGINE_SRC_ARG;
 const SETUP_SHELL = IS_WIN ? 'PowerShell' : 'Terminal';
 
+
+// One-time engine setup, run by the app itself (Mac/Linux) so nobody has to open a Terminal. Resolves to {ok, logFile}.
+function runEngineSetup() {
+  return new Promise((resolve) => {
+    const fs = require('fs'), { spawn } = require('child_process');
+    fs.mkdirSync(path.join(HOME_DIR, 'logs'), { recursive: true });
+    const logFile = path.join(HOME_DIR, 'logs', 'engine-setup.log');
+    const out = fs.openSync(logFile, 'w');
+    setSplash('First-time setup, about 5 to 10 minutes. Needs the internet once. Please keep this window open.');
+    const child = spawn('bash', [path.join(SETUP_DIR, 'setup-local-engine.sh'), path.join(process.resourcesPath, 'engine')], { stdio: ['ignore', out, out] });
+    const tick = setInterval(() => {
+      try { const t = fs.readFileSync(logFile, 'utf8').split('\n').filter(l => l.startsWith('\u001b[1;36m') || l.includes('▸')).pop(); if (t) setSplash('First-time setup (about 5 to 10 minutes): ' + t.replace(/\u001b\[[0-9;]*m/g, '').replace('▸', '').trim().slice(0, 90)); } catch (e) { /* log not readable yet */ }
+    }, 4000);
+    child.on('exit', (code) => { clearInterval(tick); resolve({ ok: code === 0, logFile }); });
+    child.on('error', () => { clearInterval(tick); resolve({ ok: false, logFile }); });
+  });
+}
+
+let autoSetupTried = false;
 async function startLocalEngine() {
   for (;;) {
     const r = await engine.start();
+    if (!r.ok && r.setupRequired && !IS_WIN && !IS_DEV && !autoSetupTried) {
+      autoSetupTried = true;
+      const s = await runEngineSetup();
+      if (s.ok) { setSplash('Starting the local analysis engine…'); continue; }
+    }
     if (r.ok) {
       engineInfo = { url: r.url, token: r.token };
       engine.onExit = onEngineStopped;
@@ -379,6 +407,51 @@ async function startLocalEngine() {
     }
     if (choice === 'Open log' && r.logFile) shell.openPath(r.logFile);
   }
+}
+
+
+
+// Make sure the Ollama service (which serves the language model) is running on later launches too; start it quietly if it is installed but stopped.
+function ensureOllama() {
+  if (IS_DEV || IS_WIN) return;
+  const fs = require('fs'), http = require('http'), { spawn } = require('child_process');
+  const req = http.get({ host: '127.0.0.1', port: 11434, path: '/api/tags', timeout: 1500 }, (res) => { res.resume(); });
+  const start = () => {
+    const cands = [path.join(HOME_DIR, 'ollama-app', 'Ollama.app', 'Contents', 'Resources', 'ollama'), '/opt/homebrew/bin/ollama', '/usr/local/bin/ollama', '/Applications/Ollama.app/Contents/Resources/ollama'];
+    const bin = cands.find(f => { try { return fs.existsSync(f); } catch (e) { return false; } });
+    if (bin) { try { spawn(bin, ['serve'], { detached: true, stdio: 'ignore' }).unref(); } catch (e) { /* the engine falls back to rule-based answers */ } }
+  };
+  req.on('error', start); req.on('timeout', () => { req.destroy(); start(); });
+}
+
+// First run: install the language model that ships inside the app (no download, no questions). Runs in the background; the app works with rule-based answers until it finishes.
+// The model file is checked against the SHA-256 in the manifest before it is imported, so what runs is exactly the model that was tested.
+function ensureModel() {
+  if (IS_DEV || IS_WIN) return;                                   // Windows: known gap (setup-local-llm.ps1 must be run by hand)
+  const fs = require('fs'), { spawn } = require('child_process');
+  const bundled = path.join(process.resourcesPath, 'model');
+  let want;
+  try { const m = JSON.parse(fs.readFileSync(path.join(bundled, 'model_manifest.json'), 'utf8')); want = (Array.isArray(m) ? m[0] : m); } catch (e) { return; }
+  if (!want || !fs.existsSync(path.join(bundled, want.file))) return;                     // this build carries no model file
+  const marker = path.join(HOME_DIR, 'active_model');
+  let have = ''; try { have = fs.readFileSync(marker, 'utf8').trim(); } catch (e) { /* none yet */ }
+  if (have === want.model) return;                                // already installed
+  fs.mkdirSync(path.join(HOME_DIR, 'logs'), { recursive: true });
+  const logFile = path.join(HOME_DIR, 'logs', 'model-setup.log');
+  const out = fs.openSync(logFile, 'a');
+  const child = spawn('bash', [path.join(process.resourcesPath, 'setup-local-llm.sh')], { stdio: ['ignore', out, out] });
+  child.on('exit', (code) => {
+    if (isQuitting) return;
+    if (code === 0) {
+      dialog.showMessageBox({ type: 'info', buttons: ['OK'], title: 'ClimRisk AI model',
+        message: 'The ClimRisk language model is installed and runs on this computer.', detail: 'Model: ' + want.model + ' (checked against its fingerprint). No data leaves this Mac.' });
+    } else {
+      dialog.showMessageBox({ type: 'warning', buttons: ['Open log', 'Later'], defaultId: 0, title: 'ClimRisk AI model',
+        message: 'The language model could not be installed yet.',
+        detail: 'The app still works and answers from rules. The usual cause is no internet on first run. Reopen the app with internet to try again.' })
+        .then(r => { if (r.response === 0) shell.openPath(logFile); });
+    }
+  });
 }
 
 async function onEngineStopped(code) {
@@ -469,6 +542,8 @@ app.whenReady().then(async () => {
   closeSplash();
   if (!ready) return;               // user chose Quit
 
+  ensureOllama();
+  ensureModel();
   const lic = await engineLicenceStatus();
   if (lic.allowed) {
     store.set('licenseTier', 'Evaluation'); store.set('licenseEmail', lic.licensee || '');

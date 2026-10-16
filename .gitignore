@@ -87,3 +87,4 @@ mac-test/DONE
 
 # Private: reviewer pack, issued licences
 Investor_Reviewer_Pack/
+electron/model/*.gguf

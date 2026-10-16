@@ -44,6 +44,22 @@ fi
 [ -f node_modules/electron/path.txt ] || fail "electron still has no path.txt"
 ls node_modules/electron-builder >/dev/null 2>&1 || npm install --no-audit --no-fund || fail "npm install builder"
 
+# the tested model file goes INSIDE the app, so the receiver downloads one thing
+MF="${MODEL_DIR:-$HOME/ClimRisk-model-final}"
+if [ -f "$MF/model_manifest.json" ]; then
+  GG=$(python3 -c "import json;m=json.load(open('$MF/model_manifest.json'));m=m[0] if isinstance(m,list) else m;print(m['file'])")
+  [ -f "$MF/$GG" ] || fail "manifest names $GG but it is not in $MF"
+  echo "[$(date +%T)] bundling the model $GG"
+  rm -f model/*.gguf; cp "$MF/$GG" model/ && cp "$MF/model_manifest.json" model/model_manifest.json
+  python3 - <<PY
+import json
+p="model/model_manifest.json"; m=json.load(open(p)); m=m[0] if isinstance(m,list) else m
+json.dump([m], open(p,"w"))
+PY
+  echo "$(python3 -c "import json;print(json.load(open('model/model_manifest.json'))[0]['sha256'])")  model/$GG" | shasum -a 256 -c - || fail "model file does not match its manifest"
+else
+  echo "NOTE: no final model export found in $MF; this build carries no model file"
+fi
 echo "[$(date +%T)] building"
 # electron-builder reads this as a path relative to electron/ (an absolute path gets glued onto it and the engine is silently left out)
 export CLIMRISK_ENGINE_SRC="$(python3 -c 'import os,sys;print(os.path.relpath(sys.argv[1]))' "$ENGINE")"
@@ -51,6 +67,7 @@ echo "engine source for the bundle: $CLIMRISK_ENGINE_SRC"
 export CSC_IDENTITY_AUTO_DISCOVERY=false
 bash build-mac.sh </dev/null || fail "build-mac.sh"
 [ -d "dist/mac-universal/ClimRisk Intelligence.app/Contents/Resources/engine/src/cri" ] || fail "the engine was not bundled into the app"
+if [ -f "$MF/model_manifest.json" ]; then ls dist/mac-universal/*/Contents/Resources/model/*.gguf >/dev/null 2>&1 || fail "the model file was not bundled into the app"; fi
 DMG=$(ls -t dist/*.dmg 2>/dev/null | head -1)
 [ -n "$DMG" ] || fail "no dmg produced"
 shasum -a 256 "$DMG" | tee "$DMG.sha256"

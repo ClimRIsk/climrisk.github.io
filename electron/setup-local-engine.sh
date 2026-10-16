@@ -20,12 +20,25 @@ Pass the path to the climate_risk_engine folder as the first argument."
 
 # The engine needs Python 3.10+ (macOS's built-in python3 is often 3.9)
 PY=""
-for c in python3.12 python3.11 python3.10 /opt/homebrew/bin/python3 /usr/local/bin/python3 python3; do
-  if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3,10) else 1)' 2>/dev/null; then
-    PY="$(command -v "$c")"; break
+if [ -z "${CLIMRISK_FORCE_UV:-}" ]; then
+  for c in python3.12 python3.11 python3.10 /opt/homebrew/bin/python3 /usr/local/bin/python3 python3; do
+    if command -v "$c" >/dev/null 2>&1 && "$c" -c 'import sys; sys.exit(0 if sys.version_info >= (3,10) else 1)' 2>/dev/null; then
+      PY="$(command -v "$c")"; break
+    fi
+  done
+fi
+UVBIN=""
+if [ -z "$PY" ]; then
+  # No suitable Python on this computer: fetch a self-contained one with uv (Astral's installer; no admin rights, no Homebrew, no Xcode tools). It goes into ~/.climrisk/uv.
+  say "No Python 3.10+ found; installing a private copy (about 60 MB, one time)"
+  mkdir -p "$HOME_DIR/uv"
+  if [ ! -x "$HOME_DIR/uv/uv" ]; then
+    curl -LsSf https://astral.sh/uv/install.sh | env UV_UNMANAGED_INSTALL="$HOME_DIR/uv" UV_NO_MODIFY_PATH=1 sh || die "Could not download Python (is the internet on?). Connect and run this again."
   fi
-done
-[ -n "$PY" ] || die "Python 3.10 or newer is required. Install it with:  brew install python@3.12  — then re-run this script."
+  UVBIN="$HOME_DIR/uv/uv"; [ -x "$UVBIN" ] || die "uv was not installed"
+  "$UVBIN" python install 3.12 || die "Could not download Python 3.12 (is the internet on?)"
+  PY="$("$UVBIN" python find 3.12)"
+fi
 say "Using $("$PY" --version) at $PY"
 
 mkdir -p "$HOME_DIR/cache" "$HOME_DIR/logs"
@@ -33,7 +46,7 @@ chmod 700 "$HOME_DIR"
 
 if [ ! -x "$VENV/bin/python" ]; then
   say "Creating Python environment at $VENV"
-  "$PY" -m venv "$VENV"
+  if [ -n "$UVBIN" ]; then "$UVBIN" venv --seed --python "$PY" "$VENV"; else "$PY" -m venv "$VENV"; fi
 fi
 
 say "Installing the ClimRisk engine (first run downloads ~300 MB of scientific libraries)"

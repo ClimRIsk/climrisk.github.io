@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # ClimRisk Intelligence — install the fine-tuned local AI model (macOS / Linux).
 # Installs Ollama if missing, gets the ClimRisk model file (GGUF, ~2 GB), checks its SHA-256 against the manifest shipped with the app,
-# imports it into Ollama as "climrisk-llm-v6" and tells the engine to use it. Everything runs on this computer afterwards (no cloud, no API key).
+# imports it into Ollama (name taken from the manifest) and tells the engine to use it. Everything runs on this computer afterwards (no cloud, no API key).
 # Usage:  bash setup-local-llm.sh [--file /path/climrisk-llm-v6-q4km.gguf] [--url https://...] [--token xxx]
 #   --file: a model file you were given (USB / shared folder)    --url/--token: download it (private link; token sent as a Bearer header)
 set -euo pipefail
@@ -13,26 +13,34 @@ while [ $# -gt 0 ]; do case "$1" in --file) FILE="$2"; shift 2;; --url) URL="$2"
 HERE="$(cd "$(dirname "$0")" && pwd)"; MD="$HERE/model"; [ -d "$MD" ] || MD="$HERE/../model"
 MANIFEST="$MD/model_manifest.json"; TAIL="$MD/climrisk-llm.Modelfile.tail"; SRC="$MD/model-source.json"
 [ -f "$MANIFEST" ] && [ -f "$TAIL" ] || die "The model manifest is missing from this install ($MD). Reinstall ClimRisk Intelligence."
-NAME="climrisk-llm-v6"; CH="$HOME/.climrisk"; DL="$CH/model"; mkdir -p "$DL"
+CH="$HOME/.climrisk"; DL="$CH/model"; mkdir -p "$DL"
 PYBIN="$(command -v python3 || true)"; [ -n "$PYBIN" ] || die "python3 is needed to read the manifest"
 jget() { "$PYBIN" - "$1" "$2" <<'PY'
 import json,sys
-d=json.load(open(sys.argv[1])); d=[x for x in d if x.get("model")=="climrisk-llm-v6"][0] if isinstance(d,list) else d
+d=json.load(open(sys.argv[1])); d=d[0] if isinstance(d,list) else d
 print(d.get(sys.argv[2],""))
 PY
 }
+NAME="$(jget "$MANIFEST" model)"; [ -n "$NAME" ] || die "the model manifest has no model name"
 WANT_SHA="$(jget "$MANIFEST" sha256)"; WANT_FILE="$(jget "$MANIFEST" file)"; WANT_BYTES="$(jget "$MANIFEST" bytes)"
 sha() { if command -v shasum >/dev/null; then shasum -a 256 "$1" | cut -d' ' -f1; else sha256sum "$1" | cut -d' ' -f1; fi; }
 
 export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 if ! command -v ollama >/dev/null 2>&1; then
-  if command -v brew >/dev/null 2>&1; then say "Installing Ollama with Homebrew"; brew install ollama || die "brew could not install Ollama. Get it from https://ollama.com/download and run this again."
-  else die "Ollama is not installed. Download it from https://ollama.com/download (drag to Applications, open once), then run this again."; fi
+  OL="$CH/ollama-app"
+  if [ ! -x "$OL/Ollama.app/Contents/Resources/ollama" ] && [ "$(uname -s)" = "Darwin" ]; then
+    say "Installing Ollama (official build, about 150 MB, one time)"; mkdir -p "$OL"
+    curl -L --fail -o "$OL/Ollama-darwin.zip" "https://ollama.com/download/Ollama-darwin.zip" && (cd "$OL" && ditto -x -k Ollama-darwin.zip . && rm -f Ollama-darwin.zip) || true
+  fi
+  if [ -x "$OL/Ollama.app/Contents/Resources/ollama" ]; then export PATH="$OL/Ollama.app/Contents/Resources:$PATH"
+  elif command -v brew >/dev/null 2>&1; then say "Installing Ollama with Homebrew"; brew install ollama || die "brew could not install Ollama. Get it from https://ollama.com/download and run this again."
+  else die "Ollama could not be installed automatically. Download it from https://ollama.com/download (drag to Applications, open once), then run this again."; fi
 fi
-curl -fsS --max-time 2 http://127.0.0.1:11434/api/tags >/dev/null 2>&1 || { say "Starting the Ollama service"; (ollama serve >/dev/null 2>&1 &); sleep 5; }
-curl -fsS --max-time 5 http://127.0.0.1:11434/api/tags >/dev/null 2>&1 || die "The Ollama service did not start. Open the Ollama app once and try again."
+curl -fsS --max-time 2 http://${OLLAMA_HOST:-127.0.0.1:11434}/api/tags >/dev/null 2>&1 || { say "Starting the Ollama service"; (OLLAMA_HOST="${OLLAMA_HOST:-127.0.0.1:11434}" ollama serve >/dev/null 2>&1 &); sleep 5; }
+curl -fsS --max-time 5 http://${OLLAMA_HOST:-127.0.0.1:11434}/api/tags >/dev/null 2>&1 || die "The Ollama service did not start. Open the Ollama app once and try again."
 
 if ollama list | grep -q "^$NAME"; then say "$NAME is already installed"; else
+  [ -z "$FILE" ] && [ -f "$MD/$WANT_FILE" ] && FILE="$MD/$WANT_FILE" && say "Using the model file that came with the app"
   if [ -z "$FILE" ]; then
     [ -n "$URL" ] || { [ -f "$SRC" ] && URL="$("$PYBIN" -c "import json;print(json.load(open('$SRC')).get('url',''))")"; }
     [ -n "$URL" ] || die "No model source. Re-run with --file <path to $WANT_FILE> or --url <download link> (you were sent one with your trial licence)."
