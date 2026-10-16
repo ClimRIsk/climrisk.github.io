@@ -88,3 +88,24 @@ mac-test/DONE
 # Private: reviewer pack, issued licences
 Investor_Reviewer_Pack/
 electron/model/*.gguf
+
+# Personal / business-private files: kept on disk, never committed or pushed
+Shrinivash_*CV*
+Job_Application_Tracker.xlsx
+*Outreach*
+Application_Outreach_Drafts.txt
+IQ_Startup_Visa_Email_ClimRisk.docx
+ClimRisk_BusinessFinland_Letter.docx
+ClimRisk_Acquisition_Deck.pptx
+ClimRisk_Investor_Pitch*
+ClimRisk_Seed_*.pptx
+ClimRisk_Prospect_List.xlsx
+ClimRisk_Context_Summary.md
+climrisk_linkedin_article.md
+LinkedIn Content/
+Research Desk/
+_to_delete/
+*.tmp
+Review_Package_for_Charles/
+ClimRisk-model-dist/
+electron/model/*.gguf
