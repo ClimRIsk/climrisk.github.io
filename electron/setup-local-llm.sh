@@ -12,6 +12,9 @@ FILE=""; URL="${CLIMRISK_MODEL_URL:-}"; TOKEN="${CLIMRISK_MODEL_TOKEN:-}"
 while [ $# -gt 0 ]; do case "$1" in --file) FILE="$2"; shift 2;; --url) URL="$2"; shift 2;; --token) TOKEN="$2"; shift 2;; *) die "unknown option $1";; esac; done
 HERE="$(cd "$(dirname "$0")" && pwd)"; MD="$HERE/model"; [ -d "$MD" ] || MD="$HERE/../model"
 MANIFEST="$MD/model_manifest.json"; TAIL="$MD/climrisk-llm.Modelfile.tail"; SRC="$MD/model-source.json"
+# The small offline embedding model used by the retrieval layer (semantic search over the case library and your documents). Copied once; never blocks the install.
+EMB_SRC="$MD/embed"; EMB_DST="${CRI_HOME:-$HOME/.climrisk}/models/embed"
+if [ -d "$EMB_SRC" ] && [ ! -d "$EMB_DST" ]; then mkdir -p "$(dirname "$EMB_DST")" && cp -R "$EMB_SRC" "$EMB_DST" 2>/dev/null || true; fi
 [ -f "$MANIFEST" ] && [ -f "$TAIL" ] || die "The model manifest is missing from this install ($MD). Reinstall ClimRisk Intelligence."
 CH="$HOME/.climrisk"; DL="$CH/model"; mkdir -p "$DL"
 PYBIN="$(command -v python3 || true)"; [ -n "$PYBIN" ] || die "python3 is needed to read the manifest"
@@ -57,5 +60,5 @@ if ollama list | grep -q "^$NAME"; then say "$NAME is already installed"; else
   case "$FILE" in "$DL"/*) rm -f "$FILE";; esac       # the model now lives inside Ollama; free the 2 GB copy
 fi
 printf '%s' "$NAME" > "$CH/active_model"; printf '%s' "$NAME" > "$CH/active_reasoning_model"
-say "Smoke test"; ollama run "$NAME" "In one sentence: what is a covenant breach?" 2>&1 | head -3 | sed 's/^/  /'
+say "Smoke test"; OUTTXT="$(OLLAMA_HOST="${OLLAMA_HOST:-127.0.0.1:11434}" ollama run "$NAME" "In one sentence: what is a covenant breach?" 2>/dev/null | head -c 400 || true)"; [ -n "$OUTTXT" ] || die "the model imported but did not answer"; printf '  %s\n' "$OUTTXT"
 say "Done. Reopen ClimRisk Intelligence: the AI now runs on this computer. CPU-only machines answer slowly (tens of seconds); the engine falls back to its rule-based answer if a reply is too slow."

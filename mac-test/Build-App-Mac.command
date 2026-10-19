@@ -67,6 +67,7 @@ echo "engine source for the bundle: $CLIMRISK_ENGINE_SRC"
 export CSC_IDENTITY_AUTO_DISCOVERY=false
 bash build-mac.sh </dev/null || fail "build-mac.sh"
 [ -d "dist/mac-universal/ClimRisk Intelligence.app/Contents/Resources/engine/src/cri" ] || fail "the engine was not bundled into the app"
+[ -f dist/mac-universal/*/Contents/Resources/model/embed/models--Qdrant--bge-small-en-v1.5-onnx-Q/snapshots/*/model_optimized.onnx ] || fail "the offline embedding model was not bundled into the app"
 if [ -f "$MF/model_manifest.json" ]; then ls dist/mac-universal/*/Contents/Resources/model/*.gguf >/dev/null 2>&1 || fail "the model file was not bundled into the app"; fi
 DMG=$(ls -t dist/*.dmg 2>/dev/null | head -1)
 [ -n "$DMG" ] || fail "no dmg produced"

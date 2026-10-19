@@ -531,6 +531,8 @@ app.whenReady().then(async () => {
           "http://127.0.0.1:* " +
           "https://fonts.googleapis.com https://fonts.gstatic.com " +
           "https://cdnjs.cloudflare.com https://unpkg.com " +
+          // 3D hazard viewer: CesiumJS library, OpenStreetMap imagery, and Google Photorealistic 3D Tiles (used only when the user stores their own key)
+          "https://cesium.com https://*.cesium.com https://tile.openstreetmap.org https://*.openstreetmap.org https://tile.googleapis.com https://*.googleapis.com " +
           "https://api.open-meteo.com https://archive-api.open-meteo.com data: blob:;"
         ]
       }

@@ -25,6 +25,7 @@ const path = require('path');
 
 const HOME_DIR = path.join(os.homedir(), '.climrisk');
 const IS_WIN = process.platform === 'win32';
+const IS_DEV_ENGINE = !process.resourcesPath || /node_modules[\\/]electron[\\/]/.test(process.resourcesPath);   // true when run from source with the stock Electron binary
 
 function pythonCandidates() {
   const venv = path.join(HOME_DIR, 'engine-venv', IS_WIN ? 'Scripts' : 'bin', IS_WIN ? 'python.exe' : 'python');
@@ -103,6 +104,11 @@ class LocalEngine {
       CRI_LICENCE_MODE: 'required',          // trial limits are enforced by the engine (cri.licence)
     };
     delete env.API_KEYS;
+    // The offline embedding model for semantic search ships inside the app (Resources/model/embed); point the engine at it unless the user chose another place.
+    if (!env.CRI_EMBED_DIR) {
+      const embedDir = path.join(IS_DEV_ENGINE ? __dirname : (process.resourcesPath || __dirname), 'model', 'embed');
+      if (fs.existsSync(embedDir)) env.CRI_EMBED_DIR = embedDir;
+    }
 
     const log = fs.createWriteStream(this.logFile, { flags: 'a' });
     log.write(`\n── ${new Date().toISOString()} starting engine on ${this.url} (${python})\n`);
