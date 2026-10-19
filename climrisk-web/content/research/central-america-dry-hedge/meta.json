@@ -1,0 +1,105 @@
+{
+  "slug": "central-america-dry-hedge",
+  "tier": "case-study",
+  "kicker": "Physical Risk · Central America",
+  "title": "Covered With Fire, Not Water: What the 2026 El Niño Drought Reveals About Central America's Power Grid and the Panama Canal",
+  "detail": "Water supplied 22 percent of Guatemala's power on 18 September, against 62 percent a year earlier, and the spot price rose 86 percent. A physical-risk screen sees almost nothing at the plants that filled the gap; the carbon bill is the number that matters.",
+  "status": "published",
+  "date": "2026-10-19",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/central-america-dry-hedge/cover.png",
+  "sources": [
+    {
+      "title": "NOAA CPC ENSO Diagnostic Discussion, 8 Oct 2026",
+      "url": "https://www.cpc.ncep.noaa.gov/products/analysis_monitoring/enso_advisory/ensodisc.html"
+    },
+    {
+      "title": "NOAA CPC Global Weather Hazards Summary, 15 Oct 2026",
+      "url": "https://www.cpc.ncep.noaa.gov/products/international/globalweatherhazard/Current.pdf"
+    },
+    {
+      "title": "Infobae Guatemala: electricity demand up 8.6% (AMM/MEM data), 24 Sep 2026",
+      "url": "https://www.infobae.com/guatemala/2026/09/24/la-demanda-electrica-de-guatemala-sube-86-durante-el-periodo-de-mayor-consumo-de-2026/"
+    },
+    {
+      "title": "Prensa Libre: more rain lifts Chixoy reservoir, 4 Oct 2026",
+      "url": "https://www.prensalibre.com/economia/mas-lluvia-eleva-el-embalse-de-chixoy-pero-no-basta-para-aumentar-su-generacion/"
+    },
+    {
+      "title": "Rio Times: Guatemala power emergency, drought cuts hydro output, 23 Sep 2026",
+      "url": "https://www.riotimesonline.com/guatemala-power-emergency-drought-hydropower-2026/"
+    },
+    {
+      "title": "The Weather Network: Panama declares a state of emergency over El Niño, 26 Aug 2026",
+      "url": "https://www.theweathernetwork.com/en/news/weather/severe/panama-declares-a-state-of-emergency-over-el-nino-rising-heat-and-drought"
+    },
+    {
+      "title": "gCaptain: Panama Canal to tighten draft limits again, 6 Aug 2026",
+      "url": "https://gcaptain.com/panama-canal-to-tighten-draft-limits-again-as-water-levels-continue-to-fall/"
+    },
+    {
+      "title": "gCaptain: Panama Canal adds transit capacity as rainfall brings relief, 28 Sep 2026",
+      "url": "https://gcaptain.com/panama-canal-adds-transit-capacity-as-rainfall-brings-relief/"
+    },
+    {
+      "title": "Newsroom Panama: Panama Canal increases daily transits to 33 and draft to 49 feet, 28 Sep 2026",
+      "url": "https://newsroompanama.com/2026/09/28/panama-canal-increases-daily-transits-to-33-and-maximum-draft-to-49-feet/"
+    },
+    {
+      "title": "Panama Canal Authority: higher transits and tonnage amid expected El Niño, 22 Jul 2026",
+      "url": "https://pancanal.com/en/panama-canal-reports-higher-transits-and-tonnage-while-preparing-to-meet-demand-amid-expected-el-nino-conditions/"
+    },
+    {
+      "title": "Kuehne+Nagel / Lloyd's List: Panama Canal ends fiscal year 2024 with 29% plunge in transits",
+      "url": "https://mykn.kuehne-nagel.com/news/article/panama-canal-ends-fiscal-year-2024-with-29-pl-15-Oct-2024"
+    },
+    {
+      "title": "chemeurope: Allianz Climate Risk Tracker, 2026 heat wave costs Germany, El Niño 2027, 16 Oct 2026",
+      "url": "https://www.chemeurope.com/en/news/1190092/climate-change-as-an-economic-factor-the-2026-heat-wave-costs-germany-about-25-billion-eur.html"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard (data release May 2026)",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "WRI Aqueduct 4.0",
+      "url": "https://www.wri.org/aqueduct"
+    },
+    {
+      "title": "Copernicus Sentinel-2 L2A via AWS Earth Search",
+      "url": "https://earth-search.aws.element84.com/v1"
+    }
+  ],
+  "images": [
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 scene of Gatún Lake, 2026-03-14. Contains modified Copernicus Sentinel-2 data (2026), via AWS Earth Search"
+    },
+    {
+      "file": "sat_gatun_dry_season.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene 2026-03-14, via AWS Earth Search"
+    },
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "NOAA CPC 8 Oct 2026; AMM via Infobae 24 Sep 2026; ACP via gCaptain / Newsroom Panama; Prensa Libre 4 Oct 2026"
+    },
+    {
+      "file": "chart_guatemala_power.png",
+      "kind": "chart",
+      "source": "AMM and MEM data via Infobae Guatemala, 24 Sep 2026"
+    },
+    {
+      "file": "chart_canal_draft.png",
+      "kind": "chart",
+      "source": "ACP advisories via gCaptain (6 Aug, 28 Sep 2026) and Newsroom Panama (28 Sep 2026)"
+    },
+    {
+      "file": "chart_engine_scenarios.png",
+      "kind": "chart",
+      "source": "ClimRisk engine, NGFS Phase 5, 3,000-draw Monte Carlo"
+    }
+  ]
+}
