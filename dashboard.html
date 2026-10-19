@@ -406,6 +406,7 @@ body{font-family:'Inter',system-ui,sans-serif;background:var(--navy);color:var(-
   <a class="sb-item" href="#" onclick="openEngineTool('materiality');return false" title="CSRD double materiality IRO register"><span class="sb-icon"><i class="ph ph-scales"></i></span>Double Materiality</a>
   <a class="sb-item" href="#" onclick="openEngineTool('markets');return false" title="EU ETS compliance position and carbon-credit screen"><span class="sb-icon"><i class="ph ph-coins"></i></span>Carbon Markets</a>
   <a class="sb-item" href="#" onclick="openEngineTool('stress');return false" title="One scenario through storm, plant, supplier, freight, tariff and cash — or any piece alone"><span class="sb-icon"><i class="ph ph-lightning"></i></span>Stress Test</a>
+  <a class="sb-item" href="#" onclick="openEngineTool('hazard3d');return false" title="Hazards draped on real 3D terrain, with a study area from KML, KMZ or GeoJSON"><span class="sb-icon"><i class="ph ph-cube"></i></span>3D Hazard Viewer</a>
   <a class="sb-item" href="#" onclick="openResultsTab('operational');return false"><span class="sb-icon"><i class="ph ph-wave-sine"></i></span>Physical Risk (25 Hz)</a>
   <a class="sb-item" href="#" onclick="openResultsTab('capital');return false"><span class="sb-icon"><i class="ph ph-trend-up"></i></span>Financial / EBITDA</a>
   <a class="sb-item" href="#" onclick="openResultsTab('siteintel');return false"><span class="sb-icon"><i class="ph ph-cloud-sun"></i></span>Live Met (climrisk.io)</a>
@@ -3405,7 +3406,8 @@ var _ENGINE_TOOLS = {
   realestate:  {path: '/real-estate/dashboard',     title: 'Real Estate Decarbonisation', sub: 'Operational carbon · stranding year · EPC / MEPS checks', icon: 'ph-buildings'},
   materiality: {path: '/materiality/dashboard',     title: 'Double Materiality',         sub: 'CSRD IRO register · ESRS 1 ch.3', icon: 'ph-scales'},
   markets:     {path: '/carbon-markets/dashboard',  title: 'Carbon Markets',             sub: 'EU ETS position · CBAM phase-out · carbon-credit screen', icon: 'ph-coins'},
-  stress:      {path: '/stress-test/dashboard',     title: 'Stress Test',                sub: 'Storm · plant · supplier · freight · tariff · cash in one linked run — each piece also runs alone', icon: 'ph-lightning'}
+  stress:      {path: '/stress-test/dashboard',     title: 'Stress Test',                sub: 'Storm · plant · supplier · freight · tariff · cash in one linked run — each piece also runs alone', icon: 'ph-lightning'},
+  hazard3d:    {path: '/hazard3d', title: '3D Hazard Viewer', sub: 'Landslide · terrain flood · sea-level inundation · plume on real 3D terrain · study area from KML, KMZ or GeoJSON · screening grade', icon: 'ph-cube'}
 };
 function openEngineTool(key, query) {
   var t = _ENGINE_TOOLS[key]; if (!t) return;
