@@ -1,7 +1,7 @@
 # ClimRisk Intelligence — install the fine-tuned local AI model on Windows (PowerShell 5.1+).
 # Installs Ollama if missing, gets the ClimRisk model file (GGUF, ~2 GB), checks its SHA-256 against the manifest shipped with the app,
-# imports it into Ollama as "climrisk-llm-v6" and tells the engine to use it. Everything runs on this computer afterwards (no cloud, no API key).
-# Usage:  powershell -NoProfile -ExecutionPolicy Bypass -File setup-local-llm.ps1 [-File C:\path\climrisk-llm-v6-q4km.gguf] [-Url https://...] [-Token xxx]
+# imports it into Ollama as "the model named in the manifest" and tells the engine to use it. Everything runs on this computer afterwards (no cloud, no API key).
+# Usage:  powershell -NoProfile -ExecutionPolicy Bypass -File setup-local-llm.ps1 [-File C:\path\climrisk-llm-v8-q4km.gguf] [-Url https://...] [-Token xxx]
 #   -File  : use a model file you were given (USB / shared folder)   -Url/-Token : download it (private link; token is sent as a Bearer header)
 # NOTE: written to mirror setup-local-llm.sh; not yet tested on a clean Windows machine.
 param([string]$File = "", [string]$Url = "", [string]$Token = "")
@@ -13,9 +13,16 @@ $Here = Split-Path -Parent $MyInvocation.MyCommand.Path
 $ModelDir = Join-Path $Here "model"; if (-not (Test-Path $ModelDir)) { $ModelDir = Join-Path $Here "..\model" }
 $ManifestPath = Join-Path $ModelDir "model_manifest.json"; $TailPath = Join-Path $ModelDir "climrisk-llm.Modelfile.tail"; $SrcPath = Join-Path $ModelDir "model-source.json"
 if (-not (Test-Path $ManifestPath) -or -not (Test-Path $TailPath)) { Die "The model manifest is missing from this install ($ModelDir). Reinstall ClimRisk Intelligence." }
-$Manifest = (Get-Content $ManifestPath -Raw | ConvertFrom-Json); if ($Manifest -is [array]) { $Manifest = $Manifest | Where-Object { $_.model -eq "climrisk-llm-v6" } | Select-Object -First 1 }
-$Name = "climrisk-llm-v6"; $Home2 = Join-Path $env:USERPROFILE ".climrisk"; $Dl = Join-Path $Home2 "model"
+$Manifest = (Get-Content $ManifestPath -Raw | ConvertFrom-Json); if ($Manifest -is [array]) { $Manifest = $Manifest | Select-Object -First 1 }
+if (-not $Manifest.model) { Die "the model manifest has no model name" }
+$Name = [string]$Manifest.model; $Home2 = Join-Path $env:USERPROFILE ".climrisk"; $Dl = Join-Path $Home2 "model"
 New-Item -ItemType Directory -Force -Path $Dl | Out-Null
+
+# 0. Offline embedding model for semantic search (small; never blocks the install)
+try {
+    $embSrc = Join-Path $ModelDir "embed"; $embDst = Join-Path $Home2 "models\embed"
+    if ((Test-Path $embSrc) -and -not (Test-Path (Join-Path $embDst "*"))) { New-Item -ItemType Directory -Force -Path $embDst | Out-Null; Copy-Item -Path (Join-Path $embSrc "*") -Destination $embDst -Recurse -Force }
+} catch { Write-Host "  (embedding model copy skipped: $($_.Exception.Message))" }
 
 # 1. Ollama
 $ollama = (Get-Command ollama -ErrorAction SilentlyContinue)
