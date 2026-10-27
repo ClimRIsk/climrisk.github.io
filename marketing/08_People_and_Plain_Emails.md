@@ -8,7 +8,7 @@ Send from shri@climrisk.io (Zoho). Nothing here has been sent. I have no verifie
 |---|---|---|---|
 | **Philippa Birch-Wood**, UKGBC | Head of Climate Action; oversees the Resilience, Resource Use and Nature programme. Confirmed on her [Futurebuild 2026 speaker page](https://www.futurebuild.co.uk/speakers/philippa-birch-wood) (session 13 May 2026). This replaces Hannah Giddings, who was the 2023 contact | LinkedIn, or UKGBC's public contact form. No email published | Feedback, and a route to members who would test it |
 | **Sarah Brayshaw**, Savills | Principal Climate Risk and Resilience Consultant; oversees the Climate Risk and Resilience service line. Background in insurance catastrophe modelling and meteorology, so she is the most technically qualified reader on this list ([Savills profile](https://www.savills.co.uk/people/savills-finsbury-circus-house/sarah-brayshaw.aspx)) | The page lists a direct mobile and an office line (+44 20 7499 8644), no email. Use LinkedIn first; the office line only if LinkedIn gets no reply | A second opinion on two or three assets |
-| **Graeme McRitchie**, Leeds Building Society | Quoted by Financial Reporter in Dec 2025 on climate data in mortgage origination. A contact-database listing gives his title as Head of Prudential, Enterprise and Climate Risk, but that is not an official source, so confirm it on LinkedIn before using the title | LinkedIn. The society's press office address is for media queries; do not use it for a pitch | 20 minutes of candid feedback |
+| **Graeme McRitchie**, Leeds Building Society | Quoted by Financial Reporter in Dec 2025 on climate data in mortgage origination. A contact-database listing gives his title as Head of Prudential, Enterprise and Climate Risk; LinkedIn now shows Director of Risk and Compliance | LinkedIn. The society's press office address is for media queries; do not use it for a pitch | 20 minutes of candid feedback |
 | **Lucion Group**, physical climate risk team | Service page confirms the offer; no named person | Contact form on [their service page](https://www.luciongroup.com/services/physical-climate-risk-assessment/) | A partnership conversation |
 | **Oasis Loss Modelling Framework** | Homepage has a Contact link and a community section. I could not confirm current leadership, so I am not naming anyone | Contact link on [oasislmf.org](https://oasislmf.org), or GitHub discussions on [OasisLMF/oasislmf](https://github.com/OasisLMF/oasislmf) | Technical critique |
 
@@ -96,3 +96,13 @@ climrisk.io
 ## The five Gmail drafts
 
 They have no recipients and use the older wording. Ignore or delete them; these replace them.
+
+## Sent on LinkedIn (27 Oct 2026, from Shri's account, confirmed in Sent invitations)
+
+| Person | Verified on LinkedIn | Status |
+|---|---|---|
+| Philippa Birch-Wood, UKGBC | Head of Climate Action at UKGBC | Connection request with note sent |
+| Sarah Brayshaw, Savills | Principal Climate Risk and Resilience Consultant at Savills | Connection request with note sent |
+| Graeme McRitchie, Leeds Building Society | Now Director of Risk and Compliance (earlier: Head of Prudential/Enterprise Risk) | Connection request with note sent |
+
+Free LinkedIn allows 3 personalised invitations a month; all 3 are used and 1 is left after these (LinkedIn showed "2 remaining" before the last send). Direct messages need Premium, which I did not buy. Next step when any accept: send the longer email text from this file as a LinkedIn message, then move to Zoho for follow-ups. Do not nudge before 5 working days.
