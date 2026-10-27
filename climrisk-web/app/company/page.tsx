@@ -25,20 +25,50 @@ const DNA = [
 
 export default function CompanyPage() {
   return (
-    <div className="pt-40 pb-32 px-6">
-      {/* Hero / Mission */}
-      <div className="max-w-4xl mx-auto mb-24">
-        <Reveal>
-          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">The Firm</p>
-          <h1 className="heading-xl grad-text mb-6">Ground truth data for a warming world.</h1>
-          <p className="text-lg text-zinc-400 leading-relaxed max-w-2xl">
-            ClimRisk was built to bridge the gap between peer-reviewed earth science and enterprise
-            balance sheets, translating physical climate hazards into audit-ready financial intelligence.
-          </p>
-        </Reveal>
+    <div className="pb-32">
+      {/* Hero / Mission — real Sentinel-2 crop, not a flat background */}
+      <div className="relative overflow-hidden">
+        <img
+          src="/company/jakobshavn-ice-margin.jpg"
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: "38% 30%" }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(115deg, rgba(10,11,14,0.94) 0%, rgba(10,11,14,0.80) 32%, rgba(10,11,14,0.46) 60%, rgba(10,11,14,0.72) 100%)",
+          }}
+        />
+        <div
+          aria-hidden="true"
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(180deg, rgba(10,11,14,0.40) 0%, transparent 24%, transparent 78%, rgba(10,11,14,0.98) 100%)",
+          }}
+        />
+        <div className="relative pt-40 pb-28 px-6">
+          <div className="max-w-4xl mx-auto">
+            <Reveal>
+              <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">The Firm</p>
+              <h1 className="heading-xl grad-text mb-6">Ground truth data for a warming world.</h1>
+              <p className="text-lg text-zinc-400 leading-relaxed max-w-2xl">
+                ClimRisk was built to bridge the gap between peer-reviewed earth science and enterprise
+                balance sheets, translating physical climate hazards into audit-ready financial intelligence.
+              </p>
+              <p className="text-[10px] font-mono text-zinc-600 mt-8">
+                Sentinel-2 L2A, Sermeq Kujalleq ice margin, Greenland (29 Jul 2026), via AWS Earth Search
+              </p>
+            </Reveal>
+          </div>
+        </div>
       </div>
 
-      <div className="max-w-4xl mx-auto space-y-20">
+      <div className="px-6">
+      <div className="max-w-4xl mx-auto space-y-20 mt-16">
         {/* Origin story */}
         <Reveal>
           <div className="grid md:grid-cols-[160px_1fr] gap-10">
@@ -121,8 +151,42 @@ export default function CompanyPage() {
         </Reveal>
       </div>
 
+      {/* Real-image section break */}
+      <div className="max-w-4xl mx-auto mt-20">
+        <div className="relative rounded-xl overflow-hidden border border-white/8" style={{ aspectRatio: "21 / 9" }}>
+          <img
+            src="/company/palisades-fire-scar.jpg"
+            alt=""
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ objectPosition: "50% 38%" }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(0deg, rgba(10,11,14,0.92) 0%, rgba(10,11,14,0.15) 55%, rgba(10,11,14,0.35) 100%)",
+            }}
+          />
+          <div className="absolute left-0 right-0 bottom-0 p-6 flex items-end justify-between gap-4 flex-wrap">
+            <div>
+              <p className="text-white font-semibold">
+                Pacific Palisades, California — the January 2025 fire perimeter, read ten weeks on
+              </p>
+              <p className="text-[10px] font-mono text-zinc-600 mt-1">
+                Sentinel-2 L2A (18 Mar 2025), via AWS Earth Search
+              </p>
+            </div>
+            <p className="text-zinc-400 text-sm max-w-xs text-right hidden md:block">
+              Every section above is a claim about the firm. This is the one page where a claim about
+              the planet earns its own frame.
+            </p>
+          </div>
+        </div>
+      </div>
+
       {/* Company DNA */}
-      <div className="max-w-4xl mx-auto mt-32 pt-16 border-t border-white/8">
+      <div className="max-w-4xl mx-auto mt-20 pt-16 border-t border-white/8">
         <Reveal>
           <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">Company DNA</p>
           <h2 className="heading-lg grad-text mb-12">Trust and verification, not just a claim.</h2>
@@ -149,6 +213,7 @@ export default function CompanyPage() {
             <Link href="mailto:shri@climrisk.io" className="btn-ghost">shri@climrisk.io</Link>
           </div>
         </Reveal>
+      </div>
       </div>
     </div>
   );
