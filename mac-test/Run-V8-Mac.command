@@ -51,8 +51,8 @@ say "6/9 regression: reasoning (v8 only; v7 and v6 are in reasoning_eval_v7.json
 getlock
 [ -s "$ER" ] || PYTHONPATH="$SRC/src" "$PY" -m cri.llmtrain.reasoning_eval "$L/dsrf" "$ER" climrisk-llm-v8 --limit 120 --seed 3 | tail -20
 rm -rf "$LOCK"
-say "7/9 regression: general case questions (v8 only; v7 in eval_v7_general.json, same rows)"
-[ -f "$EG" ] || DS="$L/ds5f" OUTJ="$EG" MODELS="climrisk-llm-v8" LIMIT=20 bash "$HERE/Eval-LLM-Mac.command" || say "general eval failed"
+say "7/9 regression: general case questions (v8 and v7 together, same rows)"
+[ -f "$EG" ] || DS="$L/ds5f" OUTJ="$EG" MODELS="climrisk-llm-v8 climrisk-llm-v7" LIMIT=20 bash "$HERE/Eval-LLM-Mac.command" || say "general eval failed"
 
 say "8/9 promotion gate (v8 vs v7)"
 "$PY" - <<PYEOF | tee "$L/gate_v8.txt"
@@ -62,7 +62,7 @@ from pathlib import Path
 from cri.llmtrain import v7_report as R
 L = Path("$L")
 r7, r8 = json.loads((L/"reasoning_eval_v7.json").read_text()), json.loads((L/"reasoning_eval_v8.json").read_text())
-g7, g8 = json.loads((L/"eval_v7_general.json").read_text()), json.loads((L/"eval_v8_general.json").read_text())
+g8 = json.loads((L/"eval_v8_general.json").read_text()); g7 = g8   # v7 and v8 scored together on the same rows in this run
 (L/"_r.json").write_text(json.dumps({"climrisk-llm-v8": r8["climrisk-llm-v8"], "climrisk-llm-v7": r7["climrisk-llm-v7"]}))
 (L/"_g.json").write_text(json.dumps({"climrisk-llm-v8": g8["climrisk-llm-v8"], "climrisk-llm-v7": g7["climrisk-llm-v7"]}))
 gt = R.gate("$EN", str(L/"_r.json"), str(L/"_g.json"), new="climrisk-llm-v8", old="climrisk-llm-v7")

@@ -41,7 +41,7 @@ Hi Hannah,
 
 Your Physical Risk Labs found that missing detail in the data makes physical risk hard to measure. I've been working on one part of that: a screening tool that grades each of its hazard models A to D by how it performed against recorded events, and says "not assessed" instead of "low" when it has no data.
 
-I'd value your view on whether that kind of evidence grading is useful to asset owners, and who among your members might try it on a few sites. The test results are public at climrisk.io.
+I'd value your view on whether that kind of evidence grading is useful to asset owners, and who among your members might try it on a few sites.
 
 Could we talk for 20 minutes?
 
