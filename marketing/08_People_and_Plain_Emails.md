@@ -2,17 +2,17 @@
 
 Send from shri@climrisk.io (Zoho). Nothing here has been sent. I have no verified email addresses: for each person below the route is LinkedIn first, then the company's public contact form or switchboard. If you find an address on a company page, use that one; do not guess.
 
-## Who, and why them
+## Who, and why them (checked in Chrome on 27 Oct 2026)
 
-| Who | Role (source) | Why contact them | Ask |
+| Who | What I confirmed | Contact route | Ask |
 |---|---|---|---|
-| Graeme McRitchie, Leeds Building Society | Head of prudential and enterprise risk, quoted Dec 2025 saying they wanted climate data they could "interrogate" ([Financial Reporter](https://www.financialreporter.co.uk/leeds-bs-integrates-climate-risk-data-directly-into-mortgage-origination.html)) | A real lender that wants evidence it can question | 20 minutes of candid feedback |
-| Hannah Giddings, UKGBC | Head of Resilience and Nature when the Physical Risk Labs launched, June 2023 ([UKGBC](https://ukgbc.org/news/physical-risk-labs-launch/)). Check she still holds the role | Her programme found that missing detailed data blocks physical risk measurement. That is the problem the validation ledger addresses | Feedback, and a route to members who would test it |
-| Savills Climate Risk and Resilience team (Sarah Brayshaw's page lists the service) | [Savills](https://www.savills.co.uk/people/savills-finsbury-circus-house/sarah-brayshaw.aspx) | Advises owners on asset-level climate risk | A second opinion on a few sites |
-| Lucion Group, physical climate risk team | [Lucion](https://www.luciongroup.com/services/physical-climate-risk-assessment/). Contact form only; no named person found | A consultancy that could use an evidence-graded screen on its first pass | A conversation about a partnership |
-| Oasis Loss Modelling Framework community | Open-source catastrophe modelling, insurer-backed ([GitHub](https://github.com/OasisLMF/oasislmf)). The 2017 launch release named Dickie Whitaker as chief executive; check he still is | The people most likely to tell you honestly where the method is weak | Technical critique, and whether the output could feed Oasis |
+| **Philippa Birch-Wood**, UKGBC | Head of Climate Action; oversees the Resilience, Resource Use and Nature programme. Confirmed on her [Futurebuild 2026 speaker page](https://www.futurebuild.co.uk/speakers/philippa-birch-wood) (session 13 May 2026). This replaces Hannah Giddings, who was the 2023 contact | LinkedIn, or UKGBC's public contact form. No email published | Feedback, and a route to members who would test it |
+| **Sarah Brayshaw**, Savills | Principal Climate Risk and Resilience Consultant; oversees the Climate Risk and Resilience service line. Background in insurance catastrophe modelling and meteorology, so she is the most technically qualified reader on this list ([Savills profile](https://www.savills.co.uk/people/savills-finsbury-circus-house/sarah-brayshaw.aspx)) | The page lists a direct mobile and an office line (+44 20 7499 8644), no email. Use LinkedIn first; the office line only if LinkedIn gets no reply | A second opinion on two or three assets |
+| **Graeme McRitchie**, Leeds Building Society | Quoted by Financial Reporter in Dec 2025 on climate data in mortgage origination. A contact-database listing gives his title as Head of Prudential, Enterprise and Climate Risk, but that is not an official source, so confirm it on LinkedIn before using the title | LinkedIn. The society's press office address is for media queries; do not use it for a pitch | 20 minutes of candid feedback |
+| **Lucion Group**, physical climate risk team | Service page confirms the offer; no named person | Contact form on [their service page](https://www.luciongroup.com/services/physical-climate-risk-assessment/) | A partnership conversation |
+| **Oasis Loss Modelling Framework** | Homepage has a Contact link and a community section. I could not confirm current leadership, so I am not naming anyone | Contact link on [oasislmf.org](https://oasislmf.org), or GitHub discussions on [OasisLMF/oasislmf](https://github.com/OasisLMF/oasislmf) | Technical critique |
 
-You said you don't know anyone. These five are the realistic first conversations. The Oasis and UKGBC ones are the most likely to answer, because they are asking for feedback, not selling.
+I did not use contact-harvesting sites for email addresses and did not guess any. None of these people publishes a direct email, so LinkedIn is the first route for all of them. Sending a connection request or a message is an action I'll only take on your explicit yes, and from your own account, not mine.
 
 ## Emails
 
@@ -33,13 +33,13 @@ I'm not selling anything yet. Would you give me 20 minutes to tell me where this
 Shri
 ClimRisk, climrisk.io
 
-**2. UKGBC (Hannah Giddings, or whoever runs the Resilience and Nature programme now)**
+**2. UKGBC (Philippa Birch-Wood)**
 
 Subject: Testing physical risk models against real events
 
-Hi Hannah,
+Hi Philippa,
 
-Your Physical Risk Labs found that missing detail in the data makes physical risk hard to measure. I've been working on one part of that: a screening tool that grades each of its hazard models A to D by how it performed against recorded events, and says "not assessed" instead of "low" when it has no data.
+UKGBC's Physical Risk Labs found that missing detail in the data makes physical risk hard to measure. I've been working on one part of that: a screening tool that grades each of its hazard models A to D by how it performed against recorded events, and says "not assessed" instead of "low" when it has no data.
 
 I'd value your view on whether that kind of evidence grading is useful to asset owners, and who among your members might try it on a few sites.
 
@@ -47,15 +47,15 @@ Could we talk for 20 minutes?
 
 Shri
 
-**3. Savills climate risk team**
+**3. Savills (Sarah Brayshaw)**
 
 Subject: Second opinion on a few sites
 
-Hello,
+Hi Sarah,
 
 I'm Shri, and I've built a physical climate risk screen that shows its test results next to each rating. If you have two or three assets you've already assessed, I can run them and send you where my numbers agree or disagree with yours, and why. You would learn whether it's useful, and I would learn where it's wrong.
 
-No cost and no obligation. Is that something you would look at?
+No cost and no obligation. Is that something you would look at? Given your catastrophe modelling background, I'd especially value your read on the method.
 
 Shri
 climrisk.io
