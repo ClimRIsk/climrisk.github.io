@@ -106,3 +106,21 @@ They have no recipients and use the older wording. Ignore or delete them; these 
 | Graeme McRitchie, Leeds Building Society | Now Director of Risk and Compliance (earlier: Head of Prudential/Enterprise Risk) | Connection request with note sent |
 
 Free LinkedIn allows 3 personalised invitations a month; all 3 are used and 1 is left after these (LinkedIn showed "2 remaining" before the last send). Direct messages need Premium, which I did not buy. Next step when any accept: send the longer email text from this file as a LinkedIn message, then move to Zoho for follow-ups. Do not nudge before 5 working days.
+
+### Note-less connection requests (27 Oct 2026, UK physical-risk and cat-modelling practitioners)
+
+Sent without a note, which has no monthly cap. Paul Drummond (Redwheel, UCL) was also sent but fell outside the 10 rows the Sent page displays, so confirm it there.
+
+| Person | Role on LinkedIn |
+|---|---|
+| Paul Drummond | Co-head of Greenwheel and Climate and Environment Research Lead, Redwheel; Honorary Associate Professor, UCL |
+| Daniel Bannister | Weather and Climate Risks Research Lead, Willis Research Network |
+| Jonathan Meagher | Physical Risk Senior Manager, Climate and Nature Investment Risk, Chief Investment Office |
+| Vincent Noinville | Risk Leader, Sustainability and Climate Risk |
+| Andrew Forsyth | Climate resilience and enterprise risk leader, financial services |
+| David Smith | Catastrophe Modelling Leader, Aon |
+| Kate Graham | Loss modelling and exposure management |
+| Alastair Norris | Climate and disaster risk consultant |
+| Heather Martin | Disaster Risk Finance and Insurance Principal |
+
+Total today: 12 requests. I stopped there on purpose: LinkedIn restricts accounts that send many requests quickly. Space the next batch over the coming days. Anyone who accepts gets the short message first, not a pitch.
