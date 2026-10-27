@@ -15,9 +15,9 @@ ClimRisk is a climate financial risk modelling platform built for enterprises na
 
 | Module | What it does |
 |--------|-------------|
-| **GPS Hazard Engine** | 10 physical hazards computed from lat/lon coordinates using elevation, coastal distance, river proximity, UHI, and slope physics |
+| **Site hazard engine** | Site-level hazard models from lat/lon on open data. Each model carries a grade (A to D) and a published test in `climate_risk_engine/docs/VALIDATION_LEDGER.md`; reports show tested hazards only |
 | **NGFS DCF Model** | 3 transition scenarios (NZE 2050 / Delayed / Current Policies) × 25-year annual EV, FCF, EBITDA, carbon cost |
-| **Disclosure Generator** | TCFD four-pillar + IFRS S2 metrics table + CSRD E1 data points — one-click PDF export with legal sign-off workflow |
+| **Disclosure gap check** | ESRS E1 checklist (41 items) showing what is provided, estimated or missing, with a TCFD / IFRS S2 mapping and PDF export. A gap check, not assurance or legal advice |
 | **Physical CaR** | Annual Loss % × Asset Carrying Value → dollar climate-at-risk per asset and portfolio |
 | **Supply Chain Risk** | Supplier GPS hazard scoring, tier mapping, risk-adjusted spend |
 | **Data Export** | 5-file package (CSV + JSON) for Workiva / SAP / Power BI integration |
