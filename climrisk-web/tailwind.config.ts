@@ -31,6 +31,7 @@ const config: Config = {
           critical: "#dc2626",
         },
         terminal: "#10B981",
+        flame: "#E2622E",
       },
       fontFamily: {
         sans: ["Archivo", "system-ui", "sans-serif"],

@@ -88,6 +88,16 @@ export default function LiveAssessWidget() {
         ))}
       </div>
 
+      {status === "idle" && (
+        <div className="mt-8 pt-8 border-t border-white/8">
+          <div className="ledger-bignum idle">&mdash;.&mdash;&mdash;<span className="unit">%</span></div>
+          <p className="ledger-bignum-label">
+            Average annual physical damage appears here once you run a company &mdash; a live API call against
+            mapped sites, not a placeholder number.
+          </p>
+        </div>
+      )}
+
       {status === "slow" && (
         <p className="text-xs text-zinc-500 mt-6 font-mono">
           Reading flood maps and cyclone tracks for the company&apos;s largest sites. This takes 20–60 seconds the first time.
@@ -114,15 +124,23 @@ export default function LiveAssessWidget() {
 
       {status === "done" && result?.found && (
         <div className="mt-8 pt-8 border-t border-white/8">
-          <h3 className="text-white font-semibold text-lg">{result.matched}</h3>
-          <p className="text-xs text-zinc-500 font-mono mt-1 mb-6">
-            {result.n_assets} mapped sites · largest {result.flood_assessed_assets} read against flood maps · {result.elapsed_s}s
-          </p>
-          <div className="grid sm:grid-cols-3 gap-4 mb-8">
-            <div><div className="text-2xl font-bold text-white font-mono">{usd(result.portfolio_value_usd)}</div><div className="text-xs text-zinc-500 mt-1">estimated replacement value of mapped sites</div></div>
-            <div><div className="text-2xl font-bold text-white font-mono">{result.physical_aal_pct != null ? result.physical_aal_pct.toFixed(2) + "%" : "—"}</div><div className="text-xs text-zinc-500 mt-1">average annual physical damage ({usd(result.physical_aal_usd)}/yr)</div></div>
-            <div><div className="text-2xl font-bold text-white font-mono">{result.assets_under_carbon_price} / {result.n_assets}</div><div className="text-xs text-zinc-500 mt-1">sites under a carbon price today</div></div>
+          <div className="flex flex-wrap items-end justify-between gap-6 mb-2">
+            <div>
+              <div className="ledger-bignum">
+                {result.physical_aal_pct != null ? result.physical_aal_pct.toFixed(2) : "—"}<span className="unit">%</span>
+              </div>
+              <p className="ledger-bignum-label">
+                average annual physical damage for <b>{result.matched}</b> ({usd(result.physical_aal_usd)}/yr)
+              </p>
+            </div>
+            <div className="flex gap-6">
+              <div className="text-right"><div className="text-xl font-bold text-white font-mono">{usd(result.portfolio_value_usd)}</div><div className="text-xs text-zinc-500 mt-1">replacement value mapped</div></div>
+              <div className="text-right"><div className="text-xl font-bold text-white font-mono">{result.assets_under_carbon_price}/{result.n_assets}</div><div className="text-xs text-zinc-500 mt-1">sites under a carbon price</div></div>
+            </div>
           </div>
+          <p className="text-xs text-zinc-500 font-mono mt-6 mb-8">
+            {result.matched} · {result.n_assets} mapped sites · largest {result.flood_assessed_assets} read against flood maps · {result.elapsed_s}s
+          </p>
           {scen && (
             <div className="mb-6">
               <p className="text-xs font-mono text-zinc-600 uppercase tracking-widest mb-3">Present value of climate loss 2026–2050 · mean and 1-in-20</p>

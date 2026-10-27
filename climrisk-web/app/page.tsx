@@ -38,8 +38,10 @@ export default function Home() {
 
   return (
     <>
-      {/* Hero */}
-      <section className="relative pt-40 pb-12 px-6 overflow-hidden">
+      {/* Ledger hero — the opener is a live computation, not a sentence.
+          "Live Ledger" direction: the number LiveAssessWidget returns IS the
+          headline; nothing here is illustrative or pre-filled. */}
+      <section className="relative pt-36 pb-20 px-6 overflow-hidden">
         <GlobeBackground />
         <div
           aria-hidden="true"
@@ -52,21 +54,23 @@ export default function Home() {
               "linear-gradient(to right, rgba(10,11,14,0.95) 0%, rgba(10,11,14,0.82) 45%, rgba(10,11,14,0.45) 75%, rgba(10,11,14,0.15) 100%)",
           }}
         />
-        <div className="max-w-5xl mx-auto relative" style={{ zIndex: 2 }}>
+        <div className="max-w-3xl mx-auto relative" style={{ zIndex: 2 }}>
           <div className="hero-drift inline-flex items-center gap-2 text-xs font-mono text-gold-200 border border-white/8 rounded-full px-3 py-1.5 mb-8">
             <span className="w-1.5 h-1.5 rounded-full bg-terminal" />
             CRI ENGINE · NGFS PHASE 4 · IPCC AR6
           </div>
-          <h1 className="hero-drift animation-delay-200 heading-xl grad-text mb-6">
-            The Climate Risk You Haven&rsquo;t Priced <span className="grad-gold">Is Still on Your Books.</span>
-          </h1>
-          <p className="hero-drift animation-delay-400 text-lg text-zinc-400 max-w-2xl leading-relaxed mb-10">
-            Regulators, reinsurers, and your own credit committee are moving to asset-level physical risk
-            numbers under TCFD, IFRS&nbsp;S2, and Basel&nbsp;III. The CRI Engine prices yours now &mdash;
-            Capital-at-Risk, EBITDA compression, and audit-ready disclosure under SFDR, EU Taxonomy, PCAF
-            and TNFD too &mdash; before the gap becomes someone else&rsquo;s finding.
+          <p className="hero-drift animation-delay-200 font-ledger-display text-2xl md:text-[1.75rem] text-white font-semibold leading-snug max-w-xl mb-10 text-balance">
+            Type a company below. The number that comes back is what your credit committee asks for first.
           </p>
-          <div className="hero-drift animation-delay-600 flex flex-wrap items-center gap-4">
+          <div className="hero-drift animation-delay-400">
+            <LiveAssessWidget />
+          </div>
+          <p className="hero-drift animation-delay-600 text-sm text-zinc-500 max-w-2xl leading-relaxed mt-10">
+            Regulators, reinsurers, and your own credit committee are moving to asset-level physical risk numbers
+            under TCFD, IFRS&nbsp;S2 and Basel&nbsp;III. The CRI Engine prices yours &mdash; Capital-at-Risk, EBITDA
+            compression, and disclosure support under SFDR, EU Taxonomy, PCAF and TNFD too.
+          </p>
+          <div className="hero-drift animation-delay-600 flex flex-wrap items-center gap-4 mt-8">
             <Link href="/contact" className="btn-primary">
               Book a Demo
             </Link>
@@ -74,39 +78,6 @@ export default function Home() {
               Launch Platform ↗
             </Link>
           </div>
-
-          <div className="hero-drift animation-delay-600 mt-14 pt-8 border-t border-white/8">
-            <p className="text-xs uppercase tracking-widest text-zinc-600 mb-4">
-              Powered by frameworks and data from
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {["NGFS", "IPCC", "WRI Aqueduct", "Copernicus", "TCFD", "SFDR", "EU Taxonomy", "PCAF", "TNFD", "Basel III"].map((f) => (
-                <span key={f} className="text-xs font-mono text-zinc-400 border border-white/10 bg-white/[0.03] rounded-full px-3 py-1.5">
-                  {f}
-                </span>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Live assessment */}
-      <section className="px-6 pt-12 pb-20 border-b border-white/8">
-        <div className="max-w-4xl mx-auto text-center mb-10">
-          <Reveal>
-            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;01 &middot; Live, Not a Mockup</p>
-            <h2 className="heading-lg grad-text mb-4">Analyse a real company, right now.</h2>
-            <p className="text-zinc-400 leading-relaxed max-w-2xl mx-auto">
-              Type a company with industrial sites. The engine finds its mapped facilities, reads flood maps and
-              cyclone tracks at the largest ones, applies the carbon prices in force there, and prices the loss to
-              2050 under each NGFS scenario. No sample data, no canned demo.
-            </p>
-          </Reveal>
-        </div>
-        <div className="max-w-3xl mx-auto">
-          <Reveal delayMs={100}>
-            <LiveAssessWidget />
-          </Reveal>
         </div>
       </section>
 
@@ -156,7 +127,7 @@ export default function Home() {
       <section className="px-6 py-24 border-y border-white/8 bg-white/[0.015]">
         <div className="max-w-6xl mx-auto grid md:grid-cols-[minmax(0,300px)_1fr] gap-10 md:gap-16">
           <Reveal>
-            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;02 &middot; Scale &amp; Coverage</p>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;01 &middot; Scale &amp; Coverage</p>
             <h2 className="heading-lg grad-text mb-4">Any coordinate on Earth, not a pre-mapped database.</h2>
             <p className="text-zinc-400 leading-relaxed text-sm">
               No fixed asset list to miss you. The engine downscales live hazard data worldwide, running on a
@@ -194,7 +165,7 @@ export default function Home() {
       <section className="px-6 py-24 border-b border-white/8">
         <div className="max-w-4xl mx-auto text-center mb-12">
           <Reveal>
-            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;03 &middot; Interactive</p>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;02 &middot; Interactive</p>
             <h2 className="heading-lg grad-text mb-4">Drag the year. Change the scenario.</h2>
             <p className="text-zinc-400 leading-relaxed max-w-2xl mx-auto">
               The same Monte Carlo loss distribution every Story Report runs on, exposed as something you can
@@ -213,7 +184,7 @@ export default function Home() {
       {/* Three mandates — a ledger of practices, not a feature-card grid */}
       <section className="px-6 py-24 max-w-6xl mx-auto">
         <Reveal>
-          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;04 &middot; Our Mandate</p>
+          <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;03 &middot; Our Mandate</p>
           <h2 className="heading-lg grad-text mb-16 max-w-2xl">
             Three practices. One discipline: translating physical reality into financial language.
           </h2>
@@ -257,7 +228,7 @@ export default function Home() {
       <section className="px-6 py-24 border-t border-white/8">
         <div className="max-w-6xl mx-auto">
           <Reveal>
-            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;05 &middot; Under the Hood</p>
+            <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;04 &middot; Under the Hood</p>
             <h2 className="heading-lg grad-text mb-6 max-w-2xl">The CRI Engine, at a glance.</h2>
             <p className="text-zinc-400 leading-relaxed mb-12 max-w-2xl">
               Every conclusion we deliver traces back to a geospatial pipeline built on IPCC AR6 hazard
@@ -284,7 +255,7 @@ export default function Home() {
         <Reveal>
           <div className="flex items-end justify-between mb-16 flex-wrap gap-4">
             <div>
-              <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;06 &middot; Recent Intelligence</p>
+              <p className="text-xs uppercase tracking-widest text-gold-200 font-mono mb-3">&sect;05 &middot; Recent Intelligence</p>
               <h2 className="heading-lg grad-text">Research from the desk</h2>
             </div>
             <Link href="/research" className="btn-ghost">View all research</Link>

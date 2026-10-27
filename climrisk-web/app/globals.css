@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&family=Instrument+Sans:wght@500;600;700&family=Martian+Mono:wght@400;500;600&display=swap');
 
 :root {
   --bg:         #0A0B0E;
@@ -15,6 +15,8 @@
   --gold-glow:  rgba(212,175,55,0.16);
   --crimson:    #EF4444;
   --terminal:   #10B981;
+  --flame:      #E2622E;
+  --flame-dim:  rgba(226,98,46,0.14);
   --text:       #E4E4E7;
   --muted:      #A1A1AA;
   --dim:        #3F3F46;
@@ -558,3 +560,30 @@ body {
   transition: opacity 0.4s var(--ease-inst);
 }
 .trust-strip:hover { opacity: 0.8; }
+
+/* ============================================================
+   Ledger hero — the homepage opener restyled so a real computed
+   number, not a sentence, is the focal point (Oct 2026 direction:
+   "Live Ledger"). Scoped to .ledger-* so it never touches the
+   rest of the site's Archivo/JetBrains Mono system.
+   ============================================================ */
+.font-ledger-display { font-family: 'Instrument Sans', system-ui, sans-serif; }
+.font-ledger-mono { font-family: 'Martian Mono', 'JetBrains Mono', monospace; }
+
+/* the giant computed numeral — real API output once a query runs */
+.ledger-bignum {
+  font-family: 'Martian Mono', monospace;
+  font-size: clamp(3rem, 9vw, 5.5rem);
+  line-height: 0.95;
+  font-weight: 500;
+  color: #fff;
+  font-variant-numeric: tabular-nums;
+}
+.ledger-bignum .unit { font-size: 0.34em; color: var(--flame); vertical-align: super; margin-left: 2px; }
+.ledger-bignum.idle { color: var(--dim); }
+.ledger-bignum-label {
+  font-family: 'Martian Mono', monospace; font-size: 0.72rem; letter-spacing: 0.04em;
+  color: var(--muted); margin-top: 10px; max-width: 34ch; line-height: 1.5;
+}
+.ledger-bignum-label b { color: var(--flame); font-weight: 500; }
+
