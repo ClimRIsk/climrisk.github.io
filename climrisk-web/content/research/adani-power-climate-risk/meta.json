@@ -1,0 +1,91 @@
+{
+  "slug": "adani-power-climate-risk",
+  "tier": "case-study",
+  "kicker": "Company Risk · India Power",
+  "title": "Growing Into a Zero Price: Adani Power's Climate Risk Is a Carbon Bill, Not a Weather Bill",
+  "detail": "Adani Power aims to grow from 18.3 GW to 45 GW while India puts no price on power-sector carbon; the ClimRisk engine shows its eight register assets carrying a $0.6bn to $13.1bn median carbon exposure to 2050, depending on when a price arrives.",
+  "status": "published",
+  "date": "2026-10-22",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/adani-power-climate-risk/cover.png",
+  "sources": [
+    {
+      "title": "Adani Power announces Q1 FY27 results (22 Jul 2026)",
+      "url": "https://www.adani.com/newsroom/media-releases/adani-power-announces-q1-fy27-results"
+    },
+    {
+      "title": "Adani Power announces Q2 FY26 results (30 Oct 2025)",
+      "url": "https://www.adani.com/newsroom/media-releases/adani-power-announces-q2-fy26-results"
+    },
+    {
+      "title": "Ember: India electricity data (updated 4 Jun 2026)",
+      "url": "https://ember-energy.org/countries-and-regions/india"
+    },
+    {
+      "title": "Down To Earth: India's carbon market targets too weak to drive industrial transformation (29 Jul 2026)",
+      "url": "https://www.downtoearth.org.in/climate-change/indias-carbon-market-targets-too-weak-to-drive-industrial-transformation-report"
+    },
+    {
+      "title": "ICAP: Compliance obligations under India's Carbon Credit Trading Scheme enter force for seven sectors",
+      "url": "https://icapcarbonaction.com/en/news/compliance-obligations-under-indias-carbon-credit-trading-scheme-enter-force-seven-sectors"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios via IIASA",
+      "url": "https://data.ece.iiasa.ac.at/ngfs/"
+    },
+    {
+      "title": "WRI Aqueduct 4.0",
+      "url": "https://www.wri.org/aqueduct"
+    },
+    {
+      "title": "Climate TRACE",
+      "url": "https://climatetrace.org/"
+    }
+  ],
+  "images": [
+    {
+      "file": "sat-mundra.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_42QWL_20261011, via AWS Earth Search"
+    },
+    {
+      "file": "sat-tiroda.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_44QLJ_20261009, via AWS Earth Search"
+    },
+    {
+      "file": "key-figures.png",
+      "kind": "infographic",
+      "source": "Adani Power Q1 FY27 release (22 Jul 2026); World Bank Carbon Pricing Dashboard (May 2026); ClimRisk engine"
+    },
+    {
+      "file": "assets-map.png",
+      "kind": "map",
+      "source": "ClimRisk asset register on Natural Earth"
+    },
+    {
+      "file": "ngfs-carbon-price.png",
+      "kind": "chart",
+      "source": "NGFS Phase 5 via IIASA; World Bank Carbon Pricing Dashboard"
+    },
+    {
+      "file": "scenario-loss.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (NGFS Phase 5, Climate TRACE v6)"
+    },
+    {
+      "file": "mundra-annual-cost.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (NGFS Phase 5 via IIASA; Climate TRACE v6)"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 scene S2B_42QWL_20261011 (Copernicus, via AWS Earth Search) with credit stamped"
+    }
+  ]
+}
