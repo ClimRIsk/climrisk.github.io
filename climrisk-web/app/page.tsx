@@ -1,6 +1,5 @@
 import Link from "next/link";
 import Reveal from "./components/Reveal";
-import GlobeBackground from "./components/GlobeBackground";
 import IsometricShowcase from "./components/IsometricShowcase";
 import LiveAssessWidget from "./components/LiveAssessWidget";
 import { allArticles } from "../lib/research";
@@ -38,45 +37,98 @@ export default function Home() {
 
   return (
     <>
-      {/* Ledger hero — the opener is a live computation, not a sentence.
-          "Live Ledger" direction: the number LiveAssessWidget returns IS the
-          headline; nothing here is illustrative or pre-filled. */}
-      <section className="relative pt-36 pb-20 px-6 overflow-hidden">
-        <GlobeBackground />
-        <div
-          aria-hidden="true"
-          style={{
-            position: "absolute",
-            inset: 0,
-            zIndex: 1,
-            pointerEvents: "none",
-            background:
-              "linear-gradient(to right, rgba(10,11,14,0.95) 0%, rgba(10,11,14,0.82) 45%, rgba(10,11,14,0.45) 75%, rgba(10,11,14,0.15) 100%)",
-          }}
-        />
-        <div className="max-w-3xl mx-auto relative" style={{ zIndex: 2 }}>
-          <div className="hero-drift inline-flex items-center gap-2 text-xs font-mono text-gold-200 border border-white/8 rounded-full px-3 py-1.5 mb-8">
-            <span className="w-1.5 h-1.5 rounded-full bg-terminal" />
-            CRI ENGINE · NGFS PHASE 4 · IPCC AR6
+      {/* Ledger hero — ground-photography flyover background (Oct 2026 direction).
+          Four real, licensed photographs — the kind of asset and hazard exposure
+          the engine prices — crossfade with a slow continuous pan/zoom per scene.
+          LiveAssessWidget remains the live centerpiece; nothing here is illustrative. */}
+      <section className="relative pt-40 pb-24 px-6 overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="hero-reel">
+            <div className="hero-slide hero-slide--flood">
+              <img src="/home/flood-exposure.jpg" alt="" />
+            </div>
+            <div className="hero-slide hero-slide--port">
+              <img src="/home/port-asset.jpg" alt="" />
+            </div>
+            <div className="hero-slide hero-slide--wildfire">
+              <img src="/home/wildfire-exposure.jpg" alt="" />
+            </div>
+            <div className="hero-slide hero-slide--drought">
+              <img src="/home/drought-exposure.jpg" alt="" />
+            </div>
           </div>
-          <p className="hero-drift animation-delay-200 font-ledger-display text-2xl md:text-[1.75rem] text-white font-semibold leading-snug max-w-xl mb-10 text-balance">
-            Type a company below. The number that comes back is what your credit committee asks for first.
-          </p>
-          <div className="hero-drift animation-delay-400">
-            <LiveAssessWidget />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(100deg, rgba(10,11,14,0.95) 0%, rgba(10,11,14,0.86) 38%, rgba(10,11,14,0.55) 62%, rgba(10,11,14,0.30) 100%)",
+            }}
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{
+              background:
+                "linear-gradient(180deg, rgba(10,11,14,0.35) 0%, transparent 18%, transparent 72%, rgba(10,11,14,0.97) 100%)",
+            }}
+          />
+        </div>
+
+        <div className="max-w-7xl mx-auto relative grid lg:grid-cols-[1.15fr_0.75fr] gap-12 lg:gap-16 items-start" style={{ zIndex: 2 }}>
+          <div>
+            <div className="hero-drift inline-flex items-center gap-2 text-xs font-mono text-gold-200 border border-white/8 rounded-full px-3 py-1.5 mb-7">
+              <span className="w-1.5 h-1.5 rounded-full bg-terminal" />
+              CRI ENGINE · NGFS PHASE 4 · IPCC AR6
+            </div>
+            <h1 className="hero-drift animation-delay-200 heading-xl text-white mb-3">
+              The Instrument Layer<br className="hidden sm:block" />
+              For Climate<br className="hidden sm:block" />
+              Financial Risk.
+            </h1>
+            <p className="hero-drift animation-delay-200 font-ledger-display text-lg text-zinc-300 font-medium leading-snug max-w-lg mt-6 mb-10">
+              Type a company below. The number that comes back is what your credit committee asks for first.
+            </p>
+            <div className="hero-drift animation-delay-400">
+              <LiveAssessWidget />
+            </div>
+            <div className="hero-drift animation-delay-600 flex flex-wrap items-center gap-4 mt-8">
+              <Link href="/contact" className="btn-primary">
+                Book a Demo
+              </Link>
+              <Link href="https://climrisk.io/app.html" target="_blank" className="btn-ghost">
+                Launch Platform ↗
+              </Link>
+            </div>
           </div>
-          <p className="hero-drift animation-delay-600 text-sm text-zinc-500 max-w-2xl leading-relaxed mt-10">
-            Regulators, reinsurers, and your own credit committee are moving to asset-level physical risk numbers
-            under TCFD, IFRS&nbsp;S2 and Basel&nbsp;III. The CRI Engine prices yours &mdash; Capital-at-Risk, EBITDA
-            compression, and disclosure support under SFDR, EU Taxonomy, PCAF and TNFD too.
-          </p>
-          <div className="hero-drift animation-delay-600 flex flex-wrap items-center gap-4 mt-8">
-            <Link href="/contact" className="btn-primary">
-              Book a Demo
-            </Link>
-            <Link href="https://climrisk.io/app.html" target="_blank" className="btn-ghost">
-              Launch Platform ↗
-            </Link>
+
+          <div className="hero-drift animation-delay-400 lg:pt-3">
+            <p className="text-zinc-300 leading-relaxed mb-10">
+              Regulators, reinsurers, and your own credit committee are moving to asset-level physical risk
+              numbers under TCFD, IFRS&nbsp;S2 and Basel&nbsp;III. The CRI Engine prices yours &mdash; Capital-at-Risk,
+              EBITDA compression, and disclosure support under SFDR, EU Taxonomy, PCAF and TNFD too.
+            </p>
+            <div className="space-y-4 text-sm font-mono uppercase tracking-wide text-zinc-300">
+              <p className="tick-row">Carbon Auditing &amp; Data Assurance</p>
+              <p className="tick-row">Physical Climate Risk &middot; DCF &amp; VaR</p>
+              <p className="tick-row">Transition &amp; Stress Testing</p>
+              <p className="tick-row">Disclosure &middot; TCFD &middot; IFRS S2 &middot; CSRD</p>
+              <p className="tick-row">Live Asset-Level Engine</p>
+            </div>
+            <div className="hero-caption-wrap mt-10">
+              <p className="hero-caption hero-caption--flood text-[10px] font-mono text-zinc-600">
+                The kind of real-world flood exposure the engine prices &mdash; licensed photography
+              </p>
+              <p className="hero-caption hero-caption--port text-[10px] font-mono text-zinc-600">
+                The kind of real-world asset the engine assesses &mdash; licensed photography
+              </p>
+              <p className="hero-caption hero-caption--wildfire text-[10px] font-mono text-zinc-600">
+                The kind of real-world wildfire exposure the engine prices &mdash; licensed photography
+              </p>
+              <p className="hero-caption hero-caption--drought text-[10px] font-mono text-zinc-600">
+                The kind of real-world drought &amp; water stress the engine prices &mdash; licensed photography
+              </p>
+            </div>
           </div>
         </div>
       </section>
