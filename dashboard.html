@@ -2695,15 +2695,7 @@ function exportToPDF() {
     trajHtml+='</tbody></table>';
   }
   // ── DERIVED METRICS FOR ENHANCED REPORT ─────────────────────────────────────
-  // Gap 2: CAPEX / OPEX split (JRC Huizinga 2017 — 62% direct asset damage, 38% BI)
-  var _capexFrac = 0.62, _opexFrac = 0.38;
-  var capexC = (Math.abs(parseFloat(phC)) * _capexFrac).toFixed(1);
-  var opexC  = (Math.abs(parseFloat(phC)) * _opexFrac).toFixed(1);
-  var capexN = (Math.abs(parseFloat(phN)) * _capexFrac).toFixed(1);
-  var opexN  = (Math.abs(parseFloat(phN)) * _opexFrac).toFixed(1);
-  var _phDt  = _phDt_abs;  // already enforced monotonic above
-  var capexDt = (_phDt * _capexFrac).toFixed(1);
-  var opexDt  = (_phDt * _opexFrac).toFixed(1);
+  // The 62% / 38% direct-damage vs business-interruption split that used to be here was attributed to JRC Huizinga (2017), which publishes depth-damage curves, not that split. Removed.
 
   // Gap 3: Gross → Net VaR (mitigation + parametric insurance offset)
   // Mitigation efficacy: clamp to 10–35% (realistic range for industrial adaptation measures)
@@ -2859,8 +2851,6 @@ function exportToPDF() {
   _html += '<table class="scenario-tbl"><thead><tr><th>Impact Parameter</th><th style="color:#15803d;text-align:center">🟢 NZE (SSP1-2.6, 1.6°C)<br><span style="font-weight:400;font-size:9px">Carbon: $250/tCO₂ · 2050</span></th><th style="color:#ca8a04;text-align:center">🟡 Delayed (SSP2-4.5, 2.0°C)<br><span style="font-weight:400;font-size:9px">Carbon: $135/tCO₂ · 2050</span></th><th style="color:#b91c1c;text-align:center">🔴 Curr. Policies (SSP3-7.0, 2.7°C)<br><span style="font-weight:400;font-size:9px">Carbon: $40/tCO₂ · 2050</span></th></tr></thead><tbody>';
   _html += '<tr><td>Transition Carbon Cost<br><span style="font-size:9px;color:#6b7280">NGFS carbon price × Scope 1+2 emissions</span></td>'+_scCell('#15803d',trN,_pctToM(parseFloat(trN)))+_scCell('#ca8a04',(-_trDt_abs).toFixed(1),_pctToM(_trDt_abs))+_scCell('#b91c1c',trC,_pctToM(parseFloat(trC)))+'</tr>';
   _html += '<tr><td>Physical Climate Impact (Gross)<br><span style="font-size:9px;color:#6b7280">CMIP6 hazard damage functions · 2026–2050 NPV</span></td>'+_scCell('#15803d',phN,_pctToM(_phN_abs))+_scCell('#ca8a04',(-_phDt).toFixed(1),_pctToM(_phDt))+_scCell('#b91c1c',phC,_pctToM(_phC_abs))+'</tr>';
-  _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Direct Asset Damage — CAPEX (62% · JRC Huizinga)</td><td>−'+capexN+'%</td><td>−'+capexDt+'%</td><td>−'+capexC+'%</td></tr>';
-  _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Business Interruption / OPEX Shock (38%)</td><td>−'+opexN+'%</td><td>−'+opexDt+'%</td><td>−'+opexC+'%</td></tr>';
   _html += '<tr style="font-weight:700;border-top:2px solid #1e3a5f"><td>Combined NPV Impact — Gross (TCFD)</td>'+_scCell('#15803d','−'+_grossN.toFixed(1),_pctToM(_grossN))+_scCell('#ca8a04','−'+_grossDt.toFixed(1),_pctToM(_grossDt))+_scCell('#b91c1c','−'+_grossC.toFixed(1),_pctToM(_grossC))+'</tr>';
   _html += '<tr class="row-sub"><td style="padding-left:22px">↳ Adaptation &amp; Insurance Offset<br><span style="font-size:9px;color:#6b7280">NGFS Phase 4 residual risk pathway ('+_mitigEff.toFixed(0)+'% efficacy assumed)</span></td><td>+'+(_grossN*_mitigEff/100).toFixed(1)+'%</td><td>+'+(_grossDt*_mitigEff/100).toFixed(1)+'%</td><td>+'+(_grossC*_mitigEff/100).toFixed(1)+'%</td></tr>';
   _html += '<tr class="row-net"><td><strong>Net Balance Sheet Exposure</strong><br><span style="font-size:9px;color:#374151">Post-mitigation · for CSRD ESRS E1-9 §40 disclosure</span></td>'+_scCell('#15803d','−'+netN,_pctToM(parseFloat(netN)))+_scCell('#ca8a04','−'+netDt,_pctToM(parseFloat(netDt)))+_scCell('#b91c1c','−'+netC,_pctToM(parseFloat(netC)))+'</tr>';
@@ -2938,17 +2928,13 @@ function exportToPDF() {
   _html += '</tbody></table>';
   _html += '<div class="sec-note">⚠ CapEx and avoided-loss figures are indicative, derived from NGFS Phase 4 adaptation cost benchmarks and JRC Huizinga damage functions. Engage a certified climate engineer for site-specific CAPEX validation before Board approval or CSRD/TCFD disclosure. BCR = Benefit-Cost Ratio = Avoided Loss ÷ CapEx.</div>';
 
-  // ── Gap 5: IFRS 9 Banking & Collateral Shock (Financial Sector only) ────────
-  if (_isFinSec || _lgd!=null || _ecl!=null) {
-    _html += '<h3>Banking &amp; Collateral Shock — IFRS 9 / Basel III</h3>';
-    _html += '<div class="ifrs9-box">';
-    _html += '<table style="margin-bottom:8px"><thead><tr><th>Parameter</th><th style="text-align:right">NZE (SSP1-2.6)</th><th style="text-align:right">Curr. Policies (SSP3-7.0)</th><th>Notes</th></tr></thead><tbody>';
-    _html += '<tr><td>Climate-adjusted LGD (Δ vs baseline)</td><td style="text-align:right">'+(_lgd!=null?((_lgd*0.4).toFixed(1)+'%'):'~+2–4%')+'</td><td style="text-align:right">'+(_lgd!=null?(_lgd).toFixed(1)+'%':'~+6–12%')+'</td><td style="font-size:10px;color:#6b7280">Real estate collateral write-down</td></tr>';
-    _html += '<tr><td>Lifetime ECL Climate Loading</td><td style="text-align:right">'+(_ecl!=null?((_ecl*0.4).toFixed(1)+'%'):'Estimated')+'</td><td style="text-align:right">'+(_ecl!=null?(_ecl).toFixed(1)+'%':'Stage-dependent')+'</td><td style="font-size:10px;color:#6b7280">IFRS 9 Stage 2/3 migration risk</td></tr>';
-    _html += '<tr><td>Physical asset collateral haircut</td><td style="text-align:right">'+capexN+'%</td><td style="text-align:right">'+capexC+'%</td><td style="font-size:10px;color:#6b7280">Applied to RCN-based collateral value</td></tr>';
-    _html += '</tbody></table>';
-    _html += '<div style="font-size:10px;color:#075985">This block applies when '+company+' is assessed as a borrower in a lending portfolio. For SLL (Sustainability-Linked Loan) pricing: lenders should apply the climate LGD delta to the PD-weighted EAD to derive an IFRS 9-compatible climate ECL provision. Vasicek single-factor IRB RWA uplift available on request from ClimRisk API /portfolio/credit.</div>';
-    _html += '</div>';
+  // ── Banking: IFRS 9 / Basel ─────────────────────────────────────────────────
+  // The hand-coded LGD/ECL ranges and the 0.4 scenario scaling that used to sit here had no source and were removed.
+  // Credit metrics come only from the engine's structural model (POST /portfolio/credit-structural), which needs the borrower's balance-sheet inputs.
+  if (_isFinSec) {
+    _html += '<h3>Banking &amp; Collateral — credit metrics</h3>';
+    _html += '<div class="ifrs9-box"><div style="font-size:11px;color:#075985;line-height:1.6">No LGD, ECL, staging or capital figure is shown for '+company+'. The earlier ranges in this block were not derived from a source and have been removed. '
+          +'For a lender view, the ClimRisk engine offers a Merton structural PD and Basel IRB capital calculation (<code>POST /portfolio/credit-structural</code>) that takes the borrower\'s equity value, debt, asset volatility and a stated physical or carbon shock as inputs. IFRS 9 staging is not modelled: the standard requires the lender\'s own SICR criteria.</div></div>';
   }
 
   // ── Data sources & methodology ───────────────────────────────────────────────
@@ -2977,7 +2963,6 @@ function exportToPDF() {
   var _grossC_m = _pctToM(_grossC), _netC_m = _pctToM(parseFloat(netC)), _grossN_m = _pctToM(_grossN), _netN_m = _pctToM(parseFloat(netN));
   _html += '('+(_grossC_m?'<strong>'+_mStr(_grossC_m)+'</strong>; ':'')+'net of adaptation measures: <strong>−'+netC+'%</strong>'+(_netC_m?' / '+_mStr(_netC_m):'')+'). ';
   _html += 'Under the Net Zero 2050 scenario this changes to <strong>−'+_grossN.toFixed(1)+'%</strong> gross (<strong>−'+netN+'%</strong> net'+(_netN_m?' / '+_mStr(_netN_m):'')+'). ';
-  _html += 'Physical climate impact disaggregates as '+capexC+'% direct CAPEX asset damage and '+opexC+'% business interruption under Current Policies (SSP3-7.0); ';
   _html += 'transition carbon cost is highest under NZE (−'+Math.abs(parseFloat(trN)).toFixed(1)+'% / NGFS $250/tCO₂) and lowest under Current Policies (−'+Math.abs(parseFloat(trC)).toFixed(1)+'% / NGFS $40/tCO₂). ';
   if(critYr) _html += 'The critical threshold year — at which combined expected annual loss first exceeds 5% of revenue — is <strong>'+critYr+'</strong>. ';
   _html += 'Methodology is consistent with TCFD (2017), IFRS S2 (2023), and TNFD v1.0 (2023). No proprietary emissions data was used. ';
@@ -5792,7 +5777,7 @@ function buildAladdinPanel(data, company, sector, nze, dt, cp) {
   // ── Run button ─────────────────────────────────────────────────────────────
   '<div style="display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap">'+
   '<button onclick="aladdinRunPortfolio()" id="aladdin-run-btn" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);border:none;color:#fff;border-radius:8px;padding:10px 22px;font-size:13px;font-weight:700;cursor:pointer;letter-spacing:.03em">▶ Run Portfolio CVaR</button>'+
-  '<button onclick="aladdinRunCredit()" id="aladdin-credit-btn" style="background:linear-gradient(135deg,#1e3a5f,#162d4a);border:1px solid rgba(59,130,246,0.4);color:#60a5fa;border-radius:8px;padding:10px 18px;font-size:12px;font-weight:700;cursor:pointer">🏦 Run IFRS 9 / Basel III</button>'+
+  '<button onclick="aladdinRunCredit()" id="aladdin-credit-btn" style="background:linear-gradient(135deg,#1e3a5f,#162d4a);border:1px solid rgba(59,130,246,0.4);color:#60a5fa;border-radius:8px;padding:10px 18px;font-size:12px;font-weight:700;cursor:pointer">🏦 Credit metrics (structural model)</button>'+
   '<button onclick="aladdinToggleLiveMonitor()" id="aladdin-live-btn" style="background:rgba(239,68,68,0.12);border:1px solid rgba(239,68,68,0.35);color:#f87171;border-radius:8px;padding:10px 18px;font-size:12px;font-weight:700;cursor:pointer">📡 Live Monitor</button>'+
   '</div>'+
   '<div id="aladdin-live-monitor" style="display:none;background:rgba(15,23,42,0.7);border:1px solid rgba(239,68,68,0.25);border-radius:10px;padding:14px;margin-bottom:14px">'+
@@ -5897,7 +5882,7 @@ async function aladdinRunCredit() {
   var btn = document.getElementById('aladdin-credit-btn');
   var res = document.getElementById('aladdin-credit-results');
   if (btn) { btn.textContent='⏳ Computing…'; btn.disabled=true; }
-  if (res) res.innerHTML='<div style="color:#94a3b8;font-size:12px;padding:12px">Computing IFRS 9 ECL…</div>';
+  if (res) res.innerHTML='<div style="color:#94a3b8;font-size:12px;padding:12px">Checking the credit model…</div>';
   try {
     var obligors = _aladdinPositions.map(function(p){return {
       company_id: p.company_id, company_name: p.company_name,
@@ -5917,7 +5902,7 @@ async function aladdinRunCredit() {
   } catch(e) {
     if (res) res.innerHTML = '<div style="color:#f87171;font-size:12px;padding:10px">Error: '+e.message+'</div>';
   } finally {
-    if (btn) { btn.textContent='🏦 Run IFRS 9 / Basel III'; btn.disabled=false; }
+    if (btn) { btn.textContent='🏦 Credit metrics (structural model)'; btn.disabled=false; }
   }
 }
 
