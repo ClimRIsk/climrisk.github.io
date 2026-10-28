@@ -17,7 +17,7 @@ Every figure used in the website edits and the files in this folder, with the so
 | Hail rank correlation 0.93, median error 0.28 days a year; tornado 0.77 to 0.83; 600 US points | CONVECTIVE_MARINE_BENCHMARK.md, convective_holdout.json | Verified |
 | Marine heatwave: 892 of 895 events match reference code; 7 of 9 documented events; 24% chance rate | CONVECTIVE_MARINE_BENCHMARK.md, marine_crosscheck.json | Verified |
 | ESRS E1 gap check, 41 items | VALIDATION_LEDGER.md (ESRS section) | Verified |
-| Credit module (PD, LGD, ECL, RWA) is not validated | VALIDATION_LEDGER.md, GAP_REGISTER.md B4 | Verified |
+| Credit module (PD, LGD, ECL, RWA) is structural, derived from inputs, not tested against observed defaults | VALIDATION_LEDGER.md, GAP_REGISTER.md B4 | Verified |
 | Open-Meteo free tier is non-commercial | Not in repo | [CONFIRM] check provider terms |
 | Competitor facts (Prometeia, Jupiter, Climate X, Cervest) | COMPETITIVE_LANDSCAPE.md | Sourced to vendor pages and press; rows marked "general knowledge" unverified |
 | Pilot prices, partner appetite, regulator scope | Not in repo | Hypotheses only |

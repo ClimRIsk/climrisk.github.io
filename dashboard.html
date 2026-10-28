@@ -5910,6 +5910,7 @@ async function aladdinRunCredit() {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({obligors: obligors}), signal: AbortSignal.timeout(20000)
     });
+    if (r.status===410) throw new Error('This credit model has been withdrawn: its coefficients could not be traced to a source and were never tested against defaults. The replacement (POST /portfolio/credit-structural) needs each borrower\'s own PD, leverage and LGD inputs, which this screen does not collect yet.');
     if (!r.ok) throw new Error('Engine '+r.status);
     _aladdinCredit = await r.json();
     if (res) res.innerHTML = _renderAladdinCredit(_aladdinCredit);

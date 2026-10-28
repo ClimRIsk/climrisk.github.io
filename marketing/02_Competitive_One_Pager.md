@@ -15,7 +15,7 @@ Source for all rows: `climate_risk_engine/docs/COMPETITIVE_LANDSCAPE.md`. Rows m
 ## Honest weaknesses to admit
 
 - No named customers [CONFIRM].
-- Credit module (PD, LGD, ECL, RWA) is unvalidated.
+- Credit module (PD, LGD, ECL, RWA) is a structural model with no fitted coefficients; it has not been tested against observed defaults.
 - Many models are grade B or C; river flood depth maps are grade D.
 - Hail and tornado are United States only; LiDAR gains are England and the Netherlands.
 - Larger vendors cover more hazards and more geographies.
