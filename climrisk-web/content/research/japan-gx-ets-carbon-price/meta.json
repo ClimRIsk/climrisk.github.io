@@ -1,0 +1,93 @@
+{
+  "slug": "japan-gx-ets-carbon-price",
+  "tier": "regulatory",
+  "kicker": "Carbon Pricing · Japan",
+  "title": "A Price With a Lid: What Japan's Mandatory Carbon Market Costs a Steel Plant and a Coal Plant",
+  "detail": "Japan's emissions trading went mandatory in April 2026 with a ¥1,700–¥4,300 corridor; the ClimRisk engine compares that lid with NGFS carbon prices at two steelworks and a coal power station.",
+  "status": "published",
+  "date": "2026-10-29",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/japan-gx-ets-carbon-price/cover.png",
+  "sources": [
+    {
+      "title": "ICAP ETS Map: Japan GX-ETS (accessed 29 Oct 2026)",
+      "url": "https://icapcarbonaction.com/en/ets/japan-gx-ets"
+    },
+    {
+      "title": "Eco-Business: Japan sets 2026 price band for carbon market, 23 Jan 2026",
+      "url": "https://www.eco-business.com/news/japan-sets-2026-price-band-for-carbon-market-to-steer-investment-by-big-polluters/"
+    },
+    {
+      "title": "Shulman Advisory: Government sets upper and lower price limits for FY2026 GX-ETS, 30 Dec 2025",
+      "url": "https://shulman-advisory.com/government-sets-upper-and-lower-price-limits-for-fy2026-gx-ets/"
+    },
+    {
+      "title": "GlobalDeal: Five months into Japan's GX-ETS, the meetings changed",
+      "url": "https://globaldeal.io/blog/japans-gx-ets-the-meetings-changed"
+    },
+    {
+      "title": "KELP (Kyoto University): The Design and Limitations of Japan's GX-ETS, 17 Jun 2026",
+      "url": "https://environment-and-law-kyoto.jp/en/2026/06/17/01-gx-ets/"
+    },
+    {
+      "title": "RIETI: Overview of the Japanese GX-ETS and Prospects for Phase II",
+      "url": "https://www.rieti.go.jp/en/publications/summary/26100013.html"
+    },
+    {
+      "title": "Anderson Mori & Tomotsune: GX-ETS update, 19 May 2026",
+      "url": "https://amt-law.com/en/insights/trending-news/trending-news_20260519001_en_001/"
+    },
+    {
+      "title": "Argus: Tokyo proposes fuel-based power benchmark rules for ETS, 14 Oct 2025",
+      "url": "https://www.argusmedia.com/pt/news-and-insights/latest-market-news/2741931-tokyo-proposes-fuel-based-power-benchmark-rules-for-ets"
+    },
+    {
+      "title": "Renewable Energy Institute: public comment on GX-ETS design, Feb 2026",
+      "url": "https://www.renewable-ei.org/en/activities/column/REupdate/20260212.php"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "SteelOrbis: EU CBAM certificate price rises to 82.32 for Q3 2026, 6 Oct 2026",
+      "url": "https://www.steelorbis.com/steel-news/latest-news/eu-cbam-certificate-price-rises-to-8232-for-q3-2026-1481786.htm"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios",
+      "url": "https://www.ngfs.net/ngfs-scenarios-portal/"
+    }
+  ],
+  "images": [
+    {
+      "file": "key-figures.png",
+      "kind": "infographic",
+      "source": "Figures as stated beside each number: ICAP, Eco-Business, AMT Law, KELP, Renewable Energy Institute"
+    },
+    {
+      "file": "price-corridor.png",
+      "kind": "chart",
+      "source": "METI limits via ICAP; NGFS Phase 5 via ClimRisk engine; post-FY2030 corridor is ClimRisk arithmetic"
+    },
+    {
+      "file": "plant-bills-2033.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (NGFS Phase 5, 3,000 draws); GX-ETS bars are ClimRisk arithmetic"
+    },
+    {
+      "file": "sat-fukuyama.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_53SLU_20261009_0_L2A, 9 Oct 2026, via AWS Earth Search"
+    },
+    {
+      "file": "sat-hekinan.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2C_53SPU_20261001_0_L2A, 1 Oct 2026, via AWS Earth Search"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 scene S2B_53SLU_20261009_0_L2A (Copernicus), via AWS Earth Search"
+    }
+  ]
+}
