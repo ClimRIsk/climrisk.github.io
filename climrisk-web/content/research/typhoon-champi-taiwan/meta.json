@@ -1,0 +1,77 @@
+{
+  "slug": "typhoon-champi-taiwan",
+  "tier": "case-study",
+  "kicker": "Physical Risk · East Asia",
+  "title": "The Loud Storm, the Quiet Bill: What Typhoon Champi Says About Taiwan's Power and Refining Assets",
+  "detail": "Champi peaked at 185 mph and shut Taiwan's markets for a day, yet the ClimRisk engine prices cyclone damage at about 3% of a northern Taiwan plant's value to 2050 — the carbon price is the number that moves it.",
+  "status": "published",
+  "date": "2026-11-02",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/typhoon-champi-taiwan/cover.png",
+  "sources": [
+    {
+      "title": "Taiwan shuts down ahead of Typhoon Champi (Beinsure, 27 Oct 2026)",
+      "url": "https://beinsure.com/news/typhoon-champi-shuts-down-taiwan/"
+    },
+    {
+      "title": "Typhoon Champi hits Taiwan, killing one and injuring hundreds (Al Jazeera, 23 Oct 2026)",
+      "url": "https://www.aljazeera.com/news/2026/10/23/typhoon-champi-hits-taiwan-killing-one-and-injuring-350"
+    },
+    {
+      "title": "Typhoon Champi (Focus Taiwan / CNA, 23 Oct 2026)",
+      "url": "https://focustaiwan.tw/society/202610230010"
+    },
+    {
+      "title": "Super Typhoon Champi, one of the strongest storms this year (AccuWeather, 19–22 Oct 2026)",
+      "url": "https://www.accuweather.com/en/hurricane/super-typhoon-champi-one-of-the-strongest-storms-this-year-will-impact-taiwan-china-and-japan/1948344"
+    },
+    {
+      "title": "Typhoon Champi (2026) (Wikipedia, accessed 2 Nov 2026)",
+      "url": "https://en.wikipedia.org/wiki/Typhoon_Champi_(2026)"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard (data release May 2026)",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NOAA NCEI IBTrACS v04r01",
+      "url": "https://www.ncei.noaa.gov/products/international-best-track-archive"
+    },
+    {
+      "title": "Copernicus Sentinel-1 RTC via Microsoft Planetary Computer",
+      "url": "https://planetarycomputer.microsoft.com/dataset/sentinel-1-rtc"
+    }
+  ],
+  "images": [
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "Key figures panel; sources printed on each panel (JTWC/AccuWeather, Taiwan CWA via Al Jazeera, Taipower via Focus Taiwan, Taiwan transport ministry via Beinsure, Copernicus Sentinel-1)"
+    },
+    {
+      "file": "radar_yilan.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-1 data (2026), RTC via Microsoft Planetary Computer; processed by ClimRisk"
+    },
+    {
+      "file": "assets_map.png",
+      "kind": "map",
+      "source": "ClimRisk asset register; Natural Earth"
+    },
+    {
+      "file": "chart_return_period_wind.png",
+      "kind": "chart",
+      "source": "ClimRisk engine; NOAA IBTrACS v04r01; JTWC peak via AccuWeather"
+    },
+    {
+      "file": "chart_physical_vs_transition.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (Risk Analyst); NGFS Phase 5; IBTrACS v04r01; World Bank Carbon Pricing Dashboard"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-1 radar image of the Yilan plain (Copernicus Sentinel-1, 2026)"
+    }
+  ]
+}
