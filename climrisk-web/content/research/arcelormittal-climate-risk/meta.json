@@ -1,0 +1,96 @@
+{
+  "slug": "arcelormittal-climate-risk",
+  "tier": "case-study",
+  "kicker": "Company Risk · Global Steel",
+  "title": "The Free Pass Runs Out: ArcelorMittal's Climate Risk Is a Calendar, Not a Storm",
+  "detail": "ArcelorMittal's 67 register plants screen clean on floods and cyclones, but as EU free allowances fall from 97.5% in 2026 to zero in 2034, the ClimRisk engine puts median carbon-related loss at $15bn to $61bn to 2050, depending on when policy bites.",
+  "status": "published",
+  "date": "2026-11-06",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/arcelormittal-climate-risk/cover.png",
+  "sources": [
+    {
+      "title": "ArcelorMittal: Q3 2026 sell-side analyst consensus (2 Nov 2026)",
+      "url": "https://stocktitan.net/news/MT/arcelor-mittal-announces-the-publication-of-its-third-quarter-2026-c8st5dgped09.html"
+    },
+    {
+      "title": "ArcelorMittal Sustainability Report 2025",
+      "url": "https://cdn.arcelormittal.com/media/kyqeahax/2025-sd-report-22-april-2026-final-upload.pdf"
+    },
+    {
+      "title": "SteelWatch: Unmasking a deliberate retreat (May 2026 update)",
+      "url": "https://steelwatch.org/wp-content/uploads/2026/05/26-05-Unmasking-a-deliberate-retreat-AM-CCAR-update-2026.pdf"
+    },
+    {
+      "title": "CBAM Guide: EU ETS free allocation phase-out 2026-2034",
+      "url": "https://cbamguide.com/carbon/free-allocation/"
+    },
+    {
+      "title": "SteelOrbis: ArcelorMittal urges EU to extend CBAM and TRQs to downstream steel products",
+      "url": "https://www.steelorbis.com/steel-news/latest-news/arcelormittal-urges-eu-to-extend-cbam-and-trqs-to-downstream-steel-products-1461859.htm"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios via IIASA",
+      "url": "https://data.ece.iiasa.ac.at/ngfs/"
+    },
+    {
+      "title": "WRI Aqueduct 4.0",
+      "url": "https://www.wri.org/aqueduct"
+    },
+    {
+      "title": "Climate TRACE",
+      "url": "https://climatetrace.org/"
+    }
+  ],
+  "images": [
+    {
+      "file": "sat-dunkerque.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_31UDS_20261004, via AWS Earth Search"
+    },
+    {
+      "file": "sat-hazira.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2C_43QBD_20261013, via AWS Earth Search"
+    },
+    {
+      "file": "key-figures.png",
+      "kind": "infographic",
+      "source": "ArcelorMittal Sustainability Report 2025; SteelWatch May 2026; CBAM Guide Oct 2026; Directive 2003/87/EC"
+    },
+    {
+      "file": "cbam-phaseout.png",
+      "kind": "chart",
+      "source": "CBAM Guide (updated 23 Oct 2026); Directive 2003/87/EC Art. 10a"
+    },
+    {
+      "file": "top-sites.png",
+      "kind": "chart",
+      "source": "Climate TRACE v6; World Bank Carbon Pricing Dashboard; ClimRisk engine"
+    },
+    {
+      "file": "dunkerque-annual-cost.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (NGFS Phase 5, Climate TRACE v6)"
+    },
+    {
+      "file": "scenario-loss.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (NGFS Phase 5, Climate TRACE v6)"
+    },
+    {
+      "file": "assets-map.png",
+      "kind": "map",
+      "source": "ClimRisk asset register on Natural Earth"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 scene S2B_31UDS_20261004; contains modified Copernicus Sentinel-2 data (2026)"
+    }
+  ]
+}
