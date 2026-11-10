@@ -1,0 +1,89 @@
+{
+  "slug": "india-ccts-intensity-targets",
+  "tier": "regulatory",
+  "kicker": "Carbon Pricing \u00b7 India",
+  "title": "The Market Before the Price: What India's Carbon Credit Trading Scheme Is Worth to a Cement Kiln, a Smelter and a Refinery",
+  "detail": "India's carbon market is weeks from its first auction with a design aim of about US$10 a tonne; the ClimRisk engine shows how far that sits from NGFS scenario prices at three register plants.",
+  "status": "published",
+  "date": "2026-11-09",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/india-ccts-intensity-targets/cover.png",
+  "sources": [
+    {
+      "title": "ICAP ETS Map: Indian Carbon Credit Trading Scheme (accessed 9 Nov 2026)",
+      "url": "https://icapcarbonaction.com/en/ets/indian-carbon-credit-trading-scheme"
+    },
+    {
+      "title": "ICAP: India notifies emission intensity targets, 17 Nov 2025",
+      "url": "https://icapcarbonaction.com/en/news/india-notifies-emission-intensity-targets-nine-sectors-under-carbon-credit-trading-scheme"
+    },
+    {
+      "title": "ThePrint/PTI: Targets notified for 208 more industries, 22 Jan 2026",
+      "url": "https://theprint.in/india/greenhouse-gas-emission-intensity-targets-notified-for-208-more-carbon-intensive-industries/2833845/"
+    },
+    {
+      "title": "Saraf Partners: India issues emission-intensity targets, 27 Jan 2026",
+      "url": "https://sarafpartners.com/india-issues-emission-intensity-targets-under-the-carbon-credit-trading-scheme/"
+    },
+    {
+      "title": "Business Standard: India set to launch its first comprehensive carbon-trading programme, 24 Feb 2026",
+      "url": "https://www.business-standard.com/industry/news/india-kicks-off-carbon-trading-programme-but-key-polluters-left-out-126022401016_1.html"
+    },
+    {
+      "title": "Mondaq / KC Khaitan: Carbon credits enter the market, 31 Mar 2026",
+      "url": "https://www.mondaq.com/india/renewables/1767018/carbon-credits-enter-the-market-indias-first-regulatory-framework-for-exchange-traded-carbon-credit-certificate"
+    },
+    {
+      "title": "CBAM Guide: India CBAM response, CCTS steel targets, 20 Jul 2026 (updated 12 Oct)",
+      "url": "https://cbamguide.com/news/2026-07-20-india-ccts-carbon-market-cbam-recognition/"
+    },
+    {
+      "title": "Bar & Bench: Green becomes the new gold, 18 Oct 2026",
+      "url": "https://www.barandbench.com/columns/courting-controversy-green-becomes-the-new-gold-indias-carbon-market-opens-for-business"
+    },
+    {
+      "title": "Energetica India: BEE sets monthly trading schedule, 2 Nov 2026",
+      "url": "https://www.energetica-india.net/news/bee-sets-monthly-trading-schedule-for-carbon-credit-certificates"
+    },
+    {
+      "title": "SteelOrbis: EU CBAM certificate price 82.32 for Q3 2026, 6 Oct 2026",
+      "url": "https://www.steelorbis.com/steel-news/latest-news/eu-cbam-certificate-price-rises-to-8232-for-q3-2026-1481786.htm"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios",
+      "url": "https://www.ngfs.net/ngfs-scenarios-portal/"
+    }
+  ],
+  "images": [
+    {
+      "file": "key-figures.png",
+      "kind": "infographic",
+      "source": "Business Standard, ThePrint/PTI, Energetica India, CBAM Guide; first-session date is ClimRisk calendar arithmetic"
+    },
+    {
+      "file": "ngfs-india-prices.png",
+      "kind": "chart",
+      "source": "ClimRisk engine, NGFS Phase 5 (IIASA) median prices for India; BEE ~US$10/t per Business Standard"
+    },
+    {
+      "file": "plant-transition-cost.png",
+      "kind": "chart",
+      "source": "ClimRisk engine, NGFS Phase 5, 3,000 draws, register assets"
+    },
+    {
+      "file": "sat-maihar.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_44QMM_20261108_0_L2A, 8 Nov 2026, via AWS Earth Search"
+    },
+    {
+      "file": "sat-jamnagar.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2C_42QWK_20261105_0_L2A, 5 Nov 2026, via AWS Earth Search"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 scene S2B_44QMM_20261108_0_L2A (Copernicus), via AWS Earth Search"
+    }
+  ]
+}
