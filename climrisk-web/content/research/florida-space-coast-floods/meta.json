@@ -1,0 +1,102 @@
+{
+  "slug": "florida-space-coast-floods",
+  "tier": "case-study",
+  "kicker": "Physical Risk · United States",
+  "title": "The Flood No Map Priced: What Florida's November 2026 Space Coast Deluge Says About Rain-Driven Risk",
+  "detail": "Up to two feet of rain fell on Palm Bay and Malabar in under three days, a 1-in-1,000-year total at some gauges, yet the global river and coastal flood maps behind most climate-risk screens, ClimRisk's included, show zero flood depth there.",
+  "status": "published",
+  "date": "2026-11-12",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/florida-space-coast-floods/cover.png",
+  "sources": [
+    {
+      "title": "NOAA/NWS Weather Prediction Center — Storm Summary Number 3 for Florida Heavy Rainfall and Flash Flooding (3 Nov 2026)",
+      "url": "https://www.wpc.ncep.noaa.gov/discussions/nfdscc2.html"
+    },
+    {
+      "title": "AccuWeather — Florida flooding leaves roads washed out, water outages and schools closed (4 Nov 2026)",
+      "url": "https://www.accuweather.com/en/weather-news/florida-flooding-leaves-roads-washed-out-water-outages-and-schools-closed/1954719"
+    },
+    {
+      "title": "State of Florida — Executive Order 26-228 (amending EO 26-227), 4 Nov 2026",
+      "url": "https://www.flgov.com/eog/sites/default/files/executive-orders/2026/EO%2026-228.pdf"
+    },
+    {
+      "title": "Washington Post via The Philadelphia Inquirer — Parts of Florida see half a year's worth of rain in 36 hours (3 Nov 2026)",
+      "url": "https://www.inquirer.com/news/nation-world/florida-heavy-rainfall-floods-el-nino-election-polls-20261103.html"
+    },
+    {
+      "title": "FPREN / WGCU — Florida's dry season opens under water (3 Nov 2026)",
+      "url": "https://www.wgcu.org/2026-11-03/floridas-dry-season-opens-under-water"
+    },
+    {
+      "title": "FPREN / WGCU — Major cities may be impacted by river flooding for several weeks following a 1 in 1000-year flash flooding event (6 Nov 2026)",
+      "url": "https://www.wgcu.org/2026-11-06/major-cities-may-be-impacted-by-river-flooding-for-several-weeks-following-a-1-in-1000-year-flash-flooding-event"
+    },
+    {
+      "title": "The Watchers — Florida declares emergency after catastrophic flooding in southern Brevard County (3 Nov 2026)",
+      "url": "https://watchers.news/2026/11/03/florida-declares-emergency-after-catastrophic-flooding-in-southern-brevard-county/"
+    },
+    {
+      "title": "Cotality Hazard HQ — Historic rain floods Florida's Space Coast (3 Nov 2026)",
+      "url": "https://www.cotality.com/hazard-hq/historic-rain-floods-floridas-space-coast"
+    },
+    {
+      "title": "Business Insurance — Floods expected to cause hundreds of millions in losses (6 Nov 2026, citing Aon)",
+      "url": "https://www.businessinsurance.com/floods-expected-to-cause-hundreds-of-millions-in-losses/"
+    },
+    {
+      "title": "IPCC AR6 WGI — Summary for Policymakers (2021)",
+      "url": "https://www.ipcc.ch/report/ar6/wg1/chapter/summary-for-policymakers/"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard (data release May 2026)",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NOAA NCEI IBTrACS v04r01",
+      "url": "https://www.ncei.noaa.gov/products/international-best-track-archive"
+    },
+    {
+      "title": "Copernicus Sentinel-2 L2A via AWS Earth Search; Sentinel-1 RTC via Microsoft Planetary Computer",
+      "url": "https://planetarycomputer.microsoft.com/dataset/sentinel-1-rtc"
+    }
+  ],
+  "images": [
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "Key figures panel built from sourced numbers: NOAA/NWS WPC Storm Summary No. 3; NWS Melbourne via FPREN/WGCU; AccuWeather (4 Nov 2026); State of Florida EO 26-228; ClimRisk engine (JRC GloFAS v2.1.2, Deltares GFM)"
+    },
+    {
+      "file": "chart_rainfall_wpc.png",
+      "kind": "chart",
+      "source": "NOAA/NWS Weather Prediction Center, Storm Summary No. 3 for Florida Heavy Rainfall and Flash Flooding, 3 Nov 2026"
+    },
+    {
+      "file": "s2_before.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_17RNM_20261014_1_L2A via AWS Earth Search; processed by ClimRisk"
+    },
+    {
+      "file": "s2_after.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2C_17RNM_20261108_0_L2A via AWS Earth Search; processed by ClimRisk"
+    },
+    {
+      "file": "radar_palm_bay.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-1 data (2026), RTC via Microsoft Planetary Computer (passes 24 Oct and 5 Nov 2026); processed by ClimRisk"
+    },
+    {
+      "file": "chart_engine_losses.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (Risk Analyst); NGFS Phase 5; IBTrACS v04r01; JRC GloFAS v2.1.2; Deltares GFM; Climate TRACE v6 / EPA GHGRP 2023"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 true-colour scene of Palm Bay, 8 Nov 2026 (contains modified Copernicus Sentinel-2 data)"
+    }
+  ]
+}
