@@ -7,6 +7,12 @@ on:
 permissions:
   contents: write
 
+# Two pushes in a row (e.g. publishing two articles) used to start two deploys that
+# raced to force-push gh-pages; the loser failed. Queue them instead.
+concurrency:
+  group: deploy-climrisk-io
+  cancel-in-progress: false
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
