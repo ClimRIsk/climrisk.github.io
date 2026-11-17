@@ -1,0 +1,112 @@
+{
+  "slug": "duke-energy-climate-risk",
+  "tier": "case-study",
+  "kicker": "Company Risk · US Utilities",
+  "title": "Storms on the Wires, Carbon in the Stack: Where Duke Energy's Climate Risk Actually Sits",
+  "detail": "Hurricane Helene's bill landed on poles and transformers, not power stations; the ClimRisk engine finds Duke's 51 fossil plants carry modest storm risk but a mean carbon-driven loss of $19bn to $33bn to 2050 if US policy tightens after 2030.",
+  "status": "published",
+  "date": "2026-11-16",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/duke-energy-climate-risk/cover.png",
+  "sources": [
+    {
+      "title": "Business News Today: Duke Energy targets 16 GW power build as earnings growth tests grid investment (11 Nov 2026)",
+      "url": "https://business-news-today.com/duke-energy-duk-targets-16-gw-power-build-as-earnings-growth-tests-grid-investment/"
+    },
+    {
+      "title": "Duke Energy Form 10-K, FY2025",
+      "url": "https://www.sec.gov/Archives/edgar/data/1326160/000132616026000014/duk-20251231.htm"
+    },
+    {
+      "title": "T&D World: Duke Raises Rate Base Growth Forecast For Next Five Years (10 Feb 2026)",
+      "url": "https://www.tdworld.com/utility-business/news/55356622/duke-raises-rate-base-growth-forecast-for-next-five-years"
+    },
+    {
+      "title": "Business North Carolina: Duke Energy to seek bonds to cover Helene-related costs",
+      "url": "https://businessnc.com/duke-energy-to-seek-bonds-to-cover-helene-related-costs/"
+    },
+    {
+      "title": "Reuters via ThePrint: Duke Energy files to recover $1.1 billion in hurricane costs (27 Dec 2024)",
+      "url": "https://theprint.in/environment/duke-energy-files-to-recover-1-1-billion-in-hurricane-costs/2422653/"
+    },
+    {
+      "title": "Acme News: Duke Energy nears final hurdle for second storm recovery bond (18 Apr 2025)",
+      "url": "https://acmenews.net/duke-energy-nears-final-hurdle-for-second-storm-recovery-bond/"
+    },
+    {
+      "title": "Duke Energy: South Carolina regulators approve proposals that reduce Hurricane Helene cost impact (2 Jan 2026)",
+      "url": "https://investors.duke-energy.com/news/news-details/2026/South-Carolina-regulators-approve-proposals-that-improve-reliability-reduce-Hurricane-Helene-cost-impact-on-Duke-Energy-customer-bills/default.aspx"
+    },
+    {
+      "title": "POWER: Duke Energy plan includes new gas-fired plants, nuclear additions, delayed coal retirements (2 Oct 2025)",
+      "url": "https://www.powermag.com/duke-energy-plan-includes-new-gas-fired-plants-nuclear-additions-delayed-coal-retirements/"
+    },
+    {
+      "title": "WFAE: An EPA emissions rollback proposal is key to Duke Energy's plan to delay coal plant retirements (8 Oct 2025)",
+      "url": "https://www.wfae.org/2025-10-08/epa-emissions-rollback-duke-energy-coal-plant-retirements"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NGFS Phase 5 scenarios via IIASA",
+      "url": "https://data.ece.iiasa.ac.at/ngfs/"
+    },
+    {
+      "title": "NOAA IBTrACS v04r01",
+      "url": "https://www.ncei.noaa.gov/products/international-best-track-archive"
+    },
+    {
+      "title": "Climate TRACE",
+      "url": "https://climatetrace.org/"
+    }
+  ],
+  "images": [
+    {
+      "file": "sat-sutton.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2B_17SQU_20261110, via AWS Earth Search"
+    },
+    {
+      "file": "sat-roxboro.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2C_17SPA_20261108, via AWS Earth Search"
+    },
+    {
+      "file": "key-figures.png",
+      "kind": "infographic",
+      "source": "T&D World (Feb 2026); Business North Carolina (Nov 2024); World Bank Carbon Pricing Dashboard (May 2026); Duke Energy 10-K FY2025"
+    },
+    {
+      "file": "capex-split.png",
+      "kind": "chart",
+      "source": "T&D World, 10 Feb 2026 (Duke Energy guidance)"
+    },
+    {
+      "file": "portfolio-scenarios.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (NGFS Phase 5, Climate TRACE v6, World Bank May 2026)"
+    },
+    {
+      "file": "gibson-annual-cost.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (NGFS Phase 5, Climate TRACE v6)"
+    },
+    {
+      "file": "sites-physical-vs-carbon.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (IBTrACS, JRC, Deltares, FLOPROS, NGFS Phase 5)"
+    },
+    {
+      "file": "assets-map.png",
+      "kind": "map",
+      "source": "ClimRisk asset register (Climate TRACE v6 / EPA GHGRP) on Natural Earth"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 scene S2B_17SQU_20261110; contains modified Copernicus Sentinel-2 data (2026)"
+    }
+  ]
+}
