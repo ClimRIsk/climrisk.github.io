@@ -1,0 +1,147 @@
+{
+  "slug": "sumatra-second-flood",
+  "tier": "case-study",
+  "kicker": "Physical Risk · Southeast Asia",
+  "title": "The Second Flood: What Sumatra's Return to the Water Says About Recovery Risk",
+  "detail": "A year after Cyclone Senyar killed more than 1,200 people, floods are back in Aceh Tamiang and Langkat while fewer than 4% of planned permanent homes are built and insurers carried under 2% of the last bill, leaving the state and the banks to absorb the next one.",
+  "status": "published",
+  "date": "2026-11-23",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/sumatra-second-flood/cover.png",
+  "sources": [
+    {
+      "title": "BNPB — Perkembangan Situasi dan Penanganan Bencana di Tanah Air, 13 November 2026",
+      "url": "https://www.bnpb.go.id/berita/perkembangan-situasi-dan-penanganan-bencana-di-tanah-air-13-november-2026"
+    },
+    {
+      "title": "BNPB — Perkembangan Situasi dan Penanganan Bencana di Tanah Air, 15 November 2026",
+      "url": "https://www.bnpb.go.id/berita/perkembangan-situasi-dan-penanganan-bencana-di-tanah-air-15-november-2026"
+    },
+    {
+      "title": "JournalArta — Banjir BNPB: 5 Kabupaten dan 11.404 KK Terdampak (10 Nov 2026)",
+      "url": "https://journalarta.com/news/2026/11/10/banjir-bnpb-lima-kabupaten-11404-kepala-keluarga/"
+    },
+    {
+      "title": "JournalArta — Rehabilitasi Bencana Sumatera 2027 Anggaran Rp 42 Triliun (10 Nov 2026)",
+      "url": "https://journalarta.com/news/2026/11/10/rehabilitasi-bencana-sumatera-2027-anggaran-rp-42-triliun/"
+    },
+    {
+      "title": "ANTARA — BNPB sinkronisasi mitigasi bencana hidrometeorologi Sumatera (17 Nov 2026)",
+      "url": "https://www.antaranews.com/berita/5858527/bnpb-sinkronisasi-mitigasi-bencana-hidrometeorologi-sumatera"
+    },
+    {
+      "title": "The Star (Jakarta Post) — Fresh floods hit North and West Sumatra as communities struggle to recover (14 Oct 2026)",
+      "url": "https://www.thestar.com.my/aseanplus/aseanplus-news/2026/10/14/fresh-floods-hit-north-and-west-sumatra-as-communities-struggle-to-recover-from-last-year039s-disaster"
+    },
+    {
+      "title": "NU Online — Korban Banjir dan Longsor Aceh–Sumatra Capai 1.204 Jiwa (BNPB, 5 Feb 2026)",
+      "url": "https://nu.or.id/nasional/korban-banjir-dan-longsor-aceh-sumatra-capai-1-204-jiwa-bnpb-kebut-huntara-AyRvs"
+    },
+    {
+      "title": "CNBC Indonesia — Kerugian Banjir Sumatra Tembus Rp51 T, Klaim Asuransi Hanya Rp567 M (15 Dec 2025)",
+      "url": "https://www.cnbcindonesia.com/market/20251215182222-17-694422/kerugian-banjir-sumatra-tembus-rp51-t-klaim-asuransi-hanya-rp567-m"
+    },
+    {
+      "title": "ANTARA — AAUI sebut klaim asuransi akibat bencana Sumatera dekati Rp1 triliun (28 Jan 2026)",
+      "url": "https://www.antaranews.com/berita/5381662/aaui-sebut-klaim-asuransi-akibat-bencana-sumatera-dekati-rp1-triliun"
+    },
+    {
+      "title": "Investortrust — Pemerintah Kucurkan Rp 100,1 Triliun untuk Rehabilitasi Rekonstruksi Pascabencana Sumatra (25 May 2026)",
+      "url": "https://investortrust.id/business/104368/pemerintah-kucurkan-rp-100-1-triliun-untuk-rehabilitasi-rekonsktruksi-pascabencana-sumatra"
+    },
+    {
+      "title": "Investortrust — Pemulihan Sumatera: 20.770 Huntara Rampung (20 Oct 2026)",
+      "url": "https://investortrust.id/national/119927/dua-tahun-gerak-nyata-pemulihan-sumatera-kian-cepat-20770-huntara-rampung-jalan-nasional-pulih-100"
+    },
+    {
+      "title": "OJK — Kebijakan Perlakuan Khusus Kredit Pembiayaan Korban Bencana Aceh, Sumut dan Sumbar (11 Dec 2025)",
+      "url": "https://www.ojk.go.id/id/berita-dan-kegiatan/siaran-pers/Pages/OJK-Keluarkan-Kebijakan-Perlakuan-Khusus-Kredit-Pembiayaan-Korban-Bencana-Aceh,-Sumut-dan-Sumbar.aspx"
+    },
+    {
+      "title": "detikFinance — 246 Ribu Nasabah Terdampak Bencana Sumatera Dapat Restrukturisasi Kredit (3 Mar 2026)",
+      "url": "https://finance.detik.com/moneter/d-8381965/246-ribu-nasabah-terdampak-bencana-sumatera-dapat-restrukturisasi-kredit"
+    },
+    {
+      "title": "Databoks (BPS) — Volume Produksi Kelapa Sawit menurut Provinsi (25 Jul 2024)",
+      "url": "https://databoks.katadata.co.id/en/agroindustri/multiple/319be190a2cb82b/volume-produksi-kelapa-sawit-menurut-provinsi"
+    },
+    {
+      "title": "Katadata — Benarkah Sawit Jadi Penyebab Banjir Sumatera? (GAPKI, 9 Dec 2025)",
+      "url": "https://katadata.co.id/amp/berita/industri/6937cd4141230/benarkah-sawit-jadi-penyebab-banjir-sumatera/"
+    },
+    {
+      "title": "Okezone — PLN pastikan PLTU Labuhan Angin dan Pangkalan Susu tetap aman (11 Dec 2025)",
+      "url": "https://economy.okezone.com/read/2025/12/11/320/3189254/pln-pastikan-pltu-labuhan-angin-dan-pangkalan-susu-tetap-aman-usai-diterjang-banjir"
+    },
+    {
+      "title": "Bisnis — ESDM Target Pasokan Listrik ke 1,4 Juta Pelanggan di Aceh Pulih (5 Dec 2025)",
+      "url": "https://ekonomi.bisnis.com/read/20251205/44/1934531/esdm-target-pasokan-listrik-ke-14-juta-pelanggan-di-aceh-pulih-pekan-ini"
+    },
+    {
+      "title": "Liputan6 — 5 Tower SUTT Roboh Diterjang Banjir di Aceh (27 Nov 2025)",
+      "url": "https://www.liputan6.com/bisnis/read/6222231/5-tower-sutt-roboh-diterjang-banjir-di-aceh-pln-kirim-tim-bangun-tower-darurat"
+    },
+    {
+      "title": "IPCC AR6 WGII Chapter 10: Asia",
+      "url": "https://ipcc.ch/report/ar6/wg2/chapter/chapter-10"
+    },
+    {
+      "title": "IPCC AR6 WGI Regional Fact Sheet: Asia",
+      "url": "https://www.ipcc.ch/report/ar6/wg1/downloads/factsheets/IPCC_AR6_WGI_Regional_Fact_Sheet_Asia.pdf"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard (May 2026 data release)",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "Databoks — Rupiah at IDR 18,275 per US dollar (19 Nov 2026)",
+      "url": "https://databoks.katadata.co.id/en/market/statistics/32ec67c22c32882/rupiah-exchange-rate-weakens-to-idr-18275-per-us-dollar-thursday-19-november-2026"
+    },
+    {
+      "title": "Copernicus Sentinel-1 RTC and Sentinel-2 L2A via Microsoft Planetary Computer",
+      "url": "https://planetarycomputer.microsoft.com/"
+    }
+  ],
+  "images": [
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "BNPB; Satgas PRR via Investortrust; AAUI via ANTARA; BNPB via CNBC Indonesia; OJK via detikFinance; ClimRisk engine"
+    },
+    {
+      "file": "s2_before.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2025), L2A 23 Aug 2025, via Microsoft Planetary Computer; processed by ClimRisk"
+    },
+    {
+      "file": "s2_after.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), L2A 25 Jan 2026, via Microsoft Planetary Computer; processed by ClimRisk"
+    },
+    {
+      "file": "radar_kuala_simpang.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-1 data (2026), RTC 6 and 12 Nov 2026, via Microsoft Planetary Computer; processed by ClimRisk"
+    },
+    {
+      "file": "chart_who_pays.png",
+      "kind": "chart",
+      "source": "BNPB via CNBC Indonesia (15 Dec 2025); Investortrust/ANTARA (25 May 2026); OJK via detikFinance (3 Mar 2026); AAUI via ANTARA (28 Jan 2026); FX Databoks (19 Nov 2026)"
+    },
+    {
+      "file": "chart_recovery.png",
+      "kind": "chart",
+      "source": "Sumatra rehabilitation and reconstruction task force via Investortrust (20 Oct 2026)"
+    },
+    {
+      "file": "chart_engine_pangkalan_susu.png",
+      "kind": "chart",
+      "source": "ClimRisk engine Risk Analyst; NGFS Phase 5; JRC GloFAS v2.1.2; Deltares GFM; FLOPROS v1; World Bank Carbon Pricing Dashboard; Climate TRACE v6"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), crop of the 25 Jan 2026 Kuala Simpang scene"
+    }
+  ]
+}
