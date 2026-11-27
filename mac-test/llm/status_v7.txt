@@ -1,0 +1,26 @@
+Fri Oct 16 09:49:07 IST 2026
+--- processes
+shrinivashdhamodharakannan  4943   0.1 15.2 439548272 2549520   ??  S     9:33AM   2:26.63 /opt/homebrew/Cellar/ollama/0.40.0/libexec/lib/ollama/llama-server --model /Users/shrinivashdhamodharakannan/
+shrinivashdhamodharakannan 69219   0.0  0.1 435300256  14368   ??  S     6:13AM   0:01.87 /Library/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m cri.llmtrain.
+shrinivashdhamodharakannan 15388   0.0  0.0 435307824    448   ??  S     2:02PM   0:00.06 bash /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Modelling/mac-test/Run
+shrinivashdhamodharakannan 15393   0.0  0.0 435301744    928   ??  S     2:02PM   0:00.01 caffeinate -dimsu bash /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/Climate Financial Risk Mode
+shrinivashdhamodharakannan 41220   0.0  0.3 436819968  47616   ??  S     7Oct26   5:13.40 /opt/homebrew/bin/ollama serve
+--- uptime
+ 9:49  up 29 days, 13:21, 6 users, load averages: 16.51 19.86 13.16
+Now drawing from 'AC Power'
+ -InternalBattery-0 (id=22085731)	59%; charging; 12:36 remaining present: true
+--- recent files
+total 12496
+-rw-r--r--   1 shrinivashdhamodharakannan  staff     1171 16 Oct 09:49 status_v7.txt
+-rw-r--r--   1 shrinivashdhamodharakannan  staff    35139 16 Oct 09:33 eval_v7_new.json
+-rw-r--r--   1 shrinivashdhamodharakannan  staff    45312 16 Oct 06:13 run_v7.log
+-rw-r--r--   1 shrinivashdhamodharakannan  staff    92279 16 Oct 06:13 train_v7.log
+-rw-r--r--   1 shrinivashdhamodharakannan  staff        5 16 Oct 06:13 TRAIN_DONE_v7
+-rw-r--r--   1 shrinivashdhamodharakannan  staff    25386 16 Oct 06:02 raw_v7.log
+drwxr-xr-x@  4 shrinivashdhamodharakannan  staff      128 15 Oct 23:26 xbrl
+--- log tail
+{"model":"climrisk-llm-v7","created_at":"2026-10-16T00:43:05.786757Z","message":{"role":"assistant","content":"A 1-in-100 loss is the loss level with a 1% chance of being exceeded in any year, and it is the smallest loss that is possible with a 1% chance of being exceeded. It is the loss level with a 1% chance of being exceeded every year, and it is the smallest loss that is possible with a 1% chance of being exceeded."},"done":true,"done_reason":"stop","total_duration":7726580916,"load_duration":2038211625,"prompt_eval_count":39,"prompt_eval_cached_count":0,"prompt_eval_duration":237441792,"eval_count":79,"eval_duration":5428538209}
+
+[06:13:05] finished
+
+[06:13:05] 6/10 held-out evaluation of the new tasks (same rows for every model)

@@ -1,0 +1,115 @@
+{
+  "slug": "andhra-twin-cyclones",
+  "tier": "case-study",
+  "kicker": "Physical Risk · South Asia",
+  "title": "Twice in Six Days: What Andhra Pradesh's Twin Cyclones Say About Clustered Storm Risk",
+  "detail": "Cyclones Arnab and Murasu hit the same Indian coast six days apart, a year to the day after Montha, leaving ₹11,784 crore of first loss estimates; our engine's storm record contains none of the three.",
+  "status": "draft",
+  "date": "2026-11-19",
+  "author": "Shrinivash D Kannan",
+  "cover": "/research/andhra-twin-cyclones/cover.png",
+  "sources": [
+    {
+      "title": "DT Next (PTI) — Cyclone Arnab crosses Andhra coast; damages roads, electric poles (28 Oct 2026)",
+      "url": "https://www.dtnext.in/news/national/cyclone-arnab-crosses-andhra-coast-damages-roads-electric-poles"
+    },
+    {
+      "title": "Deccan Chronicle — Cyclone Arnab claims 9 lives, devastates crops in 14 AP districts (28 Oct 2026)",
+      "url": "https://www.deccanchronicle.com/amp/southern-states/andhra-pradesh/cyclone-arnab-claims-9-lives-devastates-crops-in-14-ap-dists-1999772"
+    },
+    {
+      "title": "Al Jazeera (AFP/Reuters) — At least 3 dead after Cyclone Arnab hits southern India (28 Oct 2026)",
+      "url": "https://www.aljazeera.com/news/2026/10/28/cyclone-arnab-makes-landfall-in-indias-andhra-pradesh"
+    },
+    {
+      "title": "Outlook — Cyclone Arnab damage tops Rs 4,600 crore in Andhra Pradesh (30 Oct 2026)",
+      "url": "https://www.outlookindia.com/national/cyclone-arnab-damage-tops-rs-4600-crore-in-andhra-pradesh-rain-cools-north-india"
+    },
+    {
+      "title": "Al Jazeera (Reuters) — Cyclone Murasu makes landfall on India's eastern coast (3 Nov 2026)",
+      "url": "https://www.aljazeera.com/news/2026/11/3/cyclone-murasu-makes-landfall-on-indias-eastern-coast"
+    },
+    {
+      "title": "Down To Earth — Cyclone Murasu, second severe cyclonic storm in a week (3 Nov 2026)",
+      "url": "https://www.downtoearth.org.in/amp/story/climate-change/cyclone-murasu-second-severe-cyclonic-storm-in-a-week-leaves-a-trail-of-destruction-along-andhra-pradesh-coast"
+    },
+    {
+      "title": "Telangana Today (IANS) — Andhra: Cyclone Murasu claimed eight lives, caused Rs 1,918 crore loss (6 Nov 2026)",
+      "url": "https://telanganatoday.com/andhra-cyclone-murasu-claimed-eight-lives-caused-rs-1918-crore-loss"
+    },
+    {
+      "title": "Deccan Chronicle (PTI) — AP CM Naidu pegs Cyclone Murasu loss at nearly Rs 2,000 crore (6 Nov 2026)",
+      "url": "https://www.deccanchronicle.com/amp/southern-states/andhra-pradesh/ap-cm-naidu-pegs-cyclone-murasu-loss-at-nearly-rs-2000-crore-2002251"
+    },
+    {
+      "title": "Telangana Today (PTI) — Andhra Pradesh suffers Rs 5,265 crore loss in Cyclone Montha, says Naidu (30 Oct 2025)",
+      "url": "https://telanganatoday.com/andhra-pradesh-suffers-rs-5265-crore-loss-in-cyclone-montha-says-naidu"
+    },
+    {
+      "title": "IMD RSMC New Delhi — Hourly Bulletin No. 12, Severe Cyclonic Storm Montha (28 Oct 2025)",
+      "url": "https://rsmcnewdelhi.imd.gov.in/uploads/archive/48/48_e4984b_12._Hourly_Bulletin_number_12_Montha_2130_28102025.pdf"
+    },
+    {
+      "title": "Telangana Today (PTI) — Rupee rises to 93.70 against US dollar (11 Nov 2026)",
+      "url": "https://telanganatoday.com/rupee-rises-to-93-70-against-us-dollar-as-domestic-markets-strengthen"
+    },
+    {
+      "title": "IPCC AR6 WGI — Summary for Policymakers (2021)",
+      "url": "https://www.ipcc.ch/report/ar6/wg1/chapter/summary-for-policymakers/"
+    },
+    {
+      "title": "World Bank Carbon Pricing Dashboard (data release May 2026)",
+      "url": "https://carbonpricingdashboard.worldbank.org/"
+    },
+    {
+      "title": "NOAA NCEI IBTrACS v04r01",
+      "url": "https://www.ncei.noaa.gov/products/international-best-track-archive"
+    },
+    {
+      "title": "Copernicus Sentinel-2 L2A via AWS Earth Search; Sentinel-1 RTC via Microsoft Planetary Computer",
+      "url": "https://planetarycomputer.microsoft.com/dataset/sentinel-1-rtc"
+    }
+  ],
+  "images": [
+    {
+      "file": "infographic_key_figures.png",
+      "kind": "infographic",
+      "source": "Key figures panel built from sourced numbers: IMD via PTI/DT Next and Reuters/Al Jazeera; Govt. of Andhra Pradesh via Outlook (30 Oct 2026), IANS/Telangana Today (6 Nov 2026), Deccan Chronicle (28 Oct 2026); ClimRisk engine"
+    },
+    {
+      "file": "chart_state_losses.png",
+      "kind": "chart",
+      "source": "Govt. of Andhra Pradesh preliminary estimates as reported by PTI/Telangana Today (30 Oct 2025), Outlook (30 Oct 2026), IANS/Telangana Today (6 Nov 2026)"
+    },
+    {
+      "file": "s2_before.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2C_44QND_20261011_0_L2A via AWS Earth Search; processed by ClimRisk"
+    },
+    {
+      "file": "s2_after.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-2 data (2026), scene S2C_44QND_20261110_0_L2A via AWS Earth Search; processed by ClimRisk"
+    },
+    {
+      "file": "radar_delta.png",
+      "kind": "satellite",
+      "source": "Contains modified Copernicus Sentinel-1 data (2026), RTC via Microsoft Planetary Computer (passes 23 Oct and 4 Nov 2026); processed by ClimRisk"
+    },
+    {
+      "file": "chart_wind_return_period.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (IBTrACS v04r01, Holland 1980 profile); IMD via PTI/DT Next and Deccan Chronicle (28 Oct 2026); IMD Hourly Bulletin No. 12, Montha (28 Oct 2025)"
+    },
+    {
+      "file": "chart_engine_losses.png",
+      "kind": "chart",
+      "source": "ClimRisk engine (Risk Analyst); NGFS Phase 5; IBTrACS v04r01; JRC GloFAS v2.1.2; Deltares GFM; FLOPROS v1; Climate TRACE v6"
+    },
+    {
+      "file": "cover.png",
+      "kind": "satellite",
+      "source": "Crop of Sentinel-2 true-colour scene of the Godavari delta near Narsapur, 10 Nov 2026 (contains modified Copernicus Sentinel-2 data)"
+    }
+  ]
+}

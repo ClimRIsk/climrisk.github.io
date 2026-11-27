@@ -1,0 +1,31 @@
+{
+ "new": "climrisk-llm-v8",
+ "old": "climrisk-llm-v7",
+ "new_tasks": {
+  "new": 0.917,
+  "old": 0.7689,
+  "ok": true
+ },
+ "reasoning": {
+  "new": 0.9561,
+  "old": 0.9287,
+  "ok": true
+ },
+ "general": {
+  "new": 0.8603,
+  "old": 0.8379,
+  "ok": true
+ },
+ "promote": true,
+ "why": "all checks passed",
+ "event_tasks": {
+  "new": 1.0,
+  "old": 0.474,
+  "ok": true
+ },
+ "v7_tasks": {
+  "new": 0.8838,
+  "old": 0.8869,
+  "ok": true
+ }
+}

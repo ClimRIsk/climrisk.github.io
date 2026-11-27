@@ -1,0 +1,9 @@
+total 7888312
+drwxr-xr-x   8 shrinivashdhamodharakannan  staff         256 12 Oct 11:17 .
+drwxr-x---+ 34 shrinivashdhamodharakannan  staff        1088 16 Oct 10:31 ..
+-rw-r--r--   1 shrinivashdhamodharakannan  staff  2019377792 12 Oct 11:17 climrisk-llm-v5b-q4km.gguf
+-rw-r--r--   1 shrinivashdhamodharakannan  staff       15350 12 Oct 11:17 climrisk-llm-v5b.Modelfile
+-rw-r--r--   1 shrinivashdhamodharakannan  staff  2019377792 12 Oct 11:12 climrisk-llm-v6-q4km.gguf
+-rw-r--r--   1 shrinivashdhamodharakannan  staff       15349 12 Oct 11:12 climrisk-llm-v6.Modelfile
+-rw-r--r--   1 shrinivashdhamodharakannan  staff       15290 12 Oct 11:07 llama32.tail
+-rw-r--r--   1 shrinivashdhamodharakannan  staff         420 12 Oct 11:17 model_manifest.json

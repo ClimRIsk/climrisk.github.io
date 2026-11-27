@@ -1,0 +1,305 @@
+{
+ "climrisk-llm-v8": {
+  "metrics": {
+   "chat.length_ok": 1.0,
+   "chat.names_nulls": 0.819,
+   "chat.null_not_called_low": 0.917,
+   "chat.numbers_ok": 1.0,
+   "chat.says_not_assessed": 0.833,
+   "evfin.length_ok": 1.0,
+   "evfin.numbers_ok": 1.0,
+   "evfin.says_no_skill": 1.0,
+   "evfin.says_not_enough": 1.0,
+   "evfin.says_not_forecast": 1.0,
+   "evtc.gives_range": 1.0,
+   "evtc.length_ok": 1.0,
+   "evtc.names_misses": 1.0,
+   "evtc.numbers_ok": 1.0,
+   "evtc.says_not_forecast": 1.0,
+   "evtc.says_not_insured_or_site": 1.0,
+   "gold.invented_numbers": 0.0,
+   "gold.length_ok": 0.933,
+   "gold.overlap_f1": 0.211,
+   "scenario.flags_unverified_input": 1.0,
+   "scenario.length_ok": 1.0,
+   "scenario.numbers_ok": 0.85,
+   "scenario.says_no_location": 1.0,
+   "scenario.says_not_assessed": 1.0,
+   "siteprofile.length_ok": 1.0,
+   "siteprofile.names_nulls": 0.944,
+   "siteprofile.null_not_called_low": 1.0,
+   "siteprofile.numbers_ok": 1.0,
+   "siteprofile.says_not_assessed": 0.967,
+   "stress.length_ok": 0.975,
+   "stress.numbers_ok": 0.975,
+   "stress.says_not_modelled": 1.0,
+   "stress.says_screening": 0.975
+  },
+  "n_rows": 211,
+  "seconds": 1428,
+  "samples": [
+   {
+    "kind": "evtc",
+    "q": "or_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: If a hurricane with 72 knot winds at the coast hit the US next year, what total loss should we expect?",
+    "out": "For a storm reaching 72 knots at the US coast, the model fitted on 61 recorded US storms expects a total economic cost of about $4.6 billion, with an 80% range of $1.2 to $18.0 billion. That is the cost of the whole event across the country, not an insured loss and not the loss at one site. Tested on storms it had not seen, its typical error was a factor of 2.28, against 3.95 for guessing the typical storm, and 66% of storms were within a factor of 3 (guessing: 41%). It underestimates rain and surge storms such as Katrina, Harvey and Allison. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "icane Charley (August 2004)\", \"wind_kt\": 130, \"observed_busd\": 26.7, \"predicted_busd\": 28.4, \"factor\": 1.06, \"within_factor_3\": true, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: What would the model have predicted for Hurricane Charley (August 2004), and what happened?",
+    "out": "For Hurricane Charley (August 2004), with 130 knots at the coast, a model fitted without that storm would have predicted about $28.4 billion; the observed total economic cost was $26.7 billion. It over-predicted: the model's figure was 1.06 times the observed cost, within a factor of 3. A wind-only model cannot see rain, surge or the value of what was in the way, so single storms can miss widely. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "lts: {\"storm\": \"Tropical Storm Elsa (July 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.4, \"predicted_busd\": 3.5, \"factor\": 2.5, \"within_factor_3\": true, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: How well did the event-trained model do on Tropical Storm Elsa (July 2021)?",
+    "out": "For Tropical Storm Elsa (July 2021), with 65 knots at the coast, a model fitted without that storm would have predicted about $3.5 billion; the observed total economic cost was $1.4 billion. It over-predicted: the model's figure was 2.5 times the observed cost, within a factor of 3. A wind-only model cannot see rain, surge or the value of what was in the way, so single storms can miss widely. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "rm\": \"Hurricane Nicholas (September 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.2, \"predicted_busd\": 3.6, \"factor\": 3.04, \"within_factor_3\": false, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: How well did the event-trained model do on Hurricane Nicholas (September 2021)?",
+    "out": "For Hurricane Nicholas (September 2021), with 65 knots at the coast, a model fitted without that storm would have predicted about $3.6 billion; the observed total economic cost was $1.2 billion. It over-predicted: the model's figure was 3.04 times the observed cost, outside a factor of 3. A wind-only model cannot see rain, surge or the value of what was in the way, so single storms can miss widely. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "gine results: {\"storm\": \"Hurricane Nicholas (September 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.2, \"predicted_busd\": 3.6, \"factor\": 3.04, \"within_factor_3\": false, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: Did the model get Hurricane Nicholas (September 2021) right?",
+    "out": "For Hurricane Nicholas (September 2021), with 65 knots at the coast, a model fitted without that storm would have predicted about $3.6 billion; the observed total economic cost was $1.2 billion. It over-predicted: the model's figure was 3.04 times the observed cost, outside a factor of 3. A wind-only model cannot see rain, surge or the value of what was in the way, so single storms can miss widely. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "factor_error\": 3.95, \"within_factor_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: Based on past US storms, what is a 158-knot hurricane likely to cost?",
+    "out": "For a storm reaching 158 knots at the US coast, the model fitted on 61 recorded US storms expects a total economic cost of about $102.2 billion, with an 80% range of $26.0 to $401.6 billion. That is the cost of the whole event across the country, not an insured loss and not the loss at one site. Tested on storms it had not seen, its typical error was a factor of 2.28, against 3.95 for guessing the typical storm, and 66% of storms were within a factor of 3 (guessing: 41%). It underestimates rain and surge storms such as Katrina, Harvey and Allison. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "factor_error\": 3.95, \"within_factor_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: Based on past US storms, what is a 128-knot hurricane likely to cost?",
+    "out": "For a storm reaching 128 knots at the US coast, the model fitted on 61 recorded US storms expects a total economic cost of about $34.6 billion, with an 80% range of $8.8 to $136.0 billion. That is the cost of the whole event across the country, not an insured loss and not the loss at one site. Tested on storms it had not seen, its typical error was a factor of 2.28, against 3.95 for guessing the typical storm, and 66% of storms were within a factor of 3 (guessing: 41%). It underestimates rain and surge storms such as Katrina, Harvey and Allison. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evfin",
+    "q": "\", \"n_events\": 7, \"n_company_events\": 37, \"median_pct\": 2.4, \"p25_pct\": -3.5, \"p75_pct\": 9.9, \"share_decline_pct\": 43, \"mdae_all_events\": 8.37, \"mdae_hazard\": 8.67, \"finding\": \"hazard type did not improve the prediction\"}\n\nQuestion: What do recorded flood events say about company revenue afterwards?",
+    "out": "Across 37 company filings after 7 recorded flood events, the event-year revenue change had a median of 2.4% (middle half -3.5% to 9.9%), and 43% of companies saw revenue fall. Tested on events it had not seen, knowing the hazard type did not improve the prediction (typical error 8.67 points against 8.37 for the all-event average), so these figures describe the past and are not a forecast of your revenue. Screening-grade."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "h constructed 2.6 m; wildfire weather (FWI) constructed 114.6; coastal flood depth modelled 3.3 m; extreme heat (WBGT) null (null); earthquake shaking modelled 0.1 g; cyclone wind constructed 39.4 m/s\n\nQuestion: Which hazards are missing for a data centre in Chennai, and what should I do about them?",
+    "out": "Modelled: coastal flood depth 3.3 m. Built from a fallback, so lower confidence: river flood depth, wildfire weather (FWI), cyclone wind. Null, meaning not assessed: extreme heat (WBGT). These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a farm co-op in Punjab: landslide null (null); river flood depth null (null); water stress constructed 1.5 of 5; wildfire weather (FWI) null (null); extreme rain none_found 0 (absent here)\n\nQuestion: Which hazards are missing for a farm co-op in Punjab, and what should I do about them?",
+    "out": "Modelled: landslide, river flood depth, wildfire weather (FWI). Built from a fallback, so lower confidence: water stress. Established absent here: extreme rain. Null, meaning not assessed: landslide, river flood depth, wildfire weather (FWI). These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "uake shaking modelled 0.2 g; landslide null (null); water stress null (null); extreme heat (WBGT) modelled 32.5 C; cyclone wind constructed 61.2 m/s; wildfire weather (FWI) modelled 91.1; drought null (null)\n\nQuestion: Which hazards are missing for a mine in Pilbara, and what should I do about them?",
+    "out": "Modelled: earthquake shaking 0.2 g, wildfire weather (FWI) 91.1. Built from a fallback, so lower confidence: cyclone wind, extreme heat (WBGT). Null, meaning not assessed: landslide, water stress. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ather (FWI) modelled 98.7; extreme heat (WBGT) constructed 34.7 C; cyclone wind null (null); extreme rain constructed 198.4 mm per day; landslide modelled 0 % unstable; water stress constructed 1.2 of 5\n\nQuestion: Which hazards are missing for a farm co-op in Punjab, and what should I do about them?",
+    "out": "Modelled: cyclone wind, landslide, drought. Built from a fallback, so lower confidence: coastal flood depth, extreme heat (WBGT). Null, meaning not assessed: wildfire weather (FWI), extreme rain. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   }
+  ]
+ },
+ "climrisk-llm-v7": {
+  "metrics": {
+   "chat.length_ok": 0.975,
+   "chat.names_nulls": 0.833,
+   "chat.null_not_called_low": 0.958,
+   "chat.numbers_ok": 1.0,
+   "chat.says_not_assessed": 0.875,
+   "evfin.length_ok": 1.0,
+   "evfin.numbers_ok": 1.0,
+   "evfin.says_no_skill": 0.0,
+   "evfin.says_not_enough": 1.0,
+   "evfin.says_not_forecast": 0.0,
+   "evtc.gives_range": 0.0,
+   "evtc.length_ok": 0.912,
+   "evtc.names_misses": 0.0,
+   "evtc.numbers_ok": 0.735,
+   "evtc.says_not_forecast": 0.294,
+   "evtc.says_not_insured_or_site": 0.147,
+   "gold.invented_numbers": 0.2,
+   "gold.length_ok": 0.867,
+   "gold.overlap_f1": 0.205,
+   "scenario.flags_unverified_input": 1.0,
+   "scenario.length_ok": 1.0,
+   "scenario.numbers_ok": 1.0,
+   "scenario.says_no_location": 1.0,
+   "scenario.says_not_assessed": 1.0,
+   "siteprofile.length_ok": 1.0,
+   "siteprofile.names_nulls": 0.928,
+   "siteprofile.null_not_called_low": 1.0,
+   "siteprofile.numbers_ok": 1.0,
+   "siteprofile.says_not_assessed": 1.0,
+   "stress.length_ok": 1.0,
+   "stress.numbers_ok": 0.975,
+   "stress.says_not_modelled": 0.964,
+   "stress.says_screening": 1.0
+  },
+  "n_rows": 211,
+  "seconds": 1471,
+  "samples": [
+   {
+    "kind": "evtc",
+    "q": "or_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: If a hurricane with 72 knot winds at the coast hit the US next year, what total loss should we expect?",
+    "out": "The engine puts wind wind at 72 kt at the coast for 61 storms, and a single hurricane with 72 kt at the coast can cost $4.6 million USD, so the expected total loss is $4586. The backtest median factor error is 2.28, which is within 3% of the baseline."
+   },
+   {
+    "kind": "evtc",
+    "q": "icane Charley (August 2004)\", \"wind_kt\": 130, \"observed_busd\": 26.7, \"predicted_busd\": 28.4, \"factor\": 1.06, \"within_factor_3\": true, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: What would the model have predicted for Hurricane Charley (August 2004), and what happened?",
+    "out": "The expected value for busd is 26.7. The backtest result is Hurricane Charley (August 2004), which is not a forecast. The model gets it wrong: it predicted busd to be 28.4 and it observed busd to be 26.7."
+   },
+   {
+    "kind": "evtc",
+    "q": "lts: {\"storm\": \"Tropical Storm Elsa (July 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.4, \"predicted_busd\": 3.5, \"factor\": 2.5, \"within_factor_3\": true, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: How well did the event-trained model do on Tropical Storm Elsa (July 2021)?",
+    "out": "The engine puts the factor into the back: the expected value for busd is 1.4, the range is 0.4 to 2.4. The backtest is a flip of the flip, so the difference is 1.4 to 2.4. The note says the model was not fitted with this storm, and it shows: the difference is twice the factor."
+   },
+   {
+    "kind": "evtc",
+    "q": "rm\": \"Hurricane Nicholas (September 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.2, \"predicted_busd\": 3.6, \"factor\": 3.04, \"within_factor_3\": false, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: How well did the event-trained model do on Hurricane Nicholas (September 2021)?",
+    "out": "The engine puts the factor into the back: the expected value for this storm is 3.04 and the range is 3.04. The backtest result is a 1-in-4 chance of exceeding the factor. The model gets it wrong, underestimating the storm's impact. The note says the model was not fitted with this storm."
+   },
+   {
+    "kind": "evtc",
+    "q": "gine results: {\"storm\": \"Hurricane Nicholas (September 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.2, \"predicted_busd\": 3.6, \"factor\": 3.04, \"within_factor_3\": false, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: Did the model get Hurricane Nicholas (September 2021) right?",
+    "out": "Not on this engine. The engine already knows Hurricane Nicholas (September 2021) as a past event, and it does not pretend to forecast it: past events are not forecasts. If you can point me to a forecast, I can tell you whether the model got it right."
+   },
+   {
+    "kind": "evtc",
+    "q": "factor_error\": 3.95, \"within_factor_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: Based on past US storms, what is a 158-knot hurricane likely to cost?",
+    "out": "The expected busd for a 158-knot hurricane is 102.2. Backtesting reveals a median factor error of 2.28, baseline median factor error of 3.95. Within a 3% of the maximum is 66, baseline within a 3% of the maximum is 41."
+   },
+   {
+    "kind": "evtc",
+    "q": "factor_error\": 3.95, \"within_factor_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: Based on past US storms, what is a 128-knot hurricane likely to cost?",
+    "out": "The expected busd for a 128-kont hurricane is 34.6. Based on past storms, the backtest median factor error is 2.28. Not known: the number of storms, the wind, the economic cost. These are the limits of the engine's knowledge."
+   },
+   {
+    "kind": "evfin",
+    "q": "\", \"n_events\": 7, \"n_company_events\": 37, \"median_pct\": 2.4, \"p25_pct\": -3.5, \"p75_pct\": 9.9, \"share_decline_pct\": 43, \"mdae_all_events\": 8.37, \"mdae_hazard\": 8.67, \"finding\": \"hazard type did not improve the prediction\"}\n\nQuestion: What do recorded flood events say about company revenue afterwards?",
+    "out": "The engine puts the median percentage of companies that declined revenue after a flood event at 2.4%. The p25% is -3.5, which is not zero. The p75% is 9.9."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "h constructed 2.6 m; wildfire weather (FWI) constructed 114.6; coastal flood depth modelled 3.3 m; extreme heat (WBGT) null (null); earthquake shaking modelled 0.1 g; cyclone wind constructed 39.4 m/s\n\nQuestion: Which hazards are missing for a data centre in Chennai, and what should I do about them?",
+    "out": "Modelled: coastal flood depth 3.3 m, earthquake shaking 0.1 g. Built from a fallback, so lower confidence: wildfire weather (FWI). Null, meaning not assessed: extreme heat (WBGT). These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a farm co-op in Punjab: landslide null (null); river flood depth null (null); water stress constructed 1.5 of 5; wildfire weather (FWI) null (null); extreme rain none_found 0 (absent here)\n\nQuestion: Which hazards are missing for a farm co-op in Punjab, and what should I do about them?",
+    "out": "Modelled: river flood depth, wildfire weather (FWI), extreme rain. Built from a fallback, so lower confidence: water stress. Established absent here: landslide. Null, meaning not assessed: wildfire weather (FWI), extreme rain. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "uake shaking modelled 0.2 g; landslide null (null); water stress null (null); extreme heat (WBGT) modelled 32.5 C; cyclone wind constructed 61.2 m/s; wildfire weather (FWI) modelled 91.1; drought null (null)\n\nQuestion: Which hazards are missing for a mine in Pilbara, and what should I do about them?",
+    "out": "Modelled: earthquake shaking 0.2 g, extreme heat (WBGT) 32.5 C, wildfire weather (FWI) 91.1. Null, meaning not assessed: landslide, water stress. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ather (FWI) modelled 98.7; extreme heat (WBGT) constructed 34.7 C; cyclone wind null (null); extreme rain constructed 198.4 mm per day; landslide modelled 0 % unstable; water stress constructed 1.2 of 5\n\nQuestion: Which hazards are missing for a farm co-op in Punjab, and what should I do about them?",
+    "out": "Modelled: wildfire weather (FWI) 98.7, cyclone wind. Null, meaning not assessed: drought, cyclone wind. Built from a fallback, so lower confidence: coastal flood depth, extreme heat (WBGT). Established absent here: water stress. Null."
+   }
+  ]
+ },
+ "climrisk-llm-v6": {
+  "metrics": {
+   "chat.length_ok": 0.725,
+   "chat.names_nulls": 0.486,
+   "chat.null_not_called_low": 1.0,
+   "chat.numbers_ok": 0.875,
+   "chat.says_not_assessed": 0.208,
+   "evfin.length_ok": 0.5,
+   "evfin.numbers_ok": 1.0,
+   "evfin.says_no_skill": 1.0,
+   "evfin.says_not_enough": 1.0,
+   "evfin.says_not_forecast": 0.0,
+   "evtc.gives_range": 0.0,
+   "evtc.length_ok": 0.794,
+   "evtc.names_misses": 0.071,
+   "evtc.numbers_ok": 0.882,
+   "evtc.says_not_forecast": 0.176,
+   "evtc.says_not_insured_or_site": 0.0,
+   "gold.invented_numbers": 0.2,
+   "gold.length_ok": 0.533,
+   "gold.overlap_f1": 0.191,
+   "scenario.flags_unverified_input": 0.0,
+   "scenario.length_ok": 0.4,
+   "scenario.numbers_ok": 0.95,
+   "scenario.says_no_location": 0.675,
+   "scenario.says_not_assessed": 0.1,
+   "siteprofile.length_ok": 0.85,
+   "siteprofile.names_nulls": 0.497,
+   "siteprofile.null_not_called_low": 0.967,
+   "siteprofile.numbers_ok": 0.9,
+   "siteprofile.says_not_assessed": 0.433,
+   "stress.length_ok": 0.575,
+   "stress.numbers_ok": 1.0,
+   "stress.says_not_modelled": 0.679,
+   "stress.says_screening": 0.2
+  },
+  "n_rows": 211,
+  "seconds": 3750,
+  "samples": [
+   {
+    "kind": "evtc",
+    "q": "or_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: If a hurricane with 72 knot winds at the coast hit the US next year, what total loss should we expect?",
+    "out": "The engine puts the expected total loss at 4586, the expected busd at 4.6, and the p90 busd at 18.0. The backtest median factor error is 2.28. The baseline median factor error is 3.95. The engine also says within factor 3_pct: 66 and baseline within factor 3_pct: 41."
+   },
+   {
+    "kind": "evtc",
+    "q": "icane Charley (August 2004)\", \"wind_kt\": 130, \"observed_busd\": 26.7, \"predicted_busd\": 28.4, \"factor\": 1.06, \"within_factor_3\": true, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: What would the model have predicted for Hurricane Charley (August 2004), and what happened?",
+    "out": "The model predicts a busd of 28.4. Hurricane Charley (August 2004) observed a busd of 26.7. The factor is 1.06. The engine notes that the prediction was made without this storm."
+   },
+   {
+    "kind": "evtc",
+    "q": "lts: {\"storm\": \"Tropical Storm Elsa (July 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.4, \"predicted_busd\": 3.5, \"factor\": 2.5, \"within_factor_3\": true, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: How well did the event-trained model do on Tropical Storm Elsa (July 2021)?",
+    "out": "The engine puts the expected value at 3.5 and the range is 3.5 to 3.5, meaning the model predicts it did not miss the event. Backtesting the model with Tropical Storm Elsa (July 2021) gives 1.4 observed and 3.5 predicted, so the backtest puts the expected value at 3.5 and the range is 3.5 to 3.5. The model gets it wrong by missing the event, and the note says it was made without this storm."
+   },
+   {
+    "kind": "evtc",
+    "q": "rm\": \"Hurricane Nicholas (September 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.2, \"predicted_busd\": 3.6, \"factor\": 3.04, \"within_factor_3\": false, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: How well did the event-trained model do on Hurricane Nicholas (September 2021)?",
+    "out": "The engine puts the expected value for busd at 3.04, and the range is between 1.2 and 3.6. The backtest result is \"note: prediction made by a model fitted without this storm\". The model gets it wrong, which is not surprising since it was not used to make this particular prediction."
+   },
+   {
+    "kind": "evtc",
+    "q": "gine results: {\"storm\": \"Hurricane Nicholas (September 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.2, \"predicted_busd\": 3.6, \"factor\": 3.04, \"within_factor_3\": false, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: Did the model get Hurricane Nicholas (September 2021) right?",
+    "out": "The model predicted it would pay 3.6 busd and pay 1.2 busd, so it missed it. The expected value is 3.6, and the range is 3.04 to 3.6. The backtest result is 0, so the model did not get it right. What the model gets wrong is the note, which says the prediction was made without this storm."
+   },
+   {
+    "kind": "evtc",
+    "q": "factor_error\": 3.95, \"within_factor_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: Based on past US storms, what is a 158-knot hurricane likely to cost?",
+    "out": "The engine puts the expected loss at $102.2, the expected loss per square foot at $102.2, the p10 loss at $26.0, and the p90 loss at $401.6. The backtest puts the median factor error at 2.28 and the baseline median factor error at 3.95. The engine also says the loss reached within 3% of its own model in about 66 out of 61 events."
+   },
+   {
+    "kind": "evtc",
+    "q": "factor_error\": 3.95, \"within_factor_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: Based on past US storms, what is a 128-knot hurricane likely to cost?",
+    "out": "The engine puts the expected busd at 34.6, the p10 busd at 8.8 and the p90 busd at 136.0. The backtest median factor error is 2.28. The baseline median factor error is 3.95."
+   },
+   {
+    "kind": "evfin",
+    "q": "\", \"n_events\": 7, \"n_company_events\": 37, \"median_pct\": 2.4, \"p25_pct\": -3.5, \"p75_pct\": 9.9, \"share_decline_pct\": 43, \"mdae_all_events\": 8.37, \"mdae_hazard\": 8.67, \"finding\": \"hazard type did not improve the prediction\"}\n\nQuestion: What do recorded flood events say about company revenue afterwards?",
+    "out": "The engine puts the median percentage decline at 43% and the median annual decline at 8.37. The median loss per event is 8.67. The finding is that the hazard type did not improve the prediction. What they get wrong is the loss reached the same level of significance before the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the loss reached the "
+   },
+   {
+    "kind": "siteprofile",
+    "q": "h constructed 2.6 m; wildfire weather (FWI) constructed 114.6; coastal flood depth modelled 3.3 m; extreme heat (WBGT) null (null); earthquake shaking modelled 0.1 g; cyclone wind constructed 39.4 m/s\n\nQuestion: Which hazards are missing for a data centre in Chennai, and what should I do about them?",
+    "out": "The river flood depth constructed is 2.6 m, the wildfire weather constructed is 114.6, the coastal flood depth modelled is 3.3 m, the extreme heat (WBGT) is null (not assessed), the earthquake shaking modelled is 0.1 g, and the cyclone wind constructed is 39.4 m/s. The extreme heat (WBGT) is not assessed, so it has no value. It is a good idea to add a layer of protection against heat and heat stress, such as a cooling layer or a cooling layer with a cooling layer."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a farm co-op in Punjab: landslide null (null); river flood depth null (null); water stress constructed 1.5 of 5; wildfire weather (FWI) null (null); extreme rain none_found 0 (absent here)\n\nQuestion: Which hazards are missing for a farm co-op in Punjab, and what should I do about them?",
+    "out": "The farm co-op in Punjab has two missing hazards: landslide null (null); river flood depth null (null). River flood depth is an important loss and downtime layer, and it is not built from a fallback, so it is not built from a lower confidence model. The same depth is built from the same data. The sources that contributed to the depth use the same depth. The sources that contributed to the depth use the same depth. The sources that contributed to the depth use the same depth. The sources that contributed to the depth use the same depth. The sources that contributed to the depth use the same dep"
+   },
+   {
+    "kind": "siteprofile",
+    "q": "uake shaking modelled 0.2 g; landslide null (null); water stress null (null); extreme heat (WBGT) modelled 32.5 C; cyclone wind constructed 61.2 m/s; wildfire weather (FWI) modelled 91.1; drought null (null)\n\nQuestion: Which hazards are missing for a mine in Pilbara, and what should I do about them?",
+    "out": "The landslide and water stress hazards are null, meaning they do not exist, and were not assessed. They have a value of 0 and are classified as none_found. The same is true for the water stress, which is null and was not assessed."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ather (FWI) modelled 98.7; extreme heat (WBGT) constructed 34.7 C; cyclone wind null (null); extreme rain constructed 198.4 mm per day; landslide modelled 0 % unstable; water stress constructed 1.2 of 5\n\nQuestion: Which hazards are missing for a farm co-op in Punjab, and what should I do about them?",
+    "out": "The null hazards for a farm co-op in Punjab are: cyclone wind null, and drought null. They do not have data, so they were not assessed."
+   }
+  ]
+ }
+}

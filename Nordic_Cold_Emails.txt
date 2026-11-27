@@ -1,0 +1,121 @@
+NORDIC COLD EMAILS — Shrinivash Dhamodhara Kannan
+Generated: November 2026
+5 target firms | GHG/Climate Specialist roles
+Work permit note: mention upfront, confidently, not apologetically.
+CV attached to each email: Shrinivash_CV_Nordic.docx
+
+════════════════════════════════════════════════════════════════
+EMAIL 1: ZeroMission — Stockholm, Sweden
+TO: [Find contact on zeromission.se/about — look for Head of People, Talent, or a Founding Team member. Try info@zeromission.se or the contact form if no individual email is listed.]
+SUBJECT: GHG Specialist with ISO 14067 Accreditation — Open Application
+════════════════════════════════════════════════════════════════
+
+Dear ZeroMission Team,
+
+I am writing to express my interest in contributing to ZeroMission's GHG calculation and climate strategy work. I am an ISO 14067 Accredited Auditor with hands-on experience building GHG inventory frameworks from scratch and delivering audit-grade documentation for CDP and SBTi submissions. At Ramco Cements, I quantified 450,000 tCO2e annually across four manufacturing facilities under ISO 14064/67 and GHG Protocol Scope 1/2/3, including resolving non-trivial boundary classification cases — third-party power plant Scope 2 treatment, quarry contractor operational control, and XRF-derived plant-specific calcination emission factors that yielded a 6,000 tCO2e precision improvement over the WBCSD GNR default.
+
+At ClimRisk B.V. in the Netherlands, I have since built and own an automated TCFD, CSRD, and IFRS S2 disclosure pipeline covering physical climate hazards under all IPCC SSP scenarios. That work gives me direct depth in what your clients increasingly need alongside GHG inventory: climate disclosure that holds up to assurance. I am also fluent in the ESRS E1-9 requirements and understand how CBAM-adjacent GHG verification is shaping procurement decisions in EU markets.
+
+I would need a Swedish work permit to join ZeroMission; I am currently based in the Netherlands on a valid EU work authorisation and familiar with the process. If ZeroMission has appetite to sponsor or is open to a conversation about timing, I am happy to discuss. I have attached my CV and am available for a call at your convenience.
+
+Best regards,
+Shrinivash Dhamodhara Kannan
+shrinivashdkannan@gmail.com | +31 647140567 (WhatsApp)
+
+════════════════════════════════════════════════════════════════
+EMAIL 2: Nordic Sustainability — Copenhagen, Denmark
+TO: [Check nordicsustainability.com/team or /about. Look for the founding partner or director. Try contact@nordicsustainability.com or info@nordicsustainability.com.]
+SUBJECT: Carbon Accounting Specialist — Open Application / Freelance Interest
+════════════════════════════════════════════════════════════════
+
+Dear Nordic Sustainability Team,
+
+I came across Nordic Sustainability's work supporting multinational clients on carbon accounting and climate strategy and wanted to reach out directly. I bring three years of technical GHG depth — ISO 14067 Accredited Auditor, full Scope 1/2/3 inventory experience under ISO 14064/67 and GHG Protocol, CDP and SBTi documentation — combined with strong CSRD/ESRS E1-9 and IFRS S2 implementation experience from my current role at ClimRisk B.V. in the Netherlands, where I built an automated disclosure pipeline covering 10 physical hazard types across all IPCC SSP scenarios.
+
+I understand your practice works with a network of specialist contributors alongside the core team. If that model extends to carbon accounting and climate disclosure specialists, I would welcome a conversation about how I might contribute to client engagements — whether on a project basis or in a full-time capacity. My technical profile covers both the inventory side (facility-level GHG quantification, boundary determination, audit trail documentation) and the disclosure side (TCFD, CSRD, IFRS S2), which I find is a combination that multinational clients in particular need end-to-end.
+
+I am an Indian national based in the Netherlands. I would need a Danish work permit to work full-time in Copenhagen; for project-based or freelance arrangements the structure may be simpler. I have attached my CV and would be glad to discuss where my background might be useful to your team.
+
+Best regards,
+Shrinivash Dhamodhara Kannan
+shrinivashdkannan@gmail.com | +31 647140567 (WhatsApp)
+
+════════════════════════════════════════════════════════════════
+EMAIL 3: Gaia Consulting — Helsinki, Finland
+TO: [Check gaia.fi/en/about-us or /contact. Gaia is a known firm — look for a recruitment or HR contact. Try gaia@gaia.fi or the contact form.]
+SUBJECT: Climate and GHG Specialist — Open Application
+════════════════════════════════════════════════════════════════
+
+Dear Gaia Consulting Team,
+
+I am reaching out with interest in Gaia's climate and energy consultancy work. My background spans both physical climate risk quantification and GHG inventory assurance — a combination that is increasingly relevant as corporate clients face concurrent pressure from CSRD disclosure mandates and GHG Protocol compliance requirements.
+
+At ClimRisk B.V. (Netherlands), I built the company's automated climate risk disclosure engine: a Python platform quantifying annualised capital at risk across 10 physical hazard types under all IPCC SSP scenarios, with TCFD, CSRD, and IFRS S2 outputs and a full audit trail. Separately, through INHAF's ClimACT-Chennai Initiative, I ran physical climate risk assessments across 250 municipal properties, identifying 47 high-risk assets with GIS-integrated flood and heat exposure outputs. On the GHG side, I am an ISO 14067 Accredited Auditor. At Ramco Cements I built the GHG accounting framework from scratch across four facilities under ISO 14064/67, quantifying 450,000 tCO2e annually with CDP audit documentation.
+
+I see Gaia's work spanning energy, environment, and sustainability strategy — I believe the combination of technical climate modelling and GHG audit depth I bring would be a productive fit. I am an Indian national currently based in the Netherlands and would need a Finnish work permit to relocate to Helsinki; I am happy to discuss whether that is feasible. My CV is attached, and I am available for a call if there is interest.
+
+Best regards,
+Shrinivash Dhamodhara Kannan
+shrinivashdkannan@gmail.com | +31 647140567 (WhatsApp)
+
+════════════════════════════════════════════════════════════════
+EMAIL 4: Normative — Stockholm, Sweden (or Copenhagen office)
+TO: [Check normative.io/about or LinkedIn. Look for Head of People/Talent, or a team lead in Advisory/Customer Success. Try hello@normative.io or careers@normative.io.]
+SUBJECT: GHG Protocol Specialist — Advisory / Carbon Accounting Open Application
+════════════════════════════════════════════════════════════════
+
+Dear Normative Team,
+
+I am reaching out because Normative's approach to carbon accounting sits at the intersection of GHG methodology and scalable software delivery — which is exactly where my technical background lives. I am an ISO 14067 Accredited Auditor with deep hands-on experience in GHG Protocol Scope 1/2/3 accounting, boundary determination, and the kind of edge-case methodology work that determines whether a platform's outputs hold up to scrutiny.
+
+At Ramco Cements I built the GHG accounting framework across four manufacturing facilities from scratch under ISO 14064/67. The boundary work I did there is directly relevant to the problem Normative customers face: we resolved non-trivial classification cases including third-party power plant Scope 2 treatment, quarry contractor operational control under GHG Protocol, and XRF-derived plant-specific calcination emission factors that produced a 6,000 tCO2e precision improvement over the WBCSD GNR default. These are exactly the edge cases that determine data quality in carbon accounting at scale. At ClimRisk B.V. I subsequently built an automated CSRD, TCFD, and IFRS S2 disclosure pipeline with full audit trail — giving me end-to-end view of what corporate climate reporting demands from an accounting foundation.
+
+Whether Normative needs GHG methodology depth on the advisory or product side, I believe I can contribute substantively. I am based in the Netherlands and would need a Swedish work permit; I understand Normative has experience with international hires and I am happy to discuss the practicalities. CV is attached.
+
+Best regards,
+Shrinivash Dhamodhara Kannan
+shrinivashdkannan@gmail.com | +31 647140567 (WhatsApp)
+
+════════════════════════════════════════════════════════════════
+EMAIL 5: Position Green — Stockholm, Sweden
+TO: [Check positiongreen.com/about or LinkedIn. Look for Head of Talent, VP People, or a Sustainability Advisory lead. Try hello@positiongreen.com or careers@positiongreen.com.]
+SUBJECT: CSRD / GHG Specialist — Open Application
+════════════════════════════════════════════════════════════════
+
+Dear Position Green Team,
+
+I am writing to express my interest in joining Position Green's advisory work on sustainability and climate disclosure. My current role at ClimRisk B.V. in the Netherlands is directly aligned with what your clients are navigating: I built and own the company's automated CSRD, TCFD, and IFRS S2 disclosure pipeline, covering 10 physical hazard types under all IPCC SSP scenarios, with 16 sector-specific economic impact multipliers calibrated from CDP, WRI, and IEA datasets. The pipeline produces assurance-grade audit trails across client engagements.
+
+I am also an ISO 14067 Accredited Auditor with practical GHG inventory experience: at Ramco Cements I quantified 450,000 tCO2e annually across four manufacturing facilities under ISO 14064/67 and GHG Protocol Scope 1/2/3, with SBTi target-setting and CDP submission. That combination — CSRD/ESRS E1-9 depth plus GHG assurance credentials — means I can support clients across the full disclosure workflow, not just the reporting interface.
+
+Position Green operates at the intersection of platform and advisory, and I believe practitioners who understand both the methodology and the regulatory requirements are what the advisory side needs. I am based in the Netherlands and would require a Swedish work permit; I am committed to relocating to Stockholm and open to discussing timelines. My CV is attached and I would welcome a conversation about how I might contribute to your advisory team.
+
+Best regards,
+Shrinivash Dhamodhara Kannan
+shrinivashdkannan@gmail.com | +31 647140567 (WhatsApp)
+
+════════════════════════════════════════════════════════════════
+SENDING NOTES
+════════════════════════════════════════════════════════════════
+
+WORK PERMIT REALITY CHECK before sending:
+  - ZeroMission (36 people, B Corp): Small — visa sponsorship uncertain. Worth sending; mention willingness to discuss.
+  - Nordic Sustainability (~15-20 people): Very small. Freelance/project angle softens the ask significantly.
+  - Gaia Consulting (established, ~100+ people in Finland): More likely capacity to sponsor. Worth a confident ask.
+  - Normative (VC-backed scale-up, ~100-200 people): Good candidate for sponsorship — funded, international team.
+  - Position Green (~150+ people): Best candidate for sponsorship among the five.
+
+FINDING THE RIGHT CONTACT (do before sending):
+  - LinkedIn: search "[Company Name]" + "People", "Talent", "HR", or search the team page
+  - Company websites: /team, /about-us, /contact
+  - For small firms (ZeroMission, Nordic Sustainability): email to a founder/partner directly is fine and often better
+
+SENDING ORDER (suggested):
+  1. Normative — highest probability of GHG methodology fit + sponsorship
+  2. Position Green — CSRD depth alignment + scale
+  3. Gaia Consulting — broadest fit across climate risk + GHG
+  4. ZeroMission — ISO 14067 alignment very strong
+  5. Nordic Sustainability — smallest; freelance angle worth exploring
+
+This counts toward your 5 applications next week (Nov 10 onwards).
+If applying to Intertek (CBAM verifier, Sweden) or South Pole (Denmark) separately, factor those in.

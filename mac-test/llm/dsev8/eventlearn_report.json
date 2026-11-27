@@ -1,0 +1,15 @@
+{
+ "train": {
+  "evtc": 345,
+  "evfin": 35
+ },
+ "valid": {
+  "evtc": 6,
+  "evfin": 1
+ },
+ "test": {
+  "evtc": 34,
+  "evfin": 2
+ },
+ "test_prompts_also_in_train": 0
+}

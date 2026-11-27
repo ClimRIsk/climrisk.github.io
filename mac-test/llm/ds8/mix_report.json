@@ -1,0 +1,15 @@
+{
+ "train": {
+  "new": 380,
+  "replay": 380,
+  "total": 760
+ },
+ "valid": {
+  "new": 7,
+  "replay": 7,
+  "total": 14
+ },
+ "test": {
+  "new": 36
+ }
+}

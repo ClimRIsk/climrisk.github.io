@@ -1,0 +1,103 @@
+{
+ "climrisk-llm-v8-gguf": {
+  "metrics": {
+   "chat.length_ok": 1.0,
+   "chat.names_nulls": 0.924,
+   "chat.null_not_called_low": 0.917,
+   "chat.numbers_ok": 0.975,
+   "chat.says_not_assessed": 0.875,
+   "evfin.length_ok": 1.0,
+   "evfin.numbers_ok": 1.0,
+   "evfin.says_no_skill": 1.0,
+   "evfin.says_not_enough": 1.0,
+   "evfin.says_not_forecast": 1.0,
+   "evtc.gives_range": 1.0,
+   "evtc.length_ok": 1.0,
+   "evtc.names_misses": 1.0,
+   "evtc.numbers_ok": 1.0,
+   "evtc.says_not_forecast": 1.0,
+   "evtc.says_not_insured_or_site": 1.0,
+   "gold.invented_numbers": 0.067,
+   "gold.length_ok": 1.0,
+   "gold.overlap_f1": 0.226,
+   "scenario.flags_unverified_input": 1.0,
+   "scenario.length_ok": 1.0,
+   "scenario.numbers_ok": 1.0,
+   "scenario.says_no_location": 1.0,
+   "scenario.says_not_assessed": 1.0,
+   "siteprofile.length_ok": 1.0,
+   "siteprofile.names_nulls": 0.919,
+   "siteprofile.null_not_called_low": 1.0,
+   "siteprofile.numbers_ok": 1.0,
+   "siteprofile.says_not_assessed": 1.0,
+   "stress.length_ok": 1.0,
+   "stress.numbers_ok": 0.95,
+   "stress.says_not_modelled": 1.0,
+   "stress.says_screening": 1.0
+  },
+  "n_rows": 211,
+  "seconds": 4339,
+  "samples": [
+   {
+    "kind": "evtc",
+    "q": "or_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: If a hurricane with 72 knot winds at the coast hit the US next year, what total loss should we expect?",
+    "out": "For a storm reaching 72 knots at the US coast, the model fitted on 61 recorded US storms expects a total economic cost of about $4.6 billion, with an 80% range of $1.2 to $18.0 billion. That is the cost of the whole event across the country, not an insured loss and not the loss at one site. Tested on storms it had not seen, its typical error was a factor of 2.28, against 3.95 for guessing the typical storm, and 66% of storms were within a factor of 3 (guessing: 41%). It underestimates rain and surge storms such as Katrina, Harvey and Allison. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "icane Charley (August 2004)\", \"wind_kt\": 130, \"observed_busd\": 26.7, \"predicted_busd\": 28.4, \"factor\": 1.06, \"within_factor_3\": true, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: What would the model have predicted for Hurricane Charley (August 2004), and what happened?",
+    "out": "For Hurricane Charley (August 2004), with 130 knots at the coast, a model fitted without that storm would have predicted about $28.4 billion; the observed total economic cost was $26.7 billion. It over-predicted: the model's figure was 1.06 times the observed cost, within a factor of 3. A wind-only model cannot see rain, surge or the value of what was in the way, so single storms can miss widely. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "lts: {\"storm\": \"Tropical Storm Elsa (July 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.4, \"predicted_busd\": 3.5, \"factor\": 2.5, \"within_factor_3\": true, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: How well did the event-trained model do on Tropical Storm Elsa (July 2021)?",
+    "out": "For Tropical Storm Elsa (July 2021), with 65 knots at the coast, a model fitted without that storm would have predicted about $3.5 billion; the observed total economic cost was $1.4 billion. It over-predicted: the model's figure was 2.5 times the observed cost, within a factor of 3. A wind-only model cannot see rain, surge or the value of what was in the way, so single storms can miss widely. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "rm\": \"Hurricane Nicholas (September 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.2, \"predicted_busd\": 3.6, \"factor\": 3.04, \"within_factor_3\": false, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: How well did the event-trained model do on Hurricane Nicholas (September 2021)?",
+    "out": "For Hurricane Nicholas (September 2021), with 65 knots at the coast, a model fitted without that storm would have predicted about $3.04 times the observed total economic cost, outside a factor of 3. A wind-only model cannot see rain, surge or the value of what was in the way, so single storms can miss widely. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "gine results: {\"storm\": \"Hurricane Nicholas (September 2021)\", \"wind_kt\": 65, \"observed_busd\": 1.2, \"predicted_busd\": 3.6, \"factor\": 3.04, \"within_factor_3\": false, \"note\": \"prediction made by a model fitted without this storm\"}\n\nQuestion: Did the model get Hurricane Nicholas (September 2021) right?",
+    "out": "For Hurricane Nicholas (September 2021), with 65 knots at the coast, a model fitted without that storm would have predicted about $3.6 billion; the observed total economic cost was $1.2 billion. It over-predicted: the model's figure was 3.04 times the observed cost, outside a factor of 3. A wind-only model cannot see rain, surge or the value of what was in the way, so single storms can miss widely. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "factor_error\": 3.95, \"within_factor_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: Based on past US storms, what is a 158-knot hurricane likely to cost?",
+    "out": "For a storm reaching 158 knots at the US coast, the model fitted on 61 recorded US storms expects a total economic cost of about $102.2 billion, with an 80% range of $26.0 to $401.6 billion. That is the cost of the whole event across the country, not an insured loss and not the loss at one site. Tested on storms it had not seen, its typical error was a factor of 2.28, against 3.95 for guessing the typical storm, and 66% of storms were within a factor of 3 (guessing: 41%). It underestimates rain and surge storms such as Katrina, Harvey and Allison. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evtc",
+    "q": "factor_error\": 3.95, \"within_factor_3_pct\": 66, \"baseline_within_factor_3_pct\": 41, \"misses\": [\"Katrina\", \"Harvey\", \"Allison\"], \"cost\": \"total economic cost for the whole US event, not an insured loss, not a site loss\"}\n\nQuestion: Based on past US storms, what is a 128-knot hurricane likely to cost?",
+    "out": "For a storm reaching 128 knots at the US coast, the model fitted on 61 recorded US storms expects a total economic cost of about $34.6 billion, with an 80% range of $8.8 to $136.0 billion. That is the cost of the whole event across the country, not an insured loss and not the loss at one site. Tested on storms it had not seen, its typical error was a factor of 2.28, against 3.95 for guessing the typical storm, and 66% of storms were within a factor of 3 (guessing: 41%). It underestimates rain and surge storms such as Katrina, Harvey and Allison. Screening-grade, not a forecast."
+   },
+   {
+    "kind": "evfin",
+    "q": "\", \"n_events\": 7, \"n_company_events\": 37, \"median_pct\": 2.4, \"p25_pct\": -3.5, \"p75_pct\": 9.9, \"share_decline_pct\": 43, \"mdae_all_events\": 8.37, \"mdae_hazard\": 8.67, \"finding\": \"hazard type did not improve the prediction\"}\n\nQuestion: What do recorded flood events say about company revenue afterwards?",
+    "out": "Across 37 company filings after 7 recorded flood events, the event-year revenue change had a median of 2.4% (middle half -3.5% to 9.9%), and 43% of companies saw revenue fall. Tested on events it had not seen, knowing the hazard type did not improve the prediction (typical error 8.67 points against 8.37 for the all-event average), so these figures describe the past and are not a forecast of your revenue. Screening-grade."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "h constructed 2.6 m; wildfire weather (FWI) constructed 114.6; coastal flood depth modelled 3.3 m; extreme heat (WBGT) null (null); earthquake shaking modelled 0.1 g; cyclone wind constructed 39.4 m/s\n\nQuestion: Which hazards are missing for a data centre in Chennai, and what should I do about them?",
+    "out": "Modelled: coastal flood depth 3.3 m. Built from a fallback, so lower confidence: river flood depth, wildfire weather (FWI), cyclone wind. Null, meaning not assessed: extreme heat (WBGT). These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "Profile for a farm co-op in Punjab: landslide null (null); river flood depth null (null); water stress constructed 1.5 of 5; wildfire weather (FWI) null (null); extreme rain none_found 0 (absent here)\n\nQuestion: Which hazards are missing for a farm co-op in Punjab, and what should I do about them?",
+    "out": "Modelled: landslide, river flood depth, water stress, wildfire weather (FWI). Built from a fallback, so lower confidence: water stress. Established absent here: extreme rain. Null, meaning not assessed: landslide, river flood depth, wildfire weather (FWI). These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "uake shaking modelled 0.2 g; landslide null (null); water stress null (null); extreme heat (WBGT) modelled 32.5 C; cyclone wind constructed 61.2 m/s; wildfire weather (FWI) modelled 91.1; drought null (null)\n\nQuestion: Which hazards are missing for a mine in Pilbara, and what should I do about them?",
+    "out": "Modelled: earthquake shaking 0.2 g, extreme heat (WBGT) 32.5 C, wildfire weather (FWI) 91.1. Null, meaning not assessed: landslide, water stress. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   },
+   {
+    "kind": "siteprofile",
+    "q": "ather (FWI) modelled 98.7; extreme heat (WBGT) constructed 34.7 C; cyclone wind null (null); extreme rain constructed 198.4 mm per day; landslide modelled 0 % unstable; water stress constructed 1.2 of 5\n\nQuestion: Which hazards are missing for a farm co-op in Punjab, and what should I do about them?",
+    "out": "Modelled: wildfire weather (FWI) 98.7, landslide 0 % unstable, water stress. Built from a fallback, so lower confidence: coastal flood depth, extreme heat (WBGT), extreme rain. Null, meaning not assessed: cyclone wind. These say nothing about risk and must not be read as low or zero; they need a survey, another data source or an expert view."
+   }
+  ]
+ }
+}

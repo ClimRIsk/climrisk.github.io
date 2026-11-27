@@ -1,0 +1,213 @@
+pytest 9.1.1
+........................................................................ [ 10%]
+........................................................................ [ 21%]
+........................................................................ [ 32%]
+........................................................................ [ 42%]
+........................................................................ [ 53%]
+........................................................................ [ 64%]
+.......................................................F................ [ 75%]
+........................................................................ [ 85%]
+........................................................................ [ 96%]
+............s...........                                                 [100%]
+=================================== FAILURES ===================================
+______ test_mass_flux_through_a_crosswind_plane_equals_the_emission_rate _______
+
+    def test_mass_flux_through_a_crosswind_plane_equals_the_emission_rate():
+        r = _r(half_m=1500.0, nx=60, ny=240, nz=60)
+        f = r["frame"]; c = np.array(r["conc_ug_m3_xyz"]) * 1e-6                      # g/m3
+        xs = np.linspace(0, f["L_m"], f["nx"]); ys = np.linspace(-f["W_m"], f["W_m"], f["ny"]); zs = np.linspace(0, f["Z_m"], f["nz"])
+        i = int(np.argmin(abs(xs - 1000.0)))
+>       flux = np.trapz(np.trapz(c[i] * r["inputs"]["u_at_release_ms"], zs, axis=1), ys)
+               ^^^^^^^^
+
+tests/test_release_plume.py:22: 
+_ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ _ 
+
+attr = 'trapz'
+
+    def __getattr__(attr):
+        # Warn for expired attributes
+        import warnings
+    
+        if attr == "linalg":
+            import numpy.linalg as linalg
+            return linalg
+        elif attr == "fft":
+            import numpy.fft as fft
+            return fft
+        elif attr == "dtypes":
+            import numpy.dtypes as dtypes
+            return dtypes
+        elif attr == "random":
+            import numpy.random as random
+            return random
+        elif attr == "polynomial":
+            import numpy.polynomial as polynomial
+            return polynomial
+        elif attr == "ma":
+            import numpy.ma as ma
+            return ma
+        elif attr == "ctypeslib":
+            import numpy.ctypeslib as ctypeslib
+            return ctypeslib
+        elif attr == "exceptions":
+            import numpy.exceptions as exceptions
+            return exceptions
+        elif attr == "testing":
+            import numpy.testing as testing
+            return testing
+        elif attr == "matlib":
+            import numpy.matlib as matlib
+            return matlib
+        elif attr == "f2py":
+            import numpy.f2py as f2py
+            return f2py
+        elif attr == "typing":
+            import numpy.typing as typing
+            return typing
+        elif attr == "rec":
+            import numpy.rec as rec
+            return rec
+        elif attr == "char":
+            import numpy.char as char
+            return char
+        elif attr == "core":
+            import numpy.core as core
+            return core
+        elif attr == "strings":
+            import numpy.strings as strings
+            return strings
+        if attr in __future_scalars__:
+            # And future warnings for those that will change, but also give
+            # the AttributeError
+            warnings.warn(
+                f"In the future `np.{attr}` will be defined as the "
+                "corresponding NumPy scalar.", FutureWarning, stacklevel=2)
+    
+        if attr in __former_attrs__:
+            raise AttributeError(__former_attrs__[attr], name=None)
+    
+        if attr in __expired_attributes__:
+            raise AttributeError(
+                f"`np.{attr}` was removed in the NumPy 2.0 release. "
+                f"{__expired_attributes__[attr]}",
+                name=None
+            )
+    
+>       raise AttributeError(f"module {__name__!r} has no attribute {attr!r}")
+E       AttributeError: module 'numpy' has no attribute 'trapz'. Did you mean: 'trace'?
+
+../../../../../.climrisk/engine-venv/lib/python3.14/site-packages/numpy/__init__.py:769: AttributeError
+=============================== warnings summary ===============================
+../../../../../.climrisk/engine-venv/lib/python3.14/site-packages/fastapi/testclient.py:1
+  /Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+src/cri/api/main.py:10
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/api/main.py:10: PendingDeprecationWarning: Please use `import python_multipart` instead.
+    import multipart  # noqa: F401 — python-multipart
+
+tests/test_autopilot.py::test_cycle_scans_triages_drafts_and_never_publishes
+tests/test_autopilot.py::test_cycle_scans_triages_drafts_and_never_publishes
+tests/test_autopilot.py::test_cycle_survives_feed_failure
+tests/test_autopilot.py::test_watched_site_in_reach_runs_twin_and_lab
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/resident/autopilot.py:311: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    s.update({"last_run": now, "next_run": now + interval_s(), "cycles": s.get("cycles", 0) + 1, "log": (s.get("log", []) + [f'{dt.datetime.utcnow():%H:%M} {reason}: ' + " | ".join(log)])[-30:]})
+
+tests/test_autopilot.py::test_chat_commands_inbox_watch_and_run
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/resident/agent.py:346: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    wl.append({"company_name": label, "sector": None, "alert_email": None, "notes": "added by the resident agent", "added_at": dt.datetime.utcnow().isoformat()})
+
+tests/test_extended_api.py::test_endpoint_answers[/portfolio/rules]
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/api/main.py:3995: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    generated_at=_datetime.datetime.utcnow().isoformat() + "Z",
+
+tests/test_extended_api.py::test_endpoint_answers[/decision]
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/api/main.py:4400: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    generated  = _dt_dec.datetime.utcnow().isoformat() + "Z"
+
+tests/test_extended_api.py::test_more_endpoints_answer[/validation/scorecard]
+tests/test_hydraulics.py::test_simulate_routes_water_and_reports_per_component
+tests/test_keyless_brief.py::test_assessment_reports_data_gaps_when_terrain_fails
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/connectors/sentinel2_pixels.py:157: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    end = _dt.datetime.utcnow().date()
+
+tests/test_extended_api.py: 1 warning
+tests/test_gap_features.py: 5 warnings
+tests/test_hydraulics.py: 16 warnings
+tests/test_keyless_brief.py: 13 warnings
+  /Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/rasterio/transform.py:189: PendingDeprecationWarning: Use `@` matmul instead of `*` mul operator for matrix multiplication
+    return Affine.translation(west, north) * Affine.scale(
+
+tests/test_extended_api.py::test_more_endpoints_answer[/validation/scorecard]
+tests/test_keyless_brief.py::test_assessment_reports_data_gaps_when_terrain_fails
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/connectors/sentinel1_sar.py:67: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    end = dt.datetime.utcnow().date()
+
+tests/test_finance_analyst.py: 1 warning
+tests/test_gap_features.py: 1 warning
+tests/test_hydraulics.py: 44 warnings
+tests/test_keyless_brief.py: 14 warnings
+  /Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/rasterio/windows.py:360: PendingDeprecationWarning: Use `@` matmul instead of `*` mul operator for matrix multiplication
+    x, y = transform * (window.col_off or 0.0, window.row_off or 0.0)
+
+tests/test_finance_analyst.py: 1 warning
+tests/test_gap_features.py: 1 warning
+tests/test_hydraulics.py: 44 warnings
+tests/test_keyless_brief.py: 14 warnings
+  /Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/rasterio/windows.py:361: PendingDeprecationWarning: Use `@` matmul instead of `*` mul operator for matrix multiplication
+    return Affine.translation(
+
+tests/test_gap_features.py::test_disclosure_units_and_brsr_intensity
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/outcomes/disclosure.py:951: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+tests/test_gap_features.py::test_disclosure_units_and_brsr_intensity
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/outcomes/disclosure.py:310: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    now_str = datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+tests/test_hydraulics.py: 10 warnings
+tests/test_keyless_brief.py: 2 warnings
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/connectors/sentinel2_pixels.py:230: PendingDeprecationWarning: Use `@` matmul instead of `*` mul operator for matrix multiplication
+    src_tf = src_tf * Affine.scale(win.width / src.shape[2], win.height / src.shape[1])
+
+tests/test_hydraulics.py::test_simulate_routes_water_and_reports_per_component
+tests/test_keyless_brief.py::test_assessment_reports_data_gaps_when_terrain_fails
+  /Users/shrinivashdhamodharakannan/.climrisk/engine-venv/lib/python3.14/site-packages/rasterio/warp.py:390: NotGeoreferencedWarning: Dataset has no geotransform, gcps, or rpcs. The identity matrix will be returned.
+    dest = _reproject(
+
+tests/test_modellab_hazards.py: 3285 warnings
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/tests/test_modellab_hazards.py:122: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+    days = [str(np.datetime64("2010-01-01") + int(i)) for i in range(n)]
+
+tests/test_modellab_hazards.py: 1095 warnings
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/tests/test_modellab_hazards.py:199: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+    days = [str(np.datetime64("2010-01-01") + i) for i in range(365 * 3)]
+
+tests/test_modellab_hazards.py: 14600 warnings
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/tests/test_modellab_hazards.py:223: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+    days = [str(np.datetime64("1981-01-01") + i) for i in range(365 * 40)]
+
+tests/test_modellab_hazards.py: 14600 warnings
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/tests/test_modellab_hazards.py:245: DeprecationWarning: The 'generic' unit for NumPy timedelta is deprecated, and will raise an error in the future. This includes implicit conversion of bare integers (e.g. `+ 1`). Please use a specific unit instead.
+    days = [str(np.datetime64("1981-01-01") + i) for i in range(365 * 40)]
+
+tests/test_resident.py::test_scan_reports_feed_failures
+  /Users/shrinivashdhamodharakannan/Documents/Claude/Projects/climrisk-engine-space/climate_risk_engine/src/cri/resident/research.py:158: DeprecationWarning: datetime.datetime.utcnow() is deprecated and scheduled for removal in a future version. Use timezone-aware objects to represent datetimes in UTC: datetime.datetime.now(datetime.UTC).
+    return {"asof": dt.datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC"), "events": scored, "earthquakes": quakes, "enso": enso, "feeds": status,
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+============================= slowest 8 durations ==============================
+37.01s call     tests/test_autopilot.py::test_cycle_scans_triages_drafts_and_never_publishes
+35.62s call     tests/test_resident.py::test_unknown_asks_and_feedback_retrains
+31.15s call     tests/test_autopilot.py::test_watched_site_in_reach_runs_twin_and_lab
+29.40s call     tests/test_modellab.py::test_flood_study_runs_verifies_and_is_honest_about_validation
+21.54s call     tests/test_modellab.py::test_flood_study_twin_experiment_recovers_roughness
+19.79s call     tests/test_autopilot.py::test_cycle_survives_feed_failure
+18.57s call     tests/test_modellab.py::test_chat_runs_a_study_as_a_job
+17.77s call     tests/test_hydraulics.py::test_barrier_in_the_model_protects_the_inside
+=========================== short test summary info ============================
+FAILED tests/test_release_plume.py::test_mass_flux_through_a_crosswind_plane_equals_the_emission_rate
+1 failed, 670 passed, 1 skipped, 33766 warnings in 679.30s (0:11:19)
+exit=1
+TESTS_DONE
